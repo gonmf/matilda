@@ -1,0 +1,123 @@
+GTP MODIFICATIONS IN MATILDA
+
+This file documents the changes to GTP 2 draft 2 commands as implemented, plus
+the private command extensions supported.
+
+1. Standard Commands
+
+Reference: http://www.lysator.liu.se/~gunnar/gtp/gtp2-spec-draft2/gtp2-spec.html
+
+boardsize -- the command fails if the board size requested is different than the
+expected value set at compile time.
+
+
+final_status_list -- the protocol is ambiguous on whether the command may fail
+with the option seki; which happens in matilda.
+
+
+
+2. Private Commands
+
+2.1 KGS Go Server Commands
+
+References: http://www.gokgs.com/download.jsp
+            http://www.gokgs.com/help/timesystems.html
+
+kgs-game_over
+
+
+kgs-genmove_cleanup
+
+
+kgs-time_settings
+
+
+
+2.2 GNU Go 3.8 Commands
+
+Reference: https://www.gnu.org/software/gnugo/gnugo_19.html
+
+clear_cache
+
+
+cputime
+
+
+echo
+
+
+echo_err
+
+
+gg-undo
+
+
+help
+
+
+printsgf
+
+
+
+2.3 GoMill 0.7.4 Commands
+
+Reference: http://mjw.woodcraft.me.uk/gomill/doc/0.7.4/gtp_extensions.html
+
+gomill-cpu_time
+
+
+gomill-describe_engine
+
+
+
+2.4 Frisbee Go Commands
+
+frisbee-epsilon -- alias to frisbee-accuracy
+
+
+frisbee-play -- equal to play command but with SKIP vertex format possible, to
+indicate a play that was deviated into an illegal play.
+
+
+frisbee-reg_genmove -- alias to reg_genmove command
+
+
+
+2.5 Matilda Commands
+
+frisbee-accuracy -- changes the current accuracy of the program in Frisbee Go.
+The argument has to be a valid probability (0 to 1) and it cannot be changed
+midgame.
+Arguments: floating point value
+Fails: syntax error; unable to change
+
+
+mtld-last_evaluation -- returns in multi-line format the last full board
+evaluation. It may not cover all plays if the last strategy ran only evaluated
+part of them.
+Arguments: none
+Fails: never
+
+
+mtld-final_position -- returns an estimate of the final game position.
+Arguments: none
+Fails: never
+
+
+mtld-ponder -- returns description of the state of the game and possible
+followups.
+Arguments: time available to think, in seconds
+Fails: never
+
+
+mtld-review_game -- returns description of the quality of the moves played and
+the best moves quality.
+Arguments: time available to think (per turn), in seconds
+Fails: never
+
+
+exit -- alias to quit command.
+Arguments: none
+Fails: never
+
+

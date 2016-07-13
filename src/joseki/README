@@ -1,0 +1,4 @@
+Application for the transformation of joseki compilations in SGF format (as
+variations). Tested with Kogo's Joseki Dictionary.
+
+Upon running a DATA/output.joseki file should be written.

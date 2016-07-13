@@ -1,0 +1,167 @@
+# This is a patterns collection based on the handcrafted patterns present in
+# Michi https://github.com/pasky/michi
+# The plays are first tested for legality and for not being self-atari moves
+#
+# For the symbols used see inc/board.h and pat3.c
+#
+# Likely symbols used:
+# own stone X
+# own or empty x
+# opt stone O
+# opt or empty o
+# stone or empty ?
+# border -
+#
+# Note how x and o have a different meaning than from other notations.
+
+
+
+
+# Hane exclosing
+
+XOX
+...
+???
+
+OXO
+...
+???
+
+
+# Non-cutting hane
+
+XO.
+...
+?.?
+
+OX.
+...
+?.?
+
+
+# Magari hane
+
+XO?
+X..
+o.?
+
+OX?
+O..
+x.?
+
+
+
+# Thin hane (only for the player)
+
+XOO
+...
+?.?
+
+
+
+
+
+# Diagonal attachment
+.O.
+X..
+...
+
+.X.
+O..
+...
+
+
+# Unprotected cut
+XO?
+O.x
+?x?
+
+OX?
+X.o
+?o?
+
+
+# Peep cut
+XO?
+O.X
+???
+
+OX?
+X.O
+???
+
+
+
+
+# Cut2
+
+?X?
+O.O
+xxx
+
+?O?
+X.X
+ooo
+
+
+
+
+# Cut keima
+OX?
+x.O
+???
+
+XO?
+o.X
+???
+
+
+
+# Side pattern chase
+X.?
+O.?
+---
+
+O.?
+X.?
+---
+
+# Block side cut
+OX?
+X.O
+---
+
+XO?
+O.X
+---
+
+
+# Block side connection
+?X?
+o.O
+---
+
+?O?
+x.X
+---
+
+
+# Sagari
+?XO
+o.o
+---
+
+?OX
+x.x
+---
+
+
+# Side cut
+?OX
+X.O
+---
+
+?XO
+O.X
+---
+

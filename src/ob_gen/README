@@ -1,0 +1,16 @@
+Application for the compilation of an openings book
+
+
+This application reads a collection of SGF files and generates a
+text/Fuego-style opening book file (.ob).
+
+Please avoid feeding SGF files of the wrong board size, ruleset, etc since the
+application might not be able to catch all possible exceptions. SGF files in
+unicode might also produce erroneous results, though this has not been observed
+yet. If you have problems send me a copy of the faulty file and the version
+number you are using.
+
+The opening book is ruleset agnostic. It also ignores matches started with
+handicap stones. The rules themselves have a minimum of occurrences. States
+after the capture of single stones are ignored, so ko doesn't have to be tested.
+This should seldom have any impact.

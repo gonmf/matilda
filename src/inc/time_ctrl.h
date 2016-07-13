@@ -1,0 +1,118 @@
+/*
+Go-specific time system functions, on top of a time_settings structure. The
+timed_out field is used to indicate the player must have lost on time -- this
+does not necessarily interrupt the match, if the time keeping referee doesn't
+say anything. All times are in milliseconds.
+*/
+
+#ifndef MATILDA_TIME_CTRL_H
+#define MATILDA_TIME_CTRL_H
+
+#include "matilda.h"
+
+#include "types.h"
+#include "board.h"
+
+#define DETECT_NETWORK_LATENCY false
+
+/* Used if automatic detection (above) is not active. */
+#define LATENCY_COMPENSATION 5 /* in milliseconds */
+
+
+/*
+How much time a play should be given over the linear distribution of time for
+the match. Values over 1 favor thinking more in the begining of matches, which
+is the objective.
+*/
+#if BOARD_SIZ < 12
+/*
+Tuned with CLOP in 9x9 with 2s/game vs GNU Go 3.8 lvl 1. 1110 games.
+*/
+#define TIME_ALLOT_FACTOR 2.8
+#else
+/*
+TODO tuning
+*/
+#define TIME_ALLOT_FACTOR 2.8
+#endif
+
+
+typedef struct __time_system_ {
+	bool can_timeout;
+	bool timed_out;
+
+	u32 main_time;
+	u32 byo_yomi_stones;
+	u32 byo_yomi_time;
+	u32 byo_yomi_periods;
+
+	u32 main_time_remaining;
+	u32 byo_yomi_stones_remaining;
+	u32 byo_yomi_time_remaining;
+	u32 byo_yomi_periods_remaining;
+} time_system;
+
+
+
+/*
+Calculate the time available based on a Canadian byo-yomi time system. Also
+compensates for network latency.
+RETURNS time available in milliseconds
+*/
+u32 calc_time_to_play(
+    time_system * ts,
+    u16 turns_played
+);
+
+/*
+Set the complete Canadian byo-yomi time system.
+*/
+void set_time_system(
+    time_system * ts,
+    u32 main_time,
+    u32 byo_yomi_time,
+    u32 byo_yomi_stones,
+    u32 byo_yomi_periods
+);
+
+/*
+Set the time system based only on absolute time (sudden death).
+*/
+void set_sudden_death(
+    time_system * ts,
+    u32 main_time
+);
+
+/*
+Set the time system based on a constant time per turn.
+*/
+void set_time_per_turn(
+    time_system * ts,
+    u32 time_per_turn
+);
+
+/*
+Advance the clock, consuming the available time, byo-yomi stones and possibly
+affecting the value indicating time out.
+*/
+void advance_clock(
+    time_system * ts,
+    u32 milliseconds
+);
+
+/*
+Reset the clock to the initial values of the system.
+*/
+void reset_clock(
+    time_system * ts
+);
+
+/*
+Convert a time system into a textual description.
+RETURNS textual description
+*/
+const char * time_system_to_str(
+    time_system * ts
+);
+
+#endif

@@ -1,0 +1,17 @@
+Matilda application with GTP interface
+
+Attempts to understand when to perform internal maintenance; see the help for
+more information. Besides the standard GTP commands it also supports commands
+that allow exporting SGF files, perform maintenance on-demand, etc.
+Run list-commands or help for more information.
+
+With a whole-game context it also performs time control adjustments, prevents
+positional superkos, performs maintenance and thinking between turns, etc. This
+under the assumption the program is playing as one of the players only; which is
+enabled at startup.
+
+GTP mode has GTP version 2 draft 2 support, online:
+http://www.lysator.liu.se/~gunnar/gtp/gtp2-spec-draft2/gtp2-spec.html
+
+For an explanation of the extra commands support read the documentation file
+GTP_README.

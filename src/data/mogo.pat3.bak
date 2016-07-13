@@ -1,0 +1,154 @@
+# This is a patterns collection based on the handcrafted MoGo patterns
+# The plays are first tested for legality and for not being self-atari moves
+#
+# For the symbols used see inc/board.h and pat3.c
+#
+# Likely symbols used:
+# own stone X
+# own or empty x
+# opt stone O
+# opt or empty o
+# stone or empty ?
+# border -
+#
+# Note how x and o have a different meaning than from other notations.
+
+
+
+
+# Hane exclosing
+
+XOX
+...
+???
+
+OXO
+...
+???
+
+
+# Non-cutting hane
+
+XO.
+...
+?.?
+
+OX.
+...
+?.?
+
+
+# Magari hane
+
+XO?
+X..
+?.?
+
+OX?
+O..
+?.?
+
+
+
+# Thin hane (only for the player)
+
+OXX
+...
+?.?
+
+
+
+
+
+
+
+
+
+
+# Cut1 (the equivalent of the 3 patterns where the 1st matches etc)
+# "cut if would not be placed in immediate obvious atari"
+
+OX?
+X.O
+???
+
+OX?
+X.X
+?X?
+
+OX?
+X..
+?.?
+
+# inverses
+
+XO?
+O.X
+???
+
+XO?
+O.O
+?O?
+
+XO?
+O..
+?.?
+
+
+
+
+# Cut2
+
+?X?
+O.O
+xxx
+
+# inverse
+
+?O?
+X.X
+ooo
+
+
+
+
+
+
+
+
+# Edge patterns
+
+O.?
+X.?
+---
+
+?O?
+x.X
+---
+
+# inverses
+
+X.?
+O.?
+---
+
+?X?
+o.O
+---
+
+# player specific patterns
+
+?OX
+?.?
+---
+
+?XO
+?.o
+---
+
+?XO
+O.X
+---
+
+
+

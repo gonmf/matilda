@@ -1,0 +1,6 @@
+This directory contains the files used for parameter optimization using CLOP --
+Confident Local Optimization for Noisy Black-Box parameter tuning, available:
+http://www.remi-coulom.fr/CLOP/
+
+If you want to contribute computation time to Matilda, this is a great way to do
+so.

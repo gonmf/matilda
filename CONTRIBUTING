@@ -1,0 +1,48 @@
+We encourage everyone to contribute. If you submit an issue anonymously please
+leave your contact information so I can get back at you.
+
+1. Bug reports
+
+To submit a bug report please identify clearly what happened and what was
+expected; the configuration used at the time and some system attributes. The
+configuration options can be obtained from running matilda -info. The system
+attributes should include the kernel version, compiler version, and versions of
+other software used to communicate with Matilda. If the bug is reproducible also
+attempt to provide a script or SGF file that can reproduce it, plus running
+Matilda with logging enabled (-log flag) and submitting the log file generated.
+
+2. Suggestions, questions, ideas, commentary
+
+Just fire away. Include the details you think are pertinent. If you reference a
+scientific paper that is not available online for free I'd appreciate an excerpt
+or summary of its contents.
+
+3. Pull requests
+
+If you want to help but don't know where to start, start by reading the
+documentation. Problems of varying complexity are present in the issue tracker.
+Sometimes smaller things are also marked TODO in the source code; they can be
+found by running ./fn.sh TODO
+
+To submit a pull request first read the src/README file on some code guidelines.
+Before committing to a certain problem you may also want to get in touch to make
+sure that is a worthwhile endeavor. If you decide to go ahead with the pull
+request be reminded it is assumed to follow the licensing model (permissive free
+software) of the rest of matilda. If you require a different licensing model, or
+want to submit something that is not yours, please state so clearly in the pull
+request and in the specific files; and be prepared to defend your request.
+
+Please test all pull requests locally before submitting them, this includes
+testing a few different board sizes, with some options on and off, and so on (to
+the extent that you think is reasonable). Please also clearly introduce the
+problem you identify in your pull request, your approach to it, and what you are
+committing. This is very important since you might make mistakes and it goes a
+long way to understand what you tested better and what part of your work was
+less worked on. If your work aimed at increasing the strength of the program,
+please tell me the results and settings of whatever benchmarking you did.
+
+If you need any help before submitting a pull request, or have a great idea but
+don't have the time or experience on the project to implement it, just open an
+issue.
+
+Have fun and I hope you enjoy contributing to matilda.

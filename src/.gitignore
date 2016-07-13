@@ -1,0 +1,12 @@
+*.o
+matilda
+matilda-old
+test
+generate_ob
+learn_best_plays
+learn_pat_weights
+gen_zobrist_table
+callgrind.out.*
+matilda-*.log
+tuning.log
+*.sgf

@@ -1,0 +1,37 @@
+This directory is used for every file read/write operation of Matilda.
+Due to security concerns (like remotely reading SGF files) it is not possible to
+specify reading or writing outside it.
+
+This is the place to put all pre-compiled files, like pattern databases and
+opening books. SGF files for pattern collection should also be located somewhere
+in this directory.
+
+The files recognized by Matilda are:
+- *.sgf - SGF file. To read a SGF file it has to have this extension.
+    SGF files that do not specify the board size will have it guessed
+    automatically, which can fail, causing the file to not be loaded.
+
+- *.ob - Opening book in text/Fuego-style format. Matilda will read any that it
+    finds. Repeated rules are ignored.
+
+- *.sp - State->play book in text format. These contain the entire board
+    contents and not just a sequence of alternated play like an .ob file.
+    Matilda will read any that it finds. Repeated rules, format errors, etc are
+    ignored.
+
+- *.joseki - Joseki dictionary in text format. Matilda will read any that it
+    finds. Repeated patterns are ignored.
+
+- *.pat3 - Text file with 3x3 patterns centered on a promising play.
+
+- NxN.weights - Text file with pattern weights. These two do not have to agree
+    on the patterns contained.
+
+- NxN.zt - Binary file with pre-generated Zobrist 64-bit tables.
+
+- *.log - Text file used for event logging. Created by default in the working
+    directory.
+
+- .pts - Text file with lists of points used for handicap, hoshi and other
+    stone placement. Similar in format to .ob files.
+

@@ -1,0 +1,10 @@
+# Lists of hoshi points for even sided boards.
+
+5 C3
+7 D4
+9 E5 C3 G3 C7 G7
+11 F6
+13 D4 K10 K4 D10 G7
+15 D4 M12 M4 D12 H8
+17 D4 O14 O4 D14 J9
+19 D4 Q16 Q4 D16 K4 K16 D10 Q10 K10

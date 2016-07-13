@@ -1,0 +1,57 @@
+Name matclop
+Script ./goguiscript.py
+
+# Parameter(s) to be optimized
+# <parameter_type> <name> <min> <max>
+# <parameter_type> may be:
+#  LinearParameter
+#  IntegerParameter
+#  GammaParameter
+#  IntegerGammaParameter
+# For GammaParameter, quadratic regression is performed on log(x)
+# Warning: 123 and not 123.0 should be used for IntegerParameter
+
+LinearParameter prior_stone_scale_factor 1.1 1.6
+IntegerParameter prior_even 2 90
+IntegerParameter prior_nakade 10 100
+IntegerParameter prior_self_atari 1 90
+IntegerParameter prior_attack 1 90
+IntegerParameter prior_defend 1 90
+IntegerParameter prior_pat3 1 90
+IntegerParameter prior_near_last 1 90
+IntegerParameter prior_line1 1 90
+IntegerParameter prior_line2 1 90
+IntegerParameter prior_line3 1 90
+IntegerParameter prior_empty 1 90
+IntegerParameter prior_line1x 0 10
+IntegerParameter prior_line2x 0 10
+IntegerParameter prior_line3x 0 10
+IntegerParameter prior_corner 1 90
+
+#LinearParameter ucb1_c 0.5 2.5
+#LinearParameter rave_mse_b 0.2 2.0
+
+# Probabilities of skipping playout checks are 1:128 instead of percentage
+# (1:100)
+#IntegerParameter pl_skip_saving 0 128
+#IntegerParameter pl_skip_nakade 0 128
+#IntegerParameter pl_skip_pattern 0 128
+#IntegerParameter pl_skip_capture 0 128
+
+#IntegerParameter dummy 0 100
+
+
+
+# This could be the list of machine names in a distributed experiment.
+# In order to run 4 games in parallel, 2 on machine1, 2 on machine2:
+Processor main
+
+# Call the script "Replications" times in a row with identical parameter values
+# Replications may be used to alternate colors, for instance.
+# Seed % Replications would indicate color.
+Replications 1
+
+
+DrawElo 0
+H 3
+Correlations all

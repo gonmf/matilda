@@ -1,0 +1,12 @@
+# Lists of points that should always be allowed to be searched when using MCTS.
+# These are not openings and only come into play for points more distant than 3
+# from any stone.
+
+5 C3
+7 D4
+9 E5 G6 F7 D7 C6 C4 D3 F3 G4
+11 F6 D8 D4 H4 H8
+13 D4 K10 K4 D10 G7
+15 D4 M12 M4 D12 H8
+17 D4 O14 O4 D14 J9
+19 D4 D3 Q16 Q17 Q4 R4 D16 C16 K4 K16 D10 Q10

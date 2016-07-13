@@ -1,0 +1,143 @@
+Organization
+
+The code is organized in a shared codebase that consists of this folder plus
+mcts/, with header files in inc/. A number of entry points complement this for
+their respective purposes. All file I/O is made from the data/ directory by
+default. All public functions have a short header description too.
+
+The project consists of several executable files:
+
+matilda - the main program, used for playing and analyzing Go. If you are
+unsure, use this program.
+
+test - use for running unitary tests; often with a debug compilation or
+profiling activated.
+
+generate_ob - used for creating Fuego-style opening books from collections of
+game records in SGF format.
+
+learn_best_plays - used to evaluate and save the best play to a number of
+positions extracted from collections of game records. These can be used to as a
+replacement to opening books, or for brute forcing.
+
+learn_pat_weights - used to learn the weights to be associated with 3x3
+patterns.
+
+gen_zobrist_table - used to generate a vector of values suitable to be used as a
+codification table for Zobrist hashing.
+
+
+
+Configuration
+
+Most things can be either set via command line flags, GTP commands or C
+preprocessor definitions. The most common symbols that are defined in
+preprocessor definitions are found in the file inc/matilda.h
+
+The file inc/matilda.h is special. It must not include anything and should be
+included prior to everything else for the potential to enable or disable
+assertions and other debugging checks.
+
+
+
+Project conventions/guidelines
+
+1.  All code must be strict C99 code, with a preference for ANSI C
+    compatibility. No, compiler pragmas are not standard no matter how popular
+    they are. Matilda is intended to be easy to maintain and valid forever, not
+    depend on the compiler.
+2.  All code must compile both in GCC and clang.
+3.  There can be as many lines in between the code as necessary for clarity.
+4.  The scope of everything should be as limited as possible (types, functions);
+    each piece of code should import and be dependent on the rest as little as
+    possible.
+5.  There shouldn't be a "God import", where a single file imports all header
+    files.
+6.  The structure of a C file is (in order): short description of its function,
+    matilda.h include, C library includes, 3rd party includes, local includes,
+    public symbol declaration, extern symbol declaration, static symbol
+    declaration and finally function declarations. Static symbol declarations
+    may also be kept close to functions that will use them for clarity.
+7.  The size of a function should not be cut short just for brevity. It is
+    clearer to read a long function than ten small ones spread around. Having
+    said that, functions that are not performance critical should attempt to be
+    small and delegate responsabilities.
+8.  Avoid recursion except if it makes the code very obfuscated.
+9.  Prefer statically allocated resources in initialization time; instead of
+    using mallocs. Do not allow a single memory leak -- no byte left behind.
+10. All public functions must have their declaration complemented with a
+    commentary that exlains its purpose, parameters and returned values.
+11. Anything out of the ordinary should be asserted/tested in either runtime or
+    through unitary testing.
+12. All code should be as small and functional as possible.
+13. All code should be maintained; if one software piece is no longer useful it
+    should be removed. This may mean moving it to the old/ folder if it may be
+    useful for future reference.
+14. Symbol naming convention: all symbols should be named lower case with
+    underscore separators. Symbols that aren't meant to be used should start
+    with two underscores and end in one. Symbols that are static and variations
+    of other (public) symbols, should start with one underscore.
+15. Preprocessor: names should be upper case. Private names must start with two
+    underscores and end in one. Preprocessor instructions are never indented.
+16. Avoid asserts unless for critical, unfathomable, exceptions. Not finding a
+    file in the file system or running out of memory are not unfathomable.
+    Expected problems should be tested and dealt with programmatically. Also do
+    not use asserts specifically for the functions 'close' and 'fclose'.
+17. Pointer dereferencing and primitive operations can receive unnecessary
+    parenthesis if it makes their meaning clearer.
+18. If the program may fail on user error, it should fail with a bang. This
+    means logging the situation and closing. Silent failing only makes it harder
+    to debug.
+19. Use const and restrict keywords where appropriate. Things should be very
+    strongly static typed and array passed as parameters should not be
+    referenced.
+20. Don't use volatile keyword, enumerables or unions if avoidable.
+20. Coding style is Allman/BSD with 4-space indentation, lines not exceeding the
+    80 characters, and pointers typed appart from symbols. Function declarations
+    should have parameter lists NT kernel style, except if they have no
+    parameters. No spaces around brackets. Example:
+
+#define IMPORTANT_STUFF 1
+#define IMPORTANT_STUFF_ALIGNED  3
+#define IMPORTANT_STUFF_ALIGNED2 4
+#define __DONT_LOOK_ 2
+
+static void long_method_definition(
+    int v2,
+    char var1,
+    char var2,
+    char * pt1,
+    char * pt2,
+    char * argv1[10] /* the last comma is optional */
+);
+
+static void _main()
+{
+    /* example of function without parameters */
+}
+
+int main(
+    int argc,
+    char * argv[]
+){
+    /* I am an ANSI comment */
+    char * s = do_something(argc > 1 ? argv[0] : NULL);
+    if(s == NULL)
+        return -1;
+
+    if(strcmp(s, "test") == 0)
+    {
+        printf("goodbye world\n");
+#if IMPORTANT_STUFF
+        printf("cruel world\n");
+#endif
+        return 1;
+    }
+    else
+        if(1)
+        {
+            printf("hello world\n");
+            _main();
+            return 2;
+        }
+}
