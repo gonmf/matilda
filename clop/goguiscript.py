@@ -43,7 +43,7 @@ os.chdir(path)
 #
 
 # program to be optimized
-optimized_program = "/home/user/go/matilda/src/matilda -gtp -disable_score_estimation -data /home/user/go/matilda/src/data/"
+optimized_program = "/home/user/go/matilda/src/matilda -gtp -disable_score_estimation -data /home/user/go/matilda/github/src/data/"
 
 # (fixed) opponent program
 opponent_program = 'gnugo --mode gtp --chinese-rules --positional-superko --level 0'
