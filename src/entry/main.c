@@ -149,9 +149,6 @@ int main(
     int argc,
     char * argv[]
 ){
-    printf("\n%s\n\n", BOARD_SIZ_AS_STR);
-    return 0;
-
     timestamp();
     bool use_gtp = false;
     bool color_set = false;

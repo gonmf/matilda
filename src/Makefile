@@ -19,10 +19,8 @@ PROGRAMS = \
 	gen_opening_book \
 	learn_best_plays \
 	learn_pat_weights \
-	gen_zobrist_table
-
-#	 \
-#	gen_joseji_book
+	gen_zobrist_table \
+	gen_joseji_book
 
 .PHONY: $(PROGRAMS) clean
 
