@@ -20,7 +20,7 @@ PROGRAMS = \
 	learn_best_plays \
 	learn_pat_weights \
 	gen_zobrist_table \
-	gen_joseji_book
+	gen_joseki_book
 
 .PHONY: $(PROGRAMS) clean
 
@@ -44,7 +44,7 @@ learn_pat_weights: $(OBJFILES) pat_weights/*.c
 gen_zobrist_table: $(OBJFILES) zobrist/*.c
 	@$(CC) $^ $(CFLAGS) -o $@
 
-gen_joseji_book: $(OBJFILES) joseki/*.c
+gen_joseki_book: $(OBJFILES) joseki/*.c
 	@$(CC) $^ $(CFLAGS) -o $@
 
 %.o: %.c

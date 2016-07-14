@@ -70,9 +70,11 @@ typedef struct __cfg_board_ {
 
 
 /*
-Initiate the information necessary for CFG board use.
+Initialize the CFG board support. Must be called before most other functions.
 */
 void cfg_board_init();
+
+
 
 /*
 Tests if the two structures have the same board contents.
@@ -81,6 +83,13 @@ RETURNS true if the structures are equal in board contents
 bool cfg_board_are_equal(
     cfg_board * restrict a,
     const board * restrict b
+);
+
+/*
+Initiliazes the data pointed to cb, to hold a valid (but empty) board.
+*/
+void cfg_init_board(
+    cfg_board * cb
 );
 
 /*

@@ -2,7 +2,8 @@
 matilda
 matilda-old
 test
-generate_ob
+gen_opening_book
+gen_joseki_book
 learn_best_plays
 learn_pat_weights
 gen_zobrist_table

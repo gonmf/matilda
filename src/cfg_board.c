@@ -69,7 +69,7 @@ static u8 count_bits(u8 v)
 }
 
 /*
-Initiate the information necessary for CFG board use.
+Initialize the CFG board support. Must be called before most other functions.
 */
 void cfg_board_init()
 {
@@ -535,6 +535,35 @@ bool cfg_board_are_equal(
 ){
     return memcmp(a->p, b->p, BOARD_SIZ * BOARD_SIZ) == 0 && a->last_played ==
     b->last_played && a->last_eaten == b->last_eaten;
+}
+
+/*
+Initiliazes the data pointed to cb, to hold a valid (but empty) board.
+*/
+void cfg_init_board(
+    cfg_board * cb
+){
+    assert(cfg_inited);
+
+    memset(cb->p, EMPTY, BOARD_SIZ * BOARD_SIZ);
+    cb->last_played = cb->last_eaten = NONE;
+
+    memcpy(cb->hash, initial_3x3_hash, BOARD_SIZ * BOARD_SIZ * sizeof(u16));
+    memset(cb->black_neighbors4, 0, BOARD_SIZ * BOARD_SIZ);
+    memset(cb->white_neighbors4, 0, BOARD_SIZ * BOARD_SIZ);
+    memset(cb->black_neighbors8, 0, BOARD_SIZ * BOARD_SIZ);
+    memset(cb->white_neighbors8, 0, BOARD_SIZ * BOARD_SIZ);
+    memset(cb->g, 0, BOARD_SIZ * BOARD_SIZ * sizeof(group *));
+    cb->empty.count = 0;
+    cb->unique_groups_count = 0;
+
+    for(move m = 0; m < BOARD_SIZ * BOARD_SIZ; ++m)
+    {
+        cb->empty.coord[cb->empty.count] = m;
+        cb->empty.count++;
+    }
+
+    assert(verify_cfg_board(cb));
 }
 
 /*
