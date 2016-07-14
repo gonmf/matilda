@@ -152,7 +152,7 @@ It is reset when the major mark is increased.
 
 
 /*
-Stringification of board size.
+Preprocessor stringification of board size.
 */
 #define BOARD_SIZ_AS_STR _BOARD_SIZ_AS_STR(BOARD_SIZ)
 #define _BOARD_SIZ_AS_STR(a) __BOARD_SIZ_AS_STR(a)
