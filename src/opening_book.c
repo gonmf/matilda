@@ -30,7 +30,6 @@ Strategy that makes use of an opening book.
 static ob_entry ** ob_trans_table;
 static bool attempted_discover_ob = false;
 static u32 ob_rules = 0;
-static char board_siz_in_string[4];
 
 static move ob_get_play(
     u32 hash,
@@ -186,7 +185,6 @@ void discover_opening_books()
         return;
 
     attempted_discover_ob = true;
-    snprintf(board_siz_in_string, 4, "%u", BOARD_SIZ);
 
     /*
     Allocate O.B. hash table

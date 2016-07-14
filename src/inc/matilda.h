@@ -16,7 +16,6 @@ EXPECTED: 5, 7, 9, 11, 13, 15, 17, 19 or 21
 */
 #define BOARD_SIZ 19
 
-
 /*
 Default komidashi used, multiplied by 2 to give an integer number.
 The komi is not reset between matches if changed via GTP.
@@ -149,6 +148,15 @@ It is reset when the major mark is increased.
 #define VERSION_MINOR 11
 
 
+
+
+
+/*
+Stringification of board size.
+*/
+#define BOARD_SIZ_AS_STR _BOARD_SIZ_AS_STR(BOARD_SIZ)
+#define _BOARD_SIZ_AS_STR(a) __BOARD_SIZ_AS_STR(a)
+#define __BOARD_SIZ_AS_STR(a) #a
 
 
 /*

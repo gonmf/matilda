@@ -30,7 +30,6 @@ Support for interpreting joseki dictionaries and suggesting joseki plays.
 static joseki ** joseki_table;
 static bool attempted_discover_joseki = false;
 static u32 josekis = 0;
-static char board_siz_in_string[4];
 
 #if 0
 static move ob_get_play(
@@ -187,7 +186,6 @@ void discover_opening_books()
         return;
 
     attempted_discover_ob = true;
-    snprintf(board_siz_in_string, 4, "%u", BOARD_SIZ);
 
     /*
     Allocate O.B. hash table

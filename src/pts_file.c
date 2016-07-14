@@ -31,7 +31,6 @@ static move_seq starting;
 /*
 State for interpreting rule files one by one.
 */
-static char board_siz_in_string[4];
 static char * buffer = NULL;
 static char * save_ptr;
 static bool search_started = false;
@@ -49,8 +48,6 @@ void open_rule_file(
         flog_crit("error: pts_file: file open\n");
         exit(EXIT_FAILURE);
     }
-
-    snprintf(board_siz_in_string, 4, "%u", BOARD_SIZ);
 
     char * fn = get_buffer();
     if(starts_with(filename, get_data_folder()))
@@ -112,11 +109,11 @@ char * read_next_rule(){
 
     char * save_ptr2 = NULL;
     char * word = strtok_r(line, " ", &save_ptr2);
-    if(strcmp(word, board_siz_in_string) != 0)
+    if(strcmp(word, BOARD_SIZ_AS_STR) != 0)
         return read_next_rule();
 
     char * ret = get_buffer();
-    strncpy(ret, line + strlen(board_siz_in_string) + 1, MAX_PAGE_SIZ);
+    strncpy(ret, line + strlen(BOARD_SIZ_AS_STR) + 1, MAX_PAGE_SIZ);
     return ret;
 }
 
