@@ -413,6 +413,8 @@ static void gtp_boardsize(
         error_msg(fp, id, "unacceptable size");
         fprintf(stderr, "changing the board size requires the program to be \
 recompiled.\n");
+        flog_warn("changing the board size requires the program to be \
+recompiled.\n");
     }
     else
         answer_msg(fp, id, NULL);
@@ -1031,7 +1033,13 @@ static void gtp_final_status_list(
         else
         {
             if(strcmp(status, "seki") == 0)
+            {
                 error_msg(fp, id, "seki detection unsupported");
+                fprintf(stderr, "warning: final_status_list with seki \
+parameter unsupported\n");
+                flog_warn("warning: final_status_list with seki parameter \
+unsupported\n");
+            }
             else
                 error_msg(fp, id, "syntax error");
         }
