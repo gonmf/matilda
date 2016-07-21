@@ -1534,14 +1534,19 @@ instead.\n");
 
         char * save_ptr;
         char * id = strtok_r(line, " |", &save_ptr);
+        d32 idn;
         char * cmd;
-        if(id[0] < '0' || id[0] > '9') /* no id provided */
+        if(parse_int(id, &idn))
+        {
+            cmd = strtok_r(NULL, " |", &save_ptr);
+        }
+        else
         {
             cmd = id;
             id = NULL;
+            idn = -1;
         }
-        else
-            cmd = strtok_r(NULL, " |", &save_ptr);
+
         if(cmd == NULL)
             continue;
 
@@ -1559,8 +1564,6 @@ instead.\n");
             }
             ++argc;
         }
-
-        s32 idn = id == NULL ? -1 : atoi(id);
 
 cmd_matcher:
 

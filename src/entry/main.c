@@ -106,13 +106,21 @@ static void set_parameter(
         if(type[0] == 'i')
         {
             u16 * svar = ((u16 * )tunable[i + 2]);
-            *svar = atoi(value);
+            if(!parse_int(value, svar))
+            {
+                fprintf(stderr, "format error: %s\n", value);
+                exit(EXIT_FAILURE);
+            }
             return;
         }
         if(type[0] == 'f')
         {
             double * svar = ((double * )tunable[i + 2]);
-            *svar = atof(value);
+            if(!parse_float(value, svar))
+            {
+                fprintf(stderr, "format error: %s\n", value);
+                exit(EXIT_FAILURE);
+            }
             return;
         }
 
@@ -214,8 +222,9 @@ int main(
         }
         if(strcmp(argv[i], "-log") == 0 && i < argc - 1)
         {
-            int lvl = atoi(argv[i + 1]);
-            if(lvl < LOG_NONE || lvl > LOG_INFORM)
+            s32 lvl;
+            if(!parse_int(argv[i + 1], &lvl) || lvl < LOG_NONE || lvl >
+                LOG_INFORM)
             {
                 fprintf(stderr, "error: illegal logging level\n");
                 exit(EXIT_FAILURE);
@@ -232,8 +241,9 @@ int main(
 a constant number of playouts per turn; -time flag is illegal\n");
                 exit(EXIT_FAILURE);
             }
-            int ftime = atoi(argv[i + 1]);
-            if(ftime <= 0 || ftime >= 2147484)
+            int ftime;
+            if(!parse_int(argv[i + 1], &ftime) || ftime <= 0 || ftime >=
+                2147484)
             {
                 fprintf(stderr, "error: illegal time format\n");
                 exit(EXIT_FAILURE);
@@ -373,7 +383,8 @@ turn (GTP mode only).\n");
         fprintf(stderr,
             "-threads <number> - Override the number of threads to use.\n");
         fprintf(stderr,
-            "-time <seconds> - Use a fixed number of seconds per turn.\n");
+            "-time <value> - Override the time system in use and ignore \
+changes\n    via GTP. Use the combined byoyomi format, example: 10m+3*30s/10\n");
         fprintf(stderr, "-version - Print version information and exit.\n");
         fprintf(stderr, "\n");
         fprintf(stderr, "Logging levels:\n");

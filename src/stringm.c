@@ -180,8 +180,28 @@ bool parse_float(
     const char * s,
     double * d
 ){
-    if(s[0] != '.' && s[0] != '-' && (s[0] < '0' || s[0] > '9'))
+    bool dot_found = false;
+    if(s[0] == '.')
+    {
+        if(dot_found)
+            return false;
+        dot_found = true;
+    }
+    if(s[0] != '-' && (s[0] < '0' || s[0] > '9'))
         return false;
+
+    for(u32 j = 0; s[j]; ++j)
+    {
+        if(s[j] == '.')
+        {
+            if(dot_found)
+                return false;
+            dot_found = true;
+        }
+        if(s[j] < '0' || s[j] > '9')
+            return false;
+    }
+
     *d = atof(s);
     return true;
 }

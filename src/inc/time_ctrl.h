@@ -115,4 +115,13 @@ const char * time_system_to_str(
     time_system * ts
 );
 
+/*
+Convert a string in the format time+numberxtime/number to a time system struct.
+RETURNS true if successful and value stored in dst
+*/
+bool str_to_time_system(
+    const char * src,
+    time_system * dst
+);
+
 #endif

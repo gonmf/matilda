@@ -356,8 +356,8 @@ bool import_game_from_sgf(
     /*
     Board size
     */
-    char * board_size = str_between(buffer, "SZ[", "]");
-    if(board_size == NULL)
+    char * board_size_str = str_between(buffer, "SZ[", "]");
+    if(board_size_str == NULL)
     {
         u8 board_size = guess_board_size(buffer);
         if(board_size == 0 && !unknown_board_size_cant_guess_warning_given)
@@ -375,7 +375,7 @@ guessed from play coordinates\n");
         }
     }
     else
-        if(atoi(board_size) != BOARD_SIZ)
+        if(!strcmp(board_size_str, BOARD_SIZ_AS_STR))
         {
             fprintf(stderr, "warning: illegal board size format\n");
             return false;
@@ -423,7 +423,8 @@ guessed from play coordinates\n");
                     else
                     {
                         gr->resignation = false;
-                        gr->final_score = atoi(result) * 2;
+                        parse_int(result, &gr->final_score);
+                        gr->final_score *= 2;
                         if(gr->final_score == 0)
                         {
                             fprintf(stderr, "warning: illegal final score\n");
@@ -448,7 +449,8 @@ guessed from play coordinates\n");
                     else
                     {
                         gr->resignation = false;
-                        gr->final_score = atoi(result) * -2;
+                        parse_int(result, &gr->final_score);
+                        gr->final_score *= -2;
                         if(gr->final_score == 0)
                         {
                             fprintf(stderr, "warning: illegal final score\n");

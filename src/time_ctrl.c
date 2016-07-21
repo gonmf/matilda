@@ -12,6 +12,7 @@ say anything. All times are in milliseconds.
 #include "types.h"
 #include "time_ctrl.h"
 #include "buffer.h"
+#include "stringm.h"
 
 u32 network_roundtrip_delay = LATENCY_COMPENSATION;
 bool network_round_trip_set = false;
@@ -264,3 +265,112 @@ const char * time_system_to_str(
     return buf;
 }
 
+/*
+Convert a string in the format time+numberxtime/number to a time system struct.
+RETURNS true if successful and value stored in dst
+*/
+bool str_to_time_system(
+    const char * src,
+    time_system * dst
+){
+    if(src == NULL)
+        return false;
+
+    u32 len = strlen(src);
+    if(len < 9)
+        return false;
+
+    char * s = (char *)malloc(len + 1);
+    if(s == NULL)
+        return false;
+    char * original_ptr = s;
+
+    memcpy(s, src, len + 1);
+    s = trim(s);
+    len = strlen(s);
+    if(len < 9)
+    {
+        free(original_ptr)
+        return false;
+    }
+
+    /*
+    time + ...
+    */
+    char * char_idx = index(s, '+');
+    if(char_idx == NULL)
+    {
+        free(original_ptr)
+        return false;
+    }
+    char_idx[0] = 0;
+    char * rest = char_idx + 1;
+
+    s32 t = str_to_milliseconds(s);
+    if(t < 0)
+    {
+        free(original_ptr)
+        return false;
+    }
+    u32 absolute_milliseconds = t;
+    s = rest;
+
+    /*
+    ... + number x ...
+    */
+    char_idx = index(s, 'x');
+    if(char_idx == NULL)
+    {
+        free(original_ptr)
+        return false;
+    }
+    char_idx[0] = 0;
+    rest = char_idx + 1;
+
+    if(!parse_int(s, &t) || t < 0)
+    {
+        free(original_ptr)
+        return false;
+    }
+    u32 byoyomi_periods = t;
+    s = rest;
+
+    /*
+    ... x time / ...
+    */
+    char_idx = index(s, '/');
+    if(char_idx == NULL)
+    {
+        free(original_ptr)
+        return false;
+    }
+    char_idx[0] = 0;
+    rest = char_idx + 1;
+
+    t = str_to_milliseconds(s);
+    if(t < 0)
+    {
+        free(original_ptr)
+        return false;
+    }
+    u32 byoyomi_milliseconds = t;
+    s = rest;
+
+    /*
+    ... / number
+    */
+    if(!parse_int(s, &t) || t < 1)
+    {
+        free(original_ptr)
+        return false;
+    }
+    u32 byoyomi_stones = t;
+
+    dst->main_time = absolute_milliseconds;
+    dst->byo_yomi_stones = byoyomi_stones;
+    dst->byo_yomi_time = byoyomi_milliseconds;
+    dst->byo_yomi_periods = byoyomi_periods;
+
+    free(original_ptr)
+    return true;
+}
