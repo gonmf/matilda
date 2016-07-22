@@ -60,12 +60,13 @@ bool set_data_folder(
     const char * s
 ){
     u32 l = strlen(s);
-    if(l < 2 || l >= MAX_PATH_SIZ)
-        return false;
-    if(s[l - 1] != '/')
+    if(l < 2 || l >= MAX_PATH_SIZ - 1)
         return false;
 
-    snprintf(_data_folder, MAX_PATH_SIZ, "%s", s);
+    if(s[l - 1] == '/')
+        snprintf(_data_folder, MAX_PATH_SIZ, "%s", s);
+    else
+        snprintf(_data_folder, MAX_PATH_SIZ, "%s/", s);
     return true;
 }
 

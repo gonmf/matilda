@@ -8,10 +8,13 @@ say anything. All times are in milliseconds.
 #include "matilda.h"
 
 #include <math.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include "types.h"
 #include "time_ctrl.h"
 #include "buffer.h"
+#include "stringm.h"
 
 u32 network_roundtrip_delay = LATENCY_COMPENSATION;
 bool network_round_trip_set = false;
@@ -264,3 +267,164 @@ const char * time_system_to_str(
     return buf;
 }
 
+static s32 str_to_milliseconds(const char * s){
+    char * char_idx = strchr(s, 'm');
+    s32 mul = 0; /* multiplier */
+    if(char_idx != NULL)
+    {
+        if(char_idx[1] == 's') /* milliseconds */
+        {
+            mul = 1;
+        }
+        else /* minutes */
+        {
+            mul = 1000 * 60;
+        }
+    }
+    else
+    {
+        char_idx = strchr(s, 's');
+        if(char_idx != NULL)
+        {
+            mul = 1000;
+        }
+        else
+        {
+            char_idx = strchr(s, 'h');
+            if(char_idx != NULL)
+            {
+                mul = 1000 * 60 * 60;
+            }
+        }
+    }
+
+    if(mul == 0)
+    {
+        if(strcmp(s, "0") == 0)
+            return 0;
+        return -1; /* error */
+    }
+
+    s32 ret = 0;
+    for(u8 i = 0; s[i]; ++i)
+    {
+        if(s[i] < '0' || s[i] > '9')
+            break;
+        ret = ret * 10 + (s[i] - '0');
+    }
+
+    if(ret <= 0)
+        return -1;
+
+    return ret * mul;
+}
+
+/*
+Convert a string in the format time+numberxtime/number to a time system struct.
+RETURNS true if successful and value stored in dst
+*/
+bool str_to_time_system(
+    const char * src,
+    time_system * dst
+){
+    if(src == NULL)
+        return false;
+
+    u32 len = strlen(src);
+    if(len < 9)
+        return false;
+
+    char * s = (char *)malloc(len + 1);
+    if(s == NULL)
+        return false;
+    char * original_ptr = s;
+
+    memcpy(s, src, len + 1);
+    s = trim(s);
+    len = strlen(s);
+    if(len < 9)
+    {
+        free(original_ptr);
+        return false;
+    }
+
+    /*
+    time + ...
+    */
+    char * char_idx = strchr(s, '+');
+    if(char_idx == NULL)
+    {
+        free(original_ptr);
+        return false;
+    }
+    char_idx[0] = 0;
+    char * rest = char_idx + 1;
+
+    s32 t = str_to_milliseconds(s);
+    if(t < 0)
+    {
+        free(original_ptr);
+        return false;
+    }
+    u32 absolute_milliseconds = t;
+    s = rest;
+
+    /*
+    ... + number x ...
+    */
+    char_idx = strchr(s, 'x');
+    if(char_idx == NULL)
+    {
+        free(original_ptr);
+        return false;
+    }
+    char_idx[0] = 0;
+    rest = char_idx + 1;
+
+    if(!parse_int(s, &t) || t < 0)
+    {
+        free(original_ptr);
+        return false;
+    }
+    u32 byoyomi_periods = t;
+    s = rest;
+
+    /*
+    ... x time / ...
+    */
+    char_idx = strchr(s, '/');
+    if(char_idx == NULL)
+    {
+        free(original_ptr);
+        return false;
+    }
+    char_idx[0] = 0;
+    rest = char_idx + 1;
+
+    t = str_to_milliseconds(s);
+    if(t < 0)
+    {
+        free(original_ptr);
+        return false;
+    }
+    u32 byoyomi_milliseconds = t;
+    s = rest;
+
+    /*
+    ... / number
+    */
+    if(!parse_int(s, &t) || t < 1)
+    {
+        free(original_ptr);
+        return false;
+    }
+    u32 byoyomi_stones = t;
+
+    dst->main_time = absolute_milliseconds;
+    dst->byo_yomi_stones = byoyomi_stones;
+    dst->byo_yomi_time = byoyomi_milliseconds;
+    dst->byo_yomi_periods = byoyomi_periods;
+
+    free(original_ptr);
+    return true;
+}

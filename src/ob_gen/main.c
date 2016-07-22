@@ -46,8 +46,8 @@ int main(
         }
         if(i < argc - 1 && strcmp(argv[i], "-max_depth") == 0)
         {
-            s32 a = atoi(argv[i + 1]);
-            if(a < 1)
+            s32 a;
+            if(!parse_int(argv[i + 1], &a) || a < 1)
                 goto usage;
             ++i;
             ob_depth = a;
@@ -55,8 +55,8 @@ int main(
         }
         if(i < argc - 1 && strcmp(argv[i], "-min_game_turns") == 0)
         {
-            s32 a = atoi(argv[i + 1]);
-            if(a < 1)
+            s32 a;
+            if(!parse_int(argv[i + 1], &a) || a < 1)
                 goto usage;
             ++i;
             minimum_turns = a;
@@ -64,8 +64,8 @@ int main(
         }
         if(i < argc - 1 && strcmp(argv[i], "-min_samples") == 0)
         {
-            s32 a = atoi(argv[i + 1]);
-            if(a < 1)
+            s32 a;
+            if(!parse_int(argv[i + 1], &a) || a < 1)
                 goto usage;
             ++i;
             minimum_samples = a;

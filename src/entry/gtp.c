@@ -107,6 +107,7 @@ const char * supported_commands[] =
 };
 
 extern bool estimate_score;
+extern bool time_system_overriden;
 extern bool save_all_games_to_file;
 extern bool resign_on_timeout;
 extern game_record current_game;
@@ -718,6 +719,12 @@ ignored\n");
         return;
     }
 
+    if(time_system_overriden)
+    {
+        answer_msg(fp, id, NULL);
+        return;
+    }
+
     const char * previous_ts_as_s = time_system_to_str(&current_clock_black);
 
     s32 new_main_time;
@@ -792,6 +799,12 @@ ignored\n");
         flog_warn("warning: attempted to set time settings when matilda was \
 compiled to use a constant number of simulations per turn in MCTS; request \
 ignored\n");
+        answer_msg(fp, id, NULL);
+        return;
+    }
+
+    if(time_system_overriden)
+    {
         answer_msg(fp, id, NULL);
         return;
     }
@@ -927,6 +940,12 @@ ignored\n");
         flog_warn("warning: attempted to set time settings when matilda was \
 compiled to use a constant number of simulations per turn in MCTS; request \
 ignored\n");
+        answer_msg(fp, id, NULL);
+        return;
+    }
+
+    if(time_system_overriden)
+    {
         answer_msg(fp, id, NULL);
         return;
     }
@@ -1534,14 +1553,17 @@ instead.\n");
 
         char * save_ptr;
         char * id = strtok_r(line, " |", &save_ptr);
+        s32 idn;
         char * cmd;
-        if(id[0] < '0' || id[0] > '9') /* no id provided */
+        if(parse_int(id, &idn))
+            cmd = strtok_r(NULL, " |", &save_ptr);
+        else
         {
             cmd = id;
             id = NULL;
+            idn = -1;
         }
-        else
-            cmd = strtok_r(NULL, " |", &save_ptr);
+
         if(cmd == NULL)
             continue;
 
@@ -1559,8 +1581,6 @@ instead.\n");
             }
             ++argc;
         }
-
-        s32 idn = id == NULL ? -1 : atoi(id);
 
 cmd_matcher:
 
@@ -1836,6 +1856,5 @@ you mean '%s'?\n", buf, best_dst_str);
 
             error_msg(out_fp, idn, "unknown command");
         }
-
     }
 }

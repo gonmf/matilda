@@ -14,7 +14,7 @@ Board/goban size given by the length of one side.
 
 EXPECTED: 5, 7, 9, 11, 13, 15, 17, 19 or 21
 */
-#define BOARD_SIZ 19
+#define BOARD_SIZ 9
 
 /*
 Default komidashi used, multiplied by 2 to give an integer number.
@@ -89,7 +89,7 @@ MCTS early stopping is also deactivated, even if memory runs out.
 EXPECTED: 0 or 1
 EXPECTED: 100 to 1000000000
 */
-#define LIMIT_BY_PLAYOUTS 1
+#define LIMIT_BY_PLAYOUTS 0
 #define PLAYOUTS_PER_TURN 10000
 
 
@@ -145,7 +145,7 @@ as they are understood. The minor mark can be changed in any non-decreasing way.
 It is reset when the major mark is increased.
 */
 #define VERSION_MAJOR 1
-#define VERSION_MINOR 11
+#define VERSION_MINOR 12
 
 
 
