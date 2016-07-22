@@ -10,6 +10,7 @@ Also deals with updating some internal parameters at startup time.
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include <omp.h>
 
 #include "board.h"
@@ -29,9 +30,11 @@ game_record current_game;
 time_system current_clock_black;
 time_system current_clock_white;
 
-bool estimate_score = true;
-bool save_all_games_to_file = false;
-bool resign_on_timeout = false;
+bool estimate_score = true; /* perform slow score estimating */
+bool time_system_overriden = false; /* ignore attempts to change time system */
+bool save_all_games_to_file = false; /* save all games as SGF on gameover */
+bool resign_on_timeout = false; /* resign instead of passing if timed out */
+
 extern u64 max_size_in_mbs;
 extern float frisbee_prob;
 
@@ -162,7 +165,7 @@ int main(
     char * argv[]
 ){
     timestamp();
-    bool use_gtp = false;
+    bool use_gtp = (isatty(STDIN_FILENO) == 0);
     bool color_set = false;
     bool human_player_color = true;
     bool think_in_opt_turn = false;
@@ -187,6 +190,27 @@ int main(
 
     for(int i = 1; i < argc; ++i)
     {
+        if(strcmp(argv[i], "-mode") == 0 && i < argc - 1)
+        {
+            use_gtp = true;
+            if(strcmp(argv[i + 1], "text") == 0)
+            {
+                use_gtp = false;
+            }
+            else
+                if(strcmp(argv[i + 1], "gtp") == 0)
+                {
+                    use_gtp = true;
+                }
+                else
+                {
+                    fprintf(stderr, "error: illegal format for more\n");
+                    flog_crit("error: illegal format for more\n");
+                    exit(EXIT_FAILURE);
+                }
+            ++i;
+            continue;
+        }
         if(strcmp(argv[i], "-color") == 0 && i < argc - 1)
         {
             if(argv[i + 1][0] == 'b' || argv[i + 1][0] == 'B')
@@ -202,11 +226,6 @@ int main(
                 }
             ++i;
             color_set = true;
-            continue;
-        }
-        if(strcmp(argv[i], "-gtp") == 0)
-        {
-            use_gtp = true;
             continue;
         }
         if(strcmp(argv[i], "-disable_score_estimation") == 0)
@@ -252,6 +271,13 @@ a constant number of playouts per turn; -time flag is illegal\n");
                 fprintf(stderr, "error: illegal time format\n");
                 exit(EXIT_FAILURE);
             }
+
+            if(time_system_overriden)
+            {
+                ++i;
+                continue;
+            }
+
             set_time_per_turn(&current_clock_black, ftime * 1000);
             set_time_per_turn(&current_clock_white, ftime * 1000);
             current_clock_black.can_timeout = false;
@@ -286,10 +312,13 @@ a constant number of playouts per turn; -time_system flag is illegal\n");
             set_time_system(&current_clock_white, tmp.main_time,
                 tmp.byo_yomi_time, tmp.byo_yomi_stones, tmp.byo_yomi_periods);
 
+            time_system_overriden = true;
+
             char * buf = get_buffer();
             snprintf(buf, 128, "Clock set to %s\n",
                 time_system_to_str(&current_clock_black));
             fprintf(stderr, "%s", buf);
+
             ++i;
             continue;
         }
@@ -400,8 +429,8 @@ a constant number of playouts per turn; -resign_on_timeout flag is illegal\n");
         fprintf(stderr, "        \033[1m-color <black or white>\033[0m\n\n");
         fprintf(stderr, "        Select human player color (text mode only).\n\n");
 
-        fprintf(stderr, "        \033[1m-gtp\033[0m\n\n");
-        fprintf(stderr, "        Enable GTP mode.\n\n");
+        fprintf(stderr, "        \033[1m-mode <gtp or text>\033[0m\n\n");
+        fprintf(stderr, "        Matilda attempts to detect if it is running connected to a terminal or not, starting with the appropriate interface mode. You can override this with the specific mode you want.\n\n");
 
         fprintf(stderr, "        \033[1m-resign_on_timeout\033[0m\n\n");
         fprintf(stderr, "        Resign if the program believes to have lost on time.\n\n");

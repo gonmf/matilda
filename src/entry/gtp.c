@@ -107,6 +107,7 @@ const char * supported_commands[] =
 };
 
 extern bool estimate_score;
+extern bool time_system_overriden;
 extern bool save_all_games_to_file;
 extern bool resign_on_timeout;
 extern game_record current_game;
@@ -718,6 +719,12 @@ ignored\n");
         return;
     }
 
+    if(time_system_overriden)
+    {
+        answer_msg(fp, id, NULL);
+        return;
+    }
+
     const char * previous_ts_as_s = time_system_to_str(&current_clock_black);
 
     s32 new_main_time;
@@ -792,6 +799,12 @@ ignored\n");
         flog_warn("warning: attempted to set time settings when matilda was \
 compiled to use a constant number of simulations per turn in MCTS; request \
 ignored\n");
+        answer_msg(fp, id, NULL);
+        return;
+    }
+
+    if(time_system_overriden)
+    {
         answer_msg(fp, id, NULL);
         return;
     }
@@ -927,6 +940,12 @@ ignored\n");
         flog_warn("warning: attempted to set time settings when matilda was \
 compiled to use a constant number of simulations per turn in MCTS; request \
 ignored\n");
+        answer_msg(fp, id, NULL);
+        return;
+    }
+
+    if(time_system_overriden)
+    {
         answer_msg(fp, id, NULL);
         return;
     }
