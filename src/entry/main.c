@@ -396,8 +396,10 @@ a constant number of playouts per turn; -resign_on_timeout flag is illegal\n");
         {
             if(!ENABLE_FRISBEE_GO)
             {
-                fprintf(stderr, "error: program must be compiled with support for frisbee play\n");
-                flog_crit("error: program must be compiled with support for frisbee play\n");
+                fprintf(stderr, "error: program must be compiled with support \
+for frisbee play\n");
+                flog_crit("error: program must be compiled with support for \
+frisbee play\n");
                 exit(EXIT_FAILURE);
             }
 
@@ -418,35 +420,50 @@ a constant number of playouts per turn; -resign_on_timeout flag is illegal\n");
         }
 
         fprintf(stderr, "\n");
-        fprintf(stderr, "matilda - Go/Igo/Weiqi/Baduk computer player (compiled for %ux%u)\n", BOARD_SIZ, BOARD_SIZ);
+        fprintf(stderr, "matilda - Go/Igo/Weiqi/Baduk computer player");
         fprintf(stderr, "\n");
         fprintf(stderr, "\033[1mUSAGE\033[0m\n");
         fprintf(stderr, "        matilda [options]\n\n");
         fprintf(stderr, "\033[1mDESCRIPTION\033[0m\n");
-        fprintf(stderr, "        Matilda is a computer program that plays the game of Go. It uses Chinese\n        rules without life in seki.\n        Two interface modes are available: a simple text interface, and the Go\n        Text Protocol through the standard input and output file descriptors.\n        Most more advanced features, like file manipulation and game analysis,\n        are only available through GTP commands. To learn more about them\n        consult the file GTP_README.\n        All files read and written, including SGF, reside in the data folder.\n\n");
+        fprintf(stderr, "        Matilda is a computer program that plays the \
+game of Go. It uses Chinese\n        rules without life in seki.\n        Two \
+interface modes are available: a simple text interface, and the Go\n        \
+Text Protocol through the standard input and output file descriptors.\n        \
+Most more advanced features, like file manipulation and game analysis,\n       \
+ are only available through GTP commands. To learn more about them\n        \
+consult the file GTP_README.\n        All files read and written, including \
+SGF, reside in the data folder.\n\n");
         fprintf(stderr, "\033[1mOPTIONS\033[0m\n");
 
         fprintf(stderr, "        \033[1m-color <black or white>\033[0m\n\n");
-        fprintf(stderr, "        Select human player color (text mode only).\n\n");
+        fprintf(stderr,
+            "        Select human player color (text mode only).\n\n");
 
         fprintf(stderr, "        \033[1m-mode <gtp or text>\033[0m\n\n");
-        fprintf(stderr, "        Matilda attempts to detect if it is running connected to a terminal or not, starting with the appropriate interface mode. You can override this with the specific mode you want.\n\n");
+        fprintf(stderr, "        Matilda attempts to detect if it is running \
+connected to a terminal or not, starting with the appropriate interface mode. \
+You can override this with the specific mode you want.\n\n");
 
         fprintf(stderr, "        \033[1m-resign_on_timeout\033[0m\n\n");
-        fprintf(stderr, "        Resign if the program believes to have lost on time.\n\n");
+        fprintf(stderr,
+            "        Resign if the program believes to have lost on time.\n\n");
 
         fprintf(stderr, "        \033[1m-think_in_opt_time\033[0m\n\n");
-        fprintf(stderr, "        Continue thinking in the background while in the opponents turn.\n\n");
+        fprintf(stderr, "        Continue thinking in the background while in \
+the opponents turn.\n\n");
 
         fprintf(stderr, "        \033[1m-time <number>\033[0m\n\n");
-        fprintf(stderr, "        Set the time system to a specific number of seconds per turn.\n\n");
+        fprintf(stderr, "        Set the time system to a specific number of \
+seconds per turn.\n\n");
 
         fprintf(stderr, "        \033[1m-time_system <value>\033[0m\n\n");
         fprintf(stderr, "        Override the time system in use and ignore \
-changes via GTP.\n        Use a byoyomi format like 10m+3x30s/5; allowed specifiers: ms, s, m, h.\n\n");
+changes via GTP.\n        Use a byoyomi format like 10m+3x30s/5; allowed \
+specifiers: ms, s, m, h.\n\n");
 
         fprintf(stderr, "        \033[1m-data <path>\033[0m\n\n");
-        fprintf(stderr, "        Override the data folder path. The folder must exist.\n\n");
+        fprintf(stderr, "        Override the data folder path. The folder \
+must exist.\n\n");
 
         fprintf(stderr, "        \033[1m-disable_opening_books\033[0m\n\n");
         fprintf(stderr, "        Disable the use of opening books.\n\n");
@@ -455,30 +472,42 @@ changes via GTP.\n        Use a byoyomi format like 10m+3x30s/5; allowed specifi
         fprintf(stderr, "        Disable final scoring estimates.\n\n");
 
         fprintf(stderr, "        \033[1m-frisbee <number>\033[0m\n\n");
-        fprintf(stderr, "        Select frisbee accuracy if playing frisbee Go.\n\n");
+        fprintf(stderr,
+            "        Select frisbee accuracy if playing frisbee Go.\n\n");
         fprintf(stderr, "        \033[1m-info\033[0m\n\n");
-        fprintf(stderr, "        Print runtime information at startup and exit.\n\n");
+        fprintf(stderr,
+            "        Print runtime information at startup and exit.\n\n");
 
         fprintf(stderr, "        \033[1m-log <level>\033[0m\n\n");
-        fprintf(stderr, "        Set the message logger level. The available levels are:\n         0 - No logging\n         1 - Critical error messages (default)\n         2 - Errors, warning and GTP trace\n         3 - All messages\n\n");
+        fprintf(stderr, "        Set the message logger level. The available \
+levels are:\n         0 - No logging\n         1 - Critical error messages \
+(default)\n         2 - Errors, warning and GTP trace\n         3 - All \
+messages\n\n");
 
         fprintf(stderr, "        \033[1m-memory <number>\033[0m\n\n");
-        fprintf(stderr, "        Override the available memory for the MCTS transpositions table, in MiB.\n        The default is %u MiB\n\n", DEFAULT_UCT_MEMORY);
+        fprintf(stderr, "        Override the available memory for the MCTS \
+transpositions table, in MiB.\n        The default is %u MiB\n\n",
+            DEFAULT_UCT_MEMORY);
 
         fprintf(stderr, "        \033[1m-save_all\033[0m\n\n");
-        fprintf(stderr, "        Save all finished games to the data folder as SGF.\n\n");
+        fprintf(stderr,
+            "        Save all finished games to the data folder as SGF.\n\n");
 
         fprintf(stderr, "        \033[1m-set <param> <value>\033[0m\n\n");
-        fprintf(stderr, "        For optimization. Set the value of an internal parameter.\n\n");
+        fprintf(stderr, "        For optimization. Set the value of an \
+internal parameter.\n\n");
 
         fprintf(stderr, "        \033[1m-threads <number>\033[0m\n\n");
-        fprintf(stderr, "        Override the number of OpenMP threads to use. The default is the total\n        number of normal plus hypperthreaded CPU cores.\n\n");
+        fprintf(stderr, "        Override the number of OpenMP threads to use. \
+The default is the total\n        number of normal plus hypperthreaded CPU \
+cores.\n\n");
 
         fprintf(stderr, "        \033[1m-version\033[0m\n\n");
         fprintf(stderr, "        Print version information and exit.\n\n");
 
         fprintf(stderr, "\033[1mBUGS\033[0m\n");
-        fprintf(stderr, "        You can provide feedback at https://github.com/gonmf/matilda\n\n");
+        fprintf(stderr, "        You can provide feedback at \
+https://github.com/gonmf/matilda\n\n");
 
         return EXIT_FAILURE;
     }

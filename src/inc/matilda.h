@@ -145,7 +145,7 @@ as they are understood. The minor mark can be changed in any non-decreasing way.
 It is reset when the major mark is increased.
 */
 #define VERSION_MAJOR 1
-#define VERSION_MINOR 11
+#define VERSION_MINOR 12
 
 
 
