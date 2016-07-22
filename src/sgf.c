@@ -423,7 +423,7 @@ guessed from play coordinates\n");
                     else
                     {
                         gr->resignation = false;
-                        parse_int(result, &gr->final_score);
+                        parse_int(result, (s32 *)&gr->final_score);
                         gr->final_score *= 2;
                         if(gr->final_score == 0)
                         {
@@ -449,7 +449,7 @@ guessed from play coordinates\n");
                     else
                     {
                         gr->resignation = false;
-                        parse_int(result, &gr->final_score);
+                        parse_int(result, (s32 *)&gr->final_score);
                         gr->final_score *= -2;
                         if(gr->final_score == 0)
                         {

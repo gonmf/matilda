@@ -1534,12 +1534,10 @@ instead.\n");
 
         char * save_ptr;
         char * id = strtok_r(line, " |", &save_ptr);
-        d32 idn;
+        s32 idn;
         char * cmd;
         if(parse_int(id, &idn))
-        {
             cmd = strtok_r(NULL, " |", &save_ptr);
-        }
         else
         {
             cmd = id;
@@ -1839,6 +1837,5 @@ you mean '%s'?\n", buf, best_dst_str);
 
             error_msg(out_fp, idn, "unknown command");
         }
-
     }
 }

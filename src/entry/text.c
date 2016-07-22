@@ -127,6 +127,7 @@ static void text_genmove(
 ){
     out_board out_b;
     board * current_state = current_game_state(&current_game);
+
     u16 stones = stone_count(current_state->p);
     u32 milliseconds;
     if(is_black)
@@ -153,14 +154,10 @@ static void text_genmove(
     }
 
     move m = select_play(&out_b, is_black, &current_game);
-    if(m != PASS && !can_play_slow(current_state, m, is_black))
-    {
-        printf("internal error");
-        exit(EXIT_FAILURE);
-    }
 
     if(ENABLE_FRISBEE_GO && frisbee_prob < 1.0)
     {
+        current_state = current_game_state(&current_game);
         move n = frisbee_divert_play(current_state, is_black, m, frisbee_prob);
         if(m != n)
         {
