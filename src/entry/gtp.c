@@ -627,6 +627,22 @@ resigns because of timeout\n", is_black ? "black" : "white", is_black ?
                     current_game.game_finished = true;
                     current_game.resignation = true;
                     current_game.final_score = is_black ? -1 : 1;
+
+
+
+
+#if 0
+
+                    /* TODO just for counting resigns on timeout for paper */
+                    flog_crit("TIMEDOUT\n");
+
+
+#endif
+
+
+
+
+
                     return;
                 }
                 if(!out_on_time_warning)
