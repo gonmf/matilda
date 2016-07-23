@@ -176,12 +176,12 @@ int main(
 
     for(int i = 1; i < argc; ++i)
     {
-        if(strcmp(argv[i], "-version") == 0)
+        if(strcmp(argv[i], "-v") == 0 || strcmp(argv[i], "--version") == 0)
         {
             fprintf(stderr, "matilda %u.%u\n", VERSION_MAJOR, VERSION_MINOR);
             return EXIT_SUCCESS;
         }
-        if(strcmp(argv[i], "-info") == 0)
+        if(strcmp(argv[i], "-i") == 0 || strcmp(argv[i], "--info") == 0)
         {
             fprintf(stderr, "\n%s\n", build_info());
             return EXIT_SUCCESS;
@@ -190,7 +190,8 @@ int main(
 
     for(int i = 1; i < argc; ++i)
     {
-        if(strcmp(argv[i], "-mode") == 0 && i < argc - 1)
+        if((strcmp(argv[i], "-m") == 0 || strcmp(argv[i], "--mode") == 0) && i
+            < argc - 1)
         {
             use_gtp = true;
             if(strcmp(argv[i + 1], "text") == 0)
@@ -211,7 +212,8 @@ int main(
             ++i;
             continue;
         }
-        if(strcmp(argv[i], "-color") == 0 && i < argc - 1)
+        if((strcmp(argv[i], "-c") == 0 || strcmp(argv[i], "--color") == 0) && i
+            < argc - 1)
         {
             if(argv[i + 1][0] == 'b' || argv[i + 1][0] == 'B')
                 human_player_color = true;
@@ -228,22 +230,23 @@ int main(
             color_set = true;
             continue;
         }
-        if(strcmp(argv[i], "-disable_score_estimation") == 0)
+        if(strcmp(argv[i], "--disable_score_estimation") == 0)
         {
             estimate_score = false;
             continue;
         }
-        if(strcmp(argv[i], "-think_in_opt_time") == 0)
+        if(strcmp(argv[i], "--think_in_opt_time") == 0)
         {
             think_in_opt_turn = true;
             continue;
         }
-        if(strcmp(argv[i], "-save_all") == 0)
+        if(strcmp(argv[i], "--save_all") == 0)
         {
             save_all_games_to_file = true;
             continue;
         }
-        if(strcmp(argv[i], "-log") == 0 && i < argc - 1)
+        if((strcmp(argv[i], "-l") == 0 || strcmp(argv[i], "--log") == 0) && i <
+            argc - 1)
         {
             s32 lvl;
             if(!parse_int(argv[i + 1], &lvl) || lvl < LOG_NONE || lvl >
@@ -256,12 +259,12 @@ int main(
             ++i;
             continue;
         }
-        if(strcmp(argv[i], "-time") == 0)
+        if(strcmp(argv[i], "-t") == 0 || strcmp(argv[i], "--time") == 0)
         {
             if(LIMIT_BY_PLAYOUTS)
             {
                 fprintf(stderr, "error: matilda has been compiled to run with \
-a constant number of playouts per turn; -time flag is illegal\n");
+a constant number of playouts per turn; --time flag is illegal\n");
                 exit(EXIT_FAILURE);
             }
             int ftime;
@@ -290,12 +293,12 @@ a constant number of playouts per turn; -time flag is illegal\n");
             ++i;
             continue;
         }
-        if(strcmp(argv[i], "-time_system") == 0)
+        if(strcmp(argv[i], "--time_system") == 0)
         {
             if(LIMIT_BY_PLAYOUTS)
             {
                 fprintf(stderr, "error: matilda has been compiled to run with \
-a constant number of playouts per turn; -time_system flag is illegal\n");
+a constant number of playouts per turn; --time_system flag is illegal\n");
                 exit(EXIT_FAILURE);
             }
 
@@ -322,23 +325,23 @@ a constant number of playouts per turn; -time_system flag is illegal\n");
             ++i;
             continue;
         }
-        if(strcmp(argv[i], "-disable_opening_books") == 0)
+        if(strcmp(argv[i], "--disable_opening_books") == 0)
         {
             set_use_of_opening_book(false);
             continue;
         }
-        if(strcmp(argv[i], "-resign_on_timeout") == 0)
+        if(strcmp(argv[i], "--resign_on_timeout") == 0)
         {
             if(LIMIT_BY_PLAYOUTS)
             {
                 fprintf(stderr, "error: matilda has been compiled to run with \
-a constant number of playouts per turn; -resign_on_timeout flag is illegal\n");
+a constant number of playouts per turn; --resign_on_timeout flag is illegal\n");
                 exit(EXIT_FAILURE);
             }
             resign_on_timeout = true;
             continue;
         }
-        if(strcmp(argv[i], "-memory") == 0 && i < argc - 1)
+        if(strcmp(argv[i], "--memory") == 0 && i < argc - 1)
         {
             s32 v;
             if(!parse_int(argv[i + 1], &v))
@@ -357,13 +360,14 @@ a constant number of playouts per turn; -resign_on_timeout flag is illegal\n");
             ++i;
             continue;
         }
-        if(strcmp(argv[i], "-set") == 0 && i < argc - 2)
+        if(strcmp(argv[i], "--set") == 0 && i < argc - 2)
         {
             set_parameter(argv[i + 1], argv[i + 2]);
             i += 2;
             continue;
         }
-        if(strcmp(argv[i], "-data") == 0 && i < argc - 1)
+        if((strcmp(argv[i], "-d") == 0 || strcmp(argv[i], "--data") == 0) && i <
+            argc - 1)
         {
             if(!set_data_folder(argv[i + 1]))
             {
@@ -375,7 +379,7 @@ a constant number of playouts per turn; -resign_on_timeout flag is illegal\n");
             ++i;
             continue;
         }
-        if(strcmp(argv[i], "-threads") == 0 && i < argc - 1)
+        if(strcmp(argv[i], "--threads") == 0 && i < argc - 1)
         {
             s32 v;
             if(!parse_int(argv[i + 1], &v))
@@ -392,7 +396,7 @@ a constant number of playouts per turn; -resign_on_timeout flag is illegal\n");
             ++i;
             continue;
         }
-        if(strcmp(argv[i], "-frisbee") == 0 && i < argc - 1)
+        if(strcmp(argv[i], "--frisbee_accuracy") == 0 && i < argc - 1)
         {
             if(!ENABLE_FRISBEE_GO)
             {
@@ -406,7 +410,7 @@ frisbee play\n");
             double v;
             if(!parse_float(argv[i + 1], &v))
             {
-                fprintf(stderr, "error: -frisbee argument format error\n");
+                fprintf(stderr, "error: accuracy argument format error\n");
                 exit(EXIT_FAILURE);
             }
             if(v < 0.0 || v > 1.0)
@@ -419,9 +423,8 @@ frisbee play\n");
             continue;
         }
 
-        fprintf(stderr, "\n");
-        fprintf(stderr, "matilda - Go/Igo/Weiqi/Baduk computer player");
-        fprintf(stderr, "\n");
+        fprintf(stderr, "matilda - Go/Igo/Weiqi/Baduk computer player\n\n");
+
         fprintf(stderr, "\033[1mUSAGE\033[0m\n");
         fprintf(stderr, "        matilda [options]\n\n");
         fprintf(stderr, "\033[1mDESCRIPTION\033[0m\n");
@@ -435,74 +438,77 @@ consult the file GTP_README.\n        All files read and written, including \
 SGF, reside in the data folder.\n\n");
         fprintf(stderr, "\033[1mOPTIONS\033[0m\n");
 
-        fprintf(stderr, "        \033[1m-color <black or white>\033[0m\n\n");
+        fprintf(stderr, "        \033[1m-m, --mode <gtp or text>\033[0m\n\n");
+        fprintf(stderr, "        Matilda attempts to detect if it is running \
+connected to a terminal or\n        not, starting with the appropriate \
+interface mode. You can override this\n        with the specific mode you want.\
+\n\n");
+
+        fprintf(stderr,
+            "        \033[1m-c, --color <black or white>\033[0m\n\n");
         fprintf(stderr,
             "        Select human player color (text mode only).\n\n");
 
-        fprintf(stderr, "        \033[1m-mode <gtp or text>\033[0m\n\n");
-        fprintf(stderr, "        Matilda attempts to detect if it is running \
-connected to a terminal or not, starting with the appropriate interface mode. \
-You can override this with the specific mode you want.\n\n");
-
-        fprintf(stderr, "        \033[1m-resign_on_timeout\033[0m\n\n");
+        fprintf(stderr, "        \033[1m--resign_on_timeout\033[0m\n\n");
         fprintf(stderr,
             "        Resign if the program believes to have lost on time.\n\n");
 
-        fprintf(stderr, "        \033[1m-think_in_opt_time\033[0m\n\n");
+        fprintf(stderr, "        \033[1m--think_in_opt_time\033[0m\n\n");
         fprintf(stderr, "        Continue thinking in the background while in \
 the opponents turn.\n\n");
 
-        fprintf(stderr, "        \033[1m-time <number>\033[0m\n\n");
+        fprintf(stderr, "        \033[1m-t, --time <number>\033[0m\n\n");
         fprintf(stderr, "        Set the time system to a specific number of \
 seconds per turn.\n\n");
 
-        fprintf(stderr, "        \033[1m-time_system <value>\033[0m\n\n");
+        fprintf(stderr, "        \033[1m--time_system <value>\033[0m\n\n");
         fprintf(stderr, "        Override the time system in use and ignore \
 changes via GTP.\n        Use a byoyomi format like 10m+3x30s/5; allowed \
 specifiers: ms, s, m, h.\n\n");
 
-        fprintf(stderr, "        \033[1m-data <path>\033[0m\n\n");
+        fprintf(stderr, "        \033[1m-d, --data <path>\033[0m\n\n");
         fprintf(stderr, "        Override the data folder path. The folder \
 must exist.\n\n");
 
-        fprintf(stderr, "        \033[1m-disable_opening_books\033[0m\n\n");
+        fprintf(stderr, "        \033[1m--disable_opening_books\033[0m\n\n");
         fprintf(stderr, "        Disable the use of opening books.\n\n");
 
-        fprintf(stderr, "        \033[1m-disable_score_estimation\033[0m\n\n");
+        fprintf(stderr, "        \033[1m--disable_score_estimation\033[0m\n\n");
         fprintf(stderr, "        Disable final scoring estimates.\n\n");
 
-        fprintf(stderr, "        \033[1m-frisbee <number>\033[0m\n\n");
-        fprintf(stderr,
-            "        Select frisbee accuracy if playing frisbee Go.\n\n");
-        fprintf(stderr, "        \033[1m-info\033[0m\n\n");
-        fprintf(stderr,
-            "        Print runtime information at startup and exit.\n\n");
-
-        fprintf(stderr, "        \033[1m-log <level>\033[0m\n\n");
+        fprintf(stderr, "        \033[1m-l, --log <level>\033[0m\n\n");
         fprintf(stderr, "        Set the message logger level. The available \
 levels are:\n         0 - No logging\n         1 - Critical error messages \
 (default)\n         2 - Errors, warning and GTP trace\n         3 - All \
 messages\n\n");
 
-        fprintf(stderr, "        \033[1m-memory <number>\033[0m\n\n");
+        fprintf(stderr, "        \033[1m--memory <number>\033[0m\n\n");
         fprintf(stderr, "        Override the available memory for the MCTS \
 transpositions table, in MiB.\n        The default is %u MiB\n\n",
             DEFAULT_UCT_MEMORY);
 
-        fprintf(stderr, "        \033[1m-save_all\033[0m\n\n");
+        fprintf(stderr, "        \033[1m--save_all\033[0m\n\n");
         fprintf(stderr,
             "        Save all finished games to the data folder as SGF.\n\n");
 
-        fprintf(stderr, "        \033[1m-set <param> <value>\033[0m\n\n");
+        fprintf(stderr, "        \033[1m--frisbee_accuracy <number>\033[0m\n\n");
+        fprintf(stderr,
+            "        Select frisbee accuracy if playing frisbee Go.\n\n");
+
+        fprintf(stderr, "        \033[1m--threads <number>\033[0m\n\n");
+        fprintf(stderr, "        Override the number of OpenMP threads to use. \
+The default is the total\n        number of normal plus hyperthreaded CPU \
+cores.\n\n");
+
+        fprintf(stderr, "        \033[1m--set <param> <value>\033[0m\n\n");
         fprintf(stderr, "        For optimization. Set the value of an \
 internal parameter.\n\n");
 
-        fprintf(stderr, "        \033[1m-threads <number>\033[0m\n\n");
-        fprintf(stderr, "        Override the number of OpenMP threads to use. \
-The default is the total\n        number of normal plus hypperthreaded CPU \
-cores.\n\n");
+        fprintf(stderr, "        \033[1m-i, --info\033[0m\n\n");
+        fprintf(stderr,
+            "        Print runtime information at startup and exit.\n\n");
 
-        fprintf(stderr, "        \033[1m-version\033[0m\n\n");
+        fprintf(stderr, "        \033[1m-v, --version\033[0m\n\n");
         fprintf(stderr, "        Print version information and exit.\n\n");
 
         fprintf(stderr, "\033[1mBUGS\033[0m\n");
