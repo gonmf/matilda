@@ -234,12 +234,12 @@ void discover_opening_books()
 
 
     /*
-    Discover .sp files
+    Discover .spb files
     */
-    files_found = recurse_find_files(get_data_folder(), ".sp", filenames, 32);
+    files_found = recurse_find_files(get_data_folder(), ".spb", filenames, 32);
 
     buf = get_buffer();
-    snprintf(buf, MAX_PAGE_SIZ, "%s: ob: found %u state,play files\n",
+    snprintf(buf, MAX_PAGE_SIZ, "%s: spb: found %u state,play files\n",
         timestamp(),
         files_found);
     fprintf(stderr, "%s", buf);
@@ -258,7 +258,7 @@ void discover_opening_books()
         close_rule_file();
 
         buf = get_buffer();
-        snprintf(buf, MAX_PAGE_SIZ, "%s: ob: read %s (%u rules)\n", timestamp(),
+        snprintf(buf, MAX_PAGE_SIZ, "%s: spb: read %s (%u rules)\n", timestamp(),
             filenames[i], rules_found);
         fprintf(stderr, "%s", buf);
         flog_info(buf);

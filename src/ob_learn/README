@@ -1,8 +1,8 @@
 Program for the evaluation of positions from game records and the production of
-a state->play file (.sp), to be used for further play suggestions besides
+a state->play file (.spb), to be used for further play suggestions besides
 (Fuego-style) opening books.
 
-.sp files contain the complete description of the board contents, ignoring ko,
+.spb files contain the complete description of the board contents, ignoring ko,
 and the suggested play by black. In contrast Fuego-style opening books cannot
 represent positions unreachable by alternate play (like those after a capture,
 or from handicap games).
