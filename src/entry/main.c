@@ -205,7 +205,6 @@ int main(
         if((strcmp(argv[i], "-m") == 0 || strcmp(argv[i], "--mode") == 0) && i
             < argc - 1)
         {
-            use_gtp = true;
             if(strcmp(argv[i + 1], "text") == 0)
             {
                 use_gtp = false;

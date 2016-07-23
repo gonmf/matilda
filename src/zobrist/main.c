@@ -65,6 +65,7 @@ data.\n");
             {
                 do
                 {
+                    table[i] = 0;
                     for(u32 j = 0; j < 64; ++j)
                         table[i] = (table[i] << 1) | rand_u16(2);
 
@@ -119,6 +120,8 @@ data.\n");
         if(ready > 0)
             break;
     }
+
+    free(table);
 
     printf("\nSearch stopped.\n");
 

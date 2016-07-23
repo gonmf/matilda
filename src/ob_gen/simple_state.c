@@ -157,7 +157,7 @@ void simple_state_collection_export(
                     break;
             }
 
-            idx += snprintf(str + idx, MAX_PAGE_SIZ - idx, "| %s # %u/%u\n",
+            snprintf(str + idx, MAX_PAGE_SIZ - idx, "| %s # %u/%u\n",
                 coord_to_alpha_num(best), best_count, total_count);
 
 

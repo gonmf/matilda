@@ -61,6 +61,7 @@ static char * parse(
         if(mark == 0)
         {
             printf("End of file.");
+            free(j);
             return buffer;
         }
 
@@ -138,6 +139,7 @@ static char * parse(
         if(mark == 5)
         {
             buffer = tok + 1;
+            free(j);
             return buffer;
         }
 
@@ -154,8 +156,6 @@ static char * parse(
             continue;
         }
     }
-
-
 }
 
 int main(

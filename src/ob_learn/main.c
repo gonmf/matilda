@@ -266,8 +266,7 @@ saved. (default: %u)\n", minimum_samples);
                         idx += snprintf(str + idx, 1024 - idx, ".");
             }
 
-            idx += snprintf(str + idx, 1024 - idx, " %s\n",
-                coord_to_alpha_num(best));
+            snprintf(str + idx, 1024 - idx, " %s\n", coord_to_alpha_num(best));
 
 
             size_t w = fwrite(str, strlen(str), 1, fp);
