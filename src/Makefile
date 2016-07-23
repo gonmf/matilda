@@ -4,9 +4,9 @@
 
 #CC = clang
 
-CFLAGS = -Iinc/ -O2 -Wall -Wextra -std=c99 -Wformat=2 \
-	-pedantic-errors -fno-stack-protector -lm -fopenmp \
-	-Wfatal-errors -Wundef -Wno-unused-result
+CFLAGS = -Iinc/ -O2 -Wall -Wextra -std=c99 -Wformat=2 -pedantic-errors \
+		 -fno-stack-protector -lm -fopenmp -Wfatal-errors -Wundef \
+		 -Wno-unused-result -march=native
 #-g
 
 SRCFILES = $(wildcard *.c mcts/*.c)

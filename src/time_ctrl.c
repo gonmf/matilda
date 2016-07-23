@@ -357,7 +357,7 @@ bool str_to_time_system(
         return false;
 
     u32 len = strlen(src);
-    if(len < 9)
+    if(len < 7)
         return false;
 
     char * s = (char *)malloc(len + 1);
@@ -428,7 +428,7 @@ bool str_to_time_system(
     rest = char_idx + 1;
 
     t = str_to_milliseconds(s);
-    if(t < 0)
+    if(t < 0 || (t == 0 && byoyomi_periods > 0))
     {
         free(original_ptr);
         return false;
@@ -439,12 +439,18 @@ bool str_to_time_system(
     /*
     ... / number
     */
-    if(!parse_int(s, &t) || t < 1)
+    if(!parse_int(s, &t) || (t < 0) || (t == 0 && byoyomi_periods > 0))
     {
         free(original_ptr);
         return false;
     }
     u32 byoyomi_stones = t;
+
+    if(absolute_milliseconds == 0 && byoyomi_milliseconds == 0)
+    {
+        free(original_ptr);
+        return false;
+    }
 
     dst->main_time = absolute_milliseconds;
     dst->byo_yomi_stones = byoyomi_stones;

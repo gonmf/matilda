@@ -463,7 +463,7 @@ the opponents turn.\n\n");
 
         fprintf(stderr, "        \033[1m-t, --time <number>\033[0m\n\n");
         fprintf(stderr, "        Set the time system to a specific number of \
-seconds per turn.\n\n");
+seconds per turn and ignore timeouts.\n\n");
 
         fprintf(stderr, "        \033[1m--time_system <value>\033[0m\n\n");
         fprintf(stderr, "        Override the time system in use and ignore \
