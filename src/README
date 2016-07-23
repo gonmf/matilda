@@ -92,10 +92,12 @@ Project conventions/guidelines
     strongly static typed and array passed as parameters should not be
     referenced.
 20. Don't use volatile keyword, enumerables or unions if avoidable.
-20. Coding style is Allman/BSD with 4-space indentation, lines not exceeding the
+21. Coding style is Allman/BSD with 4-space indentation, lines not exceeding the
     80 characters, and pointers typed appart from symbols. Function declarations
     should have parameter lists NT kernel style, except if they have no
-    parameters. No spaces around brackets. Example:
+    parameters. No spaces around brackets. If a string literal exceeds the
+    character limit line breaks ('\' char) should be used at the exact limit.
+    Be careful as to not abuse this since legibility is harmed. Example:
 
 #define IMPORTANT_STUFF 1
 #define IMPORTANT_STUFF_ALIGNED  3
@@ -114,6 +116,11 @@ static void long_method_definition(
 static void _main()
 {
     /* example of function without parameters */
+    fprintf(stderr, "example of string literal that exceeds the eighty characte\
+rs styling limit and as such has to be broken down manually. Avoid abusing this\
+ and use ample spaciong around these to improve legibility. Notice how the para\
+meters after the string literal are again indented correctly at a new line",
+        BOARD_SIZ);
 }
 
 int main(

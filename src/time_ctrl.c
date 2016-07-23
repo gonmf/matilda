@@ -20,6 +20,9 @@ u32 network_roundtrip_delay = LATENCY_COMPENSATION;
 bool network_round_trip_set = false;
 
 
+u16 avg_game_length = (((BOARD_SIZ * BOARD_SIZ) * 2) / 3); // TODO remove later
+
+
 /*
 Calculate the time available based on a Canadian byo-yomi time system. Also
 compensates for network latency.
@@ -29,9 +32,29 @@ u32 calc_time_to_play(
     time_system * ts,
     u16 turns_played
 ){
+#if 1
     /*
-    Linear time available to think
+TODO testing for paper
     */
+    s32 avg_game_length2 = avg_game_length;
+    s32 turns_played2 = turns_played;
+    double e1 = (double)(avg_game_length2 - turns_played2);
+    double turns_left = MAX(e1, 4.0);
+    return  ts->main_time_remaining / turns_left;
+
+
+
+
+
+
+
+#else
+
+
+
+
+
+
     double e1 = (((BOARD_SIZ * BOARD_SIZ) * 2.0) / 3.0) - turns_played;
     double e2 = BOARD_SIZ / 4.0;
     double turns_left = MAX(e1, e2);
@@ -66,6 +89,9 @@ u32 calc_time_to_play(
 #endif
 
     return t_t;
+
+
+#endif
 }
 
 /*

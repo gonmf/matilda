@@ -11,22 +11,35 @@ Script ./goguiscript.py
 # For GammaParameter, quadratic regression is performed on log(x)
 # Warning: 123 and not 123.0 should be used for IntegerParameter
 
-LinearParameter prior_stone_scale_factor 1.1 1.6
-IntegerParameter prior_even 2 90
-IntegerParameter prior_nakade 10 100
-IntegerParameter prior_self_atari 1 90
-IntegerParameter prior_attack 1 90
-IntegerParameter prior_defend 1 90
-IntegerParameter prior_pat3 1 90
-IntegerParameter prior_near_last 1 90
-IntegerParameter prior_line1 1 90
-IntegerParameter prior_line2 1 90
-IntegerParameter prior_line3 1 90
-IntegerParameter prior_empty 1 90
-IntegerParameter prior_line1x 0 10
-IntegerParameter prior_line2x 0 10
-IntegerParameter prior_line3x 0 10
-IntegerParameter prior_corner 1 90
+
+
+
+
+
+IntegerParameter avg_game_length 10 80
+
+
+
+
+
+
+
+#LinearParameter prior_stone_scale_factor 1.1 1.6
+#IntegerParameter prior_even 2 90
+#IntegerParameter prior_nakade 10 100
+#IntegerParameter prior_self_atari 1 90
+#IntegerParameter prior_attack 1 90
+#IntegerParameter prior_defend 1 90
+#IntegerParameter prior_pat3 1 90
+#IntegerParameter prior_near_last 1 90
+#IntegerParameter prior_line1 1 90
+#IntegerParameter prior_line2 1 90
+#IntegerParameter prior_line3 1 90
+#IntegerParameter prior_empty 1 90
+#IntegerParameter prior_line1x 0 10
+#IntegerParameter prior_line2x 0 10
+#IntegerParameter prior_line3x 0 10
+#IntegerParameter prior_corner 1 90
 
 #LinearParameter ucb1_c 0.5 2.5
 #LinearParameter rave_mse_b 0.2 2.0

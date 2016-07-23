@@ -65,6 +65,11 @@ extern u16 pl_skip_pattern;
 extern u16 pl_skip_capture;
 static u16 _dummy; /* used for testing CLOP */
 
+
+
+static u16 avg_game_length; // TODO to remove after paper, E
+
+
 const void * tunable[] =
 {
     "f", "prior_stone_scale_factor", &prior_stone_scale_factor,
@@ -90,6 +95,11 @@ const void * tunable[] =
     "i", "pl_skip_pattern", &pl_skip_pattern,
     "i", "pl_skip_capture", &pl_skip_capture,
     "i", "dummy", &_dummy,
+
+
+    "i", "avg_game_length", &avg_game_length, // TODO remove
+
+
     NULL
 };
 
@@ -136,8 +146,9 @@ static void set_parameter(
         exit(EXIT_FAILURE);
     }
 
-    fprintf(stderr,
-        "error: illegal parameter name: %s\navailable parameters:\n", name);
+    fprintf(stderr, "error: illegal parameter name: %s\n", name);
+    fprintf(stderr, "available parameters:\n");
+
     for(u16 i = 0; tunable[i] != NULL; i += 3)
     {
         char * type = ((char * )tunable[i]);
@@ -172,6 +183,7 @@ int main(
     set_logging_level(DEFAULT_LOG_LVL);
     set_time_per_turn(&current_clock_black, DEFAULT_TIME_PER_TURN);
     set_time_per_turn(&current_clock_white, DEFAULT_TIME_PER_TURN);
+    bool time_changed_or_set = false;
     s16 desired_num_threads = DEFAULT_NUM_THREADS;
 
     for(int i = 1; i < argc; ++i)
@@ -205,8 +217,7 @@ int main(
                 }
                 else
                 {
-                    fprintf(stderr, "error: illegal format for more\n");
-                    flog_crit("error: illegal format for more\n");
+                    fprintf(stderr, "error: illegal format for mode\n");
                     exit(EXIT_FAILURE);
                 }
             ++i;
@@ -263,8 +274,8 @@ int main(
         {
             if(LIMIT_BY_PLAYOUTS)
             {
-                fprintf(stderr, "error: matilda has been compiled to run with \
-a constant number of playouts per turn; --time flag is illegal\n");
+                fprintf(stderr, "error: matilda has been compiled to run with a\
+ constant number of playouts per turn; --time flag is illegal\n");
                 exit(EXIT_FAILURE);
             }
             int ftime;
@@ -286,10 +297,8 @@ a constant number of playouts per turn; --time flag is illegal\n");
             current_clock_black.can_timeout = false;
             current_clock_white.can_timeout = false;
 
-            char * buf = get_buffer();
-            snprintf(buf, 128, "Clock set to %s\n",
-                time_system_to_str(&current_clock_black));
-            fprintf(stderr, "%s", buf);
+            time_changed_or_set = true;
+
             ++i;
             continue;
         }
@@ -297,8 +306,8 @@ a constant number of playouts per turn; --time flag is illegal\n");
         {
             if(LIMIT_BY_PLAYOUTS)
             {
-                fprintf(stderr, "error: matilda has been compiled to run with \
-a constant number of playouts per turn; --time_system flag is illegal\n");
+                fprintf(stderr, "error: matilda has been compiled to run with a\
+ constant number of playouts per turn; --time_system flag is illegal\n");
                 exit(EXIT_FAILURE);
             }
 
@@ -316,11 +325,7 @@ a constant number of playouts per turn; --time_system flag is illegal\n");
                 tmp.byo_yomi_time, tmp.byo_yomi_stones, tmp.byo_yomi_periods);
 
             time_system_overriden = true;
-
-            char * buf = get_buffer();
-            snprintf(buf, 128, "Clock set to %s\n",
-                time_system_to_str(&current_clock_black));
-            fprintf(stderr, "%s", buf);
+            time_changed_or_set = true;
 
             ++i;
             continue;
@@ -334,8 +339,8 @@ a constant number of playouts per turn; --time_system flag is illegal\n");
         {
             if(LIMIT_BY_PLAYOUTS)
             {
-                fprintf(stderr, "error: matilda has been compiled to run with \
-a constant number of playouts per turn; --resign_on_timeout flag is illegal\n");
+                fprintf(stderr, "error: matilda has been compiled to run with a\
+ constant number of playouts per turn; --resign_on_timeout flag is illegal\n");
                 exit(EXIT_FAILURE);
             }
             resign_on_timeout = true;
@@ -400,10 +405,10 @@ a constant number of playouts per turn; --resign_on_timeout flag is illegal\n");
         {
             if(!ENABLE_FRISBEE_GO)
             {
-                fprintf(stderr, "error: program must be compiled with support \
-for frisbee play\n");
-                flog_crit("error: program must be compiled with support for \
-frisbee play\n");
+                fprintf(stderr, "error: program must be compiled with support f\
+or frisbee play\n");
+                flog_crit("error: program must be compiled with support for fri\
+sbee play\n");
                 exit(EXIT_FAILURE);
             }
 
@@ -428,21 +433,21 @@ frisbee play\n");
         fprintf(stderr, "\033[1mUSAGE\033[0m\n");
         fprintf(stderr, "        matilda [options]\n\n");
         fprintf(stderr, "\033[1mDESCRIPTION\033[0m\n");
-        fprintf(stderr, "        Matilda is a computer program that plays the \
-game of Go. It uses Chinese\n        rules without life in seki.\n        Two \
-interface modes are available: a simple text interface, and the Go\n        \
-Text Protocol through the standard input and output file descriptors.\n        \
-Most more advanced features, like file manipulation and game analysis,\n       \
- are only available through GTP commands. To learn more about them\n        \
-consult the file GTP_README.\n        All files read and written, including \
-SGF, reside in the data folder.\n\n");
+        fprintf(stderr, "        Matilda is a computer program that plays the g\
+ame of Go. It uses Chinese\n        rules without life in seki.\n        Two in\
+terface modes are available: a simple text interface, and the Go\n        Text \
+Protocol through the standard input and output file descriptors.\n        Most \
+more advanced features, like file manipulation and game analysis,\n        are \
+only available through GTP commands. To learn more about them\n        consult \
+the file GTP_README.\n        All files read and written, including SGF, reside\
+ in the data folder.\n\n");
         fprintf(stderr, "\033[1mOPTIONS\033[0m\n");
 
         fprintf(stderr, "        \033[1m-m, --mode <gtp or text>\033[0m\n\n");
-        fprintf(stderr, "        Matilda attempts to detect if it is running \
-connected to a terminal or\n        not, starting with the appropriate \
-interface mode. You can override this\n        with the specific mode you want.\
-\n\n");
+        fprintf(stderr, "        Matilda attempts to detect if its input file d\
+escriptor is a terminal\n        and if it is it uses the text mode interface. \
+Otherwise it uses the GTP\n        interface. This command overrides this with \
+the specific mode you want\n        to be used.\n\n");
 
         fprintf(stderr,
             "        \033[1m-c, --color <black or white>\033[0m\n\n");
@@ -518,6 +523,13 @@ https://github.com/gonmf/matilda\n\n");
         return EXIT_FAILURE;
     }
 
+    if(time_changed_or_set)
+    {
+        char * buf = get_buffer();
+        snprintf(buf, 128, "Clock set to %s\n",
+            time_system_to_str(&current_clock_black));
+        fprintf(stderr, "%s", buf);
+    }
 
     /*
     Errors for runtime options

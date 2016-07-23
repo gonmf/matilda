@@ -1,6 +1,6 @@
 /*
 Program for the evaluation of positions from game records and the production of
-a state->play file (.sp), to be used for further play suggestions besides
+a state->play file (.spb), to be used for further play suggestions besides
 (Fuego-style) opening books.
 */
 
@@ -207,7 +207,7 @@ saved. (default: %u)\n", minimum_samples);
     simple_state_transition * sst = simple_state_collection_export();
 
     char * filename = get_buffer();
-    snprintf(filename, 128, "%soutput.sp", get_data_folder());
+    snprintf(filename, 128, "%soutput.spb", get_data_folder());
     printf("%s: Created output file %s\n\n\n", timestamp(), filename);
     FILE * fp = fopen(filename, "w");
 

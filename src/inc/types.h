@@ -19,7 +19,7 @@ typedef int8_t  s8;
 
 /*
 For reading small files like SGF, MAX_PAGE_SIZ is enough.
-For reading .ob, .zt, weights and .sp files MAX_FILE_SIZ is recommended.
+For reading .ob, .zt, weights and .spb files MAX_FILE_SIZ is recommended.
 MAX_PAGE_SIZ is also used in the rotating buffers.
 */
 #define MAX_PATH_SIZ 1024              /* 1 KiB */

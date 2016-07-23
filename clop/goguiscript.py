@@ -43,10 +43,10 @@ os.chdir(path)
 #
 
 # program to be optimized
-optimized_program = "/home/user/go/matilda/src/matilda -gtp -disable_score_estimation -data /home/user/go/matilda/github/src/data/"
+optimized_program = "/home/user/go/matilda/github/src/matilda -d /home/user/go/matilda/github/src/data/ -m gtp --disable_opening_books --disable_score_estimation --resign_on_timeout --time_system 10s+3x1s/4"
 
 # (fixed) opponent program
-opponent_program = 'gnugo --mode gtp --chinese-rules --positional-superko --level 0'
+opponent_program = 'gnugo --mode gtp --chinese-rules --positional-superko --level 10'
 
 
 i = 4
@@ -54,7 +54,7 @@ params = []
 while i < len(sys.argv):
     name = sys.argv[i - 1]
     value = sys.argv[i]
-    optimized_program += ' -set ' + name + ' ' + value
+    optimized_program += ' --set ' + name + ' ' + value
     i += 2
 
 
@@ -67,7 +67,7 @@ opponent_program = '\"' + opponent_program + '\"'
 #
 # Run one game with gogui-twogtp
 #
-command = 'gogui-twogtp -size 13 -komi 7.5 -white ' + optimized_program + ' -black ' + opponent_program + ' -sgffile twogtp.sgf -games 1 -auto'
+command = 'gogui-twogtp -size 9 -komi 7.5 -white ' + optimized_program + ' -black ' + opponent_program + ' -sgffile twogtp.sgf -games 1 -auto'
 
 #print "command = ", command
 

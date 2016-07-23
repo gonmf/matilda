@@ -235,9 +235,9 @@ void discover_opening_books()
 
 
     /*
-    Discover .sp files
+    Discover .joseki files
     */
-    files_found = recurse_find_files(get_data_folder(), ".sp", filenames, 32);
+    files_found = recurse_find_files(get_data_folder(), ".joseki", filenames, 32);
 
     buf = get_buffer();
     snprintf(buf, MAX_PAGE_SIZ, "%s: ob: found %u state,play files\n",
