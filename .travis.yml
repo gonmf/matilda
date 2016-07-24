@@ -2,7 +2,8 @@ language: C
 os:
 - linux
 - osx
-- bsd 
+- bsd
+dist: trusty
 compiler:
 - clang
 - gcc
