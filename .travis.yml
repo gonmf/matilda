@@ -1,12 +1,10 @@
 language: C
 os:
-- linux
+#- linux
 - osx
 - bsd
-sudo: required
-dist: trusty
 compiler:
-- clang
+#- clang
 - gcc
 script: make -C src
-depth: 3
+depth: 1
