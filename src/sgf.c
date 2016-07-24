@@ -75,10 +75,8 @@ bool sgf_info(
         if(board_size == 0 && !unknown_board_size_cant_guess_warning_given)
         {
             unknown_board_size_cant_guess_warning_given = true;
-            fprintf(stderr, "warning: board size not specified and could \
-not guess board size from play coordinates\n");
-            flog_warn("warning: board size not specified and could not \
-guess board size from play coordinates\n");
+            flog_warn("sgf", "board size not specified and could not guess boar\
+d size from play coordinates");
         }
         if(board_size != BOARD_SIZ)
             return false;
@@ -100,10 +98,8 @@ guess board size from play coordinates\n");
         if(!unknown_sgf_ruleset_warning_given)
         {
             unknown_sgf_ruleset_warning_given = true;
-            fprintf(stderr, "warning: SGF file doesn't specify ruleset; \
-Chinese rules assumed\n");
-            flog_warn("warning: SGF file doesn't specify ruleset; \
-Chinese rules assumed\n");
+            flog_warn("sgf", "file doesn't specify ruleset; Chinese rules assum\
+ed");
         }
     }
 
@@ -175,9 +171,7 @@ s16 sgf_to_boards(
                         plays[play] = m;
                         if(!attempt_play_slow(&b, m, is_black))
                         {
-                            fprintf(stderr,
-                                "warning: file contains illegal plays\n");
-                            flog_warn("warning: file contains illegal plays\n");
+                            flog_warn("gtp","file contains illegal plays");
                             return -1;
                         }
                     }
@@ -338,8 +332,7 @@ bool import_game_from_sgf(
     s32 chars_read = read_ascii_file(filename, buffer, MAX_SGF_FILE_SIZ);
     if(chars_read < 1)
     {
-        fprintf(stderr, "warning: could not open/read file %s (%d)\n", filename,
-            chars_read);
+        flog_warn("gtp", "could not open/read file");
         return false;
     }
 
@@ -350,7 +343,7 @@ bool import_game_from_sgf(
         if(!gm_unknown_warning_given)
         {
             gm_unknown_warning_given = true;
-            fprintf(stderr, "warning: SGF GM[1] annotation not found\n");
+            flog_warn("gtp", "SGF GM[1] annotation not found");
         }
 
     /*
@@ -363,21 +356,19 @@ bool import_game_from_sgf(
         if(board_size == 0 && !unknown_board_size_cant_guess_warning_given)
         {
             unknown_board_size_cant_guess_warning_given = true;
-            fprintf(stderr, "warning: board size not specified and could not \
-be guessed from play coordinates\n");
-            flog_warn("warning: board size not specified and could not be \
-guessed from play coordinates\n");
+            flog_warn("gtp", "board size not specified and could not be guessed\
+ from play coordinates");
         }
         if(board_size != BOARD_SIZ)
         {
-            fprintf(stderr, "warning: wrong board size\n");
+            flog_warn("gtp", "wrong board size");
             return false;
         }
     }
     else
         if(!strcmp(board_size_str, BOARD_SIZ_AS_STR))
         {
-            fprintf(stderr, "warning: illegal board size format\n");
+            flog_warn("gtp", "illegal board size format");
             return false;
         }
 
@@ -427,7 +418,7 @@ guessed from play coordinates\n");
                         gr->final_score *= 2;
                         if(gr->final_score == 0)
                         {
-                            fprintf(stderr, "warning: illegal final score\n");
+                            flog_warn("gtp", "illegal final score");
                             return false;
                         }
                         if(strstr(result, ".") != NULL)
@@ -453,7 +444,7 @@ guessed from play coordinates\n");
                         gr->final_score *= -2;
                         if(gr->final_score == 0)
                         {
-                            fprintf(stderr, "warning: illegal final score\n");
+                            flog_warn("gtp", "illegal final score");
                             return false;
                         }
                         if(strstr(result, ".") != NULL)
@@ -476,7 +467,7 @@ guessed from play coordinates\n");
                 u8 y = hs[2] - 'a';
                 if(!add_handicap_stone(gr, coord_to_move(x, y)))
                 {
-                    fprintf(stderr, "warning: handicap placement error\n");
+                    flog_warn("gtp", "handicap placement error");
                     return false;
                 }
                 hs += 4;

@@ -61,11 +61,7 @@ void add_play(
     gr->moves[gr->turns] = m;
     gr->turns++;
     if(gr->turns == MAX_GAME_LENGTH)
-    {
-        fprintf(stderr, "error: the maximum number of plays has been reached\n");
-        flog_crit("error: the maximum number of plays has been reached\n");
-        exit(EXIT_FAILURE);
-    }
+        flog_crit("gr", "the maximum number of plays has been reached");
 }
 
 /*

@@ -140,7 +140,7 @@ void cfg_board_init()
         dyn_active_bits[i] = count_bits(i);
 
     cfg_inited = true;
-    fprintf(stderr, "%s: cfg_board: ready\n", timestamp());
+    flog_info("cfgb", "ready");
 }
 
 static group * alloc_group()
@@ -156,11 +156,7 @@ static group * alloc_group()
     {
         ret = (group *)malloc(sizeof(group));
         if(ret == NULL)
-        {
-            fprintf(stderr, "cfg_board: system out of memory\n");
-            flog_crit("cfg_board: system out of memory\n");
-            exit(EXIT_FAILURE);
-        }
+            flog_crit("cfgb", "system out of memory");
     }
     return ret;
 }
@@ -342,9 +338,7 @@ static void rem_neighbor(
             return;
         }
 
-    fprintf(stderr, "error: CFG group neighbor not found\n");
-    flog_crit("error: CFG group neighbor not found\n");
-    exit(EXIT_FAILURE);
+    flog_crit("cfgb", "CFG group neighbor not found");
 }
 
 static void unite_groups(
@@ -1867,9 +1861,8 @@ move get_1st_liberty(
             return i * 8 + j;
         }
 
-    fprintf(stderr, "error: CFG group has no liberties\n");
-    flog_crit("error: CFG group has no liberties\n");
-    exit(EXIT_FAILURE);
+    flog_crit("cfgb", "CFG group has no liberties");
+    exit(EXIT_FAILURE); /* this is unnecessary but mutes erroneous complaints */
 }
 
 

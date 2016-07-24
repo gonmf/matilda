@@ -1,8 +1,9 @@
 /*
-Support for logging to file. Logging is made to a file called matilda-XXXXXX.log
-where XXXXXX is a random string. When logging a logging level is set which
-specifies the degree of detail of the messages to be written to file. Having a
-very high degree of detail in very fast matches actively hurts the performance.
+Support for logging to file. Logging is made to a file called
+matilda_YYMMDD_XXXXXX.log where YYMMDD is the date and XXXXXX is a random
+string. When logging a mask of log categories specifies the types of messages to
+be written to file. Having a very high degree of detail in very fast matches
+actively hurts the performance.
 
 Writing to files is synchronous (with fsync) to avoid loss of data in case of
 crashes, but it is impossible to guarantee this in all cases.
@@ -27,15 +28,17 @@ crashes, but it is impossible to guarantee this in all cases.
 #include "mcts.h"
 #include "pat3.h"
 #include "playout.h"
+#include "timem.h"
 #include "scoring.h"
 #include "time_ctrl.h"
 #include "types.h"
 #include "buffer.h"
 
 static int log_file = -1;
-static u16 log_mode = DEFAULT_LOG_MODES;
+static u16 log_mode = 0;
 static char log_filename[32];
 static bool print_to_stderr = true;
+static char * _tmp_buffer = NULL;
 
 
 /*
@@ -64,7 +67,13 @@ extern u16 pl_skip_pattern;
 extern u16 pl_skip_capture;
 extern s16 komi;
 
+static void open_log_file();
 
+static void flog(
+    const char * severity,
+    const char * context,
+    const char * msg
+);
 
 /*
 Sets the logging messages that are written to file based on a mask of the
@@ -73,19 +82,40 @@ combination of available message types. See flog.h for more information.
 void config_logging(
     u16 new_mode
 ){
-    if(new_mode != 0 && log_file != -1)
+    if(new_mode == log_mode)
+        return;
+
+    if(new_mode != 0)
     {
+        log_mode = new_mode;
+
         char * buf = get_buffer();
-        // TODO print more descriptive msg
-        snprintf(buf, MAX_PAGE_SIZ, "\n# logging level mask set 0x%x\n\n",
-            new_mode);
-        u32 len = strlen(buf);
-        write(log_file, buf, len);
-        fsync(log_file);
+        u32 idx = 0;
+        idx += snprintf(buf + idx, MAX_PAGE_SIZ - idx, "logging modes: ");
+        if(log_mode == 0)
+            idx += snprintf(buf + idx, MAX_PAGE_SIZ - idx, "none");
+        else
+        {
+            if(log_mode & LOG_CRITICAL)
+                idx += snprintf(buf + idx, MAX_PAGE_SIZ - idx, "crit,");
+            if(log_mode & LOG_WARNING)
+                idx += snprintf(buf + idx, MAX_PAGE_SIZ - idx, "warn,");
+            if(log_mode & LOG_PROTOCOL)
+                idx += snprintf(buf + idx, MAX_PAGE_SIZ - idx, "prot,");
+            if(log_mode & LOG_INFORMATION)
+                idx += snprintf(buf + idx, MAX_PAGE_SIZ - idx, "info,");
+            if(log_mode & LOG_DEBUG)
+                idx += snprintf(buf + idx, MAX_PAGE_SIZ - idx, "dbug,");
+            buf[idx - 1] = 0;
+        }
+        flog(NULL, "flog", buf);
+        return;
     }
 
     if(new_mode == 0)
     {
+        flog(NULL, "flog", "logging disabled");
+
         if(log_file != -1)
             close(log_file);
         log_file = -1;
@@ -94,15 +124,66 @@ void config_logging(
     log_mode = new_mode;
 }
 
-void set_print_to_stderr(bool print)
-{
+/*
+Set whether to also print messages to the standard error file descriptor.
+(On by default)
+*/
+void flog_set_print_to_stderr(
+    bool print
+){
     print_to_stderr = print;
+}
+
+static bool ends_in_new_line(
+    const char * s
+){
+    u32 l = strlen(s);
+    return (l > 0) && (s[l - 1] == '\n');
+}
+
+static bool multiline(
+    const char * s
+){
+    char * t = strchr(s, '\n');
+    return !(t == NULL || t == s + (strlen(s) - 1));
+}
+
+static void flog(
+    const char * severity,
+    const char * context,
+    const char * msg
+){
+    open_log_file();
+    char * s = _tmp_buffer;
+
+    if(multiline(msg))
+    {
+        snprintf(s, MAX_PAGE_SIZ, "%22s | %4s | %4s | [\n%s%s]\n", timestamp(),
+            severity == NULL ? "    " : severity, context, msg,
+            ends_in_new_line(msg) ? "" : "\n");
+    }
+    else
+    {
+        snprintf(s, MAX_PAGE_SIZ, "%22s | %4s | %4s | %s%s", timestamp(), severity
+            == NULL ? "    " : severity, context, msg, ends_in_new_line(msg) ?
+            "" : "\n");
+    }
+
+    if(print_to_stderr)
+        fprintf(stderr, "%s", s);
+
+    u32 len = strlen(s);
+    write(log_file, s, len);
+    fsync(log_file);
 }
 
 static void open_log_file()
 {
     if(log_file == -1)
     {
+        if(_tmp_buffer == NULL)
+            _tmp_buffer = malloc(MAX_PAGE_SIZ);
+
         time_t t = time(NULL);
         struct tm tm = *localtime(&t);
         snprintf(log_filename, 32, "matilda_%02u%02u%02u_XXXXXX.log", tm.tm_year
@@ -114,13 +195,7 @@ static void open_log_file()
             exit(EXIT_FAILURE);
         }
 
-        char * buf = get_buffer();
-        snprintf(buf, MAX_PAGE_SIZ,
-            "\n--- matilda %u.%u log started (detail level %u)\n\n",
-            VERSION_MAJOR, VERSION_MINOR, log_lvl);
-        u32 len = strlen(buf);
-        write(log_file, buf, len);
-        fsync(log_file);
+        flog(NULL, "flog", "logging enabled"); // TODO detail log modes in here
     }
 }
 
@@ -268,37 +343,6 @@ const char * build_info()
     return buf;
 }
 
-static void flog(
-    const char * severity,
-    const char * context,
-    const char * msg
-){
-
-    print_to_stderr
-    char * s = malloc(MAX_PAGE_SIZ);
-
-    if(multiline(msg))
-    {
-        snprintf(s, MAX_PAGE_SIZ, "%s | %s | %s | [\n%s%s]\n", timestamp(),
-            severity, context, msg, ends_in_new_line(msg) ? "" : "\n");
-    }
-    else
-    {
-        snprintf(s, MAX_PAGE_SIZ, "%s | %s | %s | %s%s", timestamp(), severity,
-            context, msg, ends_in_new_line(msg) ? "" : "\n");
-    }
-
-    if(print_to_stderr)
-        fprintf(stderr, "%s", s);
-
-    open_log_file();
-    u32 len = strlen(s);
-    write(log_file, s, len);
-    fsync(log_file);
-
-    free(s);
-}
-
 /*
 Log a message with verbosity level critical.
 */
@@ -306,10 +350,11 @@ void flog_crit(
     const char * ctx,
     const char * msg
 ){
-    if((log_mode & LOG_CRITICAL) == 0)
-        return;
+    if((log_mode & LOG_CRITICAL) != 0)
+        flog("crit", ctx, msg);
 
-    flog("crit", ctx, msg);
+    flog(NULL, "flog", "execution aborted due to program panic");
+    exit(EXIT_FAILURE);
 }
 
 
@@ -317,12 +362,11 @@ void flog_crit(
 Log a message with verbosity level warning.
 */
 void flog_warn(
-    const char * s
+    const char * ctx,
+    const char * msg
 ){
-    if((log_mode & LOG_WARNING) == 0)
-        return;
-
-    flog("warn", ctx, msg);
+    if((log_mode & LOG_WARNING) != 0)
+        flog("warn", ctx, msg);
 }
 
 
@@ -330,12 +374,11 @@ void flog_warn(
 Log a message with verbosity level communication protocol.
 */
 void flog_prot(
-    const char * s
+    const char * ctx,
+    const char * msg
 ){
-    if((log_mode & LOG_PROTOCOL) == 0)
-        return;
-
-    flog("prot", ctx, msg);
+    if((log_mode & LOG_PROTOCOL) != 0)
+        flog("prot", ctx, msg);
 }
 
 
@@ -343,12 +386,11 @@ void flog_prot(
     Log a message with verbosity level informational.
 */
 void flog_info(
-    const char * s
+    const char * ctx,
+    const char * msg
 ){
-    if((log_mode & LOG_INFORMATION) == 0)
-        return;
-
-    flog("info", ctx, msg);
+    if((log_mode & LOG_INFORMATION) != 0)
+        flog("info", ctx, msg);
 }
 
 
@@ -356,12 +398,11 @@ void flog_info(
     Log a message with verbosity level debug.
 */
 void flog_dbug(
-    const char * s
+    const char * ctx,
+    const char * msg
 ){
-    if((log_mode & LOG_DEBUG) == 0)
-        return;
-
-    flog("dbug", ctx, msg);
+    if((log_mode & LOG_DEBUG) != 0)
+        flog("dbug", ctx, msg);
 }
 
 

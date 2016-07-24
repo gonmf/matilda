@@ -853,13 +853,9 @@ double mcts_start(
     u64 stop_time,
     u64 early_stop_time
 ){
+    /* really just to mute unused parameter warnings */
     if(early_stop_time > stop_time)
-    {
-        /* really just to mute unused parameter warnings */
-        fprintf(stderr, "error: illegal values for stoppage times");
-        flog_crit("error: illegal values for stoppage times");
-        exit(EXIT_FAILURE);
-    }
+        flog_crit("uct", "illegal values for stoppage times");
 
     mcts_init();
 
@@ -1011,22 +1007,14 @@ double mcts_start(
 
     char * str_buf;
     if(ran_out_of_memory)
-    {
-        str_buf = get_buffer();
-        snprintf(str_buf, MAX_PAGE_SIZ, "%s: mcts: search ran out of memory\n",
-            timestamp());
-        fprintf(stderr, "%s", str_buf);
-        flog_warn(str_buf);
-    }
+        flog_warn("uct", "search ran out of memory");
 
     if(stopped_early_by_wr)
     {
         str_buf = get_buffer();
         s64 diff = stop_time - current_time_in_millis();
-        snprintf(str_buf, MAX_PAGE_SIZ, "%s: mcts: search ended %ldms early\n",
-            timestamp(), diff);
-        fprintf(stderr, "%s", str_buf);
-        flog_info(str_buf);
+        snprintf(str_buf, MAX_PAGE_SIZ, "search ended %ldms early", diff);
+        flog_info("uct", str_buf);
     }
 
     clear_out_board(out_b);
@@ -1048,28 +1036,25 @@ double mcts_start(
     if(draws > 0)
     {
         if(komi_offset != 0)
-            snprintf(str_buf, MAX_PAGE_SIZ, "%s: mcts: search finished (sims=%u\
-, depth=%u, wr=%.2f, draws=%u, komi offset %c%u)\n", timestamp(), wins + losses,
-                max_depth, wr, draws, komi_offset > 0 ? '+' : '-', komi_offset >
-                0 ? komi_offset : -komi_offset);
+            snprintf(str_buf, MAX_PAGE_SIZ, "search finished (sims=%u, depth=%u\
+, wr=%.2f, draws=%u, komi offset %c%u)\n", wins + losses, max_depth, wr, draws,
+                komi_offset > 0 ? '+' : '-', komi_offset > 0 ? komi_offset :
+                -komi_offset);
         else
-            snprintf(str_buf, MAX_PAGE_SIZ, "%s: mcts: search finished (sims=%u\
-, depth=%u, wr=%.2f, draws=%u)\n", timestamp(), wins + losses, max_depth, wr,
-                draws);
+            snprintf(str_buf, MAX_PAGE_SIZ, "search finished (sims=%u, depth=%u\
+, wr=%.2f, draws=%u)\n", wins + losses, max_depth, wr, draws);
     }
     else
     {
         if(komi_offset != 0)
-            snprintf(str_buf, MAX_PAGE_SIZ, "%s: mcts: search finished (sims=%u\
-, depth=%u, wr=%.2f, komi offset %c%u)\n", timestamp(), wins + losses,
-                max_depth, wr, komi_offset > 0 ? '+' : '-', komi_offset > 0 ?
-                komi_offset : -komi_offset);
+            snprintf(str_buf, MAX_PAGE_SIZ, "search finished (sims=%u, depth=%u\
+, wr=%.2f, komi offset %c%u)\n", wins + losses, max_depth, wr, komi_offset > 0 ?
+                '+' : '-', komi_offset > 0 ? komi_offset : -komi_offset);
         else
-            snprintf(str_buf, MAX_PAGE_SIZ, "%s: mcts: search finished (sims=%u\
-, depth=%u, wr=%.2f)\n", timestamp(), wins + losses, max_depth, wr);
+            snprintf(str_buf, MAX_PAGE_SIZ, "search finished (sims=%u, depth=%u\
+, wr=%.2f)\n", wins + losses, max_depth, wr);
     }
-    fprintf(stderr, "%s", str_buf);
-    flog_info(str_buf);
+    flog_info("uct", str_buf);
 
     cfg_board_free(&initial_cfg_board);
 

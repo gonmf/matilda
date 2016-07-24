@@ -1,3 +1,3 @@
 #!/bin/bash
-scan-build -v -v -V make
+scan-build -v -V make
 exit 0

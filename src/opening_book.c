@@ -106,10 +106,7 @@ static bool process_opening_book_line(
 
     ob_entry * obe = malloc(sizeof(ob_entry));
     if(obe == NULL)
-    {
-        fprintf(stderr, "error: ob: system out of memory\n");
-        exit(EXIT_FAILURE);
-    }
+        flog_crit("ob", "system out of memory");
 
     obe->hash = hash;
     memcpy(obe->p, packed_board, PACKED_BOARD_SIZ);
@@ -164,10 +161,7 @@ static bool process_state_play_line(
 
     ob_entry * obe = malloc(sizeof(ob_entry));
     if(obe == NULL)
-    {
-        fprintf(stderr, "error: ob: system out of memory\n");
-        exit(EXIT_FAILURE);
-    }
+        flog_crit("ob", "system out of memory");
 
     obe->hash = hash;
     memcpy(obe->p, packed_board, PACKED_BOARD_SIZ);
@@ -191,11 +185,7 @@ void discover_opening_books()
     */
     ob_trans_table = (ob_entry **)calloc(NR_BUCKETS, sizeof(ob_entry *));
     if(ob_trans_table == NULL)
-    {
-        fprintf(stderr, "error: ob: system out of memory\n");
-        flog_crit("error: ob: system out of memory\n");
-        exit(EXIT_FAILURE);
-    }
+        flog_crit("ob", "system out of memory");
 
     /*
     Discover .ob files
@@ -205,11 +195,8 @@ void discover_opening_books()
         32);
 
     char * buf = get_buffer();
-    snprintf(buf, MAX_PAGE_SIZ, "%s: ob: found %u opening book files\n",
-        timestamp(),
-        files_found);
-    fprintf(stderr, "%s", buf);
-    flog_info(buf);
+    snprintf(buf, MAX_PAGE_SIZ, "found %u opening book files\n", files_found);
+    flog_info("ob", buf);
 
     for(u32 i = 0; i < files_found; ++i){
         open_rule_file(filenames[i]);
@@ -224,10 +211,9 @@ void discover_opening_books()
         ob_rules += rules_found;
 
         buf = get_buffer();
-        snprintf(buf, MAX_PAGE_SIZ, "%s: ob: read %s (%u rules)\n", timestamp(),
-            filenames[i], rules_found);
-        fprintf(stderr, "%s", buf);
-        flog_info(buf);
+        snprintf(buf, MAX_PAGE_SIZ, "read %s (%u rules)\n", filenames[i],
+            rules_found);
+        flog_info("ob", buf);
 
         free(filenames[i]);
     }
@@ -239,11 +225,8 @@ void discover_opening_books()
     files_found = recurse_find_files(get_data_folder(), ".spb", filenames, 32);
 
     buf = get_buffer();
-    snprintf(buf, MAX_PAGE_SIZ, "%s: spb: found %u state,play files\n",
-        timestamp(),
-        files_found);
-    fprintf(stderr, "%s", buf);
-    flog_info(buf);
+    snprintf(buf, MAX_PAGE_SIZ, "found %u state,play files\n", files_found);
+    flog_info("spb", buf);
 
     for(u32 i = 0; i < files_found; ++i)
     {
@@ -258,10 +241,9 @@ void discover_opening_books()
         close_rule_file();
 
         buf = get_buffer();
-        snprintf(buf, MAX_PAGE_SIZ, "%s: spb: read %s (%u rules)\n", timestamp(),
-            filenames[i], rules_found);
-        fprintf(stderr, "%s", buf);
-        flog_info(buf);
+        snprintf(buf, MAX_PAGE_SIZ, "read %s (%u rules)\n", filenames[i],
+            rules_found);
+        flog_info("spb", buf);
 
         free(filenames[i]);
     }
@@ -300,8 +282,7 @@ bool opening_book(
     if(test_ko(state, m, BLACK_STONE))
         return false;
 
-    fprintf(stderr, "%s: ob: transition rule found\n", timestamp());
-    flog_info("ob: transition rule found\n");
+    flog_info("ob", "transition rule found");
 
     out_b->tested[m] = true;
     out_b->value[m] = 1.0;

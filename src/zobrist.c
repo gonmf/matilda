@@ -67,11 +67,7 @@ void zobrist_init()
         BOARD_SIZ);
     if(read_binary_file(filename, iv, sizeof(u64) * BOARD_SIZ * BOARD_SIZ * 2)
         == -1)
-    {
-        fprintf(stderr, "error: zobrist: zobrist table file not found\n");
-        flog_crit("error: zobrist: zobrist table file not found\n");
-        exit(EXIT_FAILURE);
-    }
+        flog_crit("zbst", "zobrist table file not found");
 
     for(move pos = 0; pos < BOARD_SIZ * BOARD_SIZ; ++pos)
     {
@@ -101,7 +97,7 @@ void zobrist_init()
         initial_3x3_hash[m] = get_border_hash_slow(m);
 
     _zobrist_inited = true;
-    fprintf(stderr, "%s: zobrist: read table file\n", timestamp());
+    flog_info("zbst", "read table file");
 }
 
 /*
@@ -111,7 +107,7 @@ RETURNS Zobrist hash
 u64 zobrist_new_hash(
     const board * src
 ){
-    u64 ret = 0ULL;
+    u64 ret = 0;
     for(move m = 0; m < BOARD_SIZ * BOARD_SIZ; ++m)
         if(src->p[m] != EMPTY)
             ret ^= iv[m][src->p[m] - 1];

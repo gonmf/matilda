@@ -32,11 +32,7 @@ hash_table * hash_table_create(
 
     hash_table * ht = (hash_table *)malloc(sizeof(hash_table));
     if(ht == NULL)
-    {
-        fprintf(stderr, "error: ht: could not allocate table memory\n");
-        flog_crit("error: ht: could not allocate table memory\n");
-        exit(EXIT_FAILURE);
-    }
+        flog_crit("ht", "could not allocate table memory");
 
     ht->number_of_buckets = get_prime_near(nr_buckets);
     ht->elem_size = elem_size;
@@ -72,11 +68,7 @@ void hash_table_insert_unique(
 
     ht_node * node = (ht_node *)malloc(sizeof(ht_node));
     if(node == NULL)
-    {
-        fprintf(stderr, "error: ht: could not allocate node memory\n");
-        flog_crit("error: ht: could not allocate node memory\n");
-        exit(EXIT_FAILURE);
-    }
+        flog_crit("ht", "could not allocate node memory\n");
 
     node->data = elem;
     node->next = ht->table[bucket];
@@ -197,11 +189,7 @@ void hash_table_export_to_file(
 
     FILE * fp = fopen(filename, "wb");
     if(fp == NULL)
-    {
-        fprintf(stderr, "error: ht: couldn't open file for writing\n");
-        flog_crit("error: ht: couldn't open file for writing\n");
-        exit(EXIT_FAILURE);
-    }
+        flog_crit("ht", "couldn't open file for writing\n");
 
     for(u32 bucket = 0; bucket < ht->number_of_buckets; ++bucket)
     {
@@ -210,11 +198,8 @@ void hash_table_export_to_file(
         {
             size_t w = fwrite(h->data, ht->elem_size, 1, fp);
             if(w != 1)
-            {
-                fprintf(stderr, "error: write failed\n");
-                flog_crit("error: write failed\n");
-                exit(EXIT_FAILURE);
-            }
+                flog_crit("ht", "write failed\n");
+
             ++written;
             h = h->next;
         }
@@ -223,13 +208,8 @@ void hash_table_export_to_file(
     fclose(fp);
 
     if(ht->elements != written)
-    {
-        fprintf(stderr, "error: ht: mismatch between written and expected \
-elements to write\n");
-        flog_crit("error: ht: mismatch between written and expected elements \
-to write\n");
-        exit(EXIT_FAILURE);
-    }
+        flog_crit("ht", "wrong number of hash table elements written\n");
+
     fprintf(stderr, "ht: wrote %u elements to file %s\n", written, filename);
 }
 
@@ -293,11 +273,7 @@ void ** hash_table_export_to_array(
     ret[curr_elem] = NULL;
 
     if(curr_elem != ht->elements)
-    {
-        fprintf(stderr, "error: ht: unexpected number of elements exported\n");
-        flog_crit("error: ht: unexpected number of elements exported\n");
-        exit(EXIT_FAILURE);
-    }
+        flog_crit("ht", "unexpected number of elements exported\n");
 
     return ret;
 }

@@ -69,38 +69,22 @@ void transpositions_table_init()
         b_stats_table = (tt_stats **)calloc(number_of_buckets,
             sizeof(tt_stats *));
         if(b_stats_table == NULL)
-        {
-            fprintf(stderr, "error: tt: system out of memory\n");
-            flog_crit("error: tt: system out of memory\n");
-            exit(EXIT_FAILURE);
-        }
+            flog_crit("tt", "system out of memory");
 
         b_locks_table = (omp_lock_t *)malloc(number_of_buckets *
             sizeof(omp_lock_t));
         if(b_locks_table == NULL)
-        {
-            fprintf(stderr, "error: tt: system out of memory\n");
-            flog_crit("error: tt: system out of memory\n");
-            exit(EXIT_FAILURE);
-        }
+            flog_crit("tt", "system out of memory");
 
         w_stats_table = (tt_stats **)calloc(number_of_buckets,
             sizeof(tt_stats *));
         if(w_stats_table == NULL)
-        {
-            fprintf(stderr, "error: tt: system out of memory\n");
-            flog_crit("error: tt: system out of memory\n");
-            exit(EXIT_FAILURE);
-        }
+            flog_crit("tt", "system out of memory");
 
         w_locks_table = (omp_lock_t *)malloc(number_of_buckets *
             sizeof(omp_lock_t));
         if(w_locks_table == NULL)
-        {
-            fprintf(stderr, "error: tt: system out of memory\n");
-            flog_crit("error: tt: system out of memory\n");
-            exit(EXIT_FAILURE);
-        }
+            flog_crit("tt", "system out of memory");
 
         for(u32 i = 0; i < number_of_buckets; ++i)
         {
@@ -191,11 +175,8 @@ static tt_stats * create_state(
     {
         ret = (tt_stats *)malloc(sizeof(tt_stats));
         if(ret == NULL)
-        {
-            fprintf(stderr, "error: tt: create_state: system out of memory\n");
-            flog_crit("error: tt: create_state: system out of memory\n");
-            exit(EXIT_FAILURE);
-        }
+            flog_crit("tt", "create_state: system out of memory");
+
         omp_init_lock(&ret->lock);
     }
 
@@ -341,8 +322,9 @@ tt_stats * transpositions_lookup_create(
         if(states_in_use >= max_allocated_states)
         {
             transpositions_log_status();
-            flog_crit("Memory exceeded on root lookup.\n");
-            flog_crit(board_to_string(b->p, b->last_played, b->last_eaten));
+            flog_crit("tt", "memory exceeded on root lookup");
+            flog_crit("tt", board_to_string(b->p, b->last_played,
+                b->last_eaten));
         }
 
         ret = create_state(hash);
@@ -459,22 +441,21 @@ void transpositions_log_status()
 {
     char * buf = get_buffer();
     u32 idx = 0;
-    idx += snprintf(buf + idx, 1024 - idx,
+    idx += snprintf(buf + idx, MAX_PAGE_SIZ - idx,
         "\n*** Transpositions table trace start ***\n\n");
-    idx += snprintf(buf + idx, 1024 - idx, "Max size in MiB: %lu\n",
+    idx += snprintf(buf + idx, MAX_PAGE_SIZ - idx, "Max size in MiB: %lu\n",
         max_size_in_mbs);
-    idx += snprintf(buf + idx, 1024 - idx, "Max allocated states: %u\n",
+    idx += snprintf(buf + idx, MAX_PAGE_SIZ - idx, "Max allocated states: %u\n",
         max_allocated_states);
-    idx += snprintf(buf + idx, 1024 - idx, "Allocated states: %u\n",
+    idx += snprintf(buf + idx, MAX_PAGE_SIZ - idx, "Allocated states: %u\n",
         allocated_states);
-    idx += snprintf(buf + idx, 1024 - idx, "States in use: %u\n",
+    idx += snprintf(buf + idx, MAX_PAGE_SIZ - idx, "States in use: %u\n",
         states_in_use);
-    idx += snprintf(buf + idx, 1024 - idx, "Number of buckets: %u\n",
+    idx += snprintf(buf + idx, MAX_PAGE_SIZ - idx, "Number of buckets: %u\n",
         number_of_buckets);
-    idx += snprintf(buf + idx, 1024 - idx, "Maintenance mark: %u\n",
+    snprintf(buf + idx, MAX_PAGE_SIZ - idx, "Maintenance mark: %u\n",
         maintenance_mark);
 
-    flog_crit(buf);
-    fprintf(stderr, "%s", buf);
+    flog_warn("tt", buf);
 }
 

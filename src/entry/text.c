@@ -248,6 +248,10 @@ static void text_print_score(bool is_black)
 }
 
 void main_text(bool is_black){
+    flog_set_print_to_stderr(false);
+    flog_info("gtp", "matilda now running over text interface");
+    flog_info("gtp", build_info());
+
     printf("Matilda %u.%u running in text mode. In this mode the options are li\
 mited and no time limit is enforced. To run using GTP add the flag -gtp. Playin\
 g with Chinese rules with %s komi; game is over after two passes or a resignati\
@@ -348,8 +352,7 @@ score/quit)\n", EUROPEAN_NOTATION ? coord_to_alpha_num(coord_to_move(3, 3)) :
 
             lower_case(line);
 
-            flog_prot(line);
-            flog_prot("\n");
+            flog_prot("text", line);
 
             if(strcmp(line, "quit") == 0 || strcmp(line, "exit") == 0)
                 exit(EXIT_SUCCESS);
