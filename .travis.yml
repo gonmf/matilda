@@ -6,5 +6,5 @@ os:
 compiler:
 #- clang
 - gcc
-script: make -C src
+script: make -C src && src/test
 depth: 1
