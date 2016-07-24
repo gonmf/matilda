@@ -16,12 +16,13 @@ crashes, but it is impossible to guarantee this in all cases.
 
 #include "types.h"
 
-#define LOG_NONE     0
-#define LOG_CRITICAL 1
-#define LOG_GTP_WARN 2
-#define LOG_INFORM   3
+#define LOG_CRITICAL    1
+#define LOG_WARNING     2
+#define LOG_PROTOCOL    4
+#define LOG_INFORMATION 8
+#define LOG_DEBUG       16
 
-#define DEFAULT_LOG_LVL LOG_CRITICAL
+#define DEFAULT_LOG_MODES (LOG_CRITICAL | LOG_DEBUG)
 
 
 /*
@@ -61,7 +62,7 @@ void flog_warn(
 
 
 /*
-Log a message with verbosity level protocolar.
+Log a message with verbosity level communication protocol.
 */
 void flog_prot(
     const char * s

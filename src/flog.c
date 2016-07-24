@@ -33,9 +33,9 @@ crashes, but it is impossible to guarantee this in all cases.
 #include "buffer.h"
 
 static int log_file = -1;
-static u8 log_lvl = LOG_NONE;
+static u16 log_mode = DEFAULT_LOG_MODES;
 static char log_filename[32];
-
+static bool print_to_stderr = true;
 
 
 /*
@@ -67,30 +67,36 @@ extern s16 komi;
 
 
 /*
-Set logging level of messages to actually write to file.
-Messages more verbose than the level specified are ignored.
+Sets the logging messages that are written to file based on a mask of the
+combination of available message types. See flog.h for more information.
 */
-void set_logging_level(
-    u8 lvl
+void config_logging(
+    u16 new_mode
 ){
-    if(lvl != LOG_NONE && log_file != -1)
+    if(new_mode != 0 && log_file != -1)
     {
         char * buf = get_buffer();
-        snprintf(buf, MAX_PAGE_SIZ, "\n--- log detail level changed to %u\n\n",
-            lvl);
+        // TODO print more descriptive msg
+        snprintf(buf, MAX_PAGE_SIZ, "\n# logging level mask set 0x%x\n\n",
+            new_mode);
         u32 len = strlen(buf);
         write(log_file, buf, len);
         fsync(log_file);
     }
 
-    if(lvl == LOG_NONE)
+    if(new_mode == 0)
     {
         if(log_file != -1)
             close(log_file);
         log_file = -1;
     }
 
-    log_lvl = lvl;
+    log_mode = new_mode;
+}
+
+void set_print_to_stderr(bool print)
+{
+    print_to_stderr = print;
 }
 
 static void open_log_file()
@@ -262,27 +268,48 @@ const char * build_info()
     return buf;
 }
 
-/*
-Logs the build information to file (level: informational).
-*/
-void flog_build_info()
-{
-    flog_info(build_info());
+static void flog(
+    const char * severity,
+    const char * context,
+    const char * msg
+){
+
+    print_to_stderr
+    char * s = malloc(MAX_PAGE_SIZ);
+
+    if(multiline(msg))
+    {
+        snprintf(s, MAX_PAGE_SIZ, "%s | %s | %s | [\n%s%s]\n", timestamp(),
+            severity, context, msg, ends_in_new_line(msg) ? "" : "\n");
+    }
+    else
+    {
+        snprintf(s, MAX_PAGE_SIZ, "%s | %s | %s | %s%s", timestamp(), severity,
+            context, msg, ends_in_new_line(msg) ? "" : "\n");
+    }
+
+    if(print_to_stderr)
+        fprintf(stderr, "%s", s);
+
+    open_log_file();
+    u32 len = strlen(s);
+    write(log_file, s, len);
+    fsync(log_file);
+
+    free(s);
 }
 
 /*
 Log a message with verbosity level critical.
 */
 void flog_crit(
-    const char * s
+    const char * ctx,
+    const char * msg
 ){
-    if(log_lvl < LOG_CRITICAL)
+    if((log_mode & LOG_CRITICAL) == 0)
         return;
 
-    open_log_file();
-    u32 len = strlen(s);
-    write(log_file, s, len);
-    fsync(log_file);
+    flog("crit", ctx, msg);
 }
 
 
@@ -292,29 +319,23 @@ Log a message with verbosity level warning.
 void flog_warn(
     const char * s
 ){
-    if(log_lvl < LOG_GTP_WARN)
+    if((log_mode & LOG_WARNING) == 0)
         return;
 
-    open_log_file();
-    u32 len = strlen(s);
-    write(log_file, s, len);
-    fsync(log_file);
+    flog("warn", ctx, msg);
 }
 
 
 /*
-Log a message with verbosity level protocolar.
+Log a message with verbosity level communication protocol.
 */
 void flog_prot(
     const char * s
 ){
-    if(log_lvl < LOG_GTP_WARN)
+    if((log_mode & LOG_PROTOCOL) == 0)
         return;
 
-    open_log_file();
-    u32 len = strlen(s);
-    write(log_file, s, len);
-    fsync(log_file);
+    flog("prot", ctx, msg);
 }
 
 
@@ -324,13 +345,23 @@ void flog_prot(
 void flog_info(
     const char * s
 ){
-    if(log_lvl < LOG_INFORM)
+    if((log_mode & LOG_INFORMATION) == 0)
         return;
 
-    open_log_file();
-    u32 len = strlen(s);
-    write(log_file, s, len);
-    fsync(log_file);
+    flog("info", ctx, msg);
+}
+
+
+/*
+    Log a message with verbosity level debug.
+*/
+void flog_dbug(
+    const char * s
+){
+    if((log_mode & LOG_DEBUG) == 0)
+        return;
+
+    flog("dbug", ctx, msg);
 }
 
 
