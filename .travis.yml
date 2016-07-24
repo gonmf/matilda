@@ -1,0 +1,6 @@
+language: C
+compiler:
+  - clang
+  - gcc
+script: make -C src
+depth: 3
