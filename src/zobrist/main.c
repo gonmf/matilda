@@ -44,9 +44,8 @@ int main(
     timestamp();
     assert_data_folder_exists();
 
-    printf("This process aims to reduce the bit distribution variance of the \
-data.\n");
-    printf("When you are satisfied press ENTER\n\n");
+    printf("This process aims to reduce the bit distribution variance of the da\
+ta.\nWhen you are satisfied press ENTER\n\n");
 
     u64 iv[BOARD_SIZ * BOARD_SIZ][2];
     memset(iv, 0, BOARD_SIZ * BOARD_SIZ * sizeof(u64));
@@ -126,9 +125,8 @@ data.\n");
     printf("\nSearch stopped.\n");
 
     char * filename = get_buffer();
-    snprintf(filename, MAX_PAGE_SIZ, "%s%ux%u.zt.bak", get_data_folder(), BOARD_SIZ,
-        BOARD_SIZ);
-
+    snprintf(filename, MAX_PAGE_SIZ, "%s%ux%u.zt.bak", get_data_folder(),
+        BOARD_SIZ, BOARD_SIZ);
 
 
     FILE * h = fopen(filename, "wb");

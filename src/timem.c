@@ -92,48 +92,20 @@ u64 current_nanoseconds()
     return ts.tv_nsec;
 }
 
-
-static u64 ts_time = 0;
-
 /*
-Returns textual timestamp. It is not dynammically allocated and the memory will
-be reused for the next timestamp (but is thread safe).
+Produces a textual timestamp based on the local timezone and system time.
 RETURNS timestamp
 */
 const char * timestamp()
 {
     char * buf = get_buffer();
 
-    if(ts_time == 0)
-    {
-        snprintf(buf, 64, "0.000");
-        ts_time = current_time_in_millis();
-        return buf;
-    }
+    time_t t = time(NULL);
+    struct tm tm = *localtime(&t);
+    u64 millis = current_time_in_millis();
 
-    u64 dif = current_time_in_millis() - ts_time;
-    u64 days = dif / (24 * 60 * 60 * 1000);
-    dif %= (24 * 60 * 60 * 1000);
-    u64 hours = dif / (60 * 60 * 1000);
-    dif %= (60 * 60 * 1000);
-    u64 minutes = dif / (60 * 1000);
-    dif %= (60 * 1000);
-    u64 seconds = dif / (1000);
-    dif %= (1000);
-
-    if(days > 0)
-     snprintf(buf, 64, "%" PRIu64 "d%" PRIu64 "h%" \
-        PRIu64 "m", days, hours, minutes);
-    else
-        if(hours > 0)
-            snprintf(buf, 64, "%" PRIu64 "h%" \
-                PRIu64 "m%" PRIu64 "s", hours, minutes, seconds);
-        else
-            if(minutes > 0)
-                snprintf(buf, 64, "%" PRIu64 "m%" \
-                    PRIu64 ".%03" PRIu64 "", minutes, seconds, dif);
-            else
-                snprintf(buf, 64, "%" PRIu64 ".%03" \
-                    PRIu64 "", seconds, dif);
+    snprintf(buf, MAX_PAGE_SIZ, "%02u-%02u-%02u %02u:%02u:%02u.%04u", tm.tm_year
+        % 100, tm.tm_mon, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec,
+        (u32)(millis % 1000));
     return buf;
 }

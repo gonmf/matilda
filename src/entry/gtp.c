@@ -375,8 +375,8 @@ static void gtp_clear_board(
         if(export_game_as_sgf_auto_named(&current_game, filename))
         {
             char * buf = get_buffer();
-            snprintf(buf, MAX_PAGE_SIZ, "%s: game record exported to %s\n", timestamp(),
-                filename);
+            snprintf(buf, MAX_PAGE_SIZ, "%s: game record exported to %s\n",
+                timestamp(), filename);
             fprintf(stderr, "%s", buf);
             flog_info(buf);
         }
@@ -412,10 +412,10 @@ static void gtp_boardsize(
     if(ns != BOARD_SIZ)
     {
         error_msg(fp, id, "unacceptable size");
-        fprintf(stderr, "changing the board size requires the program to be \
-recompiled.\n");
-        flog_warn("changing the board size requires the program to be \
-recompiled.\n");
+        fprintf(stderr, "changing the board size requires the program to be rec\
+ompiled.\n");
+        flog_warn("changing the board size requires the program to be recompile\
+d.\n");
     }
     else
         answer_msg(fp, id, NULL);
@@ -619,8 +619,8 @@ static void generic_genmove(
                 {
                     answer_msg(fp, id, "resign");
                     char * buf = get_buffer();
-                    snprintf(buf, MAX_PAGE_SIZ, "matilda playing as %s (%c) \
-resigns because of timeout\n", is_black ? "black" : "white", is_black ?
+                    snprintf(buf, MAX_PAGE_SIZ, "matilda playing as %s (%c) res\
+igns because of timeout\n", is_black ? "black" : "white", is_black ?
                         BLACK_STONE_CHAR : WHITE_STONE_CHAR);
                     fprintf(stderr, "%s", buf);
                     flog_warn(buf);
@@ -649,9 +649,8 @@ resigns because of timeout\n", is_black ? "black" : "white", is_black ?
                 {
                     out_on_time_warning = true;
                     char * buf = get_buffer();
-                    snprintf(buf, MAX_PAGE_SIZ,
-                        "%s: matilda is believed to have lost on time\n",
-                        timestamp());
+                    snprintf(buf, MAX_PAGE_SIZ, "%s: matilda is believed to hav\
+e lost on time\n", timestamp());
                     fprintf(stderr, "%s", buf);
                     flog_warn(buf);
                 }
@@ -661,10 +660,10 @@ resigns because of timeout\n", is_black ? "black" : "white", is_black ?
 
             if(ENABLE_FRISBEE_GO && frisbee_prob < 1.0)
             {
-                fprintf(stderr, "warning: playing Frisbee Go but play \
-modification has been ignored by invoking genmove\n");
-                flog_crit("warning: playing Frisbee Go but play \
-modification has been ignored by invoking genmove\n");
+                fprintf(stderr, "warning: playing Frisbee Go but play modificat\
+ion has been ignored by invoking genmove\n");
+                flog_crit("warning: playing Frisbee Go but play modification ha\
+s been ignored by invoking genmove\n");
             }
         }
     }
@@ -725,12 +724,12 @@ static void gtp_time_settings(
 ){
     if(LIMIT_BY_PLAYOUTS)
     {
-        fprintf(stderr, "warning: attempted to set time settings when matilda \
-was compiled to use a constant number of simulations per turn in MCTS; request \
-ignored\n");
-        flog_warn("warning: attempted to set time settings when matilda was \
-compiled to use a constant number of simulations per turn in MCTS; request \
-ignored\n");
+        fprintf(stderr, "warning: attempted to set time settings when matilda w\
+as compiled to use a constant number of simulations per turn in MCTS; request i\
+gnored\n");
+        flog_warn("warning: attempted to set time settings when matilda was com\
+piled to use a constant number of simulations per turn in MCTS; request ignored\
+\n");
         answer_msg(fp, id, NULL);
         return;
     }
@@ -809,12 +808,12 @@ static void gtp_kgs_time_settings(
 ){
     if(LIMIT_BY_PLAYOUTS)
     {
-        fprintf(stderr, "warning: attempted to set time settings when matilda \
-was compiled to use a constant number of simulations per turn in MCTS; request \
-ignored\n");
-        flog_warn("warning: attempted to set time settings when matilda was \
-compiled to use a constant number of simulations per turn in MCTS; request \
-ignored\n");
+        fprintf(stderr, "warning: attempted to set time settings when matilda w\
+as compiled to use a constant number of simulations per turn in MCTS; request i\
+gnored\n");
+        flog_warn("warning: attempted to set time settings when matilda was com\
+piled to use a constant number of simulations per turn in MCTS; request ignored\
+\n");
         answer_msg(fp, id, NULL);
         return;
     }
@@ -927,13 +926,11 @@ ignored\n");
 
     char * buf = get_buffer();
     if(strcmp(previous_ts_as_s, new_ts_as_s) == 0)
-        snprintf(buf, MAX_PAGE_SIZ,
-            "%s: time: clock settings kept at %s for both players\n",
-            timestamp(), previous_ts_as_s);
+        snprintf(buf, MAX_PAGE_SIZ, "%s: time: clock settings kept at %s for bo\
+th players\n", timestamp(), previous_ts_as_s);
     else
-        snprintf(buf, MAX_PAGE_SIZ,
-            "%s: time: clock settings changed from %s to %s for both players\n",
-            timestamp(), previous_ts_as_s, new_ts_as_s);
+        snprintf(buf, MAX_PAGE_SIZ, "%s: time: clock settings changed from %s t\
+o %s for both players\n", timestamp(), previous_ts_as_s, new_ts_as_s);
 
     fprintf(stderr, "%s", buf);
     flog_info(buf);
@@ -950,12 +947,12 @@ static void gtp_time_left(
 ){
     if(LIMIT_BY_PLAYOUTS)
     {
-        fprintf(stderr, "warning: attempted to set time settings when matilda \
-was compiled to use a constant number of simulations per turn in MCTS; request \
-ignored\n");
-        flog_warn("warning: attempted to set time settings when matilda was \
-compiled to use a constant number of simulations per turn in MCTS; request \
-ignored\n");
+        fprintf(stderr, "warning: attempted to set time settings when matilda w\
+as compiled to use a constant number of simulations per turn in MCTS; request i\
+gnored\n");
+        flog_warn("warning: attempted to set time settings when matilda was com\
+piled to use a constant number of simulations per turn in MCTS; request ignored\
+\n");
         answer_msg(fp, id, NULL);
         return;
     }
@@ -1027,7 +1024,8 @@ static void gtp_cputime(
     }
 
     char * buf = get_buffer();
-    snprintf(buf, MAX_PAGE_SIZ, "%u.%03lu", (u32)ts.tv_sec, ((u64)ts.tv_nsec) / 1000000);
+    snprintf(buf, MAX_PAGE_SIZ, "%u.%03lu", (u32)ts.tv_sec, ((u64)ts.tv_nsec) /
+        1000000);
 
     answer_msg(fp, id, buf);
 }
@@ -1070,10 +1068,10 @@ static void gtp_final_status_list(
             if(strcmp(status, "seki") == 0)
             {
                 error_msg(fp, id, "seki detection unsupported");
-                fprintf(stderr, "warning: final_status_list with seki \
-parameter unsupported\n");
-                flog_warn("warning: final_status_list with seki parameter \
-unsupported\n");
+                fprintf(stderr, "warning: final_status_list with seki parameter\
+ unsupported\n");
+                flog_warn("warning: final_status_list with seki parameter unsup\
+ported\n");
             }
             else
                 error_msg(fp, id, "syntax error");
@@ -1456,14 +1454,14 @@ void main_gtp(
 
     if(ENABLE_FRISBEE_GO && frisbee_prob < 1.0)
     {
-        fprintf(stderr, "warning: while playing Frisbee Go in GTP mode it is \
-assumed the plays are modified randomly by the controller or adapter program; \
-prior to play commands and after reg_genmove commands. Do not invoke genmove \
-commands instead.\n");
+        fprintf(stderr, "warning: while playing Frisbee Go in GTP mode it is as\
+sumed the plays are modified randomly by the controller or adapter program; pri\
+or to play commands and after reg_genmove commands. Do not invoke genmove comma\
+nds instead.\n");
         flog_warn("warning: while playing Frisbee Go in GTP mode it is assumed \
 the plays are modified randomly by the controller or adapter program; prior to \
-play commands and after reg_genmove commands. Do not invoke genmove commands \
-instead.\n");
+play commands and after reg_genmove commands. Do not invoke genmove commands in\
+stead.\n");
     }
 
     FILE * out_fp;
@@ -1491,7 +1489,8 @@ instead.\n");
         bool is_black = current_player_color(&current_game);
 
         board current_state;
-        memcpy(&current_state, current_game_state(&current_game), sizeof(board));
+        memcpy(&current_state, current_game_state(&current_game),
+            sizeof(board));
 
         while(1)
         {
@@ -1853,8 +1852,8 @@ cmd_matcher:
 
         if(command_exists)
         {
-            fprintf(stderr, "warning: command '%s' exists but the parameter \
-list is wrong; please check the documentation\n", buf);
+            fprintf(stderr, "warning: command '%s' exists but the parameter lis\
+t is wrong; please check the documentation\n", buf);
             error_msg(out_fp, idn, "syntax error");
         }
         else

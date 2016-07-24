@@ -1048,25 +1048,25 @@ double mcts_start(
     if(draws > 0)
     {
         if(komi_offset != 0)
-            snprintf(str_buf, MAX_PAGE_SIZ, "%s: mcts: search finished \
-(sims=%u, depth=%u, wr=%.2f, draws=%u, komi offset %c%u)\n", timestamp(), wins + losses,
+            snprintf(str_buf, MAX_PAGE_SIZ, "%s: mcts: search finished (sims=%u\
+, depth=%u, wr=%.2f, draws=%u, komi offset %c%u)\n", timestamp(), wins + losses,
                 max_depth, wr, draws, komi_offset > 0 ? '+' : '-', komi_offset >
                 0 ? komi_offset : -komi_offset);
         else
-            snprintf(str_buf, MAX_PAGE_SIZ, "%s: mcts: search finished \
-(sims=%u, depth=%u, wr=%.2f, draws=%u)\n", timestamp(), wins + losses, max_depth, wr,
+            snprintf(str_buf, MAX_PAGE_SIZ, "%s: mcts: search finished (sims=%u\
+, depth=%u, wr=%.2f, draws=%u)\n", timestamp(), wins + losses, max_depth, wr,
                 draws);
     }
     else
     {
         if(komi_offset != 0)
-            snprintf(str_buf, MAX_PAGE_SIZ, "%s: mcts: search finished \
-(sims=%u, depth=%u, wr=%.2f, komi offset %c%u)\n", timestamp(), wins + losses, max_depth,
-                wr, komi_offset > 0 ? '+' : '-', komi_offset > 0 ? komi_offset :
-                -komi_offset);
+            snprintf(str_buf, MAX_PAGE_SIZ, "%s: mcts: search finished (sims=%u\
+, depth=%u, wr=%.2f, komi offset %c%u)\n", timestamp(), wins + losses,
+                max_depth, wr, komi_offset > 0 ? '+' : '-', komi_offset > 0 ?
+                komi_offset : -komi_offset);
         else
-            snprintf(str_buf, MAX_PAGE_SIZ, "%s: mcts: search finished \
-(sims=%u, depth=%u, wr=%.2f)\n", timestamp(), wins + losses, max_depth, wr);
+            snprintf(str_buf, MAX_PAGE_SIZ, "%s: mcts: search finished (sims=%u\
+, depth=%u, wr=%.2f)\n", timestamp(), wins + losses, max_depth, wr);
     }
     fprintf(stderr, "%s", str_buf);
     flog_info(str_buf);

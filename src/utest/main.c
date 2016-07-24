@@ -59,9 +59,8 @@ static void test_cfg_board()
             bool can_play2 = can_play(&cb, m, is_black);
             if(can_play1 != can_play2)
             {
-                fprintf(stderr,
-                    "play legality disagreement at %u (s=%u cfg=%u)\n", m,
-                    can_play1, can_play2);
+                fprintf(stderr, "play legality disagreement at %u (s=%u cfg=%u)\
+\n", m, can_play1, can_play2);
                 fprint_board(stdout, &b);
                 fprint_cfg_board(stdout, &cb);
                 exit(EXIT_FAILURE);
@@ -94,8 +93,8 @@ static void test_cfg_board()
                 if(stones_cap[k])
                     ++stones_captured4;
             massert(stone_diff == stone_diff2, "stone_diff1/2");
-            massert(abs(stone_diff) - 1 == stones_captured4,
-                "stone_diff/captured4");
+            massert(abs(stone_diff) - 1 == stones_captured4, "stone_diff/captur\
+ed4");
 
             /*
             Test liberty counts for both players
@@ -122,10 +121,8 @@ static void test_cfg_board()
                         stones_captured2 || ((stones_captured1 > 0) !=
                             stones_captured3))
                     {
-                        fprintf(stderr,
-                            "stones captured mismatch (1): (%u) %u %u %u\n", m,
-                            stones_captured1, stones_captured2,
-                            stones_captured3);
+                        fprintf(stderr, "stones captured mismatch (1): (%u) %u \
+%u %u\n", m, stones_captured1, stones_captured2, stones_captured3);
                         fprint_board(stdout, &b);
                         fprint_cfg_board(stdout, &cb);
                         exit(EXIT_FAILURE);
@@ -157,10 +154,8 @@ static void test_cfg_board()
                         stones_captured2 || ((stones_captured1 > 0) !=
                             stones_captured3))
                     {
-                        fprintf(stderr,
-                            "stones captured mismatch (2): (%u) %u %u %u\n", m,
-                            stones_captured1, stones_captured2,
-                            stones_captured3);
+                        fprintf(stderr, "stones captured mismatch (2): (%u) %u \
+%u %u\n", m, stones_captured1, stones_captured2, stones_captured3);
                         fprint_board(stdout, &b);
                         fprint_cfg_board(stdout, &cb);
                         exit(EXIT_FAILURE);
@@ -226,12 +221,12 @@ static void test_pattern(){
                 pat3_transpose(cb.p, m, p);
                 u16 hash_pat3 = pat3_to_string((const u8(*)[3])p);
                 massert(hash_cfg == hash_pat3,
-                    "CFG from play and pat3 patterns");
+                    "CFG from play and pat3 patterns 1");
 
                 cfg_board_clone(&sb2, &cb);
                 hash_cfg = sb2.hash[m];
                 massert(hash_cfg == hash_pat3,
-                    "CFG from board and pat3 patterns");
+                    "CFG from board and pat3 patterns 2");
                 cfg_board_free(&sb2);
             }
 

@@ -16,6 +16,7 @@ crashes, but it is impossible to guarantee this in all cases.
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/file.h>
+#include <time.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <errno.h>
@@ -96,7 +97,10 @@ static void open_log_file()
 {
     if(log_file == -1)
     {
-        snprintf(log_filename, 32, "matilda-XXXXXX.log");
+        time_t t = time(NULL);
+        struct tm tm = *localtime(&t);
+        snprintf(log_filename, 32, "matilda_%02u%02u%02u_XXXXXX.log", tm.tm_year
+        % 100, tm.tm_mon, tm.tm_mday);
         log_file = mkstemps(log_filename, 4);
         if(log_file == -1)
         {

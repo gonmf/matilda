@@ -70,10 +70,10 @@ int main(int argc, char * argv[]){
 usage:
         printf("Usage: %s [options]\n", argv[0]);
         printf("Options:\n");
-        printf("-max_depth number - Maximum turn depth of the openings. \
-(default: %u)\n", ob_depth);
-        printf("-min_samples - Minimum number of samples for a rule to be \
-saved. (default: %u)\n", minimum_samples);
+        printf("-max_depth number - Maximum turn depth of the openings. (defaul\
+t: %u)\n", ob_depth);
+        printf("-min_samples - Minimum number of samples for a rule to be saved\
+. (default: %u)\n", minimum_samples);
         printf("-relax_komi - Allow games with uncommon komi values.\n");
         printf("-version - Print version information and exit.\n");
         exit(EXIT_SUCCESS);

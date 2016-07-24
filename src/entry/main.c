@@ -232,8 +232,8 @@ int main(
                     human_player_color = false;
                 else
                 {
-                    fprintf(stderr,
-                        "error: illegal format when specifying player color\n");
+                    fprintf(stderr, "error: illegal format when specifying play\
+er color\n");
                     exit(EXIT_FAILURE);
                 }
             ++i;
@@ -448,31 +448,31 @@ escriptor is a terminal\n        and if it is it uses the text mode interface. \
 Otherwise it uses the GTP\n        interface. This command overrides this with \
 the specific mode you want\n        to be used.\n\n");
 
-        fprintf(stderr,
-            "        \033[1m-c, --color <black or white>\033[0m\n\n");
-        fprintf(stderr,
-            "        Select human player color (text mode only).\n\n");
+        fprintf(stderr, "        \033[1m-c, --color <black or white>\033[0m\n\n\
+");
+        fprintf(stderr, "        Select human player color (text mode only).\n\\
+n");
 
         fprintf(stderr, "        \033[1m--resign_on_timeout\033[0m\n\n");
-        fprintf(stderr,
-            "        Resign if the program believes to have lost on time.\n\n");
+        fprintf(stderr, "        Resign if the program believes to have lost on\
+ time.\n\n");
 
         fprintf(stderr, "        \033[1m--think_in_opt_time\033[0m\n\n");
-        fprintf(stderr, "        Continue thinking in the background while in \
-the opponents turn.\n\n");
+        fprintf(stderr, "        Continue thinking in the background while in t\
+he opponents turn.\n\n");
 
         fprintf(stderr, "        \033[1m-t, --time <number>\033[0m\n\n");
-        fprintf(stderr, "        Set the time system to a specific number of \
-seconds per turn and ignore timeouts.\n\n");
+        fprintf(stderr, "        Set the time system to a specific number of se\
+conds per turn and ignore timeouts.\n\n");
 
         fprintf(stderr, "        \033[1m--time_system <value>\033[0m\n\n");
-        fprintf(stderr, "        Override the time system in use and ignore \
-changes via GTP.\n        Use a byoyomi format like 10m+3x30s/5; allowed \
-specifiers: ms, s, m, h.\n\n");
+        fprintf(stderr, "        Override the time system in use and ignore cha\
+nges via GTP.\n        Use a byoyomi format like 10m+3x30s/5; allowed specifier\
+s: ms, s, m, h.\n\n");
 
         fprintf(stderr, "        \033[1m-d, --data <path>\033[0m\n\n");
-        fprintf(stderr, "        Override the data folder path. The folder \
-must exist.\n\n");
+        fprintf(stderr, "        Override the data folder path. The folder must\
+ exist.\n\n");
 
         fprintf(stderr, "        \033[1m--disable_opening_books\033[0m\n\n");
         fprintf(stderr, "        Disable the use of opening books.\n\n");
@@ -481,43 +481,43 @@ must exist.\n\n");
         fprintf(stderr, "        Disable final scoring estimates.\n\n");
 
         fprintf(stderr, "        \033[1m-l, --log <level>\033[0m\n\n");
-        fprintf(stderr, "        Set the message logger level. The available \
-levels are:\n         0 - No logging\n         1 - Critical error messages \
-(default)\n         2 - Errors, warning and GTP trace\n         3 - All \
-messages\n\n");
+        fprintf(stderr, "        Set the message logger level. The available le\
+vels are:\n         0 - No logging\n         1 - Error messages (default)\n    \
+     2 - Errors, warning and GTP trace\n         3 - All messages\n\n");
 
         fprintf(stderr, "        \033[1m--memory <number>\033[0m\n\n");
-        fprintf(stderr, "        Override the available memory for the MCTS \
-transpositions table, in MiB.\n        The default is %u MiB\n\n",
+        fprintf(stderr, "        Override the available memory for the MCTS tra\
+nspositions table, in MiB.\n        The default is %u MiB\n\n",
             DEFAULT_UCT_MEMORY);
 
         fprintf(stderr, "        \033[1m--save_all\033[0m\n\n");
-        fprintf(stderr,
-            "        Save all finished games to the data folder as SGF.\n\n");
+        fprintf(stderr, "        Save all finished games to the data folder as \
+SGF.\n\n");
 
-        fprintf(stderr, "        \033[1m--frisbee_accuracy <number>\033[0m\n\n");
         fprintf(stderr,
-            "        Select frisbee accuracy if playing frisbee Go.\n\n");
+            "        \033[1m--frisbee_accuracy <number>\033[0m\n\n");
+        fprintf(stderr, "        Select frisbee accuracy if playing frisbee Go.\
+\n\n");
 
         fprintf(stderr, "        \033[1m--threads <number>\033[0m\n\n");
         fprintf(stderr, "        Override the number of OpenMP threads to use. \
-The default is the total\n        number of normal plus hyperthreaded CPU \
-cores.\n\n");
+The default is the total\n        number of normal plus hyperthreaded CPU cores\
+.\n\n");
 
         fprintf(stderr, "        \033[1m--set <param> <value>\033[0m\n\n");
-        fprintf(stderr, "        For optimization. Set the value of an \
-internal parameter.\n\n");
+        fprintf(stderr, "        For optimization. Set the value of an internal\
+ parameter.\n\n");
 
         fprintf(stderr, "        \033[1m-i, --info\033[0m\n\n");
-        fprintf(stderr,
-            "        Print runtime information at startup and exit.\n\n");
+        fprintf(stderr, "        Print runtime information at startup and exit.\
+\n\n");
 
         fprintf(stderr, "        \033[1m-v, --version\033[0m\n\n");
         fprintf(stderr, "        Print version information and exit.\n\n");
 
         fprintf(stderr, "\033[1mBUGS\033[0m\n");
-        fprintf(stderr, "        You can provide feedback at \
-https://github.com/gonmf/matilda\n\n");
+        fprintf(stderr, "        You can provide feedback at https://github.com\
+/gonmf/matilda\n\n");
 
         return EXIT_FAILURE;
     }
@@ -537,10 +537,10 @@ https://github.com/gonmf/matilda\n\n");
     {
         if(LIMIT_BY_PLAYOUTS)
         {
-            fprintf(stderr, "error: -think_in_opt_time flag cannot be used \
-with the program compiled to use a constant number of playouts per turn\n");
-            flog_crit("error: -think_in_opt_time flag cannot be used with the \
-program compiled to use a constant number of playouts per turn\n");
+            fprintf(stderr, "error: -think_in_opt_time flag cannot be used with\
+ the program compiled to use a constant number of playouts per turn\n");
+            flog_crit("error: -think_in_opt_time flag cannot be used with the p\
+rogram compiled to use a constant number of playouts per turn\n");
             return EXIT_FAILURE;
         }
 
@@ -576,10 +576,10 @@ program compiled to use a constant number of playouts per turn\n");
 #endif
 
 #if LIMIT_BY_PLAYOUTS
-    fprintf(stderr,
-        "warning: MCTS will use a constant number of simulations per turn\n");
-    flog_warn(
-        "warning: MCTS will use a constant number of simulations per turn\n");
+    fprintf(stderr, "warning: MCTS will use a constant number of simulations pe\
+r turn\n");
+    flog_warn("warning: MCTS will use a constant number of simulations per turn\
+\n");
 #endif
 
 
