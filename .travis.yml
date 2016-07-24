@@ -3,6 +3,7 @@ os:
 - linux
 - osx
 - bsd
+sudo: required
 dist: trusty
 compiler:
 - clang
