@@ -51,5 +51,5 @@ gen_joseki_book: $(OBJFILES) joseki/*.c
 	@$(CC) -c -o $@ $< $(CFLAGS)
 
 clean:
-	@$(RM) -f callgrind.out.* matilda-*.log tuning.log $(PROGRAMS) \
+	@$(RM) -f callgrind.out.* matilda_*_*.log tuning.log $(PROGRAMS) \
 	*.o mcts/*.o

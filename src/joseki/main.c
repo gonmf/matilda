@@ -202,7 +202,8 @@ int main(
     }
 
     char * out_filename = get_buffer();
-    snprintf(out_filename, MAX_PAGE_SIZ, "%s%s", get_data_folder(), "output.joseki");
+    snprintf(out_filename, MAX_PAGE_SIZ, "%s%s", get_data_folder(),
+        "output.joseki");
     fp = fopen(out_filename, "w");
     if(fp == NULL)
     {

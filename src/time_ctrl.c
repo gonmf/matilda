@@ -32,7 +32,7 @@ u32 calc_time_to_play(
     time_system * ts,
     u16 turns_played
 ){
-#if 0
+#if 1
     /*
 TODO testing for paper
     */

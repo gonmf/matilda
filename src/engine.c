@@ -123,11 +123,7 @@ void new_match_maintenance()
     tt_requires_maintenance = false;
     komi_offset = 0;
 
-    char * buf = get_buffer();
-    snprintf(buf, MAX_PAGE_SIZ, "%s: mcts: freed all states between matches\n",
-        timestamp());
-    fprintf(stderr, "%s", buf);
-    flog_info(buf);
+    flog_info("mcts", "freed all states between matches");
 }
 
 /*
@@ -145,10 +141,9 @@ void opt_turn_maintenance(
         tt_requires_maintenance = false;
 
         char * buf = get_buffer();
-        snprintf(buf, MAX_PAGE_SIZ, "%s: mcts: freed %u states (%lu MiB)\n",
-            timestamp(), freed, (freed * sizeof(tt_stats)) / 1048576);
-        fprintf(stderr, "%s", buf);
-        flog_info(buf);
+        snprintf(buf, MAX_PAGE_SIZ, "freed %u states (%lu MiB)\n", freed, (freed
+            * sizeof(tt_stats)) / 1048576);
+        flog_info("mcts", buf);
     }
 }
 
@@ -162,12 +157,9 @@ void assert_data_folder_exists()
     if(dir == NULL)
     {
         char * buf = get_buffer();
-        snprintf(buf, MAX_PAGE_SIZ,
-            "error: data folder %s does not exist or is unavailable\n",
-            get_data_folder());
-        fprintf(stderr, "%s", buf);
-        flog_crit(buf);
-        exit(EXIT_FAILURE);
+        snprintf(buf, MAX_PAGE_SIZ, "data folder %s does not exist or is unavai\
+lable\n", get_data_folder());
+        flog_crit("data", buf);
     }else
         closedir(dir);
 }

@@ -173,8 +173,8 @@ void simple_state_collection_export(
         }
     }
 
-    snprintf(str, 1024, "# exported %u unique rules; %u were disqualified for \
-not enough samples or majority representative\n",exported, skipped);
+    snprintf(str, 1024, "# exported %u unique rules; %u were disqualified for n\
+ot enough samples or majority representative\n",exported, skipped);
     size_t w = fwrite(str, strlen(str), 1, fp);
     if(w != 1)
     {
@@ -185,6 +185,6 @@ not enough samples or majority representative\n",exported, skipped);
 
     free(str);
 
-    printf("exported %u unique rules; %u were disqualified for not enough \
-samples or majority representative\n", exported, skipped);
+    printf("exported %u unique rules; %u were disqualified for not enough sampl\
+es or majority representative\n", exported, skipped);
 }

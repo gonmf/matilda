@@ -53,11 +53,9 @@ s32 read_binary_file(
     if(file_unfinished)
     {
         char * buf = get_buffer();
-        snprintf(buf, MAX_PAGE_SIZ, "error: file %s longer than buffer \
-available for reading\n", filename);
-        fprintf(stderr, "%s", buf);
-        flog_crit(buf);
-        exit(EXIT_FAILURE);
+        snprintf(buf, MAX_PAGE_SIZ, "file %s longer than buffer available for r\
+eading\n", filename);
+        flog_crit("fio", buf);
     }
 
     return total_read;
@@ -102,11 +100,9 @@ s32 read_ascii_file(
     if(file_unfinished)
     {
         char * buf = get_buffer();
-        snprintf(buf, MAX_PAGE_SIZ, "error: file %s longer than buffer \
-available for reading\n", filename);
-        fprintf(stderr, "%s", buf);
-        flog_crit(buf);
-        exit(EXIT_FAILURE);
+        snprintf(buf, MAX_PAGE_SIZ, "file %s longer than buffer available for r\
+eading", filename);
+        flog_crit("fio", buf);
     }
 
     dst_buf[total_read] = 0;
@@ -149,21 +145,13 @@ static void _recurse_find_files(
             continue;
         u32 strl = strlen(root) + strlen(entry->d_name) + 2;
         if(strl >= MAX_PATH_SIZ)
-        {
-            fprintf(stderr, "error: path too long\n");
-            flog_crit("error: path too long\n");
-            exit(EXIT_FAILURE);
-        }
+            flog_crit("fio", "path too long");
 
         if(!ends_in(entry->d_name, extension)) /* try following as if folder */
         {
             char * path = (char *)malloc(strl);
             if(path == NULL)
-            {
-                fprintf(stderr, "error: find files: system out of memory\n");
-                flog_crit("error: find files: system out of memory\n");
-                exit(EXIT_FAILURE);
-            }
+                flog_crit("fio", "find files: system out of memory");
 
             snprintf(path, strl, "%s%s/", root, entry->d_name);
             _recurse_find_files(path, extension, filenames);
@@ -174,20 +162,12 @@ static void _recurse_find_files(
             allocated += strl;
             filenames[filenames_found] = (char *)malloc(strl);
             if(filenames[filenames_found] == NULL)
-            {
-                fprintf(stderr, "error: find files: system out of memory\n");
-                flog_crit("error: find files: system out of memory\n");
-                exit(EXIT_FAILURE);
-            }
+                flog_crit("fio", "find files: system out of memory");
 
             snprintf(filenames[filenames_found], strl, "%s%s", root, entry->d_name);
             filenames_found++;
             if(filenames_found == _max_files)
-            {
-                fprintf(stderr, "error: maximum number of files reached\n");
-                flog_crit("error: maximum number of files reached\n");
-                exit(EXIT_FAILURE);
-            }
+                flog_crit("fio", "maximum number of files reached");
         }
     }
     closedir(dir);

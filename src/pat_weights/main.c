@@ -235,8 +235,8 @@ int main(
     }
 
 
-    fprintf(fp, "# games used: %u skipped: %u\n# unique patterns: %u\n\n#Hex \
-Weight Count\n", games_used, games_skipped, unique_patterns);
+    fprintf(fp, "# games used: %u skipped: %u\n# unique patterns: %u\n\n#Hex We\
+ight Count\n", games_used, games_skipped, unique_patterns);
 
     while(*table != NULL)
     {

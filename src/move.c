@@ -333,8 +333,6 @@ void rem_move(
             return;
         }
 
-    fprintf(stderr, "error: move_seq: move not found\n");
-    flog_crit("error: move_seq: move not found\n");
-    exit(EXIT_FAILURE);
+    flog_crit("move_seq", "move not found\n");
 }
 

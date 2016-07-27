@@ -75,10 +75,9 @@ static void clean_symbols(
                 default:
                     buf = get_buffer();
                     snprintf(buf, MAX_PAGE_SIZ,
-                        "error: pat3 pattern file format error; unknown \
-symbol: '%c', %u\n", p[i][j], p[i][j]);
-                    flog_warn(buf);
-                    exit(EXIT_FAILURE);
+                        "pattern file format error; unknown symbol: '%c', \
+%u\n", p[i][j], p[i][j]);
+                    flog_crit("pat3", buf);
             }
 }
 
@@ -90,11 +89,8 @@ static void pat3_insert(
     /* patterns from blacks perspective */
     pat3 * sp = (pat3 *)malloc(sizeof(pat3));
     if(sp == NULL)
-    {
-        fprintf(stderr, "error: pat3: system out of memory\n");
-        flog_crit("error: pat3: system out of memory\n");
-        exit(EXIT_FAILURE);
-    }
+        flog_crit("pat3", "system out of memory");
+
     sp->value = value;
     sp->weight = weight;
     sp->next = b_pattern_table[value % NUM_OF_BUCKETS];
@@ -103,11 +99,8 @@ static void pat3_insert(
     /* patterns from whites perspective */
     sp = (pat3 *)malloc(sizeof(pat3));
     if(sp == NULL)
-    {
-        fprintf(stderr, "error: pat3: system out of memory\n");
-        flog_crit("error: pat3: system out of memory\n");
-        exit(EXIT_FAILURE);
-    }
+        flog_crit("pat3", "system out of memory");
+
     sp->value = value_inv;
     sp->weight = weight;
     sp->next = w_pattern_table[value_inv % NUM_OF_BUCKETS];
@@ -414,13 +407,8 @@ static void expand_pattern(
                     return;
             }
     if(_count_stones((const u8 (*)[3])p) < 2)
-    {
-        fprintf(stderr, "error: failed to open and expand patterns because the \
-expansion would create patterns with a single stone or less\n");
-        flog_crit("error: failed to open and expand patterns because the \
-expansion would create patterns with a single stone or less\n");
-        exit(EXIT_FAILURE);
-    }
+        flog_crit("pat3", "failed to open and expand patterns because the expan\
+sion would create patterns with a single stone or less");
 
     /* invert color, rotate and flip to generate equivalent pattern
     configurations */
@@ -434,11 +422,7 @@ static u32 read_pat3_file(
 ){
     s32 chars_read = read_ascii_file(filename, buffer, MAX_FILE_SIZ);
     if(chars_read < 0)
-    {
-        fprintf(stderr, "error: pat3: couldn't open file for reading\n");
-        flog_crit("error: pat3: couldn't open file for reading\n");
-        exit(EXIT_FAILURE);
-    }
+        flog_crit("pat3", "couldn't open file for reading");
 
     u8 pat[3][3];
     u8 pat_pos = 0;
@@ -555,12 +539,7 @@ void pat3_init()
 
     char * file_buf = (char *)malloc(MAX_FILE_SIZ);
     if(file_buf == NULL)
-    {
-        fprintf(stderr, "error: pat3: system out of memory\n");
-        flog_crit("error: pat3: system out of memory\n");
-        exit(EXIT_FAILURE);
-    }
-
+        flog_crit("pat3", "system out of memory");
 
     char * buf;
 
@@ -577,21 +556,16 @@ void pat3_init()
         if(chars_read < 0)
         {
             buf = get_buffer();
-            snprintf(buf, MAX_PAGE_SIZ,
-                "%s: pat3: couldn't read pattern weights\n",
-                timestamp());
-            fprintf(stderr, "%s", buf);
-            flog_info(buf);
+            snprintf(buf, MAX_PAGE_SIZ, "couldn't read pattern weights");
+            flog_info("pat3", buf);
         }
         else
         {
             read_patern_weights(file_buf);
 
             buf = get_buffer();
-            snprintf(buf, MAX_PAGE_SIZ, "%s: pat3: read weights from %s\n",
-                timestamp(), filename);
-            fprintf(stderr, "%s", buf);
-            flog_info(buf);
+            snprintf(buf, MAX_PAGE_SIZ, "read weights from %s", filename);
+            flog_info("pat3", buf);
         }
     }
 
@@ -603,22 +577,16 @@ void pat3_init()
         pat3_filenames, 128);
 
     buf = get_buffer();
-    snprintf(buf, MAX_PAGE_SIZ, "%s: pat3: found %u 3x3 pattern files\n",
-        timestamp(),
-        files_found);
-    fprintf(stderr, "%s", buf);
-    flog_info(buf);
+    snprintf(buf, MAX_PAGE_SIZ, "found %u 3x3 pattern files", files_found);
+    flog_info("pat3", buf);
 
     for(u32 i = 0; i < files_found; ++i)
     {
         u32 patterns_found = read_pat3_file(pat3_filenames[i], file_buf);
 
         buf = get_buffer();
-        snprintf(buf, MAX_PAGE_SIZ, "%s: pat3: read %s (%u patterns)\n",
-            timestamp(),
-            pat3_filenames[i], patterns_found);
-        fprintf(stderr, "%s", buf);
-        flog_info(buf);
+        snprintf(buf, MAX_PAGE_SIZ, "read %s (%u patterns)", pat3_filenames[i], patterns_found);
+        flog_info("pat3", buf);
 
         free(pat3_filenames[i]);
     }
@@ -628,11 +596,9 @@ void pat3_init()
     if(USE_PATTERN_WEIGHTS && weights_table != NULL)
     {
         buf = get_buffer();
-        snprintf(buf, MAX_PAGE_SIZ, "%s: pat3: %u/%u patterns weighted\n",
-            timestamp(),
-            weights_found, weights_found + weights_not_found);
-        fprintf(stderr, "%s", buf);
-        flog_info(buf);
+        snprintf(buf, MAX_PAGE_SIZ, "%u/%u patterns weighted", weights_found,
+            weights_found + weights_not_found);
+        flog_info("pat3", buf);
 
         hash_table_destroy(weights_table, true);
     }

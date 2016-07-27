@@ -98,8 +98,8 @@ static bool text_play(
                 n = NONE;
 
             if(n == NONE)
-                printf("Player attempted to play %s but it ended an illegal \
-play instead.\n", coord_to_alpha_num(m));
+                printf("Player attempted to play %s but it ended an illegal pla\
+y instead.\n", coord_to_alpha_num(m));
             else
             {
                 printf("Player attempted to play %s ", coord_to_alpha_num(m));
@@ -165,8 +165,8 @@ static void text_genmove(
                 n = NONE;
 
             if(n == NONE)
-                printf("Matilda attempted to play %s but it ended an illegal \
-play instead.\n", coord_to_alpha_num(m));
+                printf("Matilda attempted to play %s but it ended an illegal pl\
+ay instead.\n", coord_to_alpha_num(m));
             else
             {
                 printf("Matilda attempted to play %s ", coord_to_alpha_num(m));
@@ -191,8 +191,8 @@ static void text_newgame(
         if(export_game_as_sgf_auto_named(&current_game, filename))
             printf("Game record written to %s.\n", filename);
         else
-            printf("Error encountered when attempting to write game record to \
-file.\n");
+            printf("Error encountered when attempting to write game record to f\
+ile.\n");
     }
 
     printf("Start new game?\nY - Yes\nN - No (quit)\nS - Switch colors\n");
@@ -248,14 +248,18 @@ static void text_print_score(bool is_black)
 }
 
 void main_text(bool is_black){
-    printf("Matilda %u.%u running in text mode. In this mode the options are \
-limited and no time limit is enforced. To run using GTP add the flag -gtp. \
-Playing with Chinese rules with %s komi; game is over after two passes or a \
-resignation.\n\n", VERSION_MAJOR, VERSION_MINOR, komi_to_string(DEFAULT_KOMI));
+    flog_set_print_to_stderr(false);
+    flog_info("gtp", "matilda now running over text interface");
+    flog_info("gtp", build_info());
+
+    printf("Matilda %u.%u running in text mode. In this mode the options are li\
+mited and no time limit is enforced. To run using GTP add the flag -gtp. Playin\
+g with Chinese rules with %s komi; game is over after two passes or a resignati\
+on.\n\n", VERSION_MAJOR, VERSION_MINOR, komi_to_string(DEFAULT_KOMI));
 
     if(ENABLE_FRISBEE_GO && frisbee_prob < 1.0)
-        printf("Frisbee Go variant is active. Each board play has a %u%% \
-chance of missing.\n", (u32)(frisbee_prob * 100.0));
+        printf("Frisbee Go variant is active. Each board play has a %u%% chance\
+ of missing.\n", (u32)(frisbee_prob * 100.0));
 
     bool human_player_color = is_black;
 
@@ -328,9 +332,8 @@ chance of missing.\n", (u32)(frisbee_prob * 100.0));
         if(first_interactive_play)
         {
             first_interactive_play = false;
-            printf("(Type the board position, like %s, or \
-undo/pass/resign/tip/score/quit)\n", EUROPEAN_NOTATION ?
-                coord_to_alpha_num(coord_to_move(3, 3)) :
+            printf("(Type the board position, like %s, or undo/pass/resign/tip/\
+score/quit)\n", EUROPEAN_NOTATION ? coord_to_alpha_num(coord_to_move(3, 3)) :
                 coord_to_num_num(coord_to_move(3, 3)));
         }
         while(1)
@@ -349,8 +352,7 @@ undo/pass/resign/tip/score/quit)\n", EUROPEAN_NOTATION ?
 
             lower_case(line);
 
-            flog_prot(line);
-            flog_prot("\n");
+            flog_prot("text", line);
 
             if(strcmp(line, "quit") == 0 || strcmp(line, "exit") == 0)
                 exit(EXIT_SUCCESS);
@@ -365,9 +367,8 @@ undo/pass/resign/tip/score/quit)\n", EUROPEAN_NOTATION ?
 
             if(strcmp(line, "help") == 0)
             {
-                printf("Type the board position, like %s, or \
-undo/pass/resign/score/quit\n\n", EUROPEAN_NOTATION ?
-                    coord_to_alpha_num(coord_to_move(3, 3)) :
+                printf("Type the board position, like %s, or undo/pass/resign/s\
+core/quit\n\n", EUROPEAN_NOTATION ? coord_to_alpha_num(coord_to_move(3, 3)) :
                     coord_to_num_num(coord_to_move(3, 3)));
                 continue;
             }

@@ -12,6 +12,7 @@ have to persist for long.
 #include <omp.h>
 
 #include "types.h"
+#include "flog.h"
 #include "buffer.h"
 
 static void * buffers[NR_OF_BUFFERS];
@@ -28,10 +29,7 @@ static void buffers_init(){
         {
             buffers[i] = malloc(MAX_PAGE_SIZ);
             if(buffers[i] == NULL)
-            {
-                fprintf(stderr, "error: buffers: system out of memory\n");
-                exit(EXIT_FAILURE);
-            }
+                flog_crit("buffer", "system out of memory");
         }
         buffers_inited = true;
     }

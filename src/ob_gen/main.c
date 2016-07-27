@@ -80,12 +80,12 @@ int main(
 usage:
         printf("Usage: %s [options]\n", argv[0]);
         printf("Options:\n");
-        printf("-max_depth number - Maximum turn depth of the openings. \
-(default: %u)\n", ob_depth);
-        printf("-min_game_turns number - Minimum number of turns for the game \
-to be used. (default: %u)\n", minimum_turns);
-        printf("-min_samples - Minimum number of samples for a rule to be \
-saved. (default: %u)\n", minimum_samples);
+        printf("-max_depth number - Maximum turn depth of the openings. (defaul\
+t: %u)\n", ob_depth);
+        printf("-min_game_turns number - Minimum number of turns for the game t\
+o be used. (default: %u)\n", minimum_turns);
+        printf("-min_samples - Minimum number of samples for a rule to be saved\
+. (default: %u)\n", minimum_samples);
         printf("-relax_komi - Allow games with uncommon komi values.\n");
         printf("-version - Print version information and exit.\n");
         exit(EXIT_SUCCESS);
@@ -229,10 +229,9 @@ saved. (default: %u)\n", minimum_samples);
         return EXIT_SUCCESS;
     }
 
-    printf("matches found=%u used=%u skipped=%u\nconsidered plays=%u and \
-passes=%u\nunique ob rules=%u (from first %u turns)\n", games_used +
-        games_skipped, games_used, games_skipped, plays_used, passes, ob_rules,
-        ob_depth);
+    printf("matches found=%u used=%u skipped=%u\nconsidered plays=%u and passes\
+=%u\nunique ob rules=%u (from first %u turns)\n", games_used + games_skipped,
+        games_used, games_skipped, plays_used, passes, ob_rules, ob_depth);
 
     printf("\n");
     printf("%s: 2/2 Exporting as opening book...\n", timestamp());

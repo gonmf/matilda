@@ -25,8 +25,7 @@ RETURNS nanoseconds
 u64 current_nanoseconds();
 
 /*
-Returns textual timestamp. It is not dynammically allocated and the memory will
-be reused for the next timestamp (but is thread safe).
+Produces a textual timestamp based on the local timezone and system time.
 RETURNS timestamp
 */
 const char * timestamp();

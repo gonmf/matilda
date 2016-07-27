@@ -121,9 +121,11 @@ static void set_parameter(
             s32 val;
             if(!parse_int(value, &val) || val < 0)
             {
-                fprintf(stderr, "format error: %s\n", value);
-                exit(EXIT_FAILURE);
+                char * buf = get_buffer();
+                snprintf(buf, MAX_PAGE_SIZ, "format error: %s", value);
+                flog_crit("entry", buf);
             }
+
             u16 * svar = ((u16 * )tunable[i + 2]);
             *svar = val;
             return;
@@ -133,35 +135,25 @@ static void set_parameter(
             double val;
             if(!parse_float(value, &val))
             {
-                fprintf(stderr, "format error: %s\n", value);
-                exit(EXIT_FAILURE);
+                char * buf = get_buffer();
+                snprintf(buf, MAX_PAGE_SIZ, "format error: %s", value);
+                flog_crit("entry", buf);
             }
+
             double * svar = ((double * )tunable[i + 2]);
             *svar = val;
             return;
         }
 
-        fprintf(stderr, "error: illegal internal parameter codification: %s\n",
-            type);
-        exit(EXIT_FAILURE);
+        char * buf = get_buffer();
+        snprintf(buf, MAX_PAGE_SIZ,
+            "illegal internal parameter codification: %s", type);
+        flog_crit("entry", buf);
     }
 
-    fprintf(stderr, "error: illegal parameter name: %s\n", name);
-    fprintf(stderr, "available parameters:\n");
-
-    for(u16 i = 0; tunable[i] != NULL; i += 3)
-    {
-        char * type = ((char * )tunable[i]);
-        char * sname = ((char * )tunable[i + 1]);
-        if(type[0] == 'i')
-            fprintf(stderr, "(%s) %s: %u\n", type, sname, *((u16 * )tunable[i +
-                2]));
-        else
-            fprintf(stderr, "(%s) %s: %.2f\n", type, sname, *((double *
-                )tunable[i + 2]));
-    }
-    fprintf(stderr, "\n");
-    exit(EXIT_FAILURE);
+    char * buf = get_buffer();
+    snprintf(buf, MAX_PAGE_SIZ, "illegal parameter name: %s", name);
+    flog_crit("entry", buf);
 }
 
 void main_gtp(
@@ -175,12 +167,11 @@ int main(
     int argc,
     char * argv[]
 ){
-    timestamp();
+    config_logging(DEFAULT_LOG_MODES);
     bool use_gtp = (isatty(STDIN_FILENO) == 0);
     bool color_set = false;
     bool human_player_color = true;
     bool think_in_opt_turn = false;
-    set_logging_level(DEFAULT_LOG_LVL);
     set_time_per_turn(&current_clock_black, DEFAULT_TIME_PER_TURN);
     set_time_per_turn(&current_clock_white, DEFAULT_TIME_PER_TURN);
     bool time_changed_or_set = false;
@@ -206,19 +197,13 @@ int main(
             < argc - 1)
         {
             if(strcmp(argv[i + 1], "text") == 0)
-            {
                 use_gtp = false;
-            }
             else
                 if(strcmp(argv[i + 1], "gtp") == 0)
-                {
                     use_gtp = true;
-                }
                 else
-                {
-                    fprintf(stderr, "error: illegal format for mode\n");
-                    exit(EXIT_FAILURE);
-                }
+                    flog_crit("entry", "illegal format for mode");
+
             ++i;
             continue;
         }
@@ -231,11 +216,9 @@ int main(
                 if(argv[i + 1][0] == 'w' || argv[i + 1][0] == 'W')
                     human_player_color = false;
                 else
-                {
-                    fprintf(stderr,
-                        "error: illegal format when specifying player color\n");
-                    exit(EXIT_FAILURE);
-                }
+                    flog_crit("entry", "illegal format when specifying player c\
+olor");
+
             ++i;
             color_set = true;
             continue;
@@ -255,35 +238,69 @@ int main(
             save_all_games_to_file = true;
             continue;
         }
-        if((strcmp(argv[i], "-l") == 0 || strcmp(argv[i], "--log") == 0) && i <
-            argc - 1)
+        if((strcmp(argv[i], "-l") == 0 || strcmp(argv[i], "--log") == 0))
         {
-            s32 lvl;
-            if(!parse_int(argv[i + 1], &lvl) || lvl < LOG_NONE || lvl >
-                LOG_INFORM)
+            if(i == argc - 1)
             {
-                fprintf(stderr, "error: illegal logging level\n");
-                exit(EXIT_FAILURE);
+                config_logging(0);
+                continue;
             }
-            set_logging_level(lvl);
+
+            if(argv[i + 1][0] == '-')
+            {
+                config_logging(0);
+                continue;
+            }
+
+            u16 mode = 0;
+            for(u16 j = 0; argv[i + 1][j]; ++j)
+            {
+                if(argv[i + 1][j] == 'e')
+                {
+                    mode |= LOG_CRITICAL;
+                    continue;
+                }
+                if(argv[i + 1][j] == 'w')
+                {
+                    mode |= LOG_WARNING;
+                    continue;
+                }
+                if(argv[i + 1][j] == 'p')
+                {
+                    mode |= LOG_PROTOCOL;
+                    continue;
+                }
+                if(argv[i + 1][j] == 'i')
+                {
+                    mode |= LOG_INFORMATION;
+                    continue;
+                }
+                if(argv[i + 1][j] == 'd')
+                {
+                    mode |= LOG_DEBUG;
+                    continue;
+                }
+
+                char * buf = get_buffer();
+                snprintf(buf, MAX_PAGE_SIZ, "illegal logging mode: %c", argv[i +
+                    1][j]);
+                flog_crit("entry", buf);
+            }
+            config_logging(mode);
+
             ++i;
             continue;
         }
         if(strcmp(argv[i], "-t") == 0 || strcmp(argv[i], "--time") == 0)
         {
             if(LIMIT_BY_PLAYOUTS)
-            {
-                fprintf(stderr, "error: matilda has been compiled to run with a\
- constant number of playouts per turn; --time flag is illegal\n");
-                exit(EXIT_FAILURE);
-            }
+                flog_crit("entry", "matilda has been compiled to run with a con\
+stant number of playouts per turn; --time flag is illegal");
+
             int ftime;
             if(!parse_int(argv[i + 1], &ftime) || ftime <= 0 || ftime >=
                 2147484)
-            {
-                fprintf(stderr, "error: illegal time format\n");
-                exit(EXIT_FAILURE);
-            }
+                flog_crit("entry", "illegal time format");
 
             if(time_system_overriden)
             {
@@ -304,19 +321,12 @@ int main(
         if(strcmp(argv[i], "--time_system") == 0)
         {
             if(LIMIT_BY_PLAYOUTS)
-            {
-                fprintf(stderr, "error: matilda has been compiled to run with a\
- constant number of playouts per turn; --time_system flag is illegal\n");
-                exit(EXIT_FAILURE);
-            }
+                flog_crit("entry", "matilda has been compiled to run with a con\
+stant number of playouts per turn; --time_system flag is illegal");
 
             time_system tmp;
             if(!str_to_time_system(argv[i + 1], &tmp))
-            {
-                fprintf(stderr, "error: illegal time system string format\n");
-                flog_crit("error: illegal time system string format\n");
-                exit(EXIT_FAILURE);
-            }
+                flog_crit("entry", "illegal time system string format");
 
             set_time_system(&current_clock_black, tmp.main_time,
                 tmp.byo_yomi_time, tmp.byo_yomi_stones, tmp.byo_yomi_periods);
@@ -337,11 +347,9 @@ int main(
         if(strcmp(argv[i], "--resign_on_timeout") == 0)
         {
             if(LIMIT_BY_PLAYOUTS)
-            {
-                fprintf(stderr, "error: matilda has been compiled to run with a\
- constant number of playouts per turn; --resign_on_timeout flag is illegal\n");
-                exit(EXIT_FAILURE);
-            }
+                flog_crit("entry", "matilda has been compiled to run with a con\
+stant number of playouts per turn; --resign_on_timeout flag is illegal");
+
             resign_on_timeout = true;
             continue;
         }
@@ -349,17 +357,13 @@ int main(
         {
             s32 v;
             if(!parse_int(argv[i + 1], &v))
-            {
-                fprintf(stderr,
-                    "error: format error in size of transpositions table\n");
-                exit(EXIT_FAILURE);
-            }
+                flog_crit("entry", "error: format error in size of transpositio\
+ns table");
+
             if(v < 2)
-            {
-                fprintf(stderr,
-                    "error: invalid size for transpositions table\n");
-                exit(EXIT_FAILURE);
-            }
+                flog_crit("entry", "error: invalid size for transpositions tabl\
+e");
+
             max_size_in_mbs = v;
             ++i;
             continue;
@@ -375,9 +379,10 @@ int main(
         {
             if(!set_data_folder(argv[i + 1]))
             {
-                fprintf(stderr, "error: data directory path %s is not valid\n",
-                    argv[i + 1]);
-                exit(EXIT_FAILURE);
+                char * buf = get_buffer();
+                snprintf(buf, MAX_PAGE_SIZ, "data directory path %s is not vali\
+d", argv[i + 1]);
+                flog_crit("entry", buf);
             }
 
             ++i;
@@ -387,15 +392,11 @@ int main(
         {
             s32 v;
             if(!parse_int(argv[i + 1], &v))
-            {
-                fprintf(stderr, "error: -threads argument format error\n");
-                exit(EXIT_FAILURE);
-            }
+                flog_crit("entry", "--threads argument format error");
+
             if(v < 1 || v >= MAXIMUM_NUM_THREADS)
-            {
-                fprintf(stderr, "error: invalid number of threads requested\n");
-                exit(EXIT_FAILURE);
-            }
+                flog_crit("entry", "invalid number of threads requested");
+
             desired_num_threads = v;
             ++i;
             continue;
@@ -403,25 +404,16 @@ int main(
         if(strcmp(argv[i], "--frisbee_accuracy") == 0 && i < argc - 1)
         {
             if(!ENABLE_FRISBEE_GO)
-            {
-                fprintf(stderr, "error: program must be compiled with support f\
-or frisbee play\n");
-                flog_crit("error: program must be compiled with support for fri\
-sbee play\n");
-                exit(EXIT_FAILURE);
-            }
+                flog_crit("entry", "program must be compiled with support for f\
+risbee play");
 
             double v;
             if(!parse_float(argv[i + 1], &v))
-            {
-                fprintf(stderr, "error: accuracy argument format error\n");
-                exit(EXIT_FAILURE);
-            }
+                flog_crit("entry", "accuracy argument format error");
+
             if(v < 0.0 || v > 1.0)
-            {
-                fprintf(stderr, "error: invalid frisbee accuracy\n");
-                exit(EXIT_FAILURE);
-            }
+                flog_crit("entry", "invalid frisbee accuracy");
+
             frisbee_prob = v;
             ++i;
             continue;
@@ -448,31 +440,31 @@ escriptor is a terminal\n        and if it is it uses the text mode interface. \
 Otherwise it uses the GTP\n        interface. This command overrides this with \
 the specific mode you want\n        to be used.\n\n");
 
-        fprintf(stderr,
-            "        \033[1m-c, --color <black or white>\033[0m\n\n");
-        fprintf(stderr,
-            "        Select human player color (text mode only).\n\n");
+        fprintf(stderr, "        \033[1m-c, --color <black or white>\033[0m\n\n\
+");
+        fprintf(stderr, "        Select human player color (text mode only).\n\\
+n");
 
         fprintf(stderr, "        \033[1m--resign_on_timeout\033[0m\n\n");
-        fprintf(stderr,
-            "        Resign if the program believes to have lost on time.\n\n");
+        fprintf(stderr, "        Resign if the program believes to have lost on\
+ time.\n\n");
 
         fprintf(stderr, "        \033[1m--think_in_opt_time\033[0m\n\n");
-        fprintf(stderr, "        Continue thinking in the background while in \
-the opponents turn.\n\n");
+        fprintf(stderr, "        Continue thinking in the background while in t\
+he opponents turn.\n\n");
 
         fprintf(stderr, "        \033[1m-t, --time <number>\033[0m\n\n");
-        fprintf(stderr, "        Set the time system to a specific number of \
-seconds per turn and ignore timeouts.\n\n");
+        fprintf(stderr, "        Set the time system to a specific number of se\
+conds per turn and ignore timeouts.\n\n");
 
         fprintf(stderr, "        \033[1m--time_system <value>\033[0m\n\n");
-        fprintf(stderr, "        Override the time system in use and ignore \
-changes via GTP.\n        Use a byoyomi format like 10m+3x30s/5; allowed \
-specifiers: ms, s, m, h.\n\n");
+        fprintf(stderr, "        Override the time system in use and ignore cha\
+nges via GTP.\n        Use a byoyomi format like 10m+3x30s/5; allowed specifier\
+s: ms, s, m, h.\n\n");
 
         fprintf(stderr, "        \033[1m-d, --data <path>\033[0m\n\n");
-        fprintf(stderr, "        Override the data folder path. The folder \
-must exist.\n\n");
+        fprintf(stderr, "        Override the data folder path. The folder must\
+ exist.\n\n");
 
         fprintf(stderr, "        \033[1m--disable_opening_books\033[0m\n\n");
         fprintf(stderr, "        Disable the use of opening books.\n\n");
@@ -480,45 +472,50 @@ must exist.\n\n");
         fprintf(stderr, "        \033[1m--disable_score_estimation\033[0m\n\n");
         fprintf(stderr, "        Disable final scoring estimates.\n\n");
 
-        fprintf(stderr, "        \033[1m-l, --log <level>\033[0m\n\n");
-        fprintf(stderr, "        Set the message logger level. The available \
-levels are:\n         0 - No logging\n         1 - Critical error messages \
-(default)\n         2 - Errors, warning and GTP trace\n         3 - All \
-messages\n\n");
+        fprintf(stderr, "        \033[1m-l, --log <modes>\033[0m\n\n");
+        fprintf(stderr, "        Set the message types to log to file and print\
+ to the standard error\n        file descriptor. The available modes are:\n\n  \
+        e - Error messages\n          w - Warning messages\n          p - Proto\
+col messages\n          i - Informational messages\n          d - Debugging mes\
+sages\n\n        Default setting: --log ew\n        Leave empty for no logging.\
+ Notice log printing to the standard error\n        file descriptor may be mute\
+d in text mode.\n\n");
 
         fprintf(stderr, "        \033[1m--memory <number>\033[0m\n\n");
-        fprintf(stderr, "        Override the available memory for the MCTS \
-transpositions table, in MiB.\n        The default is %u MiB\n\n",
+        fprintf(stderr, "        Override the available memory for the MCTS tra\
+nspositions table, in MiB.\n        The default is %u MiB\n\n",
             DEFAULT_UCT_MEMORY);
 
         fprintf(stderr, "        \033[1m--save_all\033[0m\n\n");
-        fprintf(stderr,
-            "        Save all finished games to the data folder as SGF.\n\n");
+        fprintf(stderr, "        Save all finished games to the data folder as \
+SGF.\n\n");
 
-        fprintf(stderr, "        \033[1m--frisbee_accuracy <number>\033[0m\n\n");
         fprintf(stderr,
-            "        Select frisbee accuracy if playing frisbee Go.\n\n");
+            "        \033[1m--frisbee_accuracy <number>\033[0m\n\n");
+        fprintf(stderr, "        Select frisbee accuracy if playing frisbee Go.\
+\n\n");
 
         fprintf(stderr, "        \033[1m--threads <number>\033[0m\n\n");
         fprintf(stderr, "        Override the number of OpenMP threads to use. \
-The default is the total\n        number of normal plus hyperthreaded CPU \
-cores.\n\n");
+The default is the total\n        number of normal plus hyperthreaded CPU cores\
+.\n\n");
 
         fprintf(stderr, "        \033[1m--set <param> <value>\033[0m\n\n");
-        fprintf(stderr, "        For optimization. Set the value of an \
-internal parameter.\n\n");
+        fprintf(stderr, "        For optimization. Set the value of an internal\
+ parameter.\n\n");
 
         fprintf(stderr, "        \033[1m-i, --info\033[0m\n\n");
-        fprintf(stderr,
-            "        Print runtime information at startup and exit.\n\n");
+        fprintf(stderr, "        Print runtime information at startup and exit.\
+\n\n");
 
         fprintf(stderr, "        \033[1m-v, --version\033[0m\n\n");
         fprintf(stderr, "        Print version information and exit.\n\n");
 
         fprintf(stderr, "\033[1mBUGS\033[0m\n");
-        fprintf(stderr, "        You can provide feedback at \
-https://github.com/gonmf/matilda\n\n");
+        fprintf(stderr, "        You can provide feedback at https://github.com\
+/gonmf/matilda\n\n");
 
+        flog_crit("entry", "unknown parameter");
         return EXIT_FAILURE;
     }
 
@@ -536,31 +533,16 @@ https://github.com/gonmf/matilda\n\n");
     if(think_in_opt_turn)
     {
         if(LIMIT_BY_PLAYOUTS)
-        {
-            fprintf(stderr, "error: -think_in_opt_time flag cannot be used \
-with the program compiled to use a constant number of playouts per turn\n");
-            flog_crit("error: -think_in_opt_time flag cannot be used with the \
-program compiled to use a constant number of playouts per turn\n");
-            return EXIT_FAILURE;
-        }
+            flog_crit("entry", "--think_in_opt_time flag cannot be used with th\
+e program compiled to use a constant number of playouts per turn");
 
         if(!use_gtp)
-        {
-            fprintf(stderr,
-                "error: -think_in_opt_time flag set outside of GTP mode\n");
-            flog_crit(
-                "error: -think_in_opt_time flag set outside of GTP mode\n");
-            return EXIT_FAILURE;
-        }
+            flog_crit("entry", "--think_in_opt_time flag set outside of GTP mod\
+e");
     }
 
     if(use_gtp && color_set)
-    {
-        fprintf(stderr, "error: -color flag set in GTP mode\n");
-        flog_crit("error: -color flag set in GTP mode\n");
-        return EXIT_FAILURE;
-    }
-
+        flog_crit("entry", "--color flag set in GTP mode");
 
     if(!use_gtp)
         fclose(stderr);
@@ -571,15 +553,12 @@ program compiled to use a constant number of playouts per turn\n");
     */
 
 #if !MATILDA_RELEASE_MODE
-    fprintf(stderr, "warning: running on debug mode\n");
-    flog_warn("warning: running on debug mode\n");
+    flog_warn("entry", "running on debug mode");
 #endif
 
 #if LIMIT_BY_PLAYOUTS
-    fprintf(stderr,
-        "warning: MCTS will use a constant number of simulations per turn\n");
-    flog_warn(
-        "warning: MCTS will use a constant number of simulations per turn\n");
+    flog_warn("entry",
+        "MCTS will use a constant number of simulations per turn");
 #endif
 
 
