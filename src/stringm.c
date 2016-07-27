@@ -182,15 +182,12 @@ bool parse_float(
 ){
     bool dot_found = false;
     if(s[0] == '.')
-    {
-        if(dot_found)
-            return false;
         dot_found = true;
-    }
-    if(s[0] != '-' && (s[0] < '0' || s[0] > '9'))
-        return false;
+    else
+        if(s[0] != '-' && (s[0] < '0' || s[0] > '9'))
+            return false;
 
-    for(u32 j = 0; s[j]; ++j)
+    for(u32 j = 1; s[j]; ++j)
     {
         if(s[j] == '.')
         {
@@ -198,8 +195,9 @@ bool parse_float(
                 return false;
             dot_found = true;
         }
-        if(s[j] < '0' || s[j] > '9')
-            return false;
+        else
+            if(s[j] < '0' || s[j] > '9')
+                return false;
     }
 
     *d = atof(s);

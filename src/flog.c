@@ -87,37 +87,41 @@ void config_logging(
 
     if(new_mode != 0)
     {
-        log_mode = new_mode;
-
-        char * buf = get_buffer();
-        u32 idx = 0;
-        idx += snprintf(buf + idx, MAX_PAGE_SIZ - idx, "logging modes: ");
-        if(log_mode == 0)
-            idx += snprintf(buf + idx, MAX_PAGE_SIZ - idx, "none");
-        else
-        {
-            if(log_mode & LOG_CRITICAL)
-                idx += snprintf(buf + idx, MAX_PAGE_SIZ - idx, "crit,");
-            if(log_mode & LOG_WARNING)
-                idx += snprintf(buf + idx, MAX_PAGE_SIZ - idx, "warn,");
-            if(log_mode & LOG_PROTOCOL)
-                idx += snprintf(buf + idx, MAX_PAGE_SIZ - idx, "prot,");
-            if(log_mode & LOG_INFORMATION)
-                idx += snprintf(buf + idx, MAX_PAGE_SIZ - idx, "info,");
-            if(log_mode & LOG_DEBUG)
-                idx += snprintf(buf + idx, MAX_PAGE_SIZ - idx, "dbug,");
-            buf[idx - 1] = 0;
-        }
-        flog(NULL, "flog", buf);
-        return;
-    }
-
-    if(new_mode == 0)
-    {
-        flog(NULL, "flog", "logging disabled");
-
         if(log_file != -1)
+        {
+            log_mode = new_mode;
+
+            char * buf = get_buffer();
+            u32 idx = 0;
+            idx += snprintf(buf + idx, MAX_PAGE_SIZ - idx,
+                "logging mask changed: ");
+            if(log_mode == 0)
+                idx += snprintf(buf + idx, MAX_PAGE_SIZ - idx, "none");
+            else
+            {
+                if(log_mode & LOG_CRITICAL)
+                    idx += snprintf(buf + idx, MAX_PAGE_SIZ - idx, "crit,");
+                if(log_mode & LOG_WARNING)
+                    idx += snprintf(buf + idx, MAX_PAGE_SIZ - idx, "warn,");
+                if(log_mode & LOG_PROTOCOL)
+                    idx += snprintf(buf + idx, MAX_PAGE_SIZ - idx, "prot,");
+                if(log_mode & LOG_INFORMATION)
+                    idx += snprintf(buf + idx, MAX_PAGE_SIZ - idx, "info,");
+                if(log_mode & LOG_DEBUG)
+                    idx += snprintf(buf + idx, MAX_PAGE_SIZ - idx, "dbug,");
+                buf[idx - 1] = 0;
+            }
+            flog(NULL, "flog", buf);
+            return;
+        }
+    }
+    else
+    {
+        if(log_file != -1)
+        {
+            flog(NULL, "flog", "logging disabled");
             close(log_file);
+        }
         log_file = -1;
     }
 
@@ -195,7 +199,28 @@ static void open_log_file()
             exit(EXIT_FAILURE);
         }
 
-        flog(NULL, "flog", "logging enabled"); // TODO detail log modes in here
+        char * buf = get_buffer();
+        u32 idx = 0;
+        idx += snprintf(buf + idx, MAX_PAGE_SIZ - idx,
+            "logging enabled with mask: ");
+        if(log_mode == 0)
+            idx += snprintf(buf + idx, MAX_PAGE_SIZ - idx, "none");
+        else
+        {
+            if(log_mode & LOG_CRITICAL)
+                idx += snprintf(buf + idx, MAX_PAGE_SIZ - idx, "crit,");
+            if(log_mode & LOG_WARNING)
+                idx += snprintf(buf + idx, MAX_PAGE_SIZ - idx, "warn,");
+            if(log_mode & LOG_PROTOCOL)
+                idx += snprintf(buf + idx, MAX_PAGE_SIZ - idx, "prot,");
+            if(log_mode & LOG_INFORMATION)
+                idx += snprintf(buf + idx, MAX_PAGE_SIZ - idx, "info,");
+            if(log_mode & LOG_DEBUG)
+                idx += snprintf(buf + idx, MAX_PAGE_SIZ - idx, "dbug,");
+            buf[idx - 1] = 0;
+        }
+
+        flog(NULL, "flog", buf);
     }
 }
 

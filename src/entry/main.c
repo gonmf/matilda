@@ -122,7 +122,7 @@ static void set_parameter(
             if(!parse_int(value, &val) || val < 0)
             {
                 char * buf = get_buffer();
-                snprintf(buf, MAX_PAGE_SIZ, "format error: %s", value);
+                snprintf(buf, MAX_PAGE_SIZ, "integer format error: %s", value);
                 flog_crit("entry", buf);
             }
 
@@ -136,7 +136,7 @@ static void set_parameter(
             if(!parse_float(value, &val))
             {
                 char * buf = get_buffer();
-                snprintf(buf, MAX_PAGE_SIZ, "format error: %s", value);
+                snprintf(buf, MAX_PAGE_SIZ, "float format error: %s", value);
                 flog_crit("entry", buf);
             }
 
@@ -455,7 +455,7 @@ he opponents turn.\n\n");
 
         fprintf(stderr, "        \033[1m-t, --time <number>\033[0m\n\n");
         fprintf(stderr, "        Set the time system to a specific number of se\
-conds per turn and ignore timeouts.\n\n");
+conds per turn and ignore\n        timeouts.\n\n");
 
         fprintf(stderr, "        \033[1m--time_system <value>\033[0m\n\n");
         fprintf(stderr, "        Override the time system in use and ignore cha\
