@@ -12,7 +12,7 @@ expected value set at compile time.
 
 
 final_status_list -- the protocol is ambiguous on whether the command may fail
-with the option seki; which happens in matilda.
+with the option seki; which happens in Matilda.
 
 
 

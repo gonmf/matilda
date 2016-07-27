@@ -18,12 +18,11 @@ understand what each setting does and set them correctly. When ready, execute
 make
 
 You should now have an executable file named matilda, that is the main program.
-The first time Matilda is run it may create auxiliar files.
 
 To test the good behaviour of the program in the current system you can also run
 the executable named test.
 
-For short instructions on how to use each program run them with -help.
+For short instructions on how to use each program run them with --help.
 
 If you need to recompile Matilda you are advised to run
 
@@ -37,9 +36,9 @@ All external files reside in the folder data/. Files produced by Matilda will
 also be produced to this folder only. Please notice that Matilda enforces its
 external file dependencies. If it is expecting a file to be found it has to be
 provided or the program will close. If you do not have opening books you can
-disable their use with the switch -disable_opening_books.
+disable their use with the switch --disable_opening_books.
 
 Matilda will expect to find the data/ folder in the current working directory,
 that by default is that of the parent process. Because of this, you may need to
-create a link to data/ in the current directory, or use the switch -data
+create a link to data/ in the current directory, or use the switch --data
 <folder> to override the directory path.
