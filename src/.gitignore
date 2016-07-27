@@ -11,3 +11,5 @@ callgrind.out.*
 matilda_*_*.log
 tuning.log
 *.sgf
+.tags
+.tags_sorted_by_file
