@@ -20,3 +20,9 @@ Matilda uses external files. You can generate them yourself with game records an
 All parts of Matilda are licensed as permissive free software, as described in the file LICENSE that should accompany this document, except for the following files. src/crc32.c, which was derived from another file, is distributed with the same license as the original (public domain). The files contained in the src/data/ directory may also be based on game records or other foreign files, and may be in dubious licensing circumstances. For legal enquiries contact the author of this software.
 
 This project started as the practical component of a dissertation for the obtention of a Masters Degree on Computer Science and Computer Engineering, from the High Institute of Engineering of Lisbon, titled "Guiding Monte Carlo tree searches with neural networks in the game of Go" (2016) by Gonçalo Mendes Ferreira.
+
+But what IS Go??
+=
+
+Pretty much this:
+![GitHub Logo](http://pwp.net.ipl.pt/alunos.isel/35393/go.jpg)
