@@ -27,11 +27,12 @@ Support for interpreting joseki dictionaries and suggesting joseki plays.
 
 #define NR_BUCKETS 769
 
+#if 0
 static joseki ** joseki_table;
 static bool attempted_discover_joseki = false;
 static u32 josekis = 0;
+*/
 
-#if 0
 static move ob_get_play(
     u32 hash,
     const u8 p[PACKED_BOARD_SIZ]
