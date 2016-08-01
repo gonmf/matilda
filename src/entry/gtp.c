@@ -618,7 +618,7 @@ igns because of timeout\n", is_black ? "black" : "white", is_black ?
 #if 0
 
                     /* TODO just for counting resigns on timeout for paper */
-                    flog_dbug("gtp", "TIMEDOUT\n");
+                    flog_dbug("gtp", "TIMEOUT\n");
 
 
 #endif

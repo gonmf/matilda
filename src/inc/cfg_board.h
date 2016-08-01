@@ -52,6 +52,11 @@ typedef struct __group_ {
 	struct __group_ * next;
 } group;
 
+/*
+unique_groups stores IDs of groups, which are the value of a stone that belongs
+to that group, and the g field specifies the group that possesses a certain
+intersection (or NULL). So to get the group do cb->g[unique_groups[idx]].
+*/
 typedef struct __cfg_board_ {
 	u8 p[BOARD_SIZ * BOARD_SIZ];
 	move last_eaten;
