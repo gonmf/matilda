@@ -76,24 +76,25 @@ Tuned with CLOP in 9x9 with 1k playouts/turn vs GNU Go 3.8 lvl 1, 29179 matches.
 #define PRIOR_CORNER     34
 #else
 /*
-TODO tuning
+Tuned based on 9x9 results, using CLOP in 13x13 with 10k playouts/turn vs
+GNU Go 3.8 lvl 1, 420 matches.
 */
-#define PRIOR_STONE_SCALE_FACTOR 1.4
-#define PRIOR_EVEN       14 /* even heuristic */
-#define PRIOR_NAKADE     33 /* nakade heuristic */
-#define PRIOR_SELF_ATARI 63 /* avoid self-ataris */
-#define PRIOR_ATTACK     10
-#define PRIOR_DEFEND     12
+#define PRIOR_STONE_SCALE_FACTOR 1.32569
+#define PRIOR_EVEN       12 /* even heuristic */
+#define PRIOR_NAKADE     70 /* nakade heuristic */
+#define PRIOR_SELF_ATARI 16 /* avoid self-ataris */
+#define PRIOR_ATTACK     40
+#define PRIOR_DEFEND     13
 #define PRIOR_PAT3       25 /* 3x3 patterns centered on play */
-#define PRIOR_NEAR_LAST   3 /* bonuses for distance to another stone */
-#define PRIOR_LINE1      25 /* bonus for 3rd line and malus to 1st and 2nd */
-#define PRIOR_LINE2      38
-#define PRIOR_LINE3       1
-#define PRIOR_EMPTY       4 /* bonuses for empty zones of the board not above */
-#define PRIOR_LINE1X      3 /* bonus for 3rd line and malus to 1st and 2nd */
-#define PRIOR_LINE2X      4 /* if not empty in a certain distance around it */
+#define PRIOR_NEAR_LAST   7 /* bonuses for distance to another stone */
+#define PRIOR_LINE1      40 /* bonus for 3rd line and malus to 1st and 2nd */
+#define PRIOR_LINE2      61 /* if empty in a certain distance around it */
+#define PRIOR_LINE3      55
+#define PRIOR_EMPTY      39 /* bonuses for empty zones of the board not above */
+#define PRIOR_LINE1X      5 /* bonus for 3rd line and malus to 1st and 2nd */
+#define PRIOR_LINE2X      5 /* if not empty in a certain distance around it */
 #define PRIOR_LINE3X      3
-#define PRIOR_CORNER      2
+#define PRIOR_CORNER     34
 #endif
 
 

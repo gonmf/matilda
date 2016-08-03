@@ -119,6 +119,7 @@ static void mcts_init()
     zobrist_init();
     pat3_init();
     transpositions_table_init();
+    amaf_rave_init();
 
     uct_inited = true;
 }

@@ -11,39 +11,28 @@ Script ./goguiscript.py
 # For GammaParameter, quadratic regression is performed on log(x)
 # Warning: 123 and not 123.0 should be used for IntegerParameter
 
-#define PRIOR_STONE_SCALE_FACTOR 1.24271
-#define PRIOR_EVEN       13 /* even heuristic */
-#define PRIOR_NAKADE     72 /* nakade heuristic */
-#define PRIOR_SELF_ATARI 16 /* avoid self-ataris */
-#define PRIOR_ATTACK     43
-#define PRIOR_DEFEND     13
-#define PRIOR_PAT3       21 /* 3x3 patterns centered on play */
-#define PRIOR_NEAR_LAST   6 /* bonuses for distance to another stone */
-#define PRIOR_LINE1      38 /* bonus for 3rd line and malus to 1st and 2nd */
-#define PRIOR_LINE2      57 /* if empty in a certain distance around it */
-#define PRIOR_LINE3      61
-#define PRIOR_EMPTY      40 /* bonuses for empty zones of the board not above */
-#define PRIOR_LINE1X      3 /* bonus for 3rd line and malus to 1st and 2nd */
-#define PRIOR_LINE2X      4 /* if not empty in a certain distance around it */
-#define PRIOR_LINE3X      3
-#define PRIOR_CORNER     34
+#LinearParameter prior_stone_scale_factor 1.1 1.6
+#IntegerParameter prior_even 5 20
+#IntegerParameter prior_nakade 36 108
+#IntegerParameter prior_self_atari 8 24
+#IntegerParameter prior_attack 20 63
+#IntegerParameter prior_defend 5 20
+#IntegerParameter prior_pat3 10 30
+#IntegerParameter prior_near_last 1 12
+#IntegerParameter prior_line1 22 58
+#IntegerParameter prior_line2 29 88
+#IntegerParameter prior_line3 30 90
+#IntegerParameter prior_empty 22 57
+#IntegerParameter prior_line1x 0 10
+#IntegerParameter prior_line2x 0 10
+#IntegerParameter prior_line3x 0 10
+#IntegerParameter prior_corner 16 50
 
-LinearParameter prior_stone_scale_factor 1.1 1.6
-IntegerParameter prior_even 5 20
-IntegerParameter prior_nakade 36 108
-IntegerParameter prior_self_atari 8 24
-IntegerParameter prior_attack 20 63
-IntegerParameter prior_defend 5 20
-IntegerParameter prior_pat3 10 30
-IntegerParameter prior_near_last 1 12
-IntegerParameter prior_line1 22 58
-IntegerParameter prior_line2 29 88
-IntegerParameter prior_line3 30 90
-IntegerParameter prior_empty 22 57
-IntegerParameter prior_line1x 0 10
-IntegerParameter prior_line2x 0 10
-IntegerParameter prior_line3x 0 10
-IntegerParameter prior_corner 16 50
+
+
+IntegerParameter avg_game_length 20 80
+LinearParameter time_allot_factor 1.0 6.0
+
 
 #LinearParameter ucb1_c 0.5 2.5
 #LinearParameter rave_mse_b 0.2 2.0

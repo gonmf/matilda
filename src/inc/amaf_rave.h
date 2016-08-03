@@ -60,6 +60,11 @@ TODO tuning
 
 
 /*
+Optional initiation routine in case rave_mse_b is modified for optimization.
+*/
+void amaf_rave_init();
+
+/*
 Calculation of the RAVE value of a state transition.
 RETURNS overall value of play (x,y)
 */

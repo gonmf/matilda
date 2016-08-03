@@ -68,6 +68,7 @@ static u16 _dummy; /* used for testing CLOP */
 
 
 static u16 avg_game_length; // TODO to remove after paper, E
+static double time_allot_factor; // TODO to remove after paper, E
 
 
 const void * tunable[] =
@@ -98,6 +99,7 @@ const void * tunable[] =
 
 
     "i", "avg_game_length", &avg_game_length, // TODO remove
+    "f", "time_allot_factor", &time_allot_factor, // TODO remove
 
 
     NULL

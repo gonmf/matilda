@@ -19,8 +19,8 @@ say anything. All times are in milliseconds.
 u32 network_roundtrip_delay = LATENCY_COMPENSATION;
 bool network_round_trip_set = false;
 
-
-u16 avg_game_length = (((BOARD_SIZ * BOARD_SIZ) * 2) / 3); // TODO remove later
+double time_allot_factor = TIME_ALLOT_FACTOR;
+u16 avg_game_length = EXPECTED_GAME_LENGTH; // TODO remove later
 
 
 /*
@@ -55,9 +55,8 @@ TODO testing for paper
 
 
 
-    double e1 = (((BOARD_SIZ * BOARD_SIZ) * 2.0) / 3.0) - turns_played;
-    double e2 = BOARD_SIZ / 4.0;
-    double turns_left = MAX(e1, e2);
+    double e1 = avg_game_length - turns_played;
+    double turns_left = MAX(e1, BOARD_SIZ) / 2.0;
     double mtt = ts->main_time_remaining / turns_left;
 
     double t_t;
@@ -75,7 +74,7 @@ TODO testing for paper
     /*
     Non-linear factor
     */
-    t_t *= TIME_ALLOT_FACTOR;
+    t_t *= time_allot_factor;
 
     /*
     Network lag correction

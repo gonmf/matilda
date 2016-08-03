@@ -15,7 +15,7 @@ say anything. All times are in milliseconds.
 
 #define DETECT_NETWORK_LATENCY false
 
-/* Used if automatic detection (above) is not active. */
+/* Used if automatic detection (above) is not active or available yet. */
 #define LATENCY_COMPENSATION 5 /* in milliseconds */
 
 
@@ -26,14 +26,13 @@ is the objective.
 */
 #if BOARD_SIZ < 12
 /*
-Tuned with CLOP in 9x9 with 2s/game vs GNU Go 3.8 lvl 1. 1110 games.
+Tuned with CLOP in 9x9 with 3s/game vs GNU Go 3.8 lvl 1. 7590 games.
 */
-#define TIME_ALLOT_FACTOR 2.8
+#define TIME_ALLOT_FACTOR 3.44
+#define EXPECTED_GAME_LENGTH 56
 #else
-/*
-TODO tuning
-*/
-#define TIME_ALLOT_FACTOR 2.8
+#define TIME_ALLOT_FACTOR 3.0
+#define EXPECTED_GAME_LENGTH ((BOARD_SIZ * BOARD_SIZ * 2) / 3)
 #endif
 
 

@@ -16,7 +16,15 @@ visited by black and WHITE_STONE for first visited by white.
 #include "types.h"
 
 double rave_mse_b = RAVE_MSE_B;
-static double rave_mse_b_sqrd = RAVE_MSE_B * RAVE_MSE_B;
+static double rave_mse_b_sqrd = RAVE_MSE_B * RAVE_MSE_B * 4.0;
+
+/*
+Optional initiation routine in case rave_mse_b is modified for optimization.
+*/
+void amaf_rave_init()
+{
+    rave_mse_b_sqrd = rave_mse_b * rave_mse_b * 4.0;
+}
 
 /*
 Calculation of the RAVE value of a state transition.
@@ -51,7 +59,7 @@ double uct1_rave(
 #endif
 
     /* RAVE minimum MSE schedule */
-    double b = n_amaf_s_a / (play->mc_n + n_amaf_s_a + 4.0 * play->mc_n *
+    double b = n_amaf_s_a / (play->mc_n + n_amaf_s_a + play->mc_n *
         n_amaf_s_a * rave_mse_b_sqrd);
 
     return (1.0 - b) * play->mc_q + b * q_amaf_s_a;
