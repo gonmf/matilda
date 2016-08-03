@@ -1,33 +1,34 @@
+#
+# Matilda build makefile
+#
+
+# CC = clang
+
+CFLAGS := -Iinc/ -std=c99 -O2  -Wall -Wextra -Wformat=2 -pedantic-errors \
+	-Wfatal-errors -Wundef -Wno-unused-result -fno-stack-protector -lm \
+	-fopenmp -march=native -MMD -MP
+
 # For debugging add -g to CFLAGS
+# CFLAGS += -g
 
-# TODO: unfortunately if you edit header files everything has to be recompiled
+# GCC > 4.9 only
+# CFLAGS += -fdiagnostics-color=auto
 
-#CC = clang
+SRCFILES := $(wildcard *.c mcts/*.c)
 
-CFLAGS = -Iinc/ -O2 -Wall -Wextra -std=c99 -Wformat=2 -pedantic-errors \
-		 -fno-stack-protector -lm -fopenmp -Wfatal-errors -Wundef \
-		 -Wno-unused-result -march=native
-#-g
+OBJFILES := $(patsubst %.c,%.o,$(SRCFILES))
 
-SRCFILES = $(wildcard *.c mcts/*.c)
+DEPFILES := $(patsubst %.o,%.d,$(OBJFILES))
 
-OBJFILES = $(patsubst %.c,%.o,$(SRCFILES))
-
-PROGRAMS = \
-	matilda \
-	test \
-	gen_opening_book \
-	learn_best_plays \
-	learn_pat_weights \
-	gen_zobrist_table \
-	gen_joseki_book
+PROGRAMS := matilda test gen_opening_book learn_best_plays learn_pat_weights \
+	gen_zobrist_table gen_joseki_book
 
 .PHONY: $(PROGRAMS) clean
 
 all: $(PROGRAMS)
 
 matilda: $(OBJFILES) entry/*.c
-	@$(CC) $^ $(CFLAGS) -o $@
+	$(CC) $^ $(CFLAGS) -o $@
 
 test: $(OBJFILES) utest/*.c
 	@$(CC) $^ $(CFLAGS) -o $@
@@ -50,6 +51,10 @@ gen_joseki_book: $(OBJFILES) joseki/*.c
 %.o: %.c
 	@$(CC) -c -o $@ $< $(CFLAGS)
 
-clean:
-	@$(RM) -f callgrind.out.* matilda_*_*.log tuning.log $(PROGRAMS) \
-	*.o mcts/*.o
+-include $(DEPFILES)
+
+tidy:
+	@$(RM) -f callgrind.out.* matilda*.log tuning.log *.o mcts/*.o *.d mcts/*.d
+
+clean: tidy
+	@$(RM) -f $(PROGRAMS)

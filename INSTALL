@@ -24,14 +24,6 @@ the executable named test.
 
 For short instructions on how to use each program run them with --help.
 
-If you need to recompile Matilda you are advised to run
-
-make clean
-
-make
-
-Because for now header file changes are not detected automatically.
-
 All external files reside in the folder data/. Files produced by Matilda will
 also be produced to this folder only. Please notice that Matilda enforces its
 external file dependencies. If it is expecting a file to be found it has to be
