@@ -1,19 +1,11 @@
 language: C
 
-before_install:
-- sudo apt-get update
-- brew install clang-omp
-- xcode-select --install
-
 os:
 - linux
 - bsd
-- osx
 
 compiler:
 - gcc
-- clang
-- clang-omp -fopenmp
 
 script:
 - make -C src
