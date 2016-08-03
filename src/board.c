@@ -200,7 +200,6 @@ s8 reduce_auto(
 
     if(memcmp(champion, f3, BOARD_SIZ * BOARD_SIZ) > 0)
     {
-        champion = f3;
         reduction = ROTFLIP270;
     }
 

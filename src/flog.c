@@ -96,7 +96,7 @@ void config_logging(
             idx += snprintf(buf + idx, MAX_PAGE_SIZ - idx,
                 "logging mask changed: ");
             if(log_mode == 0)
-                idx += snprintf(buf + idx, MAX_PAGE_SIZ - idx, "none");
+                snprintf(buf + idx, MAX_PAGE_SIZ - idx, "none");
             else
             {
                 if(log_mode & LOG_CRITICAL)
@@ -204,7 +204,7 @@ static void open_log_file()
         idx += snprintf(buf + idx, MAX_PAGE_SIZ - idx,
             "logging enabled with mask: ");
         if(log_mode == 0)
-            idx += snprintf(buf + idx, MAX_PAGE_SIZ - idx, "none");
+            snprintf(buf + idx, MAX_PAGE_SIZ - idx, "none");
         else
         {
             if(log_mode & LOG_CRITICAL)
@@ -363,7 +363,7 @@ const char * build_info()
             num_threads);
     tmp += snprintf(tmp, MAX_PAGE_SIZ + buf - tmp,
         "Maximum number of threads: %u\n", MAXIMUM_NUM_THREADS);
-    tmp += snprintf(tmp, MAX_PAGE_SIZ + buf - tmp, "\n");
+    snprintf(tmp, MAX_PAGE_SIZ + buf - tmp, "\n");
 
     return buf;
 }

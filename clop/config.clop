@@ -29,9 +29,8 @@ Script ./goguiscript.py
 #IntegerParameter prior_corner 16 50
 
 
-
-IntegerParameter avg_game_length 20 80
-LinearParameter time_allot_factor 1.0 6.0
+#IntegerParameter avg_game_length 20 80
+#LinearParameter time_allot_factor 1.0 6.0
 
 
 #LinearParameter ucb1_c 0.5 2.5

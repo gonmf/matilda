@@ -26,10 +26,10 @@ is the objective.
 */
 #if BOARD_SIZ < 12
 /*
-Tuned with CLOP in 9x9 with 3s/game vs GNU Go 3.8 lvl 1. 7590 games.
+Tuned with CLOP in 9x9 with 3s/game vs GNU Go 3.8 lvl 1. 7907 games.
 */
-#define TIME_ALLOT_FACTOR 3.44
-#define EXPECTED_GAME_LENGTH 56
+#define TIME_ALLOT_FACTOR 3.45
+#define EXPECTED_GAME_LENGTH 57
 #else
 #define TIME_ALLOT_FACTOR 3.0
 #define EXPECTED_GAME_LENGTH ((BOARD_SIZ * BOARD_SIZ * 2) / 3)
