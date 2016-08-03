@@ -1,10 +1,15 @@
 language: C
+
 os:
 - linux
-#- osx
 - bsd
+
 compiler:
-#- clang
 - gcc
-script: make -C src && cd src && ./test
+
+script:
+- make -C src
+- cd src
+- ./test
+
 depth: 1
