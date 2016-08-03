@@ -1,12 +1,15 @@
 language: C
 
+before_install:
+- sudo apt-get update
+
 os:
 - linux
 - bsd
 
 compiler:
-- clang
 - gcc
+- clang
 
 script:
 - make -C src
