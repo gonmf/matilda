@@ -1,8 +1,6 @@
 language: C
 #sudo: required
 
-matrix:
-#  fast_finish: true
   includes:
     - os: osx
       compiler: clang-omp
