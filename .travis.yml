@@ -17,9 +17,10 @@ matrix:
         - brew update
         - brew install clang-omp
     - os: linux
+      compiler: gcc
+      env: COMPILER=gcc
       dist: trusty
       sudo: required
-      compiler: gcc
       
 script:
 #- brew update
