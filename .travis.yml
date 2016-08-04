@@ -10,6 +10,8 @@ compiler:
 - clang-omp
 
 script:
+- brew update
+- brew install clang-omp
 - make -C src
 - cd src
 - ./test
