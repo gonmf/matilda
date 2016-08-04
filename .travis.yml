@@ -12,19 +12,23 @@ matrix:
   includes:
     - os: osx
       compiler: clang-omp
+      env: NAME=osx
       before_install:
         - brew update
         - brew install clang-omp
     - os: linux
       compiler: gcc
+      env: NAME=linux
       dist: trusty
       sudo: required
     - os: bsd
       compiler: gcc
+      env: NAME=bsd
       
 script:
 #- brew update
 #- brew install clang-omp
+- echo $NAME
 - make -C src
 - cd src
 - ./test
