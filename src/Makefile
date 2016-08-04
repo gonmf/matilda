@@ -28,7 +28,7 @@ PROGRAMS := matilda test gen_opening_book learn_best_plays learn_pat_weights \
 all: $(PROGRAMS)
 
 matilda: $(OBJFILES) entry/*.c
-	$(CC) $^ $(CFLAGS) -o $@
+	@$(CC) $^ $(CFLAGS) -o $@
 
 test: $(OBJFILES) utest/*.c
 	@$(CC) $^ $(CFLAGS) -o $@
