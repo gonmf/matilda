@@ -1,17 +1,17 @@
 language: C
 
 os:
-#- linux
+- linux
 #- bsd
-- osx
+#- osx
 
 compiler:
 - gcc
-- clang-omp
+#- clang-omp
 
 script:
-- brew update
-- brew install clang-omp
+#- brew update
+#- brew install clang-omp
 - make -C src
 - cd src
 - ./test
