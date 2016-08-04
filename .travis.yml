@@ -11,6 +11,8 @@ compiler:
 before install:
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update           ; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install clang-omp; fi
+
+before script:
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then export CC=clang-omp   ; fi
 
 script:
