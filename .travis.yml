@@ -1,23 +1,22 @@
 language: C
 #sudo: required
 
+
+before_install:
+- brew update
+- brew install clang-omp
+  
 os:
 - osx
   compiler: clang-omp
-  env: NAME=osx
-  before_install:
-    - brew update
-    - brew install clang-omp
 - linux
   compiler: gcc
-  env: NAME=linux
   dist: trusty
   sudo: required
       
 script:
 #- brew update
 #- brew install clang-omp
-- echo $NAME
 - make -C src
 - cd src
 - ./test
