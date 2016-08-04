@@ -1,18 +1,10 @@
 language: C
 
-before install:
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update           ; fi
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install clang-omp; fi
-  
 os:
-- osx
 - linux
 
 compiler:
-- clang-omp
 - gcc
-
-dist: trusty
 
 script:
 - make -C src
