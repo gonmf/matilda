@@ -617,6 +617,7 @@ static void test_whole_game()
         u64 curr_time = current_time_in_millis();
         u64 stop_time = curr_time + 500;
         u64 early_stop_time = curr_time + 125;
+
         bool has_play = evaluate_position(b, is_black, &out_b, stop_time,
             early_stop_time);
         if(!has_play)
