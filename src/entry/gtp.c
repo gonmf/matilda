@@ -32,6 +32,11 @@ GTP_README.
 #include <sys/stat.h>
 #include <fcntl.h>
 
+#ifdef __MACH__
+#include <mach/clock.h>
+#include <mach/mach.h>
+#endif
+
 #include "analysis.h"
 #include "board.h"
 #include "engine.h"
@@ -62,7 +67,9 @@ const char * supported_commands[] =
     "boardsize",
     "clear_board",
     "clear_cache",
+#if !(defined(__MACH__) && __MACH__)
     "cputime",
+#endif
     "echo",
     "echo_err",
     "exit",
@@ -969,7 +976,11 @@ static void gtp_cputime(
     FILE * fp,
     int id
 ){
-    clockid_t clockid;
+#if __MACH__
+    error_msg(fp, id, "command unsupported");
+    flog_warn("gtp", "cputime requested in OSX (command unsupported)");
+#else
+    clock_t clockid;
     struct timespec ts;
 
     pid_t pid = getpid();
@@ -991,6 +1002,7 @@ static void gtp_cputime(
         1000000);
 
     answer_msg(fp, id, buf);
+#endif
 }
 
 static void gtp_final_status_list(
