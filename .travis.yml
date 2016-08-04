@@ -1,12 +1,6 @@
 language: C
-sudo: required
+#sudo: required
 
-addons:
-  apt:
-    sources:
-      - ubuntu-toolchain-r-test
-    packages:
-      - gcc-4.8
 matrix:
 #  fast_finish: true
   includes:
@@ -21,9 +15,6 @@ matrix:
       env: NAME=linux
       dist: trusty
       sudo: required
-    - os: bsd
-      compiler: gcc
-      env: NAME=bsd
       
 script:
 #- brew update
