@@ -18,6 +18,7 @@
 #include "tactical.h"
 #include "timem.h"
 #include "types.h"
+#include "flog.h"
 
 extern u16 iv_3x3[BOARD_SIZ * BOARD_SIZ][BOARD_SIZ * BOARD_SIZ][3];
 
@@ -653,6 +654,7 @@ int main(
             return 0;
         }
 
+    config_logging(LOG_CRITICAL);
     assert_data_folder_exists();
     rand_init();
     cfg_board_init();

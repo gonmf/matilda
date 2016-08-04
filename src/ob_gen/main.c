@@ -17,12 +17,14 @@ Application for the production of Fuego book from SGF game collections.
 #include "opening_book.h"
 #include "randg.h"
 #include "sgf.h"
-#include "simple_state.h"
+#include "hash_table.h"
 #include "state_changes.h"
 #include "stringm.h"
 #include "buffer.h"
+#include "flog.h"
 
 #define MAX_FILES 500000
+#define TABLE_BUCKETS 4957
 
 static char * filenames[MAX_FILES];
 
@@ -31,7 +33,168 @@ static s32 ob_depth = BOARD_SIZ;
 static s32 minimum_turns = (BOARD_SIZ + 1);
 static s32 minimum_samples = (BOARD_SIZ / 2);
 
+typedef struct __simple_state_transition_ {
+    u8 p[PACKED_BOARD_SIZ];
+    u32 count[BOARD_SIZ * BOARD_SIZ];
+    u32 hash;
+} simple_state_transition;
 
+
+static u32 hash_function(
+    void * o
+){
+    simple_state_transition * s = (simple_state_transition *)o;
+    return s->hash;
+}
+
+static s32 compare_function(
+    void * o1,
+    void * o2
+){
+    simple_state_transition * s1 = (simple_state_transition *)o1;
+    simple_state_transition * s2 = (simple_state_transition *)o2;
+    return memcmp(s1, s2, sizeof(simple_state_transition));
+}
+
+
+
+static u64 get_total_count(
+    simple_state_transition * s
+){
+    u32 ret = 0;
+    for(move i = 0; i < BOARD_SIZ * BOARD_SIZ; ++i)
+        ret += s->count[i];
+    return ret;
+}
+
+/*
+Exports internal OB table to simple OB format in file.
+*/
+static void export_table_as_ob(
+    hash_table * table,
+    u32 min_samples
+){
+    char * str = malloc(MAX_PAGE_SIZ);
+
+    snprintf(str, MAX_PAGE_SIZ, "%soutput.ob", get_data_folder());
+
+    FILE * fp = fopen(str, "w");
+    if(fp == NULL)
+    {
+        fprintf(stderr,
+            "error: failed to open opening book file for writing\n");
+        exit(EXIT_FAILURE);
+    }
+
+    u32 skipped = 0;
+    u32 exported = 0;
+    u32 idx;
+
+    for(u32 ti = 0; ti < TABLE_BUCKETS; ++ti)
+    {
+        ht_node * node = table->table[ti];
+        while(node != NULL && node->data != NULL)
+        {
+            simple_state_transition * h = (simple_state_transition *)node->data;
+
+            u32 total_count = get_total_count(h);
+            if(total_count < min_samples)
+            {
+                ++skipped;
+                node = node->next;
+                continue;
+            }
+
+            u32 best_count = 0;
+            move best = NONE;
+            for(move i = 0; i < BOARD_SIZ * BOARD_SIZ; ++i)
+                if(h->count[i] > best_count)
+                {
+                    best_count = h->count[i];
+                    best = i;
+                }
+
+            if(best == NONE)
+            {
+                fprintf(stderr, "error: unexpected absence of samples\n");
+                exit(EXIT_FAILURE);
+            }
+
+            if(best_count <= total_count / 2)
+            {
+                ++skipped;
+                node = node->next;
+                continue;
+            }
+
+            u8 p[BOARD_SIZ * BOARD_SIZ];
+            unpack_matrix(p, h->p);
+
+            move m1 = 0;
+            move m2 = 0;
+            bool is_black = true;
+
+            str = malloc(MAX_PAGE_SIZ);
+            idx = 0;
+            idx += snprintf(str + idx, MAX_PAGE_SIZ - idx, "%u ", BOARD_SIZ);
+
+            while(1)
+            {
+                bool found = false;
+                if(is_black)
+                {
+                    for(; m1 < BOARD_SIZ * BOARD_SIZ; ++m1)
+                        if(p[m1] == BLACK_STONE)
+                        {
+                            idx += snprintf(str + idx, MAX_PAGE_SIZ - idx,
+                                "%s ", coord_to_alpha_num(m1));
+                            found = true;
+                            ++m1;
+                            break;
+                        }
+                }else
+                    for(; m2 < BOARD_SIZ * BOARD_SIZ; ++m2)
+                        if(p[m2] == WHITE_STONE)
+                        {
+                            idx += snprintf(str + idx, MAX_PAGE_SIZ - idx,
+                                "%s ", coord_to_alpha_num(m1));
+                            found = true;
+                            ++m2;
+                            break;
+                        }
+                if(!found)
+                    break;
+            }
+
+            snprintf(str + idx, MAX_PAGE_SIZ - idx, "| %s # %u/%u\n",
+                coord_to_alpha_num(best), best_count, total_count);
+
+            size_t w = fwrite(str, strlen(str), 1, fp);
+            if(w != 1)
+            {
+                fprintf(stderr, "error: write failed\n");
+                exit(EXIT_FAILURE);
+            }
+
+            ++exported;
+            node = node->next;
+        }
+    }
+
+    str = malloc(MAX_PAGE_SIZ);
+    snprintf(str, MAX_PAGE_SIZ, "# exported %u unique rules; %u were disqualifi\
+ed for not enough samples or majority representative\n",exported, skipped);
+    size_t w = fwrite(str, strlen(str), 1, fp);
+    if(w != 1)
+    {
+        fprintf(stderr, "error: write failed\n");
+        exit(EXIT_FAILURE);
+    }
+    fclose(fp);
+
+    printf("exported %u unique rules; %u were disqualified for not enough sampl\
+es or majority representative\n", exported, skipped);
+}
 
 int main(
     int argc,
@@ -92,8 +255,14 @@ o be used. (default: %u)\n", minimum_turns);
     }
 
     timestamp();
+    config_logging(DEFAULT_LOG_MODES);
     assert_data_folder_exists();
-    simple_state_table_init();
+
+
+    printf("%s: Creating table...\n", timestamp());
+    hash_table * table = hash_table_create(TABLE_BUCKETS,
+        sizeof(simple_state_transition), hash_function, compare_function);
+
 
 
     u32 games_used = 0;
@@ -195,11 +364,13 @@ o be used. (default: %u)\n", minimum_turns);
             s8 reduction = reduce_auto(&b2, is_black);
             plays[k] = reduce_move(plays[k], reduction);
 
-            u8 packed_board[PACKED_BOARD_SIZ];
-            pack_matrix(b2.p, packed_board);
-            u32 hash = crc32(packed_board, PACKED_BOARD_SIZ);
-            simple_state_transition * entry = simple_state_collection_find(hash,
-                packed_board);
+            simple_state_transition stmp;
+            pack_matrix(b2.p, stmp.p);
+            stmp.hash = crc32(stmp.p, PACKED_BOARD_SIZ);
+
+            simple_state_transition * entry =
+                (simple_state_transition *)hash_table_find(table, &stmp);
+
             if(entry == NULL) /* new state */
             {
                 simple_state_transition * entry = (simple_state_transition
@@ -209,11 +380,12 @@ o be used. (default: %u)\n", minimum_turns);
                     fprintf(stderr, "\rerror: new sst: system out of memory\n");
                     exit(EXIT_FAILURE);
                 }
-                memcpy(entry->p, packed_board, PACKED_BOARD_SIZ);
+                memcpy(entry->p, stmp.p, PACKED_BOARD_SIZ);
+                entry->hash = stmp.hash;
                 memset(entry->count, 0, sizeof(u32) * BOARD_SIZ * BOARD_SIZ);
-                entry->hash = hash;
                 entry->count[plays[k]] = 1;
-                simple_state_collection_add(entry);
+
+                hash_table_insert(table, entry);
                 ++ob_rules;
             }
             else /* reusing state */
@@ -236,7 +408,9 @@ o be used. (default: %u)\n", minimum_turns);
     printf("\n");
     printf("%s: 2/2 Exporting as opening book...\n", timestamp());
 
-    simple_state_collection_export(minimum_samples);
+    export_table_as_ob(table, minimum_samples);
+
+    hash_table_destroy(table, true);
 
     printf("%s: Job done.\n", timestamp());
     return EXIT_SUCCESS;

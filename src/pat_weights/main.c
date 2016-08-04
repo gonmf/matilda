@@ -25,6 +25,7 @@ records. The results are printed to data/pat3_weights.
 #include "tactical.h"
 #include "file_io.h"
 #include "buffer.h"
+#include "flog.h"
 
 
 #define MAX_FILES 500000
@@ -72,6 +73,7 @@ int main(
         }
 
     timestamp();
+    config_logging(DEFAULT_LOG_MODES);
     assert_data_folder_exists();
     cfg_board_init();
 

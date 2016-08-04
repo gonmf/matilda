@@ -376,9 +376,11 @@ void flog_crit(
     const char * msg
 ){
     if((log_mode & LOG_CRITICAL) != 0)
+    {
         flog("crit", ctx, msg);
+        flog(NULL, "flog", "execution aborted due to program panic");
+    }
 
-    flog(NULL, "flog", "execution aborted due to program panic");
     exit(EXIT_FAILURE);
 }
 

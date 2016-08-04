@@ -18,6 +18,7 @@ Upon running a DATA/output.joseki file should be written.
 #include "timem.h"
 #include "stringm.h"
 #include "buffer.h"
+#include "flog.h"
 
 
 typedef struct __joseki_ {
@@ -177,6 +178,7 @@ int main(
     }
 
     timestamp();
+    config_logging(DEFAULT_LOG_MODES);
     assert_data_folder_exists();
 
     char * buffer = calloc(MAX_FILE_SIZ, 1);

@@ -28,6 +28,7 @@ a state->play file (.spb), to be used for further play suggestions besides
 #include "transpositions.h"
 #include "zobrist.h"
 #include "buffer.h"
+#include "flog.h"
 
 #define SECS_PER_TURN 30
 
@@ -80,6 +81,7 @@ t: %u)\n", ob_depth);
     }
 
     timestamp();
+    config_logging(DEFAULT_LOG_MODES);
     rand_init();
     assert_data_folder_exists();
     simple_state_table_init();

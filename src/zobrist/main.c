@@ -12,6 +12,7 @@
 #include "engine.h"
 #include "timem.h"
 #include "buffer.h"
+#include "flog.h"
 
 static u8 count_bits(
     u64 v
@@ -42,6 +43,7 @@ int main(
         }
 
     timestamp();
+    config_logging(DEFAULT_LOG_MODES);
     assert_data_folder_exists();
 
     printf("This process aims to reduce the bit distribution variance of the da\
