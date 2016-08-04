@@ -53,7 +53,7 @@ static s32 compare_function(
 ){
     simple_state_transition * s1 = (simple_state_transition *)o1;
     simple_state_transition * s2 = (simple_state_transition *)o2;
-    return memcmp(s1, s2, sizeof(simple_state_transition));
+    return memcmp(s1->p, s2->p, PACKED_BOARD_SIZ);
 }
 
 
@@ -365,6 +365,7 @@ o be used. (default: %u)\n", minimum_turns);
             plays[k] = reduce_move(plays[k], reduction);
 
             simple_state_transition stmp;
+            memset(&stmp, 0, sizeof(simple_state_transition));
             pack_matrix(b2.p, stmp.p);
             stmp.hash = crc32(stmp.p, PACKED_BOARD_SIZ);
 
@@ -380,9 +381,9 @@ o be used. (default: %u)\n", minimum_turns);
                     fprintf(stderr, "\rerror: new sst: system out of memory\n");
                     exit(EXIT_FAILURE);
                 }
+                memset(entry, 0, sizeof(simple_state_transition));
                 memcpy(entry->p, stmp.p, PACKED_BOARD_SIZ);
                 entry->hash = stmp.hash;
-                memset(entry->count, 0, sizeof(u32) * BOARD_SIZ * BOARD_SIZ);
                 entry->count[plays[k]] = 1;
 
                 hash_table_insert(table, entry);

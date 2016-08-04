@@ -20,10 +20,9 @@ a state->play file (.spb), to be used for further play suggestions besides
 #include "opening_book.h"
 #include "randg.h"
 #include "sgf.h"
-#include "simple_state.h"
 #include "state_changes.h"
 #include "stringm.h"
-#include "time.h"
+#include "hash_table.h"
 #include "timem.h"
 #include "transpositions.h"
 #include "zobrist.h"
@@ -33,12 +32,38 @@ a state->play file (.spb), to be used for further play suggestions besides
 #define SECS_PER_TURN 30
 
 #define MAX_FILES 500000
+#define TABLE_BUCKETS 4957
 
 static char * filenames[MAX_FILES];
 
 static bool relax_komi = true;
 static s32 ob_depth = (BOARD_SIZ * BOARD_SIZ) / 2;
 static s32 minimum_samples = 32;
+
+
+typedef struct __simple_state_transition_ {
+    u8 p[PACKED_BOARD_SIZ];
+    move play;
+    u32 popularity;
+    u32 hash;
+} simple_state_transition;
+
+
+static u32 hash_function(
+    void * o
+){
+    simple_state_transition * s = (simple_state_transition *)o;
+    return s->hash;
+}
+
+static s32 compare_function(
+    void * o1,
+    void * o2
+){
+    simple_state_transition * s1 = (simple_state_transition *)o1;
+    simple_state_transition * s2 = (simple_state_transition *)o2;
+    return memcmp(s1->p, s2->p, PACKED_BOARD_SIZ);
+}
 
 
 int main(int argc, char * argv[]){
@@ -84,10 +109,13 @@ t: %u)\n", ob_depth);
     config_logging(DEFAULT_LOG_MODES);
     rand_init();
     assert_data_folder_exists();
-    simple_state_table_init();
     cfg_board_init();
     zobrist_init();
     transpositions_table_init();
+
+    printf("%s: Creating table...\n", timestamp());
+    hash_table * table = hash_table_create(TABLE_BUCKETS,
+        sizeof(simple_state_transition), hash_function, compare_function);
 
 
     u32 games_used = 0;
@@ -102,7 +130,7 @@ t: %u)\n", ob_depth);
     else
         printf("%s: Found %u SGF files.\n", timestamp(), filenames_found);
 
-    printf("%s: 1/2 Loading game states\n", timestamp());
+    printf("%s: Loading game states\n", timestamp());
     u32 fid;
     for(fid = 0; fid < filenames_found; ++fid)
     {
@@ -173,24 +201,29 @@ t: %u)\n", ob_depth);
             s8 reduction = reduce_auto(&b2, is_black);
             plays[k] = reduce_move(plays[k], reduction);
 
-            u8 packed_board[PACKED_BOARD_SIZ];
-            pack_matrix(b2.p, packed_board);
-            u32 hash = crc32(packed_board, PACKED_BOARD_SIZ);
-            simple_state_transition * entry = simple_state_collection_find(hash,
-                packed_board);
+            simple_state_transition stmp;
+            memset(&stmp, 0, sizeof(simple_state_transition));
+            pack_matrix(b2.p, stmp.p);
+            stmp.hash = crc32(stmp.p, PACKED_BOARD_SIZ);
+
+            simple_state_transition * entry =
+                (simple_state_transition *)hash_table_find(table, &stmp);
+
             if(entry == NULL) /* new state */
             {
-                simple_state_transition * entry = (simple_state_transition
-                    *)malloc(sizeof(simple_state_transition));
+                entry = (simple_state_transition *)malloc(
+                    sizeof(simple_state_transition));
                 if(entry == NULL){
                     fprintf(stderr, "\rerror: new sst: system out of memory\n");
                     exit(EXIT_FAILURE);
                 }
-                memcpy(entry->p, packed_board, PACKED_BOARD_SIZ);
-                entry->hash = hash;
+                memset(entry, 0, sizeof(simple_state_transition));
+                memcpy(entry->p, stmp.p, PACKED_BOARD_SIZ);
+                entry->hash = stmp.hash;
                 entry->play = plays[k];
                 entry->popularity = 1;
-                simple_state_collection_add(entry);
+
+                hash_table_insert(table, entry);
                 ++unique_states;
             }
             else
@@ -203,13 +236,11 @@ t: %u)\n", ob_depth);
     if(unique_states == 0)
         return EXIT_SUCCESS;
 
-    printf("\n%s: 2/2 Evaluating game states and saving best play\n",
+    printf("\n%s: Evaluating game states and saving best play\n",
         timestamp());
 
-    simple_state_transition * sst = simple_state_collection_export();
-
     char * filename = get_buffer();
-    snprintf(filename, 128, "%soutput.spb", get_data_folder());
+    snprintf(filename, MAX_PAGE_SIZ, "%soutput.spb", get_data_folder());
     printf("%s: Created output file %s\n\n\n", timestamp(), filename);
     FILE * fp = fopen(filename, "w");
 
@@ -221,21 +252,24 @@ t: %u)\n", ob_depth);
 
     u32 evaluated = 0;
 
-    while(sst != NULL)
+    simple_state_transition ** ssts =
+        (simple_state_transition **)hash_table_export_to_array(table);
+
+    for(u32 idx = 0; ssts[idx]; ++idx)
     {
+        simple_state_transition * sst = ssts[idx];
+
         if(sst->popularity >= (u32)minimum_samples)
         {
             evaluated++;
 
             unpack_matrix(b.p, sst->p);
             b.last_eaten = b.last_played = NONE;
-            fprint_board(stdout, &b);
 
             if(opening_book(&b, &out_b))
             {
                 printf("%s: State already present in opening books.\n",
                     timestamp());
-                sst = sst->next;
                 continue;
             }
 
@@ -249,26 +283,26 @@ t: %u)\n", ob_depth);
             if(!is_board_move(best))
             {
                 printf("%s: Best play was to pass; ignored.\n", timestamp());
-                sst = sst->next;
                 continue;
             }
 
             char * str = get_buffer();
             u32 idx = 0;
-            idx += snprintf(str + idx, 1024 - idx, "%u ", BOARD_SIZ);
+            idx += snprintf(str + idx, MAX_PAGE_SIZ - idx, "%u ", BOARD_SIZ);
 
             for(move m = 0; m < BOARD_SIZ * BOARD_SIZ; ++m)
             {
                 if(b.p[m] == BLACK_STONE)
-                    idx += snprintf(str + idx, 1024 - idx, "X");
+                    idx += snprintf(str + idx, MAX_PAGE_SIZ - idx, "X");
                 else
                     if(b.p[m] == WHITE_STONE)
-                        idx += snprintf(str + idx, 1024 - idx, "O");
+                        idx += snprintf(str + idx, MAX_PAGE_SIZ - idx, "O");
                     else
-                        idx += snprintf(str + idx, 1024 - idx, ".");
+                        idx += snprintf(str + idx, MAX_PAGE_SIZ - idx, ".");
             }
 
-            snprintf(str + idx, 1024 - idx, " %s\n", coord_to_alpha_num(best));
+            snprintf(str + idx, MAX_PAGE_SIZ - idx, " %s\n",
+                coord_to_alpha_num(best));
 
 
             size_t w = fwrite(str, strlen(str), 1, fp);
@@ -283,10 +317,11 @@ t: %u)\n", ob_depth);
             printf("%s: Best play: %s", timestamp(), coord_to_alpha_num(best));
             printf(" Actual play: %s\n\n\n", coord_to_alpha_num(sst->play));
         }
-        sst = sst->next;
     }
     fclose(fp);
-    printf("Evaluated %u states unique states.\n", evaluated);
+    printf("Evaluated %u unique states with enough samples.\n", evaluated);
+
+    hash_table_destroy(table, true);
 
     printf("%s: Job done.\n", timestamp());
     return EXIT_SUCCESS;

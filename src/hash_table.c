@@ -260,6 +260,8 @@ void ** hash_table_export_to_array(
     assert(ht != NULL);
 
     void ** ret = (void *)malloc((ht->elements + 1) * sizeof(void *));
+    assert(ret != NULL);
+
     u32 curr_elem = 0;
     for(u32 bucket = 0; bucket < ht->number_of_buckets; ++bucket)
     {
