@@ -1,5 +1,5 @@
 language: C
-#sudo: required
+sudo: required
 
 
 before_install:
@@ -8,15 +8,17 @@ before_install:
   
 os:
 - osx
-  compiler: clang-omp
 - linux
-  compiler: gcc
-  dist: trusty
-  sudo: required
-      
+
+compiler:
+- clang-omp
+- gcc
+
+dist: trusty
+
 script:
-#- brew update
-#- brew install clang-omp
+- brew update
+- brew install clang-omp
 - make -C src
 - cd src
 - ./test
