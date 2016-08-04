@@ -1,17 +1,30 @@
 language: C
+sudo: required
 
-os:
-- linux
-#- bsd
-#- osx
-
-compiler:
-- gcc
-#- clang-omp
-
+addons:
+  apt:
+    sources:
+      - ubuntu-toolchain-r-test
+    packages:
+      - gcc-4.8
+matrix:
+  fast_finish: true
+  includes:
+    - os: osx
+      compiler: clang-omp
+      env: COMPILER=clang-omp
+      before_install:
+        - brew update
+        - brew install clang-omp
+    - os: linux
+      dist: trusty
+      sudo: required
+      compiler: gcc
+      
 script:
 #- brew update
 #- brew install clang-omp
+- export CC=$COMPILER
 - make -C src
 - cd src
 - ./test
