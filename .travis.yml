@@ -1,13 +1,14 @@
 language: C
 #sudo: required
 
-os: osx
+os:
+- osx
   compiler: clang-omp
   env: NAME=osx
   before_install:
     - brew update
     - brew install clang-omp
-os: linux
+- linux
   compiler: gcc
   env: NAME=linux
   dist: trusty
