@@ -1,18 +1,17 @@
 language: C
 #sudo: required
 
-  includes:
-    - os: osx
-      compiler: clang-omp
-      env: NAME=osx
-      before_install:
-        - brew update
-        - brew install clang-omp
-    - os: linux
-      compiler: gcc
-      env: NAME=linux
-      dist: trusty
-      sudo: required
+os: osx
+  compiler: clang-omp
+  env: NAME=osx
+  before_install:
+    - brew update
+    - brew install clang-omp
+os: linux
+  compiler: gcc
+  env: NAME=linux
+  dist: trusty
+  sudo: required
       
 script:
 #- brew update
