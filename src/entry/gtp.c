@@ -67,7 +67,7 @@ const char * supported_commands[] =
     "boardsize",
     "clear_board",
     "clear_cache",
-#if !(defined(__MACH__) && __MACH__)
+#if !defined(__MACH__)
     "cputime",
 #endif
     "echo",
@@ -976,7 +976,7 @@ static void gtp_cputime(
     FILE * fp,
     int id
 ){
-#if __MACH__
+#if !defined(__MACH__)
     error_msg(fp, id, "command unsupported");
     flog_warn("gtp", "cputime requested in OSX (command unsupported)");
 #else
