@@ -1,19 +1,15 @@
 language: C
 
 os:
-- linux
-- bsd
+#- linux
+#- bsd
 - osx
 
 compiler:
 - gcc
-
-before script:
-- if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update           ; fi
-- if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install clang-omp; fi
+- clang-omp
 
 script:
-- if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then export CC=clang-omp; fi
 - make -C src
 - cd src
 - ./test
