@@ -1,11 +1,17 @@
 Matilda is presently run as standalone executables, with no installation
 required or supported. It is currently aimed at Linux and BSD systems. If it
-fails to compile or run in these systems please open an issue. It should also be
-Mac OS X compatible, but it is difficult to guarantee it at this time. If you
-use Xcode you may need to install a compiler by the side, since the branch of
-llvm in Xcode does not support OpenMP.
+fails to compile or run in these systems please open an issue.
 
-You are advised to review the contents of the file src/inc/matilda.h for your
+PREPARATION
+
+It is tested using GCC and Clang. Please try to use modern versions of these
+compilers. They need to be recent enough to support OpenMP 3.0.
+
+On Mac OS X do not use the default Xcode clang, that does not support OpenMP.
+Instead install through brew clang-omp, and override the compiler to be used
+in src/Makefile.
+
+Before compiling review the contents of the file src/inc/matilda.h for your
 system. Remember to edit the line
 
 #define UCT_MEMORY 512
@@ -13,7 +19,11 @@ system. Remember to edit the line
 with the amount of memory (in MiB) that Matilda can use for MCTS.
 
 Other settings may also be configured for testing by mistake, so please
-understand what each setting does and set them correctly. When ready, execute
+understand what each setting does and set them correctly.
+
+COMPILATION
+
+When ready, execute
 
 make
 
