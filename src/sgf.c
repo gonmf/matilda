@@ -23,7 +23,7 @@ Play variations are not supported.
 #include "scoring.h"
 #include "buffer.h"
 
-extern s16 komi;
+extern d16 komi;
 
 static bool unknown_sgf_ruleset_warning_given = false;
 static bool unknown_board_size_cant_guess_warning_given = false;
@@ -128,7 +128,7 @@ Reads the sequence of plays from SGF text.
 If plays happen out of order they count as a pass by the other player.
 RETURNS number of plays found or -1 on format error
 */
-s16 sgf_to_boards(
+d16 sgf_to_boards(
     char * sgf_buf,
     move * plays,
     bool * irregular_play_order
@@ -330,7 +330,7 @@ bool import_game_from_sgf(
 
     char * buffer = get_buffer();
 
-    s32 chars_read = read_ascii_file(filename, buffer, MAX_SGF_FILE_SIZ);
+    d32 chars_read = read_ascii_file(filename, buffer, MAX_SGF_FILE_SIZ);
     if(chars_read < 1)
     {
         flog_warn("gtp", "could not open/read file");
@@ -415,7 +415,7 @@ bool import_game_from_sgf(
                     else
                     {
                         gr->resignation = false;
-                        parse_int(result, (s32 *)&gr->final_score);
+                        parse_int(result, (d32 *)&gr->final_score);
                         gr->final_score *= 2;
                         if(gr->final_score == 0)
                         {
@@ -441,7 +441,7 @@ bool import_game_from_sgf(
                     else
                     {
                         gr->resignation = false;
-                        parse_int(result, (s32 *)&gr->final_score);
+                        parse_int(result, (d32 *)&gr->final_score);
                         gr->final_score *= -2;
                         if(gr->final_score == 0)
                         {

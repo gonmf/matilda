@@ -1008,7 +1008,7 @@ void mark_pts_in_seki(
 
 static void move_dir(
     move * m,
-    s8 dir[2]
+    d8 dir[2]
 ){
     *m = *m + dir[0] + dir[1] * BOARD_SIZ;
 }
@@ -1108,7 +1108,7 @@ bool is_ladder(
             return false;
     }
 
-    s8 dir1[2]; /* direction vector 1 */
+    d8 dir1[2]; /* direction vector 1 */
 
     /* direction away from neighbor friendly stone */
     if(!border_left[m] && cb->g[m + LEFT] == g)
@@ -1141,7 +1141,7 @@ bool is_ladder(
     if(out_neighbors4[m] > 0)
         return true;
 
-    s8 dir2[2]; /* direction vector 2 */
+    d8 dir2[2]; /* direction vector 2 */
 
     /* direction away from imaginary side stone */
     dir2[0] = dir1[1];

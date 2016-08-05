@@ -32,12 +32,12 @@ static u16 get_border_hash_slow(
     move m
 ){
     u16 ret = 0;
-    s8 x;
-    s8 y;
+    d8 x;
+    d8 y;
     move_to_coord(m, (u8 *)&x, (u8 *)&y);
     u8 shift = 14;
-    for(s8 i = x - 1; i <= x + 1; ++i)
-        for(s8 j = y - 1; j <= y + 1; ++j)
+    for(d8 i = x - 1; i <= x + 1; ++i)
+        for(d8 j = y - 1; j <= y + 1; ++j)
         {
             if(i == x && j == y)
                 continue;
@@ -75,8 +75,8 @@ void zobrist_init()
         u8 i;
         u8 j;
         move_to_coord(pos, &i, &j);
-        for(s8 x = i - 1; x <= i + 1; ++x)
-            for(s8 y = j - 1; y <= j + 1; ++y)
+        for(d8 x = i - 1; x <= i + 1; ++x)
+            for(d8 y = j - 1; y <= j + 1; ++y)
             {
                 if(x == i && y == j)
                     continue;

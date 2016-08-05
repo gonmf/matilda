@@ -80,7 +80,7 @@ Avoids too many ko battles. Also uses mercy threshold.
 Also updates AMAF transitions information.
 RETURNS the final score
 */
-s16 playout_heavy_amaf(
+d16 playout_heavy_amaf(
     cfg_board * cb,
     bool is_black,
     u8 traversed[BOARD_SIZ * BOARD_SIZ]

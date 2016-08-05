@@ -14,7 +14,7 @@ Functions for file input/output.
 /*
 RETURNS the number of bytes read or -1 if failed to open/be read
 */
-s32 read_binary_file(
+d32 read_binary_file(
     const char * filename,
     void * dst_buf,
     u32 buf_len
@@ -23,7 +23,7 @@ s32 read_binary_file(
 /*
 RETURNS the number of ASCII characters read or -1 if failed to open/be read
 */
-s32 read_ascii_file(
+d32 read_ascii_file(
     const char * filename,
     char * dst_buf,
     u32 buf_len

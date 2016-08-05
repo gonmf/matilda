@@ -37,8 +37,8 @@ a state->play file (.spb), to be used for further play suggestions besides
 static char * filenames[MAX_FILES];
 
 static bool relax_komi = true;
-static s32 ob_depth = (BOARD_SIZ * BOARD_SIZ) / 2;
-static s32 minimum_samples = 32;
+static d32 ob_depth = (BOARD_SIZ * BOARD_SIZ) / 2;
+static d32 minimum_samples = 32;
 
 
 typedef struct __simple_state_transition_ {
@@ -56,7 +56,7 @@ static u32 hash_function(
     return s->hash;
 }
 
-static s32 compare_function(
+static d32 compare_function(
     void * o1,
     void * o2
 ){
@@ -73,7 +73,7 @@ int main(int argc, char * argv[]){
             exit(EXIT_SUCCESS);
         }
         if(i < argc - 1 && strcmp(argv[i], "-max_depth") == 0){
-            s32 a;
+            d32 a;
             if(!parse_int(argv[i + 1], &a) || a < 1)
                 goto usage;
             ++i;
@@ -81,7 +81,7 @@ int main(int argc, char * argv[]){
             continue;
         }
         if(i < argc - 1 && strcmp(argv[i], "-min_samples") == 0){
-            s32 a;
+            d32 a;
             if(!parse_int(argv[i + 1], &a) || a < 1)
                 goto usage;
             ++i;
@@ -141,7 +141,7 @@ t: %u)\n", ob_depth);
         }
 
         char * buf = get_buffer();
-        s32 r = read_ascii_file(filenames[fid], buf, MAX_PAGE_SIZ);
+        d32 r = read_ascii_file(filenames[fid], buf, MAX_PAGE_SIZ);
         if(r <= 0 || r >= MAX_PAGE_SIZ)
         {
             fprintf(stderr, "\rerror: unexpected file size or read error\n");
@@ -163,13 +163,13 @@ t: %u)\n", ob_depth);
         }
         bool irregular_play_order;
 
-        s16 plays_count = sgf_to_boards(buf, plays, &irregular_play_order);
+        d16 plays_count = sgf_to_boards(buf, plays, &irregular_play_order);
         ++games_used;
 
         board b;
         clear_board(&b);
 
-        s16 k;
+        d16 k;
         for(k = 0; k < MIN(ob_depth, plays_count); ++k)
         {
             if(plays[k] == PASS)
@@ -198,7 +198,7 @@ t: %u)\n", ob_depth);
             if(b.last_eaten != NONE)
                 continue;
 
-            s8 reduction = reduce_auto(&b2, is_black);
+            d8 reduction = reduce_auto(&b2, is_black);
             plays[k] = reduce_move(plays[k], reduction);
 
             simple_state_transition stmp;

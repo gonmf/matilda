@@ -20,7 +20,7 @@ typedef struct __hash_table_ {
 	u32 elements;
 	ht_node ** table;
 	u32 (* hash_func)(void *);
-	s32 (* cmp_func)(void *, void *);
+	d32 (* cmp_func)(void *, void *);
 } hash_table;
 
 
@@ -34,7 +34,7 @@ hash_table * hash_table_create(
     u32 nr_buckets,
     u32 elem_size,
     u32 (* hash_function)(void *),
-    s32 (* compare_function)(void *, void *)
+    d32 (* compare_function)(void *, void *)
 );
 
 /*

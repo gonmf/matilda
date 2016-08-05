@@ -67,7 +67,7 @@ u16 prior_corner = PRIOR_CORNER;
 double ucb1_c = UCB1_C;
 
 
-extern s16 komi_offset; /* reset between matches */
+extern d16 komi_offset; /* reset between matches */
 extern u8 out_neighbors4[BOARD_SIZ * BOARD_SIZ];
 
 extern bool border_left[BOARD_SIZ * BOARD_SIZ];
@@ -572,7 +572,7 @@ static void select_play(
     *play = NULL;
 }
 
-static s16 mcts_expansion(
+static d16 mcts_expansion(
     cfg_board * cb,
     bool is_black,
     tt_stats * stats,
@@ -583,7 +583,7 @@ static s16 mcts_expansion(
     if(stats->expansion_delay == -1)
         init_new_state(cb, stats, is_black, branch_limit);
     omp_unset_lock(&stats->lock);
-    s16 outcome = playout_heavy_amaf(cb, is_black, traversed);
+    d16 outcome = playout_heavy_amaf(cb, is_black, traversed);
     if(record_final_score)
         update_estimate_score(cb);
 
@@ -620,14 +620,14 @@ static bool is_legal_play(
 }
 #endif
 
-static s16 mcts_selection(
+static d16 mcts_selection(
     cfg_board * cb,
     u64 zobrist_hash,
     bool is_black,
     bool branch_limit[BOARD_SIZ * BOARD_SIZ]
 ){
 
-    s16 depth = 6;
+    d16 depth = 6;
     tt_stats * stats[MAX_UCT_DEPTH + 6];
     tt_play * plays[MAX_UCT_DEPTH + 7];
     /* for testing superko */
@@ -636,7 +636,7 @@ static s16 mcts_selection(
     u8 traversed[BOARD_SIZ * BOARD_SIZ];
     memset(traversed, EMPTY, BOARD_SIZ * BOARD_SIZ);
 
-    s16 outcome;
+    d16 outcome;
     tt_stats * curr_stats = NULL;
     tt_play * play = NULL;
 
@@ -766,7 +766,7 @@ static s16 mcts_selection(
 
     if(outcome == 0)
     {
-        for(s16 k = depth - 1; k >= 6; --k)
+        for(d16 k = depth - 1; k >= 6; --k)
         {
             is_black = !is_black;
             if(plays[k] != NULL)
@@ -789,7 +789,7 @@ static s16 mcts_selection(
     else
     {
         plays[depth] = NULL;
-        for(s16 k = depth - 1; k >= 6; --k)
+        for(d16 k = depth - 1; k >= 6; --k)
         {
             is_black = !is_black;
             if(plays[k] != NULL)
@@ -915,7 +915,7 @@ double mcts_start(
 
         cfg_board cb;
         cfg_board_clone(&cb, &initial_cfg_board);
-        s16 outcome = mcts_selection(&cb, start_zobrist_hash, is_black,
+        d16 outcome = mcts_selection(&cb, start_zobrist_hash, is_black,
             branch_limit);
         cfg_board_free(&cb);
         if(outcome == 0)
@@ -955,7 +955,7 @@ double mcts_start(
 
             cfg_board cb;
             cfg_board_clone(&cb, &initial_cfg_board);
-            s16 outcome = mcts_selection(&cb, start_zobrist_hash, is_black,
+            d16 outcome = mcts_selection(&cb, start_zobrist_hash, is_black,
                 branch_limit);
             cfg_board_free(&cb);
             if(outcome == 0)
@@ -1013,7 +1013,7 @@ double mcts_start(
     if(stopped_early_by_wr)
     {
         str_buf = get_buffer();
-        s64 diff = stop_time - current_time_in_millis();
+        d64 diff = stop_time - current_time_in_millis();
         snprintf(str_buf, MAX_PAGE_SIZ, "search ended %" PRId64 "ms early", diff);
         flog_info("uct", str_buf);
     }

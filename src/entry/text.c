@@ -234,7 +234,7 @@ ile.\n");
 static void text_print_score(bool is_black)
 {
     board * current_state = current_game_state(&current_game);
-    s16 score;
+    d16 score;
     if(estimate_score)
     {
         if(stone_count(current_state->p) > BOARD_SIZ * BOARD_SIZ / 2)
@@ -396,7 +396,7 @@ core/quit\n\n", EUROPEAN_NOTATION ? coord_to_alpha_num(coord_to_move(3, 3)) :
             if(strcmp(line, "score") == 0)
             {
                 board * current_state = current_game_state(&current_game);
-                s16 score = estimate_score ? score_estimate(current_state,
+                d16 score = estimate_score ? score_estimate(current_state,
                     is_black) : 0;
                 printf("Score estimate with %s to play: %s\n\n", is_black ?
                     "black" : "white", score_to_string(score));

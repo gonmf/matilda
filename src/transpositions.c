@@ -294,7 +294,7 @@ u32 tt_clean_outside_tree(
         release_states_not_marked();
     }
 
-    s32 states_released = states_in_use_before - states_in_use;
+    d32 states_released = states_in_use_before - states_in_use;
     assert(states_released >= 0);
     return states_released;
 }

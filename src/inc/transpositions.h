@@ -64,7 +64,7 @@ typedef struct __tt_stats_ {
 	move last_eaten;
 	bool last_passed;
 	u8 maintenance_mark;
-	s8 expansion_delay;
+	d8 expansion_delay;
 	u32 mc_n_total;
 	move plays_count;
 	tt_play plays[MAX_PLAYS_COUNT];

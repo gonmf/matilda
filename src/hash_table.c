@@ -23,7 +23,7 @@ hash_table * hash_table_create(
     u32 nr_buckets,
     u32 elem_size,
     u32 (* hash_function)(void *),
-    s32 (* compare_function)(void *, void *)
+    d32 (* compare_function)(void *, void *)
 ){
     assert(nr_buckets > 0);
     assert(elem_size > 0);

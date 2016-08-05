@@ -98,7 +98,7 @@ RETURNS move
 */
 move reduce_move(
     move m,
-    s8 method
+    d8 method
 );
 
 /*

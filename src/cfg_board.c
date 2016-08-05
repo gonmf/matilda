@@ -87,8 +87,8 @@ void cfg_board_init()
     memset(border_bottom, false, BOARD_SIZ * BOARD_SIZ);
 
     /* Diagonal neighbor positions */
-    for(s8 x = 0; x < BOARD_SIZ; ++x)
-        for(s8 y = 0; y < BOARD_SIZ; ++y)
+    for(d8 x = 0; x < BOARD_SIZ; ++x)
+        for(d8 y = 0; y < BOARD_SIZ; ++y)
         {
             move a = coord_to_move(x, y);
             if(x == 0)
@@ -101,8 +101,8 @@ void cfg_board_init()
                 border_bottom[a] = true;
 
             move c = 0;
-            for(s8 i = 0; i < BOARD_SIZ; ++i)
-                for(s8 j = 0; j < BOARD_SIZ; ++j)
+            for(d8 i = 0; i < BOARD_SIZ; ++i)
+                for(d8 j = 0; j < BOARD_SIZ; ++j)
                     if(abs(x - i) == 1 && abs(y - j) == 1)
                     {
                         move b = coord_to_move(i, j);
@@ -857,7 +857,7 @@ void just_play1(
     cfg_board * cb,
     move m,
     bool is_black,
-    s16 * stone_difference
+    d16 * stone_difference
 ){
     assert(verify_cfg_board(cb));
     assert(is_board_move(m));
@@ -924,7 +924,7 @@ void just_play1(
         cb->last_eaten = NONE;
     cb->last_played = m;
 
-    s16 stone_diff = 1 + captures;
+    d16 stone_diff = 1 + captures;
     *stone_difference += is_black ? stone_diff : -stone_diff;
 
     /* Remove position from list of empty intersections */
@@ -1034,7 +1034,7 @@ void just_play3(
     cfg_board * cb,
     move m,
     bool is_black,
-    s16 * stone_difference,
+    d16 * stone_difference,
     bool stones_removed[BOARD_SIZ * BOARD_SIZ],
     u8 rem_nei_libs[LIB_BITMAP_SIZ]
 ){
@@ -1103,7 +1103,7 @@ void just_play3(
         cb->last_eaten = NONE;
     cb->last_played = m;
 
-    s16 stone_diff = 1 + captures;
+    d16 stone_diff = 1 + captures;
     *stone_difference += is_black ? stone_diff : -stone_diff;
 
     /* Remove position from list of empty intersections */

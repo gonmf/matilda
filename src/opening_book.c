@@ -93,7 +93,7 @@ static bool process_opening_book_line(
     if(!is_board_move(m))
         return false;
 
-    s8 reduction = reduce_auto(&b, is_black);
+    d8 reduction = reduce_auto(&b, is_black);
     m = reduce_move(m, reduction);
 
     u8 packed_board[PACKED_BOARD_SIZ];
@@ -145,7 +145,7 @@ static bool process_state_play_line(
 
     move play = coord_parse_alpha_num(word);
 
-    s8 reduction = reduce_auto(&b, true);
+    d8 reduction = reduce_auto(&b, true);
     play = reduce_move(play, reduction);
 
     if(!is_board_move(play))

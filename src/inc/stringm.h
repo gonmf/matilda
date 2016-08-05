@@ -79,7 +79,7 @@ RETURNS true if valid
 */
 bool parse_int(
     const char * s,
-    s32 * i
+    d32 * i
 );
 
 /*

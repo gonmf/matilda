@@ -34,7 +34,7 @@ typedef struct __game_record_ {
 	u16 turns;
 	bool game_finished;
 	bool resignation;
-	s16 final_score; /* 0 if finished by resignation/time/forfeit */
+	d16 final_score; /* 0 if finished by resignation/time/forfeit */
 } game_record;
 
 

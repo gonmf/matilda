@@ -65,7 +65,7 @@ extern u16 pl_skip_saving;
 extern u16 pl_skip_nakade;
 extern u16 pl_skip_pattern;
 extern u16 pl_skip_capture;
-extern s16 komi;
+extern d16 komi;
 
 static void open_log_file();
 

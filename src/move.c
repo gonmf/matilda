@@ -112,7 +112,7 @@ RETURNS move
 */
 move reduce_move(
     move m,
-    s8 method
+    d8 method
 ){
     if(!is_board_move(m))
         return m;
@@ -140,7 +140,7 @@ move coord_parse_alpha_num(
 
     char c1 = low_char(s[0]);
     u8 i1 = c1 > 'i' ? c1 - 'b' : c1 - 'a';
-    s32 i2;
+    d32 i2;
     if(!parse_int(s + 1, &i2))
         return NONE;
 
@@ -194,7 +194,7 @@ move coord_parse_num_num(
     char * c1 = strtok(buf, "-");
     if(c1 == NULL)
         return NONE;
-    s32 i1;
+    d32 i1;
     if(!parse_int(c1, &i1))
         return NONE;
     if(i1 < 1 || i1 > BOARD_SIZ)
@@ -203,7 +203,7 @@ move coord_parse_num_num(
     char * c2 = strtok(NULL, "-");
     if(c2 == NULL)
         return NONE;
-    s32 i2;
+    d32 i2;
     if(!parse_int(c2, &i2))
         return NONE;
     if(i2 < 1 || i2 > BOARD_SIZ)
