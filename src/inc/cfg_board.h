@@ -139,7 +139,7 @@ void just_play1(
     cfg_board * cb,
     move m,
     bool is_black,
-    s16 * stone_difference
+    d16 * stone_difference
 );
 
 
@@ -165,7 +165,7 @@ void just_play3(
     cfg_board * cb,
     move m,
     bool is_black,
-    s16 * stone_difference,
+    d16 * stone_difference,
     bool stones_removed[BOARD_SIZ * BOARD_SIZ],
     u8 rem_nei_libs[LIB_BITMAP_SIZ]
 );

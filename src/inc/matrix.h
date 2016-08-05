@@ -67,7 +67,7 @@ void reduce_coord(
     u8 * x,
     u8 * y,
     u16 side_len,
-    s8 method
+    d8 method
 );
 
 #endif

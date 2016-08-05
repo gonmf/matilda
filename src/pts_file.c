@@ -56,7 +56,7 @@ void open_rule_file(
         flog_crit("pts", "system out of memory");
 
 
-    s32 chars_read = read_ascii_file(fn, buffer, MAX_FILE_SIZ);
+    d32 chars_read = read_ascii_file(fn, buffer, MAX_FILE_SIZ);
     if(chars_read < 0)
         flog_crit("pts", "couldn't open file for reading");
 

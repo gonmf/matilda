@@ -235,13 +235,13 @@ void pat3_transpose(
 ){
     assert(is_board_move(m));
     assert(p[m] == EMPTY);
-    s8 x;
-    s8 y;
+    d8 x;
+    d8 y;
     move_to_coord(m, (u8 *)&x, (u8 *)&y);
-    s8 i;
-    s8 j;
-    s8 ki;
-    s8 kj;
+    d8 i;
+    d8 j;
+    d8 ki;
+    d8 kj;
     for(j = y - 1, kj = 0; j <= y + 1; ++j, ++kj)
         for(i = x - 1, ki = 0; i <= x + 1; ++i, ++ki)
             if(i >= 0 && j >= 0 && i < BOARD_SIZ && j < BOARD_SIZ)
@@ -420,7 +420,7 @@ static u32 read_pat3_file(
     const char * filename,
     char * buffer
 ){
-    s32 chars_read = read_ascii_file(filename, buffer, MAX_FILE_SIZ);
+    d32 chars_read = read_ascii_file(filename, buffer, MAX_FILE_SIZ);
     if(chars_read < 0)
         flog_crit("pat3", "couldn't open file for reading");
 
@@ -471,13 +471,13 @@ static u32 pat3_hash_function(
     return b->value;
 }
 
-static s32 pat3_compare_function(
+static d32 pat3_compare_function(
     void * a,
     void * b
 ){
     pat3 * f1 = (pat3 *)a;
     pat3 * f2 = (pat3 *)b;
-    return ((s32)(f2->value)) - ((s32)(f1->value));
+    return ((d32)(f2->value)) - ((d32)(f1->value));
 }
 
 static void read_patern_weights(
@@ -552,7 +552,7 @@ void pat3_init()
         snprintf(filename, MAX_PAGE_SIZ, "%s%ux%u.weights", get_data_folder(),
             BOARD_SIZ, BOARD_SIZ);
 
-        s32 chars_read = read_ascii_file(filename, file_buf, MAX_FILE_SIZ);
+        d32 chars_read = read_ascii_file(filename, file_buf, MAX_FILE_SIZ);
         if(chars_read < 0)
         {
             buf = get_buffer();

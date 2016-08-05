@@ -65,7 +65,7 @@ extern u16 pl_skip_saving;
 extern u16 pl_skip_nakade;
 extern u16 pl_skip_pattern;
 extern u16 pl_skip_capture;
-extern s16 komi;
+extern d16 komi;
 
 static void open_log_file();
 
@@ -268,7 +268,7 @@ const char * build_info()
             "  Min/max win rate: %.2f/%.2f\n", UCT_MIN_WINRATE,
             UCT_MAX_WINRATE);
     tmp += snprintf(tmp, MAX_PAGE_SIZ + buf - tmp,
-        "Transpositions table memory: %lu MiB\n", max_size_in_mbs);
+        "Transpositions table memory: %" PRIu64 " MiB\n", max_size_in_mbs);
     tmp += snprintf(tmp, MAX_PAGE_SIZ + buf - tmp,
         "Limit by playouts instead of time: %s\n", YN(LIMIT_BY_PLAYOUTS));
 

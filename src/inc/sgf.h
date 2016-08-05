@@ -33,7 +33,7 @@ Reads the sequence of plays from SGF text.
 If plays happen out of order they count as a pass by the other player.
 RETURNS number of plays found or -1 on format error
 */
-s16 sgf_to_boards(
+d16 sgf_to_boards(
     char * sgf_buf,
     move * plays,
     bool * irregular_play_order

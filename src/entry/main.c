@@ -120,7 +120,7 @@ static void set_parameter(
 
         if(type[0] == 'i')
         {
-            s32 val;
+            d32 val;
             if(!parse_int(value, &val) || val < 0)
             {
                 char * buf = get_buffer();
@@ -177,7 +177,7 @@ int main(
     set_time_per_turn(&current_clock_black, DEFAULT_TIME_PER_TURN);
     set_time_per_turn(&current_clock_white, DEFAULT_TIME_PER_TURN);
     bool time_changed_or_set = false;
-    s16 desired_num_threads = DEFAULT_NUM_THREADS;
+    d16 desired_num_threads = DEFAULT_NUM_THREADS;
 
     for(int i = 1; i < argc; ++i)
     {
@@ -357,7 +357,7 @@ stant number of playouts per turn; --resign_on_timeout flag is illegal");
         }
         if(strcmp(argv[i], "--memory") == 0 && i < argc - 1)
         {
-            s32 v;
+            d32 v;
             if(!parse_int(argv[i + 1], &v))
                 flog_crit("entry", "error: format error in size of transpositio\
 ns table");
@@ -392,7 +392,7 @@ d", argv[i + 1]);
         }
         if(strcmp(argv[i], "--threads") == 0 && i < argc - 1)
         {
-            s32 v;
+            d32 v;
             if(!parse_int(argv[i + 1], &v))
                 flog_crit("entry", "--threads argument format error");
 

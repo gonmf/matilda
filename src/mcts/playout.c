@@ -43,8 +43,8 @@ extern move_seq neighbors_3x3[BOARD_SIZ * BOARD_SIZ];
 /*
 For mercy Threshold
 */
-extern s16 komi_offset;
-extern s16 komi;
+extern d16 komi_offset;
+extern d16 komi;
 
 /*
 Frisbee Go
@@ -303,7 +303,7 @@ move heavy_select_play(
         }
         if(weight_total > 0)
         {
-            s32 w = (s32)rand_u16(weight_total);
+            d32 w = (d32)rand_u16(weight_total);
             for(u16 i = 0; ; ++i)
             {
                 w -= weights[i];
@@ -336,7 +336,7 @@ move heavy_select_play(
         }
         if(weight_total > 0)
         {
-            s32 w = (s32)rand_u16(weight_total);
+            d32 w = (d32)rand_u16(weight_total);
             for(u16 i = 0; ; ++i)
             {
                 w -= weights[i];
@@ -390,7 +390,7 @@ move heavy_select_play(
         }
         if(weight_total > 0)
         {
-            s32 w = (s32)rand_u16(weight_total);
+            d32 w = (d32)rand_u16(weight_total);
             for(u16 i = 0; ; ++i)
             {
                 w -= weights[i];
@@ -417,7 +417,7 @@ move heavy_select_play(
     }
     if(weight_total > 0)
     {
-        s32 w = (s32)rand_u16(weight_total);
+        d32 w = (d32)rand_u16(weight_total);
         for(u16 i = 0; ; ++i)
         {
             w -= weights[i];
@@ -440,7 +440,7 @@ Avoids too many ko battles. Also uses mercy threshold.
 Also updates AMAF transitions information.
 RETURNS the final score
 */
-s16 playout_heavy_amaf(
+d16 playout_heavy_amaf(
     cfg_board * cb,
     bool is_black,
     u8 traversed[BOARD_SIZ * BOARD_SIZ]
@@ -449,7 +449,7 @@ s16 playout_heavy_amaf(
     u16 depth_max = MAX_PLAYOUT_DEPTH_OVER_EMPTY + cb->empty.count +
     rand_u16(2);
     /* stones are counted as 2 units in matilda */
-    s16 diff = stone_diff(cb->p) - (komi_offset + komi) / 2;
+    d16 diff = stone_diff(cb->p) - (komi_offset + komi) / 2;
 
     u8 b_cache[BOARD_SIZ * BOARD_SIZ];
     u8 w_cache[BOARD_SIZ * BOARD_SIZ];

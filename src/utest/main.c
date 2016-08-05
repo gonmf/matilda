@@ -73,7 +73,7 @@ static void test_cfg_board()
                 continue;
             }
 
-            s16 stone_diff = 0;
+            d16 stone_diff = 0;
             just_play1(&cb, m, is_black, &stone_diff);
             massert(cfg_board_are_equal(&cb, &b), "just_play");
 
@@ -82,7 +82,7 @@ static void test_cfg_board()
             bool stones_cap[BOARD_SIZ * BOARD_SIZ];
             memset(stones_cap, 0, BOARD_SIZ * BOARD_SIZ);
             u8 tmp4[LIB_BITMAP_SIZ];
-            s16 stone_diff2 = 0;
+            d16 stone_diff2 = 0;
             just_play3(&sb3, m, is_black, &stone_diff2, stones_cap, tmp4);
             massert(cfg_board_are_equal(&sb3, &b), "just_play3");
 
@@ -404,7 +404,7 @@ static void test_board()
 
         memcpy(&b2, &b, sizeof(board));
 
-        s8 reduction = reduce_auto(&b2, is_black);
+        d8 reduction = reduce_auto(&b2, is_black);
         reduce_fixed(&b, reduction);
 
         /* fixed reduction works */

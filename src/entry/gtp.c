@@ -23,19 +23,14 @@ GTP_README.
 #include <sys/select.h>
 #include <sys/time.h>
 #include <sys/types.h>
-#include <unistd.h>
 #include <stdio.h>
+#include <unistd.h>
+#include <stdlib.h>
 #include <time.h>
 #include <string.h>
-#include <stdlib.h>
 #include <assert.h>
 #include <sys/stat.h>
 #include <fcntl.h>
-
-#ifdef __MACH__
-#include <mach/clock.h>
-#include <mach/mach.h>
-#endif
 
 #include "analysis.h"
 #include "board.h"
@@ -57,7 +52,7 @@ GTP_README.
 #include "transpositions.h"
 #include "buffer.h"
 
-extern s16 komi;
+extern d16 komi;
 extern u32 network_roundtrip_delay;
 extern bool network_round_trip_set;
 extern float frisbee_prob;
@@ -278,7 +273,7 @@ static void gtp_ponder(
     int id,
     const char * timestr /* in seconds */
 ){
-    s32 seconds;
+    d32 seconds;
     if(!parse_int(timestr, &seconds) || seconds < 1)
     {
         error_msg(fp, id, "syntax error");
@@ -305,7 +300,7 @@ static void gtp_review_game(
     int id,
     const char * timestr /* in seconds */
 ){
-    s32 seconds;
+    d32 seconds;
     if(!parse_int(timestr, &seconds) || seconds < 1)
     {
         error_msg(fp, id, "syntax error");
@@ -402,7 +397,7 @@ static void gtp_boardsize(
     int id,
     const char * new_size
 ){
-    s32 ns;
+    d32 ns;
     if(!parse_int(new_size, &ns))
     {
         error_msg(fp, id, "syntax error");
@@ -427,7 +422,7 @@ static void gtp_komi(
     double komid;
     if(parse_float(new_komi, &komid))
     {
-        s16 komi2 = (s16)(komid * 2.0);
+        d16 komi2 = (d16)(komid * 2.0);
         if(komi != komi2)
         {
             fprintf(stderr, "komidashi changed from %s to %s stones\n",
@@ -689,7 +684,7 @@ static void gtp_echo(
     bool print_to_stderr
 ){
     char * buf = get_buffer();
-    s32 idx = 0;
+    d32 idx = 0;
     if(argc > 0)
         idx += snprintf(buf + idx, MAX_PAGE_SIZ - idx, "%s", argv[0]);
 
@@ -724,9 +719,9 @@ led to use a constant number of simulations per turn in MCTS; request ignored");
 
     const char * previous_ts_as_s = time_system_to_str(&current_clock_black);
 
-    s32 new_main_time;
-    s32 new_byo_yomi_time;
-    s32 new_byo_yomi_stones;
+    d32 new_main_time;
+    d32 new_byo_yomi_time;
+    d32 new_byo_yomi_stones;
     if(!parse_int(main_time, &new_main_time) || new_main_time < 0 ||
         new_main_time >= 2147484)
     {
@@ -815,7 +810,7 @@ led to use a constant number of simulations per turn in MCTS; request ignored");
     else
         if(strcmp(systemstr, "absolute") == 0)
         {
-            s32 new_main_time;
+            d32 new_main_time;
             if(main_time == NULL || !parse_int(main_time, &new_main_time) ||
                 new_main_time < 0 || new_main_time >= 2147484)
             {
@@ -832,9 +827,9 @@ led to use a constant number of simulations per turn in MCTS; request ignored");
             {
                 const char * byo_yomi_periods = byo_yomi_stones;
 
-                s32 new_main_time;
-                s32 new_byo_yomi_time;
-                s32 new_byo_yomi_periods;
+                d32 new_main_time;
+                d32 new_byo_yomi_time;
+                d32 new_byo_yomi_periods;
                 if(main_time == NULL || !parse_int(main_time, &new_main_time) ||
                     new_main_time < 0 || new_main_time >= 2147484)
                 {
@@ -862,9 +857,9 @@ led to use a constant number of simulations per turn in MCTS; request ignored");
             }else
                 if(strcmp(systemstr, "canadian") == 0)
                 {
-                    s32 new_main_time;
-                    s32 new_byo_yomi_time;
-                    s32 new_byo_yomi_stones;
+                    d32 new_main_time;
+                    d32 new_byo_yomi_time;
+                    d32 new_byo_yomi_stones;
                     if(main_time == NULL || !parse_int(main_time,
                         &new_main_time) || new_main_time < 0 || new_main_time >=
                         2147484)
@@ -939,8 +934,8 @@ led to use a constant number of simulations per turn in MCTS; request ignored");
         error_msg(fp, id, "syntax error");
         return;
     }
-    s32 new_time_remaining;
-    s32 new_byo_yomi_stones_remaining;
+    d32 new_time_remaining;
+    d32 new_byo_yomi_stones_remaining;
     if(!parse_int(_time, &new_time_remaining) || new_time_remaining < 0)
     {
         error_msg(fp, id, "syntax error");
@@ -976,11 +971,11 @@ static void gtp_cputime(
     FILE * fp,
     int id
 ){
-#if !defined(__MACH__)
+#if defined(__MACH__)
     error_msg(fp, id, "command unsupported");
     flog_warn("gtp", "cputime requested in OSX (command unsupported)");
 #else
-    clock_t clockid;
+    clockid_t clockid;
     struct timespec ts;
 
     pid_t pid = getpid();
@@ -1011,9 +1006,9 @@ static void gtp_final_status_list(
     const char * status
 ){
     char * buf = get_buffer();
-    s32 sz = MAX_PAGE_SIZ;
+    d32 sz = MAX_PAGE_SIZ;
     buf[0] = 0;
-    s32 pos = 0;
+    d32 pos = 0;
 
     bool is_black = current_player_color(&current_game);
     board * current_state = current_game_state(&current_game);
@@ -1141,7 +1136,7 @@ static void gtp_undo_multiple(
     int id,
     const char * number
 ){
-    s32 moves;
+    d32 moves;
     if(number == NULL)
         moves = 1;
     else
@@ -1182,7 +1177,7 @@ static void gtp_final_score(
     FILE * fp,
     int id
 ){
-    s16 score;
+    d16 score;
     if(estimate_score)
     {
         board * current_state = current_game_state(&current_game);
@@ -1202,7 +1197,7 @@ static void gtp_place_free_handicap(
     int id,
     const char * nstones
 ){
-    s32 num_stones;
+    d32 num_stones;
     if(!parse_int(nstones, &num_stones) || num_stones < 1)
     {
         error_msg(fp, id, "syntax error");
@@ -1312,7 +1307,7 @@ static void gtp_loadsgf(
         return;
     }
 
-    s32 move_until;
+    d32 move_until;
     if(move_number == NULL)
         move_until = MAX_GAME_LENGTH;
     else
@@ -1499,7 +1494,7 @@ to %u milliseconds", network_roundtrip_delay);
 
         char * save_ptr;
         char * id = strtok_r(line, " |", &save_ptr);
-        s32 idn;
+        d32 idn;
         char * cmd;
         if(parse_int(id, &idn))
             cmd = strtok_r(NULL, " |", &save_ptr);

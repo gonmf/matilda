@@ -34,7 +34,7 @@ maintenance if needed.
 
 static bool use_opening_book = true;
 
-extern s16 komi_offset; /* only reset between matches */
+extern d16 komi_offset; /* only reset between matches */
 
 bool tt_requires_maintenance = false; /* set after MCTS start/resume call */
 
@@ -96,7 +96,7 @@ bool evaluate_position(
 
     if(use_opening_book)
     {
-        s8 reduction = reduce_auto(&tmp, is_black);
+        d8 reduction = reduce_auto(&tmp, is_black);
         if(opening_book(&tmp, out_b))
         {
             oboard_revert_reduce(out_b, reduction);

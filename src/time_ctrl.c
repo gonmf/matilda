@@ -36,8 +36,8 @@ u32 calc_time_to_play(
     /*
 TODO testing for paper
     */
-    s32 avg_game_length2 = avg_game_length;
-    s32 turns_played2 = turns_played;
+    d32 avg_game_length2 = avg_game_length;
+    d32 turns_played2 = turns_played;
     double e1 = (double)(avg_game_length2 - turns_played2);
     double turns_left = MAX(e1, 4.0);
     return  ts->main_time_remaining / turns_left;
@@ -292,9 +292,9 @@ const char * time_system_to_str(
     return buf;
 }
 
-static s32 str_to_milliseconds(const char * s){
+static d32 str_to_milliseconds(const char * s){
     char * char_idx = strchr(s, 'm');
-    s32 mul = 0; /* multiplier */
+    d32 mul = 0; /* multiplier */
     if(char_idx != NULL)
     {
         if(char_idx[1] == 's') /* milliseconds */
@@ -330,7 +330,7 @@ static s32 str_to_milliseconds(const char * s){
         return -1; /* error */
     }
 
-    s32 ret = 0;
+    d32 ret = 0;
     for(u8 i = 0; s[i]; ++i)
     {
         if(s[i] < '0' || s[i] > '9')
@@ -385,7 +385,7 @@ bool str_to_time_system(
     char_idx[0] = 0;
     char * rest = char_idx + 1;
 
-    s32 t = str_to_milliseconds(s);
+    d32 t = str_to_milliseconds(s);
     if(t < 0)
     {
         free(original_ptr);

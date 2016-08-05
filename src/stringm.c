@@ -74,7 +74,7 @@ char * trim(
             break;
     }
 
-    s32 i = strlen(s) - 1;
+    d32 i = strlen(s) - 1;
     while(i >= 0)
     {
         if(!is_white_space(s[i]))
@@ -161,7 +161,7 @@ RETURNS true if valid
 */
 bool parse_int(
     const char * s,
-    s32 * i
+    d32 * i
 ){
     if(s[0] != '-' && (s[0] < '0' || s[0] > '9'))
         return false;

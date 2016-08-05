@@ -186,7 +186,7 @@ int main(
     char * filename = get_buffer();
     snprintf(filename, MAX_PAGE_SIZ, "%s%s", get_data_folder(), "kogo.sgf");
 
-    s32 rd = read_ascii_file(filename, buffer, MAX_FILE_SIZ);
+    d32 rd = read_ascii_file(filename, buffer, MAX_FILE_SIZ);
     if(rd <= 0)
     {
         fprintf(stderr, "Error reading %s\n", filename);

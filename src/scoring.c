@@ -21,8 +21,8 @@ Remember that in Matilda, scores and komi are always doubled to become integer.
 #include "buffer.h"
 
 
-s16 komi_offset = 0;
-extern s16 komi;
+d16 komi_offset = 0;
+extern d16 komi;
 
 /*
 Returns a statically allocated string with the textual representation of a Go
@@ -30,7 +30,7 @@ match score.
 RETURNS string with score
 */
 const char * score_to_string(
-    s16 score
+    d16 score
 ){
     char * buf = get_buffer();
 
@@ -60,7 +60,7 @@ komidashi value.
 RETURNS string with komi
 */
 const char * komi_to_string(
-    s16 komi
+    d16 komi
 ){
     char * buf = get_buffer();
 
@@ -88,10 +88,10 @@ const char * komi_to_string(
 Scoring by counting stones on the board only.
 RETURNS positive score for a black win; negative for a white win; 0 for a draw
 */
-s16 score_stones_only(
+d16 score_stones_only(
     const u8 p[BOARD_SIZ * BOARD_SIZ]
 ){
-    s16 r = 0;
+    d16 r = 0;
     for(move m = 0; m < BOARD_SIZ * BOARD_SIZ; ++m)
         switch(p[m])
         {
@@ -111,11 +111,11 @@ s16 score_stones_only(
 Scoring by counting stones and eyes on the board only.
 RETURNS positive score for a black win; negative for a white win; 0 for a draw
 */
-s16 score_stones_and_eyes2(
+d16 score_stones_and_eyes2(
     const cfg_board * cb
 ){
     bool _ignored;
-    s16 r = 0;
+    d16 r = 0;
     for(move m = 0; m < BOARD_SIZ * BOARD_SIZ; ++m)
         switch(cb->p[m])
     {
@@ -167,12 +167,12 @@ s16 score_stones_and_eyes2(
 Scoring by counting stones and eyes on the board only.
 RETURNS positive score for a black win; negative for a white win; 0 for a draw
 */
-s16 score_stones_and_eyes(
+d16 score_stones_and_eyes(
     const board * b
 ){
     cfg_board cb;
     cfg_from_board(&cb, b);
-    s16 ret = score_stones_and_eyes2(&cb);
+    d16 ret = score_stones_and_eyes2(&cb);
     cfg_board_free(&cb);
     return ret;
 }
@@ -289,7 +289,7 @@ Scoring by counting stones and surrounded area. Also known as area scoring. Does
 not remove dead stones.
 RETURNS positive score for a black win; negative for a white win; 0 for a draw
 */
-s16 score_stones_and_area(
+d16 score_stones_and_area(
     const u8 p[BOARD_SIZ * BOARD_SIZ]
 ){
     /* explored intersections array is only used for empty intersections */
@@ -321,7 +321,7 @@ s16 score_stones_and_area(
             }
         }
 
-    s16 r = 0;
+    d16 r = 0;
     for(move m = 0; m < BOARD_SIZ * BOARD_SIZ; ++m)
         if(bak[m] == BLACK_STONE)
             r += 2;
@@ -340,7 +340,7 @@ the end. The simulations ignore superkos. After simulating the final result,
 area scoring is used.
 RETURNS positive score for a black win; negative for a white win; 0 for a draw
 */
-s16 score_estimate(
+d16 score_estimate(
     const board * b,
     bool is_black
 ){

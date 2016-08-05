@@ -111,7 +111,7 @@ u16 stone_count(
 Counts the difference in the number of black and white stones on the board.
 RETURNS difference in stone numbers, positive values for more black stones
 */
-s16 stone_diff(
+d16 stone_diff(
     const u8 p[BOARD_SIZ * BOARD_SIZ]
 );
 
@@ -122,7 +122,7 @@ in stone colors (positive values if more black stones).
 */
 void stone_count_and_diff(
     const u8 p[BOARD_SIZ * BOARD_SIZ],
-    u16 * count, s16 * diff
+    u16 * count, d16 * diff
 );
 
 /*
@@ -138,7 +138,7 @@ updates the last eaten/played values.
 Also inverts the color if is_black is false.
 RETURNS reduction method that can be used to revert the reduction
 */
-s8 reduce_auto(
+d8 reduce_auto(
     board * b,
     bool is_black
 );
@@ -148,7 +148,7 @@ Modifies the board according to a reduction method.
 */
 void reduce_fixed(
     board * b,
-    s8 method
+    d8 method
 );
 
 /*
@@ -156,7 +156,7 @@ Performs the inverse operation of reduction of a given reduce code.
 */
 void oboard_revert_reduce(
     out_board * b,
-    s8 method
+    d8 method
 );
 
 /*

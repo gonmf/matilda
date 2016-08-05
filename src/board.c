@@ -18,7 +18,7 @@ For a more advanced board representation check the CFG representation
 #include "move.h"
 #include "matrix.h"
 
-s16 komi = DEFAULT_KOMI;
+d16 komi = DEFAULT_KOMI;
 
 
 
@@ -79,10 +79,10 @@ u16 stone_count(
 Counts the difference in the number of black and white stones on the board.
 RETURNS difference in stone numbers, positive values for more black stones
 */
-s16 stone_diff(
+d16 stone_diff(
     const u8 p[BOARD_SIZ * BOARD_SIZ]
 ){
-    s16 diff = 0;
+    d16 diff = 0;
     for(move m = 0; m < BOARD_SIZ * BOARD_SIZ; ++m)
         if(p[m] == BLACK_STONE)
             ++diff;
@@ -99,9 +99,9 @@ in stone colors (positive values if more black stones).
 */
 void stone_count_and_diff(
     const u8 p[BOARD_SIZ * BOARD_SIZ],
-    u16 * count, s16 * diff
+    u16 * count, d16 * diff
 ){
-    s16 d = 0;
+    d16 d = 0;
     u16 c = 0;
     for(move m = 0; m < BOARD_SIZ * BOARD_SIZ; ++m)
         if(p[m] == BLACK_STONE)
@@ -138,7 +138,7 @@ updates the last eaten/played values.
 Also inverts the color if is_black is false.
 RETURNS reduction method that can be used to revert the reduction
 */
-s8 reduce_auto(
+d8 reduce_auto(
     board * b,
     bool is_black
 ){
@@ -160,7 +160,7 @@ s8 reduce_auto(
     matrix_flip(f2, r2, BOARD_SIZ);
     matrix_flip(f3, r3, BOARD_SIZ);
 
-    s8 reduction = NOREDUCE;
+    d8 reduction = NOREDUCE;
     void * champion = b->p;
     if(memcmp(champion, r1, BOARD_SIZ * BOARD_SIZ) > 0)
     {
@@ -239,7 +239,7 @@ Modifies the board according to a reduction method.
 */
 void reduce_fixed(
     board * b,
-    s8 method
+    d8 method
 ){
     if(method < 0)
     {
@@ -290,7 +290,7 @@ Performs the inverse operation of reduction of a given reduce code.
 */
 void oboard_revert_reduce(
     out_board * b,
-    s8 method
+    d8 method
 ){
     if(method < 0)
         method = method * -1;

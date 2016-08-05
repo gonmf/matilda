@@ -45,13 +45,13 @@ static u32 pat3t_hash_function(void * a)
     return b->value;
 }
 
-static s32 pat3t_compare_function(
+static d32 pat3t_compare_function(
     void * a,
     void * b
 ){
     pat3t * f1 = (pat3t *)a;
     pat3t * f2 = (pat3t *)b;
-    return ((s32)(f2->value)) - ((s32)(f1->value));
+    return ((d32)(f2->value)) - ((d32)(f1->value));
 }
 
 static char * filenames[MAX_FILES];
@@ -107,7 +107,7 @@ int main(
         }
 
         char * buf = get_buffer();
-        s32 r = read_ascii_file(filenames[fid], buf, MAX_PAGE_SIZ);
+        d32 r = read_ascii_file(filenames[fid], buf, MAX_PAGE_SIZ);
         if(r <= 0 || r >= MAX_PAGE_SIZ)
         {
             fprintf(stderr, "error: unexpected file size\n");
@@ -130,7 +130,7 @@ int main(
 
         bool irregular_play_order;
 
-        s16 plays_count = sgf_to_boards(buf, plays, &irregular_play_order);
+        d16 plays_count = sgf_to_boards(buf, plays, &irregular_play_order);
         if(plays_count == -1)
         {
             ++games_skipped;
@@ -162,8 +162,8 @@ int main(
                     u8 y;
                     move_to_coord(b.last_played, &x, &y);
 
-                    for(s8 i = x - 1; i <= x + 1; ++i)
-                        for(s8 j = y - 1; j <= y + 1; ++j)
+                    for(d8 i = x - 1; i <= x + 1; ++i)
+                        for(d8 j = y - 1; j <= y + 1; ++j)
                         {
                             if(i < 0 || i >= BOARD_SIZ || j < 0 || j >=
                                 BOARD_SIZ)
