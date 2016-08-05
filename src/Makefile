@@ -9,8 +9,10 @@
 # CC := clang
 
 CFLAGS := -Iinc/ -std=c99 -O2  -Wall -Wextra -Wformat=2 -pedantic-errors \
-	-Wfatal-errors -Wundef -Wno-unused-result -fno-stack-protector -lm \
-	-fopenmp -march=native -MMD -MP
+	-Wfatal-errors -Wundef -Wno-unused-result -fno-stack-protector \
+	-march=native -MMD -MP -fopenmp
+
+LDFLAGS += -lm
 
 # For debugging add -g to CFLAGS
 # CFLAGS += -g
@@ -32,25 +34,25 @@ PROGRAMS := matilda test gen_opening_book learn_best_plays learn_pat_weights \
 all: $(PROGRAMS)
 
 matilda: $(OBJFILES) entry/*.c
-	@$(CC) $^ $(CFLAGS) -o $@
+	@$(CC) $^ $(CFLAGS) $(LDFLAGS) -o $@
 
 test: $(OBJFILES) utest/*.c
-	@$(CC) $^ $(CFLAGS) -o $@
+	@$(CC) $^ $(CFLAGS) $(LDFLAGS) -o $@
 
 gen_opening_book: $(OBJFILES) ob_gen/*.c
-	@$(CC) $^ $(CFLAGS) -o $@
+	@$(CC) $^ $(CFLAGS) $(LDFLAGS) -o $@
 
 learn_best_plays: $(OBJFILES) ob_learn/*.c
-	@$(CC) $^ $(CFLAGS) -o $@
+	@$(CC) $^ $(CFLAGS) $(LDFLAGS) -o $@
 
 learn_pat_weights: $(OBJFILES) pat_weights/*.c
-	@$(CC) $^ $(CFLAGS) -o $@
+	@$(CC) $^ $(CFLAGS) $(LDFLAGS) -o $@
 
 gen_zobrist_table: $(OBJFILES) zobrist/*.c
-	@$(CC) $^ $(CFLAGS) -o $@
+	@$(CC) $^ $(CFLAGS) $(LDFLAGS) -o $@
 
 gen_joseki_book: $(OBJFILES) joseki/*.c
-	@$(CC) $^ $(CFLAGS) -o $@
+	@$(CC) $^ $(CFLAGS) $(LDFLAGS) -o $@
 
 %.o: %.c
 	@$(CC) -c -o $@ $< $(CFLAGS)
