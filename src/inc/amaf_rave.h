@@ -45,17 +45,7 @@ Tuned with CLOP in 13x13 with 10k playouts/turn vs GNU Go 3.8 lvl 1. 2151 games.
 Minimum visits to a state before taking its criticality into consideration.
 Use 0 to turn off.
 */
-#if BOARD_SIZ < 12
-/*
-TODO tuning
-*/
 #define CRITICALITY_THRESHOLD 450
-#else
-/*
-TODO tuning
-*/
-#define CRITICALITY_THRESHOLD 450
-#endif
 
 
 
