@@ -1014,7 +1014,7 @@ double mcts_start(
     {
         str_buf = get_buffer();
         s64 diff = stop_time - current_time_in_millis();
-        snprintf(str_buf, MAX_PAGE_SIZ, "search ended %ldms early", diff);
+        snprintf(str_buf, MAX_PAGE_SIZ, "search ended %" PRId64 "ms early", diff);
         flog_info("uct", str_buf);
     }
 

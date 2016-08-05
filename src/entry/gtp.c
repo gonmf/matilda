@@ -976,7 +976,7 @@ static void gtp_cputime(
     FILE * fp,
     int id
 ){
-#if !defined(__MACH__)
+#if defined(__MACH__)
     error_msg(fp, id, "command unsupported");
     flog_warn("gtp", "cputime requested in OSX (command unsupported)");
 #else

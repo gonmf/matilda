@@ -443,8 +443,8 @@ void transpositions_log_status()
     u32 idx = 0;
     idx += snprintf(buf + idx, MAX_PAGE_SIZ - idx,
         "\n*** Transpositions table trace start ***\n\n");
-    idx += snprintf(buf + idx, MAX_PAGE_SIZ - idx, "Max size in MiB: %lu\n",
-        max_size_in_mbs);
+    idx += snprintf(buf + idx, MAX_PAGE_SIZ - idx, "Max size in MiB: %" PRIu64
+      "\n", max_size_in_mbs);
     idx += snprintf(buf + idx, MAX_PAGE_SIZ - idx, "Max allocated states: %u\n",
         max_allocated_states);
     idx += snprintf(buf + idx, MAX_PAGE_SIZ - idx, "Allocated states: %u\n",
