@@ -23,19 +23,14 @@ GTP_README.
 #include <sys/select.h>
 #include <sys/time.h>
 #include <sys/types.h>
-#include <unistd.h>
 #include <stdio.h>
+#include <unistd.h>
+#include <stdlib.h>
 #include <time.h>
 #include <string.h>
-#include <stdlib.h>
 #include <assert.h>
 #include <sys/stat.h>
 #include <fcntl.h>
-
-#ifdef __MACH__
-#include <mach/clock.h>
-#include <mach/mach.h>
-#endif
 
 #include "analysis.h"
 #include "board.h"
@@ -980,7 +975,7 @@ static void gtp_cputime(
     error_msg(fp, id, "command unsupported");
     flog_warn("gtp", "cputime requested in OSX (command unsupported)");
 #else
-    clock_t clockid;
+    clockid_t clockid;
     struct timespec ts;
 
     pid_t pid = getpid();

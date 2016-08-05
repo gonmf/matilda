@@ -6,6 +6,7 @@
 # Uncomment this line to compile in Mac OSX, having previously installed
 # clang-omp through brew.
 # CC := clang-omp
+# CC := clang
 
 CFLAGS := -Iinc/ -std=c99 -O2  -Wall -Wextra -Wformat=2 -pedantic-errors \
 	-Wfatal-errors -Wundef -Wno-unused-result -fno-stack-protector -lm \
