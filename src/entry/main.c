@@ -396,7 +396,7 @@ d", argv[i + 1]);
             if(!parse_int(argv[i + 1], &v))
                 flog_crit("entry", "--threads argument format error");
 
-            if(v < 1 || v >= MAXIMUM_NUM_THREADS)
+            if(v < 1 || v > MAXIMUM_NUM_THREADS)
                 flog_crit("entry", "invalid number of threads requested");
 
             desired_num_threads = v;
