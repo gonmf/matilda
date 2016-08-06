@@ -12,3 +12,6 @@ script:
 - ./test
 
 depth: 1
+
+notifications:
+  email: false
