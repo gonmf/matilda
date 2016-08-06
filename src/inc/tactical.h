@@ -234,6 +234,26 @@ u8 min_neighbor_libs(
 );
 
 /*
+Return the maximum amount of liberties of groups with stones adjacent to an
+intersection.
+RETURNS maximum number of liberties found, or 0
+*/
+u8 max_neighbor_libs(
+    const cfg_board * cb,
+    move m,
+    u8 stone
+);
+
+/*
+Count the size of the empty space in an empty area.
+RETURNS true if larger than two intersections
+*/
+bool eye_space_size_gt_two(
+    const cfg_board * cb,
+    move m
+);
+
+/*
 Tests whether a neighbor group of stone type stone has two liberties.
 RETURNS true if neighbor group is put in atari
 */

@@ -228,7 +228,6 @@ static u16 stones_in_manhattan_dst3(
     return ret;
 }
 
-
 /*
 Priors values with heuristic MC-RAVE
 
@@ -248,9 +247,6 @@ static void init_new_state(
         mark_near_pos(cb, cb->last_played, near_last_play);
     else
         memset(near_last_play, false, BOARD_SIZ * BOARD_SIZ);
-
-    bool in_seki[BOARD_SIZ * BOARD_SIZ];
-    mark_pts_in_seki(cb, in_seki);
 
     u8 in_nakade[BOARD_SIZ * BOARD_SIZ];
     memset(in_nakade, 0, BOARD_SIZ * BOARD_SIZ);
@@ -307,9 +303,8 @@ static void init_new_state(
 
 
 
-    u8 opt = is_black ? WHITE_STONE : BLACK_STONE;
     u16 plays_found = 0;
-      stats->mc_n_total = 0;
+    stats->mc_n_total = 0;
 
     for(move k = 0; k < cb->empty.count; ++k)
     {
@@ -344,15 +339,16 @@ static void init_new_state(
             continue;
 
         /*
-        Don't play equal point sekis
-        */
-        if(in_seki[m])
-            continue;
-
-        /*
         Don't follow obvious ladders
         */
         if(libs == 2 && is_ladder(cb, m, is_black))
+            continue;
+
+        /*
+        Prohibit self-ataris if they don't put the opponent in atari
+        (this definition does not prohibit throw-ins)
+        */
+        if(libs == 1 && captures == 0 && eye_space_size_gt_two(cb, m))
             continue;
 
         /*
@@ -360,20 +356,6 @@ static void init_new_state(
         */
         u32 mc_w = prior_even / 2;
         u32 mc_v = prior_even;
-
-
-        /*
-        Prohibit self-ataris if they don't put the opponent in atari
-        (this definition covers throw-ins)
-        */
-        if(libs == 1)
-        {
-            if(captures == 0 && !puts_neighbor_in_atari(cb, m, opt))
-                continue;
-
-            mc_v += prior_self_atari;
-        }
-
 
         /*
         Nakade

@@ -1208,6 +1208,74 @@ u8 min_neighbor_libs(
     return ret;
 }
 
+
+/*
+Return the maximum amount of liberties of groups with stones adjacent to an
+intersection.
+RETURNS maximum number of liberties found, or 0
+*/
+u8 max_neighbor_libs(
+    const cfg_board * cb,
+    move m,
+    u8 stone
+){
+    assert(is_board_move(m));
+
+    u8 ret = 0;
+    if(!border_left[m] && cb->p[m + LEFT] == stone)
+        ret = cb->g[m + LEFT]->liberties;
+    if(!border_right[m] && cb->p[m + RIGHT] == stone && cb->g[m +
+        RIGHT]->liberties > ret)
+        ret = cb->g[m + RIGHT]->liberties;
+    if(!border_top[m] && cb->p[m + TOP] == stone && cb->g[m + TOP]->liberties >
+        ret)
+        ret = cb->g[m + TOP]->liberties;
+    if(!border_bottom[m] && cb->p[m + BOTTOM] == stone && cb->g[m +
+        BOTTOM]->liberties > ret)
+        ret = cb->g[m + BOTTOM]->liberties;
+    return ret;
+}
+
+static void _eye_space_size_gt_two(
+    const cfg_board * cb,
+    move m,
+    bool searched[BOARD_SIZ * BOARD_SIZ],
+    u8 * count
+){
+    if(searched[m] || cb->p[m] != EMPTY)
+        return;
+
+    searched[m] = true;
+    (*count)++;
+
+    if(*count > 2)
+        return;
+
+    if(!border_left[m])
+        _eye_space_size_gt_two(cb, m + LEFT, searched, count);
+    if(!border_right[m])
+        _eye_space_size_gt_two(cb, m + RIGHT, searched, count);
+    if(!border_top[m])
+        _eye_space_size_gt_two(cb, m + TOP, searched, count);
+    if(!border_bottom[m])
+        _eye_space_size_gt_two(cb, m + BOTTOM, searched, count);
+}
+
+/*
+Count the size of the empty space in an empty area.
+RETURNS true if larger than two intersections
+*/
+bool eye_space_size_gt_two(
+    const cfg_board * cb,
+    move m
+){
+    u8 count = 0;
+    bool searched[BOARD_SIZ * BOARD_SIZ];
+    memset(searched, false, BOARD_SIZ * BOARD_SIZ);
+    _eye_space_size_gt_two(cb, m, searched, &count);
+    return count > 2;
+}
+
 /*
 Tests whether a neighbor group of stone type stone has two liberties.
 RETURNS true if neighbor group is put in atari
