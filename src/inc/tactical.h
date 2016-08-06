@@ -171,9 +171,9 @@ u8 is_nakade(
 );
 
 /*
-Marks intersections near (x, y). The difinition of near used includes
+Marks intersections near point m. The definition of near used includes
 intersections adjacent to liberties of nearby groups, plus the 3x3 neighborhood
-of the intersection (x, y). near_pos is cleared before marking.
+of the intersection m. near_pos is cleared before marking.
 */
 void mark_near_pos(
     const cfg_board * cb,
@@ -192,9 +192,9 @@ void mark_pts_in_seki(
 );
 
 /*
-Tests if the intersection (x,y) is the only liberty of a group of color is_black
-and that group qualifies as being a ladder.
-Warning: assumes playing (x,y) makes two liberties.
+Tests if the intersection m is the only liberty of a group of color is_black and
+that group qualifies as being a ladder.
+Warning: assumes playing m makes two and only two liberties.
 
 Not all types of ladders are detected.
 
@@ -225,7 +225,7 @@ bool is_ladder(
 /*
 Return the minimum amount of liberties of groups with stones adjacent to an
 intersection.
-RETURNS minimum number of liberties found, or 255
+RETURNS minimum number of liberties found, or NONE
 */
 u8 min_neighbor_libs(
     const cfg_board * cb,
