@@ -1184,14 +1184,14 @@ Return the minimum amount of liberties of groups with stones adjacent to an
 intersection.
 RETURNS minimum number of liberties found, or NONE
 */
-u8 min_neighbor_libs(
+u16 min_neighbor_libs(
     const cfg_board * cb,
     move m,
     u8 stone
 ){
     assert(is_board_move(m));
 
-    u8 ret = NONE;
+    u16 ret = NONE;
     if(!border_left[m] && cb->p[m + LEFT] == stone)
         ret = cb->g[m + LEFT]->liberties;
     if(!border_right[m] && cb->p[m + RIGHT] == stone && cb->g[m +

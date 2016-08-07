@@ -623,8 +623,8 @@ static void test_whole_game()
         opt_turn_maintenance(&b, is_black);
 
         u64 curr_time = current_time_in_millis();
-        u64 stop_time = curr_time + 500;
-        u64 early_stop_time = curr_time + 500;
+        u64 stop_time = curr_time + 1000;
+        u64 early_stop_time = curr_time + 800;
 
         bool has_play = evaluate_position(&b, is_black, &out_b, stop_time,
             early_stop_time);
