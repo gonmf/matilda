@@ -19,7 +19,7 @@ reading handicap, hoshi and starting plays for MCTS.
 #include "engine.h"
 #include "timem.h"
 #include "stringm.h"
-#include "buffer.h"
+#include "alloc.h"
 
 static bool handicap_points_attempted_load = false;
 static bool hoshi_points_attempted_load = false;
@@ -45,7 +45,7 @@ void open_rule_file(
     if(buffer != NULL)
         flog_crit("pts", "error: pts_file: file open");
 
-    char * fn = get_buffer();
+    char * fn = alloc();
     if(starts_with(filename, get_data_folder()))
         snprintf(fn, MAX_PAGE_SIZ, "%s", filename);
     else
@@ -56,18 +56,20 @@ void open_rule_file(
         flog_crit("pts", "system out of memory");
 
 
-    d32 chars_read = read_ascii_file(fn, buffer, MAX_FILE_SIZ);
+    d32 chars_read = read_ascii_file(buffer, MAX_FILE_SIZ, fn);
     if(chars_read < 0)
         flog_crit("pts", "couldn't open file for reading");
 
+    release(fn);
     search_started = false;
 }
 
 /*
 Read the next rule line.
-RETURNS rule line string
 */
-char * read_next_rule(){
+void read_next_rule(
+    char * dst
+){
     if(buffer == NULL)
         flog_crit("pts", "no file open");
 
@@ -81,25 +83,35 @@ char * read_next_rule(){
     }
 
     if(line == NULL)
-        return NULL;
+    {
+        dst[0] = 0;
+        return;
+    }
 
     line_cut_before(line, '#');
     line = trim(line);
     if(line == NULL)
-        return read_next_rule();
+    {
+        read_next_rule(dst);
+        return;
+    }
 
     u16 len = strlen(line);
     if(len == 0)
-        return read_next_rule();
+    {
+        read_next_rule(dst);
+        return;
+    }
 
     char * save_ptr2 = NULL;
     char * word = strtok_r(line, " ", &save_ptr2);
     if(strcmp(word, BOARD_SIZ_AS_STR) != 0)
-        return read_next_rule();
+    {
+        read_next_rule(dst);
+        return;
+    }
 
-    char * ret = get_buffer();
-    strncpy(ret, line + strlen(BOARD_SIZ_AS_STR) + 1, MAX_PAGE_SIZ);
-    return ret;
+    strncpy(dst, line + strlen(BOARD_SIZ_AS_STR) + 1, MAX_PAGE_SIZ);
 }
 
 /*
@@ -112,7 +124,7 @@ void interpret_rule_as_pts_list(
     u16 tokens_read = 0;
     char tokens[BOARD_SIZ * BOARD_SIZ][4];
 
-    char * tmp = get_buffer();
+    char * tmp = alloc();
     strncpy(tmp, src, MAX_PAGE_SIZ);
 
     char * word;
@@ -126,9 +138,10 @@ void interpret_rule_as_pts_list(
 
     if(tokens_read < 1 || tokens_read == BOARD_SIZ * BOARD_SIZ)
     {
-        char * buf = get_buffer();
+        char * buf = alloc();
         snprintf(buf, MAX_PAGE_SIZ, "malformed line: %s", src);
         flog_crit("pts", buf);
+        release(buf);
     }
 
     board b;
@@ -140,19 +153,23 @@ void interpret_rule_as_pts_list(
         move m = coord_parse_alpha_num(tokens[t]);
         if(!is_board_move(m))
         {
-            char * buf = get_buffer();
+            char * buf = alloc();
             snprintf(buf, MAX_PAGE_SIZ, "malformed line: %s", src);
             flog_crit("pts", buf);
+            release(buf);
         }
         if(!attempt_play_slow(&b, m, true))
         {
-            char * buf = get_buffer();
+            char * buf = alloc();
             snprintf(buf, MAX_PAGE_SIZ, "malformed line: %s", src);
             flog_crit("pts", buf);
+            release(buf);
         }
 
         add_move(dst, m);
     }
+
+    release(tmp);
 }
 
 /*
@@ -172,20 +189,22 @@ static void load_points(
 ){
     dst->count = 0;
 
-    char * buf = get_buffer();
+    char * buf = alloc();
     snprintf(buf, MAX_PAGE_SIZ, "%s.pts", name);
     open_rule_file(buf);
 
-    char * s;
-    if((s = read_next_rule()) != NULL)
+    char * s = alloc();
+    read_next_rule(s);
+    if(s != NULL)
     {
         interpret_rule_as_pts_list(dst, s);
 
-        char * buf = get_buffer();
         snprintf(buf, MAX_PAGE_SIZ, "loaded %u %s points", dst->count, name);
         flog_info("pts", buf);
     }
 
+    release(buf);
+    release(s);
     close_rule_file();
 }
 

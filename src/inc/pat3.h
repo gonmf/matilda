@@ -71,8 +71,9 @@ Transposes part of an input matrix board into a 3x3 matrix pattern codified,
 with board safety.
 */
 void pat3_transpose(
+    u8 dst[3][3],
     const u8 p[BOARD_SIZ * BOARD_SIZ],
-    move m, u8 v[3][3]
+    move m
 );
 
 /*

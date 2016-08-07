@@ -137,20 +137,19 @@ bool add_handicap_stone(
 
 
 /*
-Warning: not thread-safe.
-RETURNS a copy of the current game state
+Produce the current game state to board form.
 */
-board * current_game_state(
-    const game_record * gr
+void current_game_state(
+    board * dst,
+    const game_record * src
 );
 
 /*
 Produces the first game state, with handicap stones placed.
-Warning: not thread-safe.
-RETURNS a copy of the first game state
 */
-board * first_game_state(
-    const game_record * gr
+void first_game_state(
+    board * dst,
+    const game_record * src
 );
 
 /*

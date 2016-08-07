@@ -34,6 +34,7 @@ explicitly said so.
 #include "state_changes.h"
 #include "timem.h"
 #include "types.h"
+#include "alloc.h"
 #include "zobrist.h"
 
 
@@ -1925,8 +1926,10 @@ void fprint_cfg_board(
     FILE * fp,
     const cfg_board * cb
 ){
-    fprintf(fp, "\nBOARD\n%s", board_to_string(cb->p, cb->last_played,
-        cb->last_eaten));
+    char * s = alloc();
+    board_to_string(s, cb->p, cb->last_played, cb->last_eaten);
+    fprintf(fp, "\nBOARD\n%s", s);
+    release(s);
 
     fprintf(fp, "\nSTONES\n");
     for(move m = 0; m < BOARD_SIZ * BOARD_SIZ; ++m)

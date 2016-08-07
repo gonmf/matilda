@@ -24,7 +24,7 @@ Also deals with updating some internal parameters at startup time.
 #include "timem.h"
 #include "time_ctrl.h"
 #include "zobrist.h"
-#include "buffer.h"
+#include "alloc.h"
 
 game_record current_game;
 time_system current_clock_black;
@@ -66,7 +66,6 @@ static u16 _dummy; /* used for testing CLOP */
 
 
 
-static u16 avg_game_length; // TODO to remove after paper, E
 static double time_allot_factor; // TODO to remove after paper, E
 
 
@@ -96,7 +95,6 @@ const void * tunable[] =
     "i", "dummy", &_dummy,
 
 
-    "i", "avg_game_length", &avg_game_length, // TODO remove
     "f", "time_allot_factor", &time_allot_factor, // TODO remove
 
 
@@ -121,9 +119,10 @@ static void set_parameter(
             d32 val;
             if(!parse_int(value, &val) || val < 0)
             {
-                char * buf = get_buffer();
+                char * buf = alloc();
                 snprintf(buf, MAX_PAGE_SIZ, "integer format error: %s", value);
                 flog_crit("entry", buf);
+                release(buf);
             }
 
             u16 * svar = ((u16 * )tunable[i + 2]);
@@ -135,9 +134,10 @@ static void set_parameter(
             double val;
             if(!parse_float(value, &val))
             {
-                char * buf = get_buffer();
+                char * buf = alloc();
                 snprintf(buf, MAX_PAGE_SIZ, "float format error: %s", value);
                 flog_crit("entry", buf);
+                release(buf);
             }
 
             double * svar = ((double * )tunable[i + 2]);
@@ -145,15 +145,17 @@ static void set_parameter(
             return;
         }
 
-        char * buf = get_buffer();
+        char * buf = alloc();
         snprintf(buf, MAX_PAGE_SIZ,
             "illegal internal parameter codification: %s", type);
         flog_crit("entry", buf);
+        release(buf);
     }
 
-    char * buf = get_buffer();
+    char * buf = alloc();
     snprintf(buf, MAX_PAGE_SIZ, "illegal parameter name: %s", name);
     flog_crit("entry", buf);
+    release(buf);
 }
 
 void main_gtp(
@@ -167,6 +169,7 @@ int main(
     int argc,
     char * argv[]
 ){
+    alloc_init();
     config_logging(DEFAULT_LOG_MODES);
     bool use_gtp = (isatty(STDIN_FILENO) == 0);
     bool color_set = false;
@@ -186,7 +189,10 @@ int main(
         }
         if(strcmp(argv[i], "-i") == 0 || strcmp(argv[i], "--info") == 0)
         {
-            fprintf(stderr, "\n%s\n", build_info());
+            char * s = alloc();
+            build_info(s);
+            fprintf(stderr, "\n%s\n", s);
+            release(s);
             return EXIT_SUCCESS;
         }
     }
@@ -281,10 +287,11 @@ olor");
                     continue;
                 }
 
-                char * buf = get_buffer();
+                char * buf = alloc();
                 snprintf(buf, MAX_PAGE_SIZ, "illegal logging mode: %c", argv[i +
                     1][j]);
                 flog_crit("entry", buf);
+                release(buf);
             }
             config_logging(mode);
 
@@ -325,7 +332,7 @@ stant number of playouts per turn; --time flag is illegal");
 stant number of playouts per turn; --time_system flag is illegal");
 
             time_system tmp;
-            if(!str_to_time_system(argv[i + 1], &tmp))
+            if(!str_to_time_system(&tmp, argv[i + 1]))
                 flog_crit("entry", "illegal time system string format");
 
             set_time_system(&current_clock_black, tmp.main_time,
@@ -379,10 +386,11 @@ e");
         {
             if(!set_data_folder(argv[i + 1]))
             {
-                char * buf = get_buffer();
+                char * buf = alloc();
                 snprintf(buf, MAX_PAGE_SIZ, "data directory path %s is not vali\
 d", argv[i + 1]);
                 flog_crit("entry", buf);
+                release(buf);
             }
 
             ++i;
@@ -521,10 +529,13 @@ The default is the total\n        number of normal plus hyperthreaded CPU cores\
 
     if(time_changed_or_set)
     {
-        char * buf = get_buffer();
-        snprintf(buf, 128, "Clock set to %s\n",
-            time_system_to_str(&current_clock_black));
-        fprintf(stderr, "%s", buf);
+        char * s1 = alloc();
+        char * s2 = alloc();
+        time_system_to_str(s1, &current_clock_black);
+        snprintf(s2, MAX_PAGE_SIZ, "Clock set to %s\n", s1);
+        fprintf(stderr, "%s", s2);
+        release(s2);
+        release(s1);
     }
 
     /*

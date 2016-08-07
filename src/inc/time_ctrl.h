@@ -16,7 +16,7 @@ say anything. All times are in milliseconds.
 #define DETECT_NETWORK_LATENCY false
 
 /* Used if automatic detection (above) is not active or available yet. */
-#define LATENCY_COMPENSATION 5 /* in milliseconds */
+#define LATENCY_COMPENSATION 110 /* in milliseconds */
 
 
 /*
@@ -28,12 +28,12 @@ is the objective.
 /*
 Tuned with CLOP in 9x9 with 3s/game vs GNU Go 3.8 lvl 1. 7907 games.
 */
-#define TIME_ALLOT_FACTOR 3.45
-#define EXPECTED_GAME_LENGTH 57
+#define TIME_ALLOT_FACTOR 3.3 // TODO optimize
 #else
-#define TIME_ALLOT_FACTOR 3.0
-#define EXPECTED_GAME_LENGTH ((BOARD_SIZ * BOARD_SIZ * 2) / 3)
+#define TIME_ALLOT_FACTOR 1.5 // TODO optimize this for 13x13 and 19x19
 #endif
+
+#define EXPECTED_GAME_LENGTH ((BOARD_SIZ * BOARD_SIZ * 2) / 3)
 
 
 typedef struct __time_system_ {
@@ -108,9 +108,9 @@ void reset_clock(
 
 /*
 Convert a time system into a textual description.
-RETURNS textual description
 */
-const char * time_system_to_str(
+void time_system_to_str(
+    char * dst,
     time_system * ts
 );
 
@@ -119,8 +119,8 @@ Convert a string in the format time+numberxtime/number to a time system struct.
 RETURNS true if successful and value stored in dst
 */
 bool str_to_time_system(
-    const char * src,
-    time_system * dst
+    time_system * dst,
+    const char * src
 );
 
 #endif

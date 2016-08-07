@@ -21,7 +21,7 @@ Play variations are not supported.
 #include "flog.h"
 #include "game_record.h"
 #include "scoring.h"
-#include "buffer.h"
+#include "alloc.h"
 
 extern d16 komi;
 
@@ -200,8 +200,12 @@ u32 export_game_as_sgf_to_buffer(
     buf += snprintf(buf, size - (buf - buffer), "SZ[%u]\n", BOARD_SIZ);
     buf += snprintf(buf, size - (buf - buffer), "PW[%s]\n", gr->white_name);
     buf += snprintf(buf, size - (buf - buffer), "PB[%s]\n", gr->black_name);
-    buf += snprintf(buf, size - (buf - buffer), "KM[%s]\n",
-        komi_to_string(komi));
+
+    char * kstr = alloc();
+    komi_to_string(kstr, komi);
+    buf += snprintf(buf, size - (buf - buffer), "KM[%s]\n", kstr);
+    release(kstr);
+
     if(gr->game_finished)
     {
         if(gr->resignation == 0)
@@ -220,14 +224,19 @@ u32 export_game_as_sgf_to_buffer(
     buf += snprintf(buf, size - (buf - buffer), "AP[matilda:%u.%u]\n",
         VERSION_MAJOR, VERSION_MINOR);
 
+
+    char * mstr = alloc();
+
     /* Handicap stones */
     if(gr->handicap_stones.count > 1)
     {
         buf += snprintf(buf, size - (buf - buffer), "HA[%u]\nAB",
             gr->handicap_stones.count);
         for(u16 i = 0; i < gr->handicap_stones.count; ++i)
-            buf += snprintf(buf, size - (buf - buffer), "[%s]\n",
-                coord_to_alpha_alpha(gr->moves[i]));
+        {
+            coord_to_alpha_alpha(mstr, gr->moves[i]);
+            buf += snprintf(buf, size - (buf - buffer), "[%s]\n", mstr);
+        }
     }
 
     /* Plays */
@@ -245,15 +254,23 @@ u32 export_game_as_sgf_to_buffer(
         }
         else
         {
+            coord_to_alpha_alpha(mstr, gr->moves[i]);
             if(gr->handicap_stones.count == 0)
+            {
                 buf += snprintf(buf, size - (buf - buffer), ";%c[%s]", (i & 1)
-                    == 0 ? 'B' : 'W', coord_to_alpha_alpha(gr->moves[i]));
+                    == 0 ? 'B' : 'W', mstr);
+            }
             else
+            {
+                coord_to_alpha_alpha(mstr, gr->moves[i]);
                 buf += snprintf(buf, size - (buf - buffer), ";%c[%s]", (i & 1)
-                    == 1 ? 'B' : 'W', coord_to_alpha_alpha(gr->moves[i]));
+                    == 1 ? 'B' : 'W', mstr);
+            }
         }
     }
     buf += snprintf(buf, size - (buf - buffer), ")\n");
+    release(mstr);
+
     return buf - buffer;
 }
 
@@ -328,19 +345,20 @@ bool import_game_from_sgf(
 ){
     clear_game_record(gr);
 
-    char * buffer = get_buffer();
+    char * buf = alloc();
 
-    d32 chars_read = read_ascii_file(filename, buffer, MAX_SGF_FILE_SIZ);
+    d32 chars_read = read_ascii_file(buf, MAX_SGF_FILE_SIZ, filename);
     if(chars_read < 1)
     {
         flog_warn("gtp", "could not open/read file");
+        release(buf);
         return false;
     }
 
     /*
     Game
     */
-    if(strstr(buffer, "GM[1]") == NULL)
+    if(strstr(buf, "GM[1]") == NULL)
         if(!gm_unknown_warning_given)
         {
             gm_unknown_warning_given = true;
@@ -350,10 +368,11 @@ bool import_game_from_sgf(
     /*
     Board size
     */
-    char * board_size_str = str_between(buffer, "SZ[", "]");
-    if(board_size_str == NULL)
+    char * board_size_str = alloc();
+    str_between(board_size_str, buf, "SZ[", "]");
+    if(board_size_str[0] == 0)
     {
-        u8 board_size = guess_board_size(buffer);
+        u8 board_size = guess_board_size(buf);
         if(board_size == 0 && !unknown_board_size_cant_guess_warning_given)
         {
             unknown_board_size_cant_guess_warning_given = true;
@@ -363,34 +382,41 @@ bool import_game_from_sgf(
         if(board_size != BOARD_SIZ)
         {
             flog_warn("gtp", "wrong board size");
+            release(buf);
+            release(board_size_str);
             return false;
         }
     }
     else
-        if(!strcmp(board_size_str, BOARD_SIZ_AS_STR))
+        if(strcmp(board_size_str, BOARD_SIZ_AS_STR) != 0)
         {
             flog_warn("gtp", "illegal board size format");
+            release(buf);
+            release(board_size_str);
             return false;
         }
+    release(board_size_str);
 
     /*
     Player names
     */
-    char * black_name = str_between(buffer, "PB[", "]");
-    if(black_name != NULL)
-        strncpy(gr->black_name, black_name, 16);
+    char * name = alloc();
+    str_between(name, buf, "PB[", "]");
+    if(name[0])
+        strncpy(gr->black_name, name, MAX_PLAYER_NAME_SIZ);
 
-    char * white_name = str_between(buffer, "PW[", "]");
-    if(white_name != NULL)
-        strncpy(gr->white_name, white_name, 16);
-
+    str_between(name, buf, "PW[", "]");
+    if(name[0])
+        strncpy(gr->white_name, name, MAX_PLAYER_NAME_SIZ);
+    release(name);
 
     /*
     Result
     */
-    char * result = str_between(buffer, "RE[", "]");
+    char * result = alloc();
+    str_between(result, buf, "RE[", "]");
 
-    if(result == NULL || strcmp(result, "Void") == 0)
+    if(result[0] == 0 || strcmp(result, "Void") == 0)
         gr->game_finished = false;
     else
         if(strcmp(result, "?") == 0 || strcmp(result, "Draw") == 0 ||
@@ -413,18 +439,24 @@ bool import_game_from_sgf(
                         gr->final_score = 1;
                     }
                     else
-                    {
-                        gr->resignation = false;
-                        parse_int(result, (d32 *)&gr->final_score);
-                        gr->final_score *= 2;
-                        if(gr->final_score == 0)
+                        if(result[0] == 'T')
                         {
-                            flog_warn("gtp", "illegal final score");
-                            return false;
+                            gr->final_score = 1;
                         }
-                        if(strstr(result, ".") != NULL)
-                            gr->final_score++;
-                    }
+                        else
+                        {
+                            parse_int(result, (d32 *)&gr->final_score);
+                            gr->final_score *= 2;
+                            if(gr->final_score == 0)
+                            {
+                                flog_warn("gtp", "illegal final score");
+                                release(buf);
+                                release(result);
+                                return false;
+                            }
+                            if(strstr(result, ".") != NULL)
+                                gr->final_score++;
+                        }
                 }
             }
             else
@@ -439,25 +471,33 @@ bool import_game_from_sgf(
                         gr->final_score = -1;
                     }
                     else
-                    {
-                        gr->resignation = false;
-                        parse_int(result, (d32 *)&gr->final_score);
-                        gr->final_score *= -2;
-                        if(gr->final_score == 0)
+                        if(result[0] == 'T')
                         {
-                            flog_warn("gtp", "illegal final score");
-                            return false;
+                            gr->final_score = -1;
                         }
-                        if(strstr(result, ".") != NULL)
-                            gr->final_score--;
-                    }
+                        else
+                        {
+                            gr->resignation = false;
+                            parse_int(result, (d32 *)&gr->final_score);
+                            gr->final_score *= -2;
+                            if(gr->final_score == 0)
+                            {
+                                flog_warn("gtp", "illegal final score");
+                                release(buf);
+                                release(result);
+                                return false;
+                            }
+                            if(strstr(result, ".") != NULL)
+                                gr->final_score--;
+                        }
                 }
             }
+    release(result);
 
     /*
     Handicap stones
     */
-    char * hs = strstr(buffer, "AB[");
+    char * hs = strstr(buf, "AB[");
     if(hs != NULL)
         while(1)
         {
@@ -469,6 +509,7 @@ bool import_game_from_sgf(
                 if(!add_handicap_stone(gr, coord_to_move(x, y)))
                 {
                     flog_warn("gtp", "handicap placement error");
+                    release(buf);
                     return false;
                 }
                 hs += 4;
@@ -480,7 +521,7 @@ bool import_game_from_sgf(
     /*
     Plays
     */
-    char * start = buffer;
+    char * start = buf;
     char * token;
     char * save_ptr;
     while(gr->turns < MAX_GAME_LENGTH && (token = strtok_r(start, ";)\n\r",
@@ -505,6 +546,7 @@ bool import_game_from_sgf(
         }
     }
 
+    release(buf);
     return true;
 }
 

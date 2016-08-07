@@ -14,7 +14,7 @@ More board functions related to cleaning and outputing board states.
 #include "pts_file.h"
 #include "stringm.h"
 #include "state_changes.h"
-#include "buffer.h"
+#include "alloc.h"
 
 
 /*
@@ -43,26 +43,23 @@ void clear_out_board(
 Format a string with a representation of the contents of an output board.
 RETURNS string representation
 */
-const char * out_board_to_string(
-    const out_board * b
+void out_board_to_string(
+    char * dst,
+    const out_board * src
 ){
-    char * buf = get_buffer();
-
     u16 idx = 0;
     for(move m = 0; m < BOARD_SIZ * BOARD_SIZ; ++m)
     {
-        if(b->tested[m])
-            idx += snprintf(buf + idx, 2048 - idx, " %4.2f",
-                b->value[m]);
+        if(src->tested[m])
+            idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx, " %4.2f",
+                src->value[m]);
         else
-            idx += snprintf(buf + idx, 2048 - idx, "  -- ");
+            idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx, "  -- ");
 
         if(((m + 1) % BOARD_SIZ) == 0)
-            idx += snprintf(buf + idx, 2048 - idx, "\n");
+            idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx, "\n");
     }
-    snprintf(buf + idx, 2048 - idx, "Pass: %4.2f\n",
-        b->pass);
-    return buf;
+    snprintf(dst + idx, MAX_PAGE_SIZ - idx, "Pass: %4.2f\n", src->pass);
 }
 
 
@@ -73,7 +70,10 @@ void fprint_out_board(
     FILE * fp,
     const out_board * b
 ){
-    fprintf(fp, "%s", out_board_to_string(b));
+    char * s = alloc();
+    out_board_to_string(s, b);
+    fprintf(fp, "%s", s);
+    release(s);
 }
 
 
@@ -83,13 +83,12 @@ ko violation indication and subject to the display options of european/japanese
 styles (defined in board.h).
 RETURNS string representation
 */
-const char * board_to_string(
+void board_to_string(
+    char * dst,
     const u8 p[BOARD_SIZ * BOARD_SIZ],
     move last_played,
     move last_eaten
 ){
-    char * buf = get_buffer();
-
     move ko_pos = NONE;
     if(last_eaten != NONE)
     {
@@ -110,19 +109,19 @@ const char * board_to_string(
     Column line
     */
 #if (!EUROPEAN_NOTATION) && (BOARD_SIZ > 9)
-    idx += snprintf(buf + idx, MAX_PAGE_SIZ - idx, "   ");
+    idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx, "   ");
     for(u8 i = 0; i < BOARD_SIZ; ++i)
         if(i >= 9)
-            idx += snprintf(buf + idx, MAX_PAGE_SIZ - idx, "%2u", (i + 1) / 10);
+            idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx, "%2u", (i + 1) / 10);
         else
-            idx += snprintf(buf + idx, MAX_PAGE_SIZ - idx, "  ");
-    idx += snprintf(buf + idx, MAX_PAGE_SIZ - idx, "\n");
+            idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx, "  ");
+    idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx, "\n");
 #endif
 
     if(BOARD_SIZ < 10)
-        idx += snprintf(buf + idx, MAX_PAGE_SIZ - idx, "  ");
+        idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx, "  ");
     else
-        idx += snprintf(buf + idx, MAX_PAGE_SIZ - idx, "   ");
+        idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx, "   ");
 
     for(u8 i = 0; i < BOARD_SIZ; ++i)
     {
@@ -130,9 +129,9 @@ const char * board_to_string(
         char c = i + 'A';
         if(c >= 'I')
             ++c;
-        idx += snprintf(buf + idx, MAX_PAGE_SIZ - idx, " %c", c);
+        idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx, " %c", c);
 #else
-        idx += snprintf(buf + idx, MAX_PAGE_SIZ - idx, " %u", (i + 1) % 10);
+        idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx, " %u", (i + 1) % 10);
 #endif
     }
 
@@ -145,9 +144,9 @@ const char * board_to_string(
         {
             move n  = BOARD_SIZ - (m / BOARD_SIZ);
             if(BOARD_SIZ < 10)
-                idx += snprintf(buf + idx, MAX_PAGE_SIZ - idx, "\n%2u", n);
+                idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx, "\n%2u", n);
             else
-                idx += snprintf(buf + idx, MAX_PAGE_SIZ - idx, "\n%3u", n);
+                idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx, "\n%3u", n);
         }
 
         u8 x;
@@ -162,27 +161,27 @@ const char * board_to_string(
             case EMPTY:
                 if(m == ko_pos)
                 {
-                    idx += snprintf(buf + idx, MAX_PAGE_SIZ - idx, "%c!",
+                    idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx, "%c!",
                         last_play_indicator);
                     break;
                 }
                 if(is_hoshi_point(m))
-                    idx += snprintf(buf + idx, MAX_PAGE_SIZ - idx, "%c+",
+                    idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx, "%c+",
                         last_play_indicator);
                 else
-                    idx += snprintf(buf + idx, MAX_PAGE_SIZ - idx, "%c%c",
+                    idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx, "%c%c",
                         last_play_indicator, EMPTY_STONE_CHAR);
                 break;
             case BLACK_STONE:
-                idx += snprintf(buf + idx, MAX_PAGE_SIZ - idx, "%c%c",
+                idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx, "%c%c",
                     last_play_indicator, BLACK_STONE_CHAR);
                 break;
             case WHITE_STONE:
-                idx += snprintf(buf + idx, MAX_PAGE_SIZ - idx, "%c%c",
+                idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx, "%c%c",
                     last_play_indicator, WHITE_STONE_CHAR);
                 break;
             default:
-                idx += snprintf(buf + idx, MAX_PAGE_SIZ - idx, "%c?",
+                idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx, "%c?",
                     last_play_indicator);
         }
 
@@ -191,10 +190,10 @@ const char * board_to_string(
             last_play_indicator = (m == last_played) ? ')' : ' ';
             move n  = BOARD_SIZ - (m / BOARD_SIZ);
             if(BOARD_SIZ < 10)
-                idx += snprintf(buf + idx, MAX_PAGE_SIZ - idx, "%c%u",
+                idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx, "%c%u",
                     last_play_indicator, n);
             else
-                idx += snprintf(buf + idx, MAX_PAGE_SIZ - idx, "%c%2u",
+                idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx, "%c%2u",
                     last_play_indicator, n);
         }
 
@@ -204,9 +203,9 @@ const char * board_to_string(
     Column line
     */
     if(BOARD_SIZ < 10)
-        idx += snprintf(buf + idx, MAX_PAGE_SIZ - idx, "\n  ");
+        idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx, "\n  ");
     else
-        idx += snprintf(buf + idx, MAX_PAGE_SIZ - idx, "\n   ");
+        idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx, "\n   ");
 
     for(u8 i = 0; i < BOARD_SIZ; ++i)
     {
@@ -214,39 +213,38 @@ const char * board_to_string(
         char c = i + 'A';
         if(c >= 'I')
             ++c;
-        idx += snprintf(buf + idx, MAX_PAGE_SIZ - idx, " %c", c);
+        idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx, " %c", c);
 #else
-        idx += snprintf(buf + idx, MAX_PAGE_SIZ - idx, " %u", i >= 9 ? (i + 1) /
+        idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx, " %u", i >= 9 ? (i + 1) /
             10 : (i + 1) % 10);
 #endif
     }
-    idx += snprintf(buf + idx, MAX_PAGE_SIZ - idx, "\n");
+    idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx, "\n");
 
 #if (!EUROPEAN_NOTATION) && (BOARD_SIZ > 9)
-    idx += snprintf(buf + idx, MAX_PAGE_SIZ - idx, "   ");
+    idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx, "   ");
     for(u8 i = 0; i < BOARD_SIZ; ++i)
         if(i >= 9)
-            idx += snprintf(buf + idx, MAX_PAGE_SIZ - idx, "%2u", (i + 1) % 10);
+            idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx, "%2u", (i + 1) % 10);
         else
-            idx += snprintf(buf + idx, MAX_PAGE_SIZ - idx, "  ");
-    idx += snprintf(buf + idx, MAX_PAGE_SIZ - idx, "\n");
+            idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx, "  ");
+    idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx, "\n");
 #endif
 
     if(last_played == PASS)
-        snprintf(buf + idx, MAX_PAGE_SIZ - idx, "\nLast play was a pass\n");
+        snprintf(dst + idx, MAX_PAGE_SIZ - idx, "\nLast play was a pass\n");
     else
         if(last_played != NONE)
         {
+            char * mstr = alloc();
 #if EUROPEAN_NOTATION
-            snprintf(buf + idx, MAX_PAGE_SIZ - idx, "\nLast played %s\n",
-                coord_to_alpha_num(last_played));
+            coord_to_alpha_num(mstr, last_played);
 #else
-            snprintf(buf + idx, MAX_PAGE_SIZ - idx, "\nLast played %s\n",
-                coord_to_num_num(last_played));
+            coord_to_num_num(mstr, last_played);
 #endif
+            snprintf(dst + idx, MAX_PAGE_SIZ - idx, "\nLast played %s\n", mstr);
+            release(mstr);
         }
-
-    return buf;
 }
 
 
@@ -257,7 +255,10 @@ void fprint_board(
     FILE * fp,
     const board * b
 ){
-    fprintf(fp, "%s", board_to_string(b->p, b->last_played, b->last_eaten));
+    char * s = alloc();
+    board_to_string(s, b->p, b->last_played, b->last_eaten);
+    fprintf(fp, "%s", s);
+    release(s);
 }
 
 

@@ -30,7 +30,7 @@ maintenance if needed.
 #include "scoring.h"
 #include "transpositions.h"
 #include "types.h"
-#include "buffer.h"
+#include "alloc.h"
 
 static bool use_opening_book = true;
 
@@ -97,7 +97,7 @@ bool evaluate_position(
     if(use_opening_book)
     {
         d8 reduction = reduce_auto(&tmp, is_black);
-        if(opening_book(&tmp, out_b))
+        if(opening_book(out_b, &tmp))
         {
             oboard_revert_reduce(out_b, reduction);
             return true;
@@ -105,10 +105,22 @@ bool evaluate_position(
         memcpy(&tmp, b, sizeof(board));
     }
 
-    double win_rate = mcts_start(&tmp, is_black, out_b, stop_time,
+    double win_rate = mcts_start(out_b, &tmp, is_black, stop_time,
         early_stop_time);
     tt_requires_maintenance = true;
     return (win_rate >= UCT_MIN_WINRATE);
+}
+
+/*
+Evaluate the position for a short amount of time, ignoring the quality matrix
+produced.
+*/
+void evaluate_in_background(
+    const board * b,
+    bool is_black
+){
+    mcts_resume(b, is_black);
+    tt_requires_maintenance = true;
 }
 
 /*
@@ -117,13 +129,19 @@ that is suitable at the moment.
 */
 void new_match_maintenance()
 {
-    transpositions_table_init();
-
-    tt_clean_all();
+    u32 freed = tt_clean_all();
     tt_requires_maintenance = false;
     komi_offset = 0;
 
-    flog_info("mcts", "freed all states between matches");
+    if(freed > 0)
+    {
+        char * s = alloc();
+        snprintf(s, MAX_PAGE_SIZ,
+            "freed all %u states between matches (%lu MiB)", freed,
+            (freed * sizeof(tt_stats)) / 1048576);
+        flog_info("mcts", s);
+        release(s);
+    }
 }
 
 /*
@@ -140,10 +158,14 @@ void opt_turn_maintenance(
         u32 freed = tt_clean_outside_tree(b, is_black);
         tt_requires_maintenance = false;
 
-        char * buf = get_buffer();
-        snprintf(buf, MAX_PAGE_SIZ, "freed %u states (%lu MiB)\n", freed, (freed
-            * sizeof(tt_stats)) / 1048576);
-        flog_info("mcts", buf);
+        if(freed > 0)
+        {
+            char * s = alloc();
+            snprintf(s, MAX_PAGE_SIZ, "freed %u states (%lu MiB)\n", freed,
+                (freed * sizeof(tt_stats)) / 1048576);
+            flog_info("mcts", s);
+            release(s);
+        }
     }
 }
 
@@ -156,10 +178,11 @@ void assert_data_folder_exists()
     DIR * dir = opendir(get_data_folder());
     if(dir == NULL)
     {
-        char * buf = get_buffer();
-        snprintf(buf, MAX_PAGE_SIZ, "data folder %s does not exist or is unavai\
-lable\n", get_data_folder());
-        flog_crit("data", buf);
+        char * s = alloc();
+        snprintf(s, MAX_PAGE_SIZ, "data folder %s does not exist or is unavaila\
+ble\n", get_data_folder());
+        flog_crit("data", s);
+        release(s);
     }else
         closedir(dir);
 }

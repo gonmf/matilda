@@ -14,7 +14,7 @@ Script ./goguiscript.py
 #LinearParameter prior_stone_scale_factor 1.1 1.6
 #IntegerParameter prior_even 5 20
 #IntegerParameter prior_nakade 36 108
-IntegerParameter prior_self_atari 1 32
+#IntegerParameter prior_self_atari 1 32
 #IntegerParameter prior_attack 20 63
 #IntegerParameter prior_defend 5 20
 #IntegerParameter prior_pat3 10 30
@@ -27,10 +27,7 @@ IntegerParameter prior_self_atari 1 32
 #IntegerParameter prior_line3x 0 10
 #IntegerParameter prior_corner 16 50
 
-
-#IntegerParameter avg_game_length 20 80
 #LinearParameter time_allot_factor 1.0 6.0
-
 
 #LinearParameter ucb1_c 0.5 2.5
 #LinearParameter rave_mse_b 0.2 2.0

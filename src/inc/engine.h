@@ -51,6 +51,15 @@ bool evaluate_position(
 );
 
 /*
+Evaluate the position for a short amount of time, ignoring the quality matrix
+produced.
+*/
+void evaluate_in_background(
+    const board * b,
+    bool is_black
+);
+
+/*
 Inform that we are currently between matches and proceed with the maintenance
 that is suitable at the moment.
 */

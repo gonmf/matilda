@@ -25,7 +25,7 @@ BOARD_SIZ signifies a pass. A "none" play is not represented.
 #include "flog.h"
 #include "stringm.h"
 #include "types.h"
-#include "buffer.h"
+#include "alloc.h"
 
 
 /*
@@ -214,10 +214,9 @@ move coord_parse_num_num(
 
 /*
 Converts a move to a string representation, like 4-4.
-Warning: not thread-safe.
-RETURNS string
 */
-const char * coord_to_num_num(
+void coord_to_num_num(
+    char * dst,
     move m
 ){
     assert(is_board_move(m));
@@ -225,17 +224,15 @@ const char * coord_to_num_num(
     u8 y;
     move_to_coord(m, &x, &y);
 
-    char * buf = get_buffer();
-    snprintf(buf, 8, "%u-%u", x + 1, y + 1);
-    return buf;
+    snprintf(dst, 8, "%u-%u", x + 1, y + 1);
 }
 
 /*
 Converts a move to a string representation, like D4.
 The value I is skipped.
-RETURNS string
 */
-const char * coord_to_alpha_num(
+void coord_to_alpha_num(
+    char * dst,
     move m
 ){
     assert(is_board_move(m));
@@ -246,17 +243,15 @@ const char * coord_to_alpha_num(
     if(c >= 'I')
         ++c;
 
-    char * buf = get_buffer();
-    snprintf(buf, 8, "%c%u", c,  BOARD_SIZ - y);
-    return buf;
+    snprintf(dst, 8, "%c%u", c,  BOARD_SIZ - y);
 }
 
 /*
 Converts a move to a string representation, like DD.
 The character I is allowed.
-RETURNS string
 */
-const char * coord_to_alpha_alpha(
+void coord_to_alpha_alpha(
+    char * dst,
     move m
 ){
     assert(is_board_move(m));
@@ -264,9 +259,7 @@ const char * coord_to_alpha_alpha(
     u8 y;
     move_to_coord(m, &x, &y);
 
-    char * buf = get_buffer();
-    snprintf(buf, 8, "%c%c", x + 'a', y + 'a');
-    return buf;
+    snprintf(dst, 8, "%c%c", x + 'a', y + 'a');
 }
 
 /*

@@ -19,7 +19,7 @@ Produces a textual opinion on the best followup, given the time available to
 think.
 */
 void request_opinion(
-    char * buf,
+    char * dst,
     const board * b,
     bool is_black,
     u64 milliseconds

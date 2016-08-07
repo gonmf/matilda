@@ -11,15 +11,15 @@ Functions for file input/output.
 
 #include "types.h"
 #include "flog.h"
-#include "buffer.h"
+#include "alloc.h"
 
 /*
 RETURNS the number of bytes read or -1 if failed to open/be read
 */
 d32 read_binary_file(
-    const char * filename,
     void * dst_buf,
-    u32 buf_len
+    u32 buf_len,
+    const char * filename
 ){
     FILE * h = fopen(filename, "rb");
     if(h == NULL)
@@ -52,10 +52,11 @@ d32 read_binary_file(
 
     if(file_unfinished)
     {
-        char * buf = get_buffer();
-        snprintf(buf, MAX_PAGE_SIZ, "file %s longer than buffer available for r\
+        char * s = alloc();
+        snprintf(s, MAX_PAGE_SIZ, "file %s longer than buffer available for r\
 eading\n", filename);
-        flog_crit("fio", buf);
+        flog_crit("fio", s);
+        release(s);
     }
 
     return total_read;
@@ -65,9 +66,9 @@ eading\n", filename);
 RETURNS the number of ASCII characters read or -1 if failed to open/be read
 */
 d32 read_ascii_file(
-    const char * filename,
     char * dst_buf,
-    u32 buf_len
+    u32 buf_len,
+    const char * filename
 ){
     FILE * h = fopen(filename, "r"); /* text file, hopefully ASCII */
     if(h == NULL)
@@ -99,10 +100,11 @@ d32 read_ascii_file(
 
     if(file_unfinished)
     {
-        char * buf = get_buffer();
-        snprintf(buf, MAX_PAGE_SIZ, "file %s longer than buffer available for r\
+        char * s = alloc();
+        snprintf(s, MAX_PAGE_SIZ, "file %s longer than buffer available for r\
 eading", filename);
-        flog_crit("fio", buf);
+        flog_crit("fio", s);
+        release(s);
     }
 
     dst_buf[total_read] = 0;

@@ -808,9 +808,9 @@ intersections adjacent to liberties of nearby groups, plus the 3x3 neighborhood
 of the intersection m. near_pos is cleared before marking.
 */
 void mark_near_pos(
+    bool near_pos[BOARD_SIZ * BOARD_SIZ],
     const cfg_board * cb,
-    move m,
-    bool near_pos[BOARD_SIZ * BOARD_SIZ]
+    move m
 ){
     memset(near_pos, false, BOARD_SIZ * BOARD_SIZ);
     assert(is_board_move(m));
@@ -841,14 +841,12 @@ void mark_near_pos(
 /*
 Marks points in seki in the whole board. Only catches simple sekis with two
 shared liberties or one shared liberty and two eyes, that have the same or
-almost the same number of stones in_seki is cleared before marking.
+almost the same number of stones.
 */
 void mark_pts_in_seki(
-    cfg_board * cb,
-    bool in_seki[BOARD_SIZ * BOARD_SIZ]
+    bool in_seki[BOARD_SIZ * BOARD_SIZ],
+    cfg_board * cb
 ){
-    memset(in_seki, false, BOARD_SIZ * BOARD_SIZ);
-
     /*
     Discover unique groups for one of the players
     */

@@ -26,7 +26,7 @@ or pass).
 #include "sgf.h"
 #include "timem.h"
 #include "time_ctrl.h"
-#include "buffer.h"
+#include "alloc.h"
 #include "pts_file.h"
 
 extern game_record current_game;
@@ -69,11 +69,10 @@ static bool text_play(
         return false;
     }
 
-    move m;
 #if EUROPEAN_NOTATION
-    m = coord_parse_alpha_num(vertex);
+    move m = coord_parse_alpha_num(vertex);
 #else
-    m = coord_parse_num_num(vertex);
+    move m = coord_parse_num_num(vertex);
 #endif
 
     if(m == NONE)
@@ -82,8 +81,9 @@ static bool text_play(
         return true;
     }
 
-    board * current_state = current_game_state(&current_game);
-    if(!can_play_slow(current_state, m, is_black))
+    board current_state;
+    current_game_state(&current_state, &current_game);
+    if(!can_play_slow(&current_state, m, is_black))
     {
         printf("Play is illegal.\n");
         return true;
@@ -91,26 +91,33 @@ static bool text_play(
 
     if(ENABLE_FRISBEE_GO && frisbee_prob < 1.0)
     {
-        move n = frisbee_divert_play(current_state, is_black, m, frisbee_prob);
+        move n = frisbee_divert_play(&current_state, is_black, m, frisbee_prob);
         if(m != n)
         {
             if(superko_violation(&current_game, is_black, n))
                 n = NONE;
 
+            char * mstr = alloc();
+            coord_to_alpha_num(mstr, m);
             if(n == NONE)
                 printf("Player attempted to play %s but it ended an illegal pla\
-y instead.\n", coord_to_alpha_num(m));
+y instead.\n", mstr);
             else
             {
-                printf("Player attempted to play %s ", coord_to_alpha_num(m));
-                printf("but it landed on %s instead.\n", coord_to_alpha_num(n));
+                printf("Player attempted to play %s ", mstr);
+                char * nstr = alloc();
+                coord_to_alpha_num(nstr, n);
+                printf("but it landed on %s instead.\n", nstr);
+                release(nstr);
             }
+            release(mstr);
+
             m = n;
         }
     }
 
     add_play(&current_game, m);
-    opt_turn_maintenance(current_state, !is_black);
+    opt_turn_maintenance(&current_state, !is_black);
     *passed = false;
     return false;
 }
@@ -126,9 +133,10 @@ static void text_genmove(
     bool * resigned
 ){
     out_board out_b;
-    board * current_state = current_game_state(&current_game);
+    board current_state;
+    current_game_state(&current_state, &current_game);
 
-    u16 stones = stone_count(current_state->p);
+    u16 stones = stone_count(current_state.p);
     u32 milliseconds;
     if(is_black)
         milliseconds = calc_time_to_play(&current_clock_black, stones);
@@ -138,7 +146,7 @@ static void text_genmove(
     u64 curr_time = current_time_in_millis();
     u64 stop_time = curr_time + milliseconds;
     u64 early_stop_time = curr_time + (milliseconds / 4);
-    bool has_play = evaluate_position(current_state, is_black, &out_b,
+    bool has_play = evaluate_position(&current_state, is_black, &out_b,
         stop_time, early_stop_time);
 
     if(!has_play)
@@ -157,21 +165,27 @@ static void text_genmove(
 
     if(ENABLE_FRISBEE_GO && frisbee_prob < 1.0)
     {
-        current_state = current_game_state(&current_game);
-        move n = frisbee_divert_play(current_state, is_black, m, frisbee_prob);
+        move n = frisbee_divert_play(&current_state, is_black, m, frisbee_prob);
         if(m != n)
         {
             if(superko_violation(&current_game, is_black, n))
                 n = NONE;
 
+            char * mstr = alloc();
+            coord_to_alpha_num(mstr, m);
             if(n == NONE)
                 printf("Matilda attempted to play %s but it ended an illegal pl\
-ay instead.\n", coord_to_alpha_num(m));
+ay instead.\n", mstr);
             else
             {
-                printf("Matilda attempted to play %s ", coord_to_alpha_num(m));
-                printf("but it landed on %s instead.\n", coord_to_alpha_num(n));
+                printf("Matilda attempted to play %s ", mstr);
+                char * nstr = alloc();
+                coord_to_alpha_num(nstr, n);
+                printf("but it landed on %s instead.\n", nstr);
+                release(nstr);
             }
+            release(mstr);
+
             m = n;
         }
     }
@@ -233,29 +247,37 @@ ile.\n");
 
 static void text_print_score(bool is_black)
 {
-    board * current_state = current_game_state(&current_game);
+    board current_state;
+    current_game_state(&current_state, &current_game);
     d16 score;
     if(estimate_score)
     {
-        if(stone_count(current_state->p) > BOARD_SIZ * BOARD_SIZ / 2)
-            score = score_estimate(current_state, is_black);
+        if(stone_count(current_state.p) > BOARD_SIZ * BOARD_SIZ / 2)
+            score = score_estimate(&current_state, is_black);
         else
-            score = score_stones_and_area(current_state->p);
+            score = score_stones_and_area(current_state.p);
     }else
         score = 0;
 
-    printf("Game result: %s\n", score_to_string(score));
+    char * s = alloc();
+    score_to_string(s, score);
+    printf("Game result: %s\n", s);
+    release(s);
 }
 
 void main_text(bool is_black){
     flog_set_print_to_stderr(false);
     flog_info("gtp", "matilda now running over text interface");
-    flog_info("gtp", build_info());
+    char * s = alloc();
+    build_info(s);
+    flog_info("gtp", s);
 
+    komi_to_string(s, DEFAULT_KOMI);
     printf("Matilda %u.%u running in text mode. In this mode the options are li\
 mited and no time limit is enforced. To run using GTP add the flag -gtp. Playin\
 g with Chinese rules with %s komi; game is over after two passes or a resignati\
-on.\n\n", VERSION_MAJOR, VERSION_MINOR, komi_to_string(DEFAULT_KOMI));
+on.\n\n", VERSION_MAJOR, VERSION_MINOR, s);
+    release(s);
 
     if(ENABLE_FRISBEE_GO && frisbee_prob < 1.0)
         printf("Frisbee Go variant is active. Each board play has a %u%% chance\
@@ -275,7 +297,7 @@ on.\n\n", VERSION_MAJOR, VERSION_MINOR, komi_to_string(DEFAULT_KOMI));
     clear_game_record(&current_game);
     update_names(human_player_color);
 
-    char * buf = get_buffer();
+    char * buf = alloc();
     while(1)
     {
         passed = false;
@@ -284,8 +306,9 @@ on.\n\n", VERSION_MAJOR, VERSION_MINOR, komi_to_string(DEFAULT_KOMI));
         printf("\n");
         fprint_game_record(stdout, &current_game);
         printf("\n");
-        board * current_state = current_game_state(&current_game);
-        fprint_board(stdout, current_state);
+        board current_state;
+        current_game_state(&current_state, &current_game);
+        fprint_board(stdout, &current_state);
         printf("\n");
 
         /*
@@ -332,9 +355,15 @@ on.\n\n", VERSION_MAJOR, VERSION_MINOR, komi_to_string(DEFAULT_KOMI));
         if(first_interactive_play)
         {
             first_interactive_play = false;
+            char * mstr = alloc();
+#if EUROPEAN_NOTATION
+            coord_to_alpha_num(mstr, coord_to_move(3, 3));
+#else
+            coord_to_num_num(mstr, coord_to_move(3, 3));
+#endif
             printf("(Type the board position, like %s, or undo/pass/resign/tip/\
-score/quit)\n", EUROPEAN_NOTATION ? coord_to_alpha_num(coord_to_move(3, 3)) :
-                coord_to_num_num(coord_to_move(3, 3)));
+score/quit)\n", mstr);
+            release(mstr);
         }
         while(1)
         {
@@ -367,9 +396,15 @@ score/quit)\n", EUROPEAN_NOTATION ? coord_to_alpha_num(coord_to_move(3, 3)) :
 
             if(strcmp(line, "help") == 0)
             {
+                char * mstr = alloc();
+#if EUROPEAN_NOTATION
+                coord_to_alpha_num(mstr, coord_to_move(3, 3));
+#else
+                coord_to_num_num(mstr, coord_to_move(3, 3));
+#endif
                 printf("Type the board position, like %s, or undo/pass/resign/s\
-core/quit\n\n", EUROPEAN_NOTATION ? coord_to_alpha_num(coord_to_move(3, 3)) :
-                    coord_to_num_num(coord_to_move(3, 3)));
+core/quit\n\n", mstr);
+                release(mstr);
                 continue;
             }
 
@@ -377,10 +412,11 @@ core/quit\n\n", EUROPEAN_NOTATION ? coord_to_alpha_num(coord_to_move(3, 3)) :
             {
                 if(tips > 0)
                 {
-                    board * current_state = current_game_state(&current_game);
-                    char * buffer = get_buffer();
-                    request_opinion(buffer, current_state, is_black, 1000);
+                    current_game_state(&current_state, &current_game);
+                    char * buffer = alloc();
+                    request_opinion(buffer, &current_state, is_black, 1000);
                     printf("%s", buffer);
+                    release(buffer);
                     --tips;
                 }
 
@@ -395,11 +431,14 @@ core/quit\n\n", EUROPEAN_NOTATION ? coord_to_alpha_num(coord_to_move(3, 3)) :
 
             if(strcmp(line, "score") == 0)
             {
-                board * current_state = current_game_state(&current_game);
-                d16 score = estimate_score ? score_estimate(current_state,
+                current_game_state(&current_state, &current_game);
+                d16 score = estimate_score ? score_estimate(&current_state,
                     is_black) : 0;
+                char * s = alloc();
+                score_to_string(s, score);
                 printf("Score estimate with %s to play: %s\n\n", is_black ?
-                    "black" : "white", score_to_string(score));
+                    "black" : "white", s);
+                release(s);
                 continue;
             }
 

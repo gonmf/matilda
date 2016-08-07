@@ -56,10 +56,10 @@ void lower_case(
 );
 
 /*
-Not thread-safe.
-RETURNS a copy of the string between the tokens; or NULL
+Produces a copy of the string between the tokens; or empty
 */
-char * str_between(
+void str_between(
+    char * dst,
     const char * s,
     const char * start,
     const char * end
@@ -112,10 +112,9 @@ bool parse_gtp_vertex(
 
 /*
 Converts a GTP move (play, pass or resign) to text.
-Not thread-safe.
-RETURNS move representation
 */
-const char * coord_to_gtp_vertex(
+void coord_to_gtp_vertex(
+    char * dst,
     move m
 );
 

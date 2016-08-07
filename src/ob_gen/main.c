@@ -20,7 +20,7 @@ Application for the production of Fuego book from SGF game collections.
 #include "hash_table.h"
 #include "state_changes.h"
 #include "stringm.h"
-#include "buffer.h"
+#include "alloc.h"
 #include "flog.h"
 
 #define MAX_FILES 500000
@@ -74,7 +74,7 @@ static void export_table_as_ob(
     hash_table * table,
     u32 min_samples
 ){
-    char * str = malloc(MAX_PAGE_SIZ);
+    char * str = alloc();
 
     snprintf(str, MAX_PAGE_SIZ, "%soutput.ob", get_data_folder());
 
@@ -83,6 +83,7 @@ static void export_table_as_ob(
     {
         fprintf(stderr,
             "error: failed to open opening book file for writing\n");
+        release(str);
         exit(EXIT_FAILURE);
     }
 
@@ -117,6 +118,7 @@ static void export_table_as_ob(
             if(best == NONE)
             {
                 fprintf(stderr, "error: unexpected absence of samples\n");
+                release(str);
                 exit(EXIT_FAILURE);
             }
 
@@ -134,10 +136,10 @@ static void export_table_as_ob(
             move m2 = 0;
             bool is_black = true;
 
-            str = malloc(MAX_PAGE_SIZ);
-            idx = 0;
-            idx += snprintf(str + idx, MAX_PAGE_SIZ - idx, "%u ", BOARD_SIZ);
 
+            idx = snprintf(str, MAX_PAGE_SIZ, "%u ", BOARD_SIZ);
+
+            char * mstr = alloc();
             while(1)
             {
                 bool found = false;
@@ -146,8 +148,9 @@ static void export_table_as_ob(
                     for(; m1 < BOARD_SIZ * BOARD_SIZ; ++m1)
                         if(p[m1] == BLACK_STONE)
                         {
+                            coord_to_alpha_num(mstr, m1);
                             idx += snprintf(str + idx, MAX_PAGE_SIZ - idx,
-                                "%s ", coord_to_alpha_num(m1));
+                                "%s ", mstr);
                             found = true;
                             ++m1;
                             break;
@@ -156,8 +159,9 @@ static void export_table_as_ob(
                     for(; m2 < BOARD_SIZ * BOARD_SIZ; ++m2)
                         if(p[m2] == WHITE_STONE)
                         {
+                            coord_to_alpha_num(mstr, m2);
                             idx += snprintf(str + idx, MAX_PAGE_SIZ - idx,
-                                "%s ", coord_to_alpha_num(m1));
+                                "%s ", mstr);
                             found = true;
                             ++m2;
                             break;
@@ -166,13 +170,16 @@ static void export_table_as_ob(
                     break;
             }
 
-            snprintf(str + idx, MAX_PAGE_SIZ - idx, "| %s # %u/%u\n",
-                coord_to_alpha_num(best), best_count, total_count);
+            coord_to_alpha_num(mstr, best);
+            snprintf(str + idx, MAX_PAGE_SIZ - idx, "| %s # %u/%u\n", mstr,
+                best_count, total_count);
+            release(mstr);
 
             size_t w = fwrite(str, strlen(str), 1, fp);
             if(w != 1)
             {
                 fprintf(stderr, "error: write failed\n");
+                release(str);
                 exit(EXIT_FAILURE);
             }
 
@@ -181,10 +188,10 @@ static void export_table_as_ob(
         }
     }
 
-    str = malloc(MAX_PAGE_SIZ);
     snprintf(str, MAX_PAGE_SIZ, "# exported %u unique rules; %u were disqualifi\
 ed for not enough samples or majority representative\n",exported, skipped);
     size_t w = fwrite(str, strlen(str), 1, fp);
+    release(str);
     if(w != 1)
     {
         fprintf(stderr, "error: write failed\n");
@@ -254,12 +261,15 @@ o be used. (default: %u)\n", minimum_turns);
         exit(EXIT_SUCCESS);
     }
 
-    timestamp();
+    alloc_init();
     config_logging(DEFAULT_LOG_MODES);
     assert_data_folder_exists();
 
+    char * ts = alloc();
+    timestamp(ts);
 
-    printf("%s: Creating table...\n", timestamp());
+
+    printf("%s: Creating table...\n", ts);
     hash_table * table = hash_table_create(TABLE_BUCKETS,
         sizeof(simple_state_transition), hash_function, compare_function);
 
@@ -271,16 +281,21 @@ o be used. (default: %u)\n", minimum_turns);
     u32 passes = 0;
     u32 ob_rules = 0;
 
-    printf("%s: Searching game record files (%s*.sgf)...\n", timestamp(),
+    timestamp(ts);
+    printf("%s: Searching game record files (%s*.sgf)...\n", ts,
         get_data_folder());
     u32 filenames_found = recurse_find_files(get_data_folder(), ".sgf",
         filenames, MAX_FILES);
-    if(filenames_found == 0)
-        printf("%s: No SGF files found.\n", timestamp());
-    else
-        printf("%s: Found %u SGF files.\n", timestamp(), filenames_found);
 
-    printf("%s: 1/2 Thinking\n", timestamp());
+    if(filenames_found == 0)
+        printf("No SGF files found.\n");
+    else
+        printf("Found %u SGF files.\n", filenames_found);
+
+    timestamp(ts);
+    printf("%s: 1/2 Thinking\n", ts);
+
+    char * buf = alloc();
     u32 fid;
     for(fid = 0; fid < filenames_found; ++fid)
     {
@@ -290,8 +305,7 @@ o be used. (default: %u)\n", minimum_turns);
             fflush(stdout);
         }
 
-        char * buf = get_buffer();
-        d32 r = read_ascii_file(filenames[fid], buf, MAX_PAGE_SIZ);
+        d32 r = read_ascii_file(buf, MAX_PAGE_SIZ, filenames[fid]);
         if(r <= 0 || r >= MAX_PAGE_SIZ)
         {
             fprintf(stderr, "\rerror: unexpected file size or read error\n");
@@ -366,7 +380,7 @@ o be used. (default: %u)\n", minimum_turns);
 
             simple_state_transition stmp;
             memset(&stmp, 0, sizeof(simple_state_transition));
-            pack_matrix(b2.p, stmp.p);
+            pack_matrix(stmp.p, b2.p);
             stmp.hash = crc32(stmp.p, PACKED_BOARD_SIZ);
 
             simple_state_transition * entry =
@@ -393,6 +407,7 @@ o be used. (default: %u)\n", minimum_turns);
                 entry->count[plays[k]]++;
         }
     }
+    release(buf);
 
     printf("\n\n");
 
@@ -407,12 +422,16 @@ o be used. (default: %u)\n", minimum_turns);
         games_used, games_skipped, plays_used, passes, ob_rules, ob_depth);
 
     printf("\n");
-    printf("%s: 2/2 Exporting as opening book...\n", timestamp());
+    timestamp(ts);
+    printf("%s: 2/2 Exporting as opening book...\n", ts);
 
     export_table_as_ob(table, minimum_samples);
 
     hash_table_destroy(table, true);
 
-    printf("%s: Job done.\n", timestamp());
+    timestamp(ts);
+    printf("%s: Job done.\n", ts);
+
+    release(ts);
     return EXIT_SUCCESS;
 }

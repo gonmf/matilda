@@ -30,7 +30,7 @@ table color.
 #include "zobrist.h"
 #include "flog.h"
 #include "primes.h"
-#include "buffer.h"
+#include "alloc.h"
 
 u64 max_size_in_mbs = DEFAULT_UCT_MEMORY;
 
@@ -321,10 +321,17 @@ tt_stats * transpositions_lookup_create(
     {
         if(states_in_use >= max_allocated_states)
         {
+            /*
+            It is possible in theory for a complex ko to produce a situation
+            where freeing the game tree that is not reachable doesn't free any
+            states.
+            */
             transpositions_log_status();
-            flog_crit("tt", "memory exceeded on root lookup");
-            flog_crit("tt", board_to_string(b->p, b->last_played,
-                b->last_eaten));
+            char * s = alloc();
+            board_to_string(s, b->p, b->last_played, b->last_eaten);
+            flog_warn("tt", s);
+            release(s);
+            flog_warn("tt", "memory exceeded on root lookup");
         }
 
         ret = create_state(hash);
@@ -410,8 +417,9 @@ tt_stats * transpositions_lookup_null(
 /*
 Frees all game states and resets counters.
 */
-void tt_clean_all()
+u32 tt_clean_all()
 {
+    u32 states_in_use_before = states_in_use;
     maintenance_mark = 0;
 
     for(u32 i = 0; i < number_of_buckets; ++i)
@@ -431,6 +439,10 @@ void tt_clean_all()
             w_stats_table[i] = tmp;
         }
     }
+
+    d32 states_released = states_in_use_before - states_in_use;
+    assert(states_released >= 0);
+    return states_released;
 }
 
 /*
@@ -439,9 +451,8 @@ table to stderr and log file.
 */
 void transpositions_log_status()
 {
-    char * buf = get_buffer();
-    u32 idx = 0;
-    idx += snprintf(buf + idx, MAX_PAGE_SIZ - idx,
+    char * buf = alloc();
+    u32 idx = snprintf(buf, MAX_PAGE_SIZ,
         "\n*** Transpositions table trace start ***\n\n");
     idx += snprintf(buf + idx, MAX_PAGE_SIZ - idx, "Max size in MiB: %" PRIu64
       "\n", max_size_in_mbs);
@@ -457,5 +468,6 @@ void transpositions_log_status()
         maintenance_mark);
 
     flog_warn("tt", buf);
+    release(buf);
 }
 

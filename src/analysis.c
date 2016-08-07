@@ -16,6 +16,7 @@ This is very incomplete so far.
 #include "mcts.h"
 #include "board.h"
 #include "timem.h"
+#include "alloc.h"
 
 static tt_play * select_best(
     tt_stats * stats
@@ -35,7 +36,10 @@ static void _print_sequence(
     char ** buf,
     tt_play * p
 ){
-    *buf += snprintf(*buf, 8, " %s", coord_to_alpha_num(p->m));
+    char * tmp = alloc();
+    coord_to_alpha_num(tmp, p->m);
+    *buf += snprintf(*buf, 8, " %s", tmp);
+    release(tmp);
 
     tt_stats * stats = (tt_stats *)p->next_stats;
     if(stats == NULL)
@@ -52,12 +56,18 @@ static void print_sequence(
 ){
     tt_stats * stats = (tt_stats *)p->next_stats;
     tt_play * best_play = select_best(stats);
+
+    char * tmp = alloc();
+    coord_to_alpha_num(tmp, p->m);
+
     if(best_play == NULL){
-        *buf += snprintf(*buf, 8, "%s\n", coord_to_alpha_num(p->m));
+        *buf += snprintf(*buf, 8, "%s\n", tmp);
+        release(tmp);
         return;
     }
 
-    *buf += snprintf(*buf, 32, "%s followed by", coord_to_alpha_num(p->m));
+    *buf += snprintf(*buf, 32, "%s followed by", tmp);
+    release(tmp);
     _print_sequence(buf, best_play);
     *buf += snprintf(*buf, 4, "\n");
 }
@@ -67,7 +77,7 @@ Produces a textual opinion on the best followup, given the time available to
 think.
 */
 void request_opinion(
-    char * buf,
+    char * dst,
     const board * b,
     bool is_black,
     u64 milliseconds
@@ -79,7 +89,7 @@ void request_opinion(
 
     u64 curr_time = current_time_in_millis();
     u64 stop_time = curr_time + milliseconds;
-    mcts_start(b, is_black, &ignored, stop_time, stop_time);
+    mcts_start(&ignored, b, is_black, stop_time, stop_time);
     tt_stats * stats = transpositions_lookup_create(b, is_black, zobrist_hash);
     omp_unset_lock(&stats->lock);
     if(stats->expansion_delay != -1)
@@ -107,8 +117,9 @@ void request_opinion(
 
     if(play_count == 0)
     {
-        buf += snprintf(buf, 128, "There are no available plays for %s.\n",
-            is_black ? "black" : "white");
+        dst += snprintf(dst, MAX_PAGE_SIZ,
+            "There are no available plays for %s.\n", is_black ? "black" :
+            "white");
         return;
     }
 
@@ -129,28 +140,28 @@ void request_opinion(
 
     if(best_plays[0]->mc_q > 0.7)
     {
-        buf += snprintf(buf, MAX_PAGE_SIZ, "%s has won the game.\n", is_black ?
+        dst += snprintf(dst, MAX_PAGE_SIZ, "%s has won the game.\n", is_black ?
             "Black" : "White");
         return;
     }
 
     if(best_plays[0]->mc_q > 0.63)
     {
-        buf += snprintf(buf, MAX_PAGE_SIZ, "%s is winning the game.\n", is_black
+        dst += snprintf(dst, MAX_PAGE_SIZ, "%s is winning the game.\n", is_black
             ? "Black" : "White");
         goto continue_lbl;
     }
 
     if(best_plays[0]->mc_q > 0.55)
     {
-        buf += snprintf(buf, MAX_PAGE_SIZ, "%s is ahead in the game.\n",
+        dst += snprintf(dst, MAX_PAGE_SIZ, "%s is ahead in the game.\n",
             is_black ? "Black" : "White");
         goto continue_lbl;
     }
 
     if(best_plays[0]->mc_q > 0.5)
     {
-        buf += snprintf(buf, MAX_PAGE_SIZ,
+        dst += snprintf(dst, MAX_PAGE_SIZ,
             "The players are very close, but %s has the advantage.\n", is_black
             ? "black" : "white");
         goto continue_lbl;
@@ -158,25 +169,25 @@ void request_opinion(
 
     if(best_plays[0]->mc_q > 0.45)
     {
-        buf += snprintf(buf, MAX_PAGE_SIZ, "The players are very close.\n");
+        dst += snprintf(dst, MAX_PAGE_SIZ, "The players are very close.\n");
         goto continue_lbl;
     }
 
     if(best_plays[0]->mc_q > 0.4)
     {
-        buf += snprintf(buf, MAX_PAGE_SIZ, "%s is ahead in the game.\n",
+        dst += snprintf(dst, MAX_PAGE_SIZ, "%s is ahead in the game.\n",
             !is_black ? "Black" : "White");
         goto continue_lbl;
     }
 
     if(best_plays[0]->mc_q > 0.3)
     {
-        buf += snprintf(buf, MAX_PAGE_SIZ,  "%s is winning the game.\n",
+        dst += snprintf(dst, MAX_PAGE_SIZ,  "%s is winning the game.\n",
             !is_black ? "Black" : "White");
         goto continue_lbl;
     }
 
-    buf += snprintf(buf, MAX_PAGE_SIZ, "%s has won the game.\n", !is_black ?
+    dst += snprintf(dst, MAX_PAGE_SIZ, "%s has won the game.\n", !is_black ?
         "Black" : "White");
     return;
 
@@ -189,13 +200,13 @@ continue_lbl: ;
 
     if(play_count == 1)
     {
-        buf += snprintf(buf, MAX_PAGE_SIZ, "The best play is ");
-        print_sequence(&buf, best_plays[0]);
+        dst += snprintf(dst, MAX_PAGE_SIZ, "The best play is ");
+        print_sequence(&dst, best_plays[0]);
     }
     else
     {
-        buf += snprintf(buf, MAX_PAGE_SIZ, "The best plays are:\n");
+        dst += snprintf(dst, MAX_PAGE_SIZ, "The best plays are:\n");
         for(u8 i = 0; i < play_count; ++i)
-            print_sequence(&buf, best_plays[i]);
+            print_sequence(&dst, best_plays[i]);
     }
 }

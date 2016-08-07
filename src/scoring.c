@@ -18,70 +18,62 @@ Remember that in Matilda, scores and komi are always doubled to become integer.
 #include "state_changes.h"
 #include "timem.h"
 #include "tactical.h"
-#include "buffer.h"
+#include "alloc.h"
 
 
 d16 komi_offset = 0;
 extern d16 komi;
 
 /*
-Returns a statically allocated string with the textual representation of a Go
-match score.
-RETURNS string with score
+Produces a textual representation of a Go match score., ex: B+3.5, 0
 */
-const char * score_to_string(
+void score_to_string(
+    char * dst,
     d16 score
 ){
-    char * buf = get_buffer();
-
     if(score == 0)
-        snprintf(buf, 16, "0");
+        snprintf(dst, MAX_PAGE_SIZ, "0");
     else
         if((score & 1) == 1)
         {
             if(score > 0)
-                snprintf(buf, 16, "B+%d.5", score / 2);
+                snprintf(dst, MAX_PAGE_SIZ, "B+%d.5", score / 2);
             else
-                snprintf(buf, 16, "W+%d.5", (-score) / 2);
+                snprintf(dst, MAX_PAGE_SIZ, "W+%d.5", (-score) / 2);
         }
         else
         {
             if(score > 0)
-                snprintf(buf, 16, "B+%d", score / 2);
+                snprintf(dst, MAX_PAGE_SIZ, "B+%d", score / 2);
             else
-                snprintf(buf, 16, "W+%d", (-score) / 2);
+                snprintf(dst, MAX_PAGE_SIZ, "W+%d", (-score) / 2);
         }
-    return buf;
 }
 
 /*
-Returns a statically allocated string with the textual representation of a
-komidashi value.
-RETURNS string with komi
+Produces a textual representation of a komidashi value.
 */
-const char * komi_to_string(
+void komi_to_string(
+    char * dst,
     d16 komi
 ){
-    char * buf = get_buffer();
-
     if(komi == 0)
-        snprintf(buf, 16, "0");
+        snprintf(dst, MAX_PAGE_SIZ, "0");
     else
         if((komi & 1) == 1)
         {
             if(komi > 0)
-                snprintf(buf, 16, "%d.5", komi / 2);
+                snprintf(dst, MAX_PAGE_SIZ, "%d.5", komi / 2);
             else
-                snprintf(buf, 16, "-%d.5", (-komi) / 2);
+                snprintf(dst, MAX_PAGE_SIZ, "-%d.5", (-komi) / 2);
         }
         else
         {
             if(komi > 0)
-                snprintf(buf, 16, "%d", komi / 2);
+                snprintf(dst, MAX_PAGE_SIZ, "%d", komi / 2);
             else
-                snprintf(buf, 16, "-%d", (-komi) / 2);
+                snprintf(dst, MAX_PAGE_SIZ, "-%d", (-komi) / 2);
         }
-    return buf;
 }
 
 /*
@@ -345,7 +337,7 @@ d16 score_estimate(
     bool is_black
 ){
     u8 e[BOARD_SIZ * BOARD_SIZ];
-    estimate_final_position(b, is_black, e);
+    estimate_final_position(e, b, is_black);
 
     /* Apply area scoring */
     return score_stones_and_area(e);
@@ -356,9 +348,9 @@ Estimate the final game position from the current state. Is the most accurate
 the later in the game.
 */
 void estimate_final_position(
+    u8 e[BOARD_SIZ * BOARD_SIZ],
     const board * b,
-    bool is_black,
-    u8 e[BOARD_SIZ * BOARD_SIZ]
+    bool is_black
 ){
     /*
     Final position estimation
@@ -369,7 +361,7 @@ void estimate_final_position(
     enable_estimate_score();
     u64 curr_time = current_time_in_millis();
     u64 stop_time = curr_time + 1000;
-    mcts_start(b, is_black, &out_b, stop_time, stop_time);
+    mcts_start(&out_b, b, is_black, stop_time, stop_time);
     disable_estimate_score(black_ownership, white_ownership);
 
     /*

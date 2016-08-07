@@ -22,46 +22,10 @@ move select_safe_play_random(
     cfg_board * cb,
     bool is_black
 ){
-    u8 libs;
-    bool captures;
-    u16 attempts = cb->empty.count;
-    u8 opt = is_black ? WHITE_STONE : BLACK_STONE;
-
-    u16 empty_intersections = cb->empty.count;
-
+    bool _ignored;
     bool in_seki[BOARD_SIZ * BOARD_SIZ];
-    mark_pts_in_seki(cb, in_seki);
-
-    do
-    {
-        u16 p = rand_u16(empty_intersections);
-        move m = cb->empty.coord[p];
-
-        if(!is_eye(cb, m, is_black) && !ko_violation(cb, m) && (libs =
-            safe_to_play(cb, m, is_black, &captures)) > 0){
-
-            /*
-            Don't play equal point sekis
-            */
-            if(in_seki[m])
-                continue;
-
-            /*
-            Don't follow obvious ladders
-            */
-            if(libs == 2 && is_ladder(cb, m, is_black))
-                continue;
-
-            /*
-            Prohibit self-ataris except throw-ins and filling dead groups
-            */
-            if(libs == 1 && captures == 0 && !puts_neighbor_in_atari(cb, m, opt))
-                continue;
-
-            return m;
-        }
-    }
-    while(--attempts);
+    memset(in_seki, false, BOARD_SIZ * BOARD_SIZ);
+    mark_pts_in_seki(in_seki, cb);
 
     move playable[BOARD_SIZ * BOARD_SIZ];
     u16 playable_count = 0;
@@ -70,27 +34,13 @@ move select_safe_play_random(
     {
         move m = cb->empty.coord[k];
 
-        if(!is_eye(cb, m, is_black) && !ko_violation(cb, m) && (libs =
-            safe_to_play(cb, m, is_black, &captures)) > 0)
+        if(!is_eye(cb, m, is_black) && !ko_violation(cb, m) &&
+            safe_to_play(cb, m, is_black, &_ignored) > 0)
         {
-
             /*
             Don't play equal point sekis
             */
             if(in_seki[m])
-                continue;
-
-            /*
-            Don't follow obvious ladders
-            */
-            if(libs == 2 && is_ladder(cb, m, is_black))
-                continue;
-
-            /*
-            Prohibit self-ataris except throw-ins and filling dead groups
-            */
-            if(libs == 1 && captures == 0 && !puts_neighbor_in_atari(cb, m,
-                opt))
                 continue;
 
             playable[playable_count] = m;
@@ -112,9 +62,9 @@ move select_safe_play_random(
 Randomly select a safe play.
 */
 void random_play(
+    out_board * out_b,
     const board * b,
-    bool is_black,
-    out_board * out_b
+    bool is_black
 ){
     rand_init();
 

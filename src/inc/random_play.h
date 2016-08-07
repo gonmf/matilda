@@ -25,9 +25,9 @@ move select_safe_play_random(
 Randomly select a safe play.
 */
 void random_play(
+    out_board * out_b,
     const board * b,
-    bool is_black,
-    out_board * out_b
+    bool is_black
 );
 
 

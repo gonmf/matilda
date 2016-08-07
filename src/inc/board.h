@@ -77,8 +77,8 @@ Converts a 1 byte per position representation into a 2 bit per position
 representation.
 */
 void pack_matrix(
-    const u8 src[BOARD_SIZ * BOARD_SIZ],
-    u8 dst[PACKED_BOARD_SIZ]
+    u8 dst[PACKED_BOARD_SIZ],
+    const u8 src[BOARD_SIZ * BOARD_SIZ]
 );
 
 /*
@@ -177,8 +177,9 @@ void clear_out_board(
 Format a string with a representation of the contents of an output board.
 RETURNS string representation
 */
-const char * out_board_to_string(
-    const out_board * b
+void out_board_to_string(
+    char * dst,
+    const out_board * src
 );
 
 /*
@@ -195,7 +196,8 @@ ko violation indication and subject to the display options of european/japanese
 styles (defined in board.h).
 RETURNS string representation
 */
-const char * board_to_string(
+void board_to_string(
+    char * dst,
     const u8 p[BOARD_SIZ * BOARD_SIZ],
     move last_played,
     move last_eaten

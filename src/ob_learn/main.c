@@ -26,7 +26,7 @@ a state->play file (.spb), to be used for further play suggestions besides
 #include "timem.h"
 #include "transpositions.h"
 #include "zobrist.h"
-#include "buffer.h"
+#include "alloc.h"
 #include "flog.h"
 
 #define SECS_PER_TURN 30
@@ -105,7 +105,7 @@ t: %u)\n", ob_depth);
         exit(EXIT_SUCCESS);
     }
 
-    timestamp();
+    alloc_init();
     config_logging(DEFAULT_LOG_MODES);
     rand_init();
     assert_data_folder_exists();
@@ -113,7 +113,9 @@ t: %u)\n", ob_depth);
     zobrist_init();
     transpositions_table_init();
 
-    printf("%s: Creating table...\n", timestamp());
+    char * ts = alloc();
+    timestamp(ts);
+    printf("%s: Creating table...\n", ts);
     hash_table * table = hash_table_create(TABLE_BUCKETS,
         sizeof(simple_state_transition), hash_function, compare_function);
 
@@ -121,16 +123,20 @@ t: %u)\n", ob_depth);
     u32 games_used = 0;
     u32 unique_states = 0;
 
-    printf("%s: Searching game record files (%s*.sgf)...\n", timestamp(),
+    timestamp(ts);
+    printf("%s: Searching game record files (%s*.sgf)...\n", ts,
         get_data_folder());
     u32 filenames_found = recurse_find_files(get_data_folder(), ".sgf",
         filenames, MAX_FILES);
     if(filenames_found == 0)
-        printf("%s: No SGF files found.\n", timestamp());
+        printf("No SGF files found.\n");
     else
-        printf("%s: Found %u SGF files.\n", timestamp(), filenames_found);
+        printf("Found %u SGF files.\n", filenames_found);
 
-    printf("%s: Loading game states\n", timestamp());
+    char * buf = alloc();
+
+    timestamp(ts);
+    printf("%s: Loading game states\n", ts);
     u32 fid;
     for(fid = 0; fid < filenames_found; ++fid)
     {
@@ -140,8 +146,7 @@ t: %u)\n", ob_depth);
             fflush(stdout);
         }
 
-        char * buf = get_buffer();
-        d32 r = read_ascii_file(filenames[fid], buf, MAX_PAGE_SIZ);
+        d32 r = read_ascii_file(buf, MAX_PAGE_SIZ, filenames[fid]);
         if(r <= 0 || r >= MAX_PAGE_SIZ)
         {
             fprintf(stderr, "\rerror: unexpected file size or read error\n");
@@ -203,7 +208,7 @@ t: %u)\n", ob_depth);
 
             simple_state_transition stmp;
             memset(&stmp, 0, sizeof(simple_state_transition));
-            pack_matrix(b2.p, stmp.p);
+            pack_matrix(stmp.p, b2.p);
             stmp.hash = crc32(stmp.p, PACKED_BOARD_SIZ);
 
             simple_state_transition * entry =
@@ -231,24 +236,28 @@ t: %u)\n", ob_depth);
         }
     }
 
+
     printf("\nFound %u unique game states from %u games.\n", unique_states,
         games_used);
-    if(unique_states == 0)
+    if(unique_states == 0){
+        release(ts);
+        release(buf);
         return EXIT_SUCCESS;
+    }
 
-    printf("\n%s: Evaluating game states and saving best play\n",
-        timestamp());
+    printf("\nEvaluating game states and saving best play\n");
 
-    char * filename = get_buffer();
-    snprintf(filename, MAX_PAGE_SIZ, "%soutput.spb", get_data_folder());
-    printf("%s: Created output file %s\n\n\n", timestamp(), filename);
-    FILE * fp = fopen(filename, "w");
+    snprintf(buf, MAX_PAGE_SIZ, "%soutput.spb", get_data_folder());
+    timestamp(ts);
+    printf("%s: Created output file %s\n\n\n", ts, buf);
+    FILE * fp = fopen(buf, "w");
 
+    release(buf);
 
     board b;
     clear_board(&b);
     out_board out_b;
-    opening_book(&b, &out_b);
+    opening_book(&out_b, &b);
 
     u32 evaluated = 0;
 
@@ -266,27 +275,28 @@ t: %u)\n", ob_depth);
             unpack_matrix(b.p, sst->p);
             b.last_eaten = b.last_played = NONE;
 
-            if(opening_book(&b, &out_b))
+            if(opening_book(&out_b, &b))
             {
-                printf("%s: State already present in opening books.\n",
-                    timestamp());
+                timestamp(ts);
+                printf("%s: State already present in opening books.\n", ts);
                 continue;
             }
 
             u64 curr_time = current_time_in_millis();
             u64 stop_time = curr_time + SECS_PER_TURN * 1000;
-            mcts_start(&b, true, &out_b, stop_time, stop_time);
+            mcts_start(&out_b, &b, true, stop_time, stop_time);
 
             move best = select_play_fast(&out_b);
             tt_clean_all();
 
             if(!is_board_move(best))
             {
-                printf("%s: Best play was to pass; ignored.\n", timestamp());
+                timestamp(ts);
+                printf("%s: Best play was to pass; ignored.\n", ts);
                 continue;
             }
 
-            char * str = get_buffer();
+            char * str = alloc();
             u32 idx = 0;
             idx += snprintf(str + idx, MAX_PAGE_SIZ - idx, "%u ", BOARD_SIZ);
 
@@ -301,21 +311,33 @@ t: %u)\n", ob_depth);
                         idx += snprintf(str + idx, MAX_PAGE_SIZ - idx, ".");
             }
 
-            snprintf(str + idx, MAX_PAGE_SIZ - idx, " %s\n",
-                coord_to_alpha_num(best));
+            char * beststr = alloc();
+            coord_to_alpha_num(beststr, best);
 
+            snprintf(str + idx, MAX_PAGE_SIZ - idx, " %s\n", beststr);
 
+            fprintf(stderr, "%s", str);
             size_t w = fwrite(str, strlen(str), 1, fp);
+            release(str);
             if(w != 1)
             {
                 fprintf(stderr, "error: write failed\n");
+                release(beststr);
                 exit(EXIT_FAILURE);
             }
             fflush(fp);
-            fprintf(stderr, "%s", str);
 
-            printf("%s: Best play: %s", timestamp(), coord_to_alpha_num(best));
-            printf(" Actual play: %s\n\n\n", coord_to_alpha_num(sst->play));
+            char * playstr = alloc();
+            coord_to_alpha_num(playstr, sst->play);
+            char * ts = alloc();
+            timestamp(ts);
+
+            printf("%s: Best play: %s Actual play: %s\n\n\n", ts, beststr,
+                playstr);
+
+            release(ts);
+            release(playstr);
+            release(beststr);
         }
     }
     fclose(fp);
@@ -323,6 +345,8 @@ t: %u)\n", ob_depth);
 
     hash_table_destroy(table, true);
 
-    printf("%s: Job done.\n", timestamp());
+    timestamp(ts);
+    printf("%s: Job done.\n", ts);
+    release(ts);
     return EXIT_SUCCESS;
 }

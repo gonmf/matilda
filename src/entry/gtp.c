@@ -50,7 +50,7 @@ GTP_README.
 #include "timem.h"
 #include "time_ctrl.h"
 #include "transpositions.h"
-#include "buffer.h"
+#include "alloc.h"
 
 extern d16 komi;
 extern u32 network_roundtrip_delay;
@@ -156,7 +156,7 @@ static void error_msg(
     int id,
     const char * s
 ){
-    char * buf = get_buffer();
+    char * buf = alloc();
     if(id == -1)
         snprintf(buf, MAX_PAGE_SIZ, "? %s\n\n", s);
     else
@@ -169,6 +169,7 @@ static void error_msg(
     fflush(fp);
 
     flog_prot("gtp", buf);
+    release(buf);
 }
 
 static void answer_msg(
@@ -176,7 +177,7 @@ static void answer_msg(
     int id,
     const char * s
 ){
-    char * buf = get_buffer();
+    char * buf = alloc();
     if(s == NULL || strlen(s) == 0)
     {
         if(id == -1)
@@ -199,6 +200,7 @@ static void answer_msg(
     fflush(fp);
 
     flog_prot("gtp", buf);
+    release(buf);
 }
 
 static void gtp_protocol_version(
@@ -219,9 +221,10 @@ static void gtp_version(
     FILE * fp,
     int id
 ){
-    char buf[32];
-    snprintf(buf, 32, "%u.%u", VERSION_MAJOR, VERSION_MINOR);
-    answer_msg(fp, id, buf);
+    char * s = alloc();
+    snprintf(s, MAX_PAGE_SIZ, "%u.%u", VERSION_MAJOR, VERSION_MINOR);
+    answer_msg(fp, id, s);
+    release(s);
 }
 
 static void gtp_known_command(
@@ -246,10 +249,9 @@ static void gtp_list_commands(
     FILE * fp,
     int id
 ){
-    char * buf = get_buffer();
+    char * buf = alloc();
     u16 idx = 0;
-    u16 i = 0;
-    while(supported_commands[i] != NULL)
+    for(u16 i = 0; supported_commands[i] != NULL; ++i)
     {
         strcpy(buf + idx, supported_commands[i]);
         idx += strlen(supported_commands[i]);
@@ -261,6 +263,7 @@ static void gtp_list_commands(
         ++i;
     }
     answer_msg(fp, id, buf);
+    release(buf);
 }
 
 /*
@@ -280,14 +283,16 @@ static void gtp_ponder(
         return;
     }
 
-    board * current_state = current_game_state(&current_game);
+    board current_state;
+    current_game_state(&current_state, &current_game);
     bool is_black = current_player_color(&current_game);
 
-    char * buf = get_buffer();
+    char * buf = alloc();
 
-    request_opinion(buf, current_state, is_black, seconds * 1000);
+    request_opinion(buf, &current_state, is_black, seconds * 1000);
 
     answer_msg(fp, id, buf);
+    release(buf);
 }
 
 /*
@@ -307,15 +312,14 @@ static void gtp_review_game(
         return;
     }
 
-    u32 idx = 0;
-    char * buf = get_buffer();
-
     new_match_maintenance();
 
+    char * buf = alloc();
+    u32 idx = 0;
+
     out_board out_b;
-    board * t = first_game_state(&current_game);
     board b;
-    memcpy(&b, t, sizeof(board));
+    first_game_state(&b, &current_game);
     bool is_black = first_player_color(&current_game);
 
     for(u16 t = 0; t < current_game.turns; ++t)
@@ -327,25 +331,34 @@ static void gtp_review_game(
 
         move best = select_play_fast(&out_b);
         move actual = current_game.moves[t];
+        char * s = alloc();
         if(is_board_move(actual))
+        {
+            coord_to_alpha_num(s, actual);
             idx += snprintf(buf + idx, 4 * 1024 - idx,
-                "%u: (%c) Actual: %s (%.3f)", t, is_black ? 'B' : 'W',
-                coord_to_alpha_num(actual), out_b.value[actual]);
+                "%u: (%c) Actual: %s (%.3f)", t, is_black ? 'B' : 'W', s,
+                out_b.value[actual]);
+        }
         else
             idx += snprintf(buf + idx, 4 * 1024 - idx,
                 "%u: (%c) Actual: pass", t, is_black ? 'B' : 'W');
+
         if(is_board_move(best))
-            idx += snprintf(buf + idx, 4 * 1024 - idx,
-                " Best: %s (%.3f)\n", coord_to_alpha_num(best),
+        {
+            coord_to_alpha_num(s, best);
+            idx += snprintf(buf + idx, 4 * 1024 - idx, " Best: %s (%.3f)\n", s,
                 out_b.value[best]);
+        }
         else
             idx += snprintf(buf + idx, 4 * 1024 - idx, " Best: pass\n");
+        release(s);
         opt_turn_maintenance(&b, is_black);
         just_play_slow(&b, actual, is_black);
         is_black = !is_black;
     }
 
     answer_msg(fp, id, buf);
+    release(buf);
 }
 
 static void gtp_quit(
@@ -368,28 +381,32 @@ static void gtp_clear_board(
     FILE * fp,
     int id
 ){
+    answer_msg(fp, id, NULL);
+
     if(save_all_games_to_file && current_game.turns > 0)
     {
         update_player_names();
-        char * filename = get_buffer();
+        char * filename = alloc();
         if(export_game_as_sgf_auto_named(&current_game, filename))
         {
-            char * buf = get_buffer();
+            char * buf = alloc();
             snprintf(buf, MAX_PAGE_SIZ, "game record exported to %s", filename);
             flog_info("gtp", buf);
+            release(buf);
         }
         else
             flog_warn("gtp", "failed to export game record to file");
+        release(filename);
     }
 
     has_genmoved_as_black = false;
     has_genmoved_as_white = false;
+    if(current_game.turns > 0)
+        new_match_maintenance();
     clear_game_record(&current_game);
-    new_match_maintenance();
     reset_clock(&current_clock_black);
     reset_clock(&current_clock_white);
     out_on_time_warning = false;
-    answer_msg(fp, id, NULL);
 }
 
 static void gtp_boardsize(
@@ -420,23 +437,32 @@ static void gtp_komi(
     const char * new_komi
 ){
     double komid;
-    if(parse_float(new_komi, &komid))
+    if(!parse_float(new_komi, &komid))
     {
-        d16 komi2 = (d16)(komid * 2.0);
-        if(komi != komi2)
-        {
-            fprintf(stderr, "komidashi changed from %s to %s stones\n",
-                komi_to_string(komi), komi_to_string(komi2));
-            komi = komi2;
-        }
-        else
-            fprintf(stderr, "komidashi kept at %s stones\n",
-                komi_to_string(komi));
+        error_msg(fp, id, "syntax error");
+        return;
+    }
+    answer_msg(fp, id, NULL);
 
-        answer_msg(fp, id, NULL);
+    char * kstr = alloc();
+    komi_to_string(kstr, komi);
+
+    d16 komi2 = (d16)(komid * 2.0);
+    if(komi != komi2)
+    {
+        char * kstr2 = alloc();
+        komi_to_string(kstr2, komi2);
+
+        fprintf(stderr, "komidashi changed from %s to %s stones\n", kstr,
+            kstr2);
+
+        release(kstr2);
+        komi = komi2;
     }
     else
-        error_msg(fp, id, "syntax error");
+        fprintf(stderr, "komidashi kept at %s stones\n", kstr);
+
+    release(kstr);
 }
 
 static void gtp_play(
@@ -460,9 +486,11 @@ static void gtp_play(
         {
             add_play_out_of_order(&current_game, is_black, NONE);
             current_game.game_finished = false;
-            board * current_state = current_game_state(&current_game);
-            opt_turn_maintenance(current_state, !is_black);
+            board current_state;
+            current_game_state(&current_state, &current_game);
+            opt_turn_maintenance(&current_state, !is_black);
             answer_msg(fp, id, NULL);
+            return;
         }
     }
 
@@ -488,139 +516,132 @@ static void gtp_play(
         error_msg(fp, id, "illegal move");
         return;
     }
+    answer_msg(fp, id, NULL);
 
     add_play_out_of_order(&current_game, is_black, m);
     current_game.game_finished = false;
-    board * current_state = current_game_state(&current_game);
-    opt_turn_maintenance(current_state, !is_black);
-    answer_msg(fp, id, NULL);
+    board current_state;
+    current_game_state(&current_state, &current_game);
+    opt_turn_maintenance(&current_state, !is_black);
 }
 
 /*
-Generic genmove functions that fulfills the needs of the GTP plus a non-standard
-KGS Go Server command.
+Generic genmove functions that fulfills the needs of the GTP.
 */
 static void generic_genmove(
     FILE * fp,
     int id,
     const char * color,
-    bool reg,
-    bool kill_dead_groups
+    bool reg
 ){
     bool is_black;
-    if(parse_color(color, &is_black))
+    if(!parse_color(color, &is_black))
     {
-        out_board out_b;
+        error_msg(fp, id, "syntax error");
+        return;
+    }
 
-        if(is_black)
-            has_genmoved_as_black = true;
-        else
-            has_genmoved_as_white = true;
+    char * buf = alloc();
+    out_board out_b;
 
-        board * current_state = current_game_state(&current_game);
+    if(is_black)
+        has_genmoved_as_black = true;
+    else
+        has_genmoved_as_white = true;
 
-        /*
-        We may be asked to play with the same color two times in a row.
-        This may trigger false ko violations; so we prevent them here.
-        */
-        if(current_game.turns > 0 && current_player_color(&current_game) !=
-            is_black)
-        {
-            current_state->last_played = NONE;
-            current_state->last_eaten = NONE;
-        }
+    board current_state;
+    current_game_state(&current_state, &current_game);
 
-        u32 time_to_play = 0;
+    /*
+    We may be asked to play with the same color two times in a row.
+    This may trigger false ko violations; so we prevent them here.
+    */
+    if(current_game.turns > 0 && current_player_color(&current_game) !=
+        is_black)
+    {
+        current_state.last_played = NONE;
+        current_state.last_eaten = NONE;
+    }
+
+    u32 time_to_play = 0;
 
 #if !LIMIT_BY_PLAYOUTS
-        time_system * curr_clock = is_black ? &current_clock_black :
-            &current_clock_white;
+    time_system * curr_clock = is_black ? &current_clock_black :
+        &current_clock_white;
 
-        u16 stones = stone_count(current_state->p);
-        time_to_play = calc_time_to_play(curr_clock, stones);
+    u16 stones = stone_count(current_state.p);
+    time_to_play = calc_time_to_play(curr_clock, stones);
 
-        char * buf = get_buffer();
-        snprintf(buf, MAX_PAGE_SIZ, "time to play: %u.%03us\n", time_to_play /
-            1000, time_to_play % 1000);
-        flog_info("gtp", buf);
+    snprintf(buf, MAX_PAGE_SIZ, "time to play: %u.%03us\n", time_to_play /
+        1000, time_to_play % 1000);
+    flog_info("gtp", buf);
 #endif
 
-        u64 stop_time = request_received_mark + time_to_play;
-        u64 early_stop_time = request_received_mark + (time_to_play / 2);
-        bool has_play = evaluate_position(current_state, is_black, &out_b,
-            stop_time, early_stop_time);
+    u64 stop_time = request_received_mark + time_to_play;
+    u64 early_stop_time = request_received_mark + (time_to_play / 2);
+    bool has_play = evaluate_position(&current_state, is_black, &out_b,
+        stop_time, early_stop_time);
 
-        memcpy(&last_out_board, &out_b, sizeof(out_board));
+    memcpy(&last_out_board, &out_b, sizeof(out_board));
 
-        /*
-        If strategy suggests resigning then go ahead.
-        This is not the same as passing when it is the best play.
-        Sometimes it is also not adviseable to pass instead of killing all
-        groups.
-        */
-        if(!has_play)
-        {
+    /*
+    The game is lost, resign or play something at random.
+    */
+    if(!has_play)
+    {
 #if CAN_RESIGN
-            answer_msg(fp, id, "resign");
-            char * buf = get_buffer();
-            snprintf(buf, MAX_PAGE_SIZ, "matilda playing as %s (%c) resigns\n",
-                is_black ? "black" : "white", is_black ? BLACK_STONE_CHAR :
-                WHITE_STONE_CHAR);
-            flog_warn("gtp", buf);
-            current_game.game_finished = true;
-            current_game.resignation = true;
-            current_game.final_score = is_black ? -1 : 1;
-            return;
+        answer_msg(fp, id, "resign");
+
+        snprintf(buf, MAX_PAGE_SIZ, "matilda playing as %s (%c) resigns\n",
+            is_black ? "black" : "white", is_black ? BLACK_STONE_CHAR :
+            WHITE_STONE_CHAR);
+        flog_warn("gtp", buf);
+
+        current_game.game_finished = true;
+        current_game.resignation = true;
+        current_game.final_score = is_black ? -1 : 1;
+
+        release(buf);
+        return;
 #endif
-            if(kill_dead_groups)
-                random_play(current_state, is_black, &out_b);
-        }
+        /* Pass */
+        clear_out_board(&out_b);
+    }
 
-        current_state = current_game_state(&current_game);
-        move m = select_play(&out_b, is_black, &current_game);
+    move m = select_play(&out_b, is_black, &current_game);
 
-        if(m == PASS && kill_dead_groups)
-        {
-            random_play(current_state, is_black, &out_b);
-            m = select_play(&out_b, is_black, &current_game);
-        }
-
-        if(m != PASS && !can_play_slow(current_state, m, is_black))
-            flog_crit("gtp", "best evaluated play is illegal");
-
-        answer_msg(fp, id, coord_to_gtp_vertex(m));
-
-        if(!reg)
-        {
-            add_play_out_of_order(&current_game, is_black, m);
-            current_game.game_finished = false;
+    if(!reg)
+    {
+        add_play_out_of_order(&current_game, is_black, m);
+        current_game.game_finished = false;
 
 #if !LIMIT_BY_PLAYOUTS
-            u32 elapsed = (u32)(current_time_in_millis() -
-                request_received_mark);
+        u32 elapsed = (u32)(current_time_in_millis() -
+            request_received_mark);
 
-            advance_clock(curr_clock, elapsed);
-            if(curr_clock->timed_out)
+        advance_clock(curr_clock, elapsed);
+        if(curr_clock->timed_out)
+        {
+            if(resign_on_timeout)
             {
-                if(resign_on_timeout)
-                {
-                    answer_msg(fp, id, "resign");
-                    char * buf = get_buffer();
-                    snprintf(buf, MAX_PAGE_SIZ, "matilda playing as %s (%c) res\
+                answer_msg(fp, id, "resign");
+
+                snprintf(buf, MAX_PAGE_SIZ, "matilda playing as %s (%c) res\
 igns because of timeout\n", is_black ? "black" : "white", is_black ?
-                        BLACK_STONE_CHAR : WHITE_STONE_CHAR);
-                    flog_warn("gtp", buf);
-                    current_game.game_finished = true;
-                    current_game.resignation = true;
-                    current_game.final_score = is_black ? -1 : 1;
+                    BLACK_STONE_CHAR : WHITE_STONE_CHAR);
+                flog_warn("gtp", buf);
+
+                current_game.game_finished = true;
+                current_game.resignation = true;
+                current_game.final_score = is_black ? -1 : 1;
 
 
 
 
 #if 0
 
-                    /* TODO just for counting resigns on timeout for paper */
-                    flog_dbug("gtp", "TIMEOUT\n");
+                /* TODO just for counting resigns on timeout for paper */
+                flog_dbug("gtp", "TIMEOUT\n");
 
 
 #endif
@@ -628,28 +649,28 @@ igns because of timeout\n", is_black ? "black" : "white", is_black ?
 
 
 
-
-                    return;
-                }
-                if(!out_on_time_warning)
-                {
-                    out_on_time_warning = true;
-                    char * buf = get_buffer();
-                    snprintf(buf, MAX_PAGE_SIZ, "matilda is believed to have lo\
-st on time");
-                    flog_warn("gtp", buf);
-                }
-                /* we don't do anything else when timed out */
+                release(buf);
+                return;
             }
+            if(!out_on_time_warning)
+            {
+                out_on_time_warning = true;
+                snprintf(buf, MAX_PAGE_SIZ, "matilda is believed to have lo\
+st on time");
+                flog_warn("gtp", buf);
+            }
+            /* we don't do anything else when timed out */
+        }
 #endif
 
-            if(ENABLE_FRISBEE_GO && frisbee_prob < 1.0)
-                flog_crit("gtp", "playing Frisbee Go but play modification ha\
-s been ignored by invoking genmove");
-        }
+        if(ENABLE_FRISBEE_GO && frisbee_prob < 1.0)
+            flog_crit("gtp", "playing Frisbee Go but play modification has \
+been ignored by invoking genmove");
     }
-    else
-        error_msg(fp, id, "syntax error");
+
+    coord_to_gtp_vertex(buf, m);
+    answer_msg(fp, id, buf);
+    release(buf);
 }
 
 static void gtp_genmove(
@@ -657,7 +678,7 @@ static void gtp_genmove(
     int id,
     const char * color
 ){
-    generic_genmove(fp, id, color, false, false);
+    generic_genmove(fp, id, color, false);
 }
 
 static void gtp_reg_genmove(
@@ -665,15 +686,55 @@ static void gtp_reg_genmove(
     int id,
     const char * color
 ){
-    generic_genmove(fp, id, color, true, false);
+    generic_genmove(fp, id, color, true);
 }
 
+/*
+Plays randomly at non-self-atari positions.
+*/
 static void gtp_kgs_genmove_cleanup(
     FILE * fp,
     int id,
     const char * color
 ){
-    generic_genmove(fp, id, color, true, true);
+    bool is_black;
+    if(!parse_color(color, &is_black))
+    {
+        error_msg(fp, id, "syntax error");
+        return;
+    }
+
+    out_board out_b;
+
+    if(is_black)
+        has_genmoved_as_black = true;
+    else
+        has_genmoved_as_white = true;
+
+    board current_state;
+    current_game_state(&current_state, &current_game);
+
+    /*
+    We may be asked to play with the same color two times in a row.
+    This may trigger false ko violations; so we prevent them here.
+    */
+    if(current_game.turns > 0 && current_player_color(&current_game) !=
+        is_black)
+    {
+        current_state.last_played = NONE;
+        current_state.last_eaten = NONE;
+    }
+
+    random_play(&out_b, &current_state, is_black);
+    move m = select_play(&out_b, is_black, &current_game);
+
+    add_play_out_of_order(&current_game, is_black, m);
+    current_game.game_finished = false;
+
+    char * s = alloc();
+    coord_to_gtp_vertex(s, m);
+    answer_msg(fp, id, s);
+    release(s);
 }
 
 static void gtp_echo(
@@ -683,17 +744,19 @@ static void gtp_echo(
     char * argv[],
     bool print_to_stderr
 ){
-    char * buf = get_buffer();
+    char * buf = alloc();
     d32 idx = 0;
     if(argc > 0)
-        idx += snprintf(buf + idx, MAX_PAGE_SIZ - idx, "%s", argv[0]);
+        idx = snprintf(buf, MAX_PAGE_SIZ, "%s", argv[0]);
 
     for(u16 k = 1; k < argc; ++k)
         idx += snprintf(buf + idx, MAX_PAGE_SIZ - idx, " %s", argv[k]);
+    answer_msg(fp, id, buf);
 
     if(print_to_stderr)
         fprintf(stderr, "%s\n", buf);
-    answer_msg(fp, id, buf);
+
+    release(buf);
 }
 
 static void gtp_time_settings(
@@ -717,7 +780,8 @@ led to use a constant number of simulations per turn in MCTS; request ignored");
         return;
     }
 
-    const char * previous_ts_as_s = time_system_to_str(&current_clock_black);
+    char * previous_ts_as_s = alloc();
+    time_system_to_str(previous_ts_as_s, &current_clock_black);
 
     d32 new_main_time;
     d32 new_byo_yomi_time;
@@ -726,20 +790,25 @@ led to use a constant number of simulations per turn in MCTS; request ignored");
         new_main_time >= 2147484)
     {
         error_msg(fp, id, "syntax error");
+        release(previous_ts_as_s);
         return;
     }
     if(!parse_int(byo_yomi_time, &new_byo_yomi_time) || new_byo_yomi_time < 0 ||
         new_byo_yomi_time >= 2147484)
     {
         error_msg(fp, id, "syntax error");
+        release(previous_ts_as_s);
         return;
     }
     if(!parse_int(byo_yomi_stones, &new_byo_yomi_stones) || new_byo_yomi_stones
         < 0)
     {
         error_msg(fp, id, "syntax error");
+        release(previous_ts_as_s);
         return;
     }
+
+    answer_msg(fp, id, NULL);
 
     if(new_main_time == 0 && new_byo_yomi_time > 0 && new_byo_yomi_stones == 0)
     {
@@ -757,9 +826,10 @@ led to use a constant number of simulations per turn in MCTS; request ignored");
             new_byo_yomi_time * 1000, new_byo_yomi_stones, 1);
     }
 
-    const char * new_ts_as_s = time_system_to_str(&current_clock_black);
+    char * new_ts_as_s = alloc();
+    time_system_to_str(new_ts_as_s, &current_clock_black);
 
-    char * buf = get_buffer();
+    char * buf = alloc();
     if(strcmp(previous_ts_as_s, new_ts_as_s) == 0)
         snprintf(buf, MAX_PAGE_SIZ, "clock settings kept at %s for both p\
 layers", previous_ts_as_s);
@@ -769,7 +839,9 @@ layers", previous_ts_as_s);
 
     flog_info("gtp", buf);
 
-    answer_msg(fp, id, NULL);
+    release(buf);
+    release(new_ts_as_s);
+    release(previous_ts_as_s);
 }
 
 static void gtp_kgs_time_settings(
@@ -800,7 +872,8 @@ led to use a constant number of simulations per turn in MCTS; request ignored");
         return;
     }
 
-    const char * previous_ts_as_s = time_system_to_str(&current_clock_black);
+    char * previous_ts_as_s = alloc();
+    time_system_to_str(previous_ts_as_s, &current_clock_black);
 
     if(strcmp(systemstr, "none") == 0)
     {
@@ -815,6 +888,7 @@ led to use a constant number of simulations per turn in MCTS; request ignored");
                 new_main_time < 0 || new_main_time >= 2147484)
             {
                 error_msg(fp, id, "syntax error");
+                release(previous_ts_as_s);
                 return;
             }
             set_time_system(&current_clock_black, new_main_time * 1000, 0, 0,
@@ -834,6 +908,7 @@ led to use a constant number of simulations per turn in MCTS; request ignored");
                     new_main_time < 0 || new_main_time >= 2147484)
                 {
                     error_msg(fp, id, "syntax error");
+                    release(previous_ts_as_s);
                     return;
                 }
                 if(byo_yomi_time == NULL || !parse_int(byo_yomi_time,
@@ -841,12 +916,14 @@ led to use a constant number of simulations per turn in MCTS; request ignored");
                     new_byo_yomi_time >= 2147484)
                 {
                     error_msg(fp, id, "syntax error");
+                    release(previous_ts_as_s);
                     return;
                 }
                 if(byo_yomi_periods == NULL || !parse_int(byo_yomi_periods,
                     &new_byo_yomi_periods) || new_byo_yomi_periods < 0)
                 {
                     error_msg(fp, id, "syntax error");
+                    release(previous_ts_as_s);
                     return;
                 }
 
@@ -865,6 +942,7 @@ led to use a constant number of simulations per turn in MCTS; request ignored");
                         2147484)
                     {
                         error_msg(fp, id, "syntax error");
+                        release(previous_ts_as_s);
                         return;
                     }
                     if(byo_yomi_time == NULL || !parse_int(byo_yomi_time,
@@ -872,12 +950,14 @@ led to use a constant number of simulations per turn in MCTS; request ignored");
                         new_byo_yomi_time >= 2147484)
                     {
                         error_msg(fp, id, "syntax error");
+                        release(previous_ts_as_s);
                         return;
                     }
                     if(byo_yomi_stones == NULL || !parse_int(byo_yomi_stones,
                         &new_byo_yomi_stones) || new_byo_yomi_stones < 0)
                     {
                         error_msg(fp, id, "syntax error");
+                        release(previous_ts_as_s);
                         return;
                     }
 
@@ -889,12 +969,16 @@ led to use a constant number of simulations per turn in MCTS; request ignored");
                 else
                 {
                     error_msg(fp, id, "syntax error");
+                    release(previous_ts_as_s);
                     return;
                 }
 
-    const char * new_ts_as_s = time_system_to_str(&current_clock_black);
+    answer_msg(fp, id, NULL);
 
-    char * buf = get_buffer();
+    char * new_ts_as_s = alloc();
+    time_system_to_str(new_ts_as_s, &current_clock_black);
+
+    char * buf = alloc();
     if(strcmp(previous_ts_as_s, new_ts_as_s) == 0)
         snprintf(buf, MAX_PAGE_SIZ,
             "clock settings kept at %s for both players", previous_ts_as_s);
@@ -903,8 +987,10 @@ led to use a constant number of simulations per turn in MCTS; request ignored");
 oth players", previous_ts_as_s, new_ts_as_s);
 
     flog_info("gtp", buf);
+    release(buf);
 
-    answer_msg(fp, id, NULL);
+    release(new_ts_as_s);
+    release(previous_ts_as_s);
 }
 
 static void gtp_time_left(
@@ -948,6 +1034,8 @@ led to use a constant number of simulations per turn in MCTS; request ignored");
         return;
     }
 
+    answer_msg(fp, id, NULL);
+
 
     time_system * curr_clock = is_black ? &current_clock_black :
         &current_clock_white;
@@ -963,8 +1051,6 @@ led to use a constant number of simulations per turn in MCTS; request ignored");
         curr_clock->byo_yomi_time_remaining = new_time_remaining * 1000;
         curr_clock->byo_yomi_stones_remaining = new_byo_yomi_stones_remaining;
     }
-
-    answer_msg(fp, id, NULL);
 }
 
 static void gtp_cputime(
@@ -992,11 +1078,11 @@ static void gtp_cputime(
         return;
     }
 
-    char * buf = get_buffer();
+    char * buf = alloc();
     snprintf(buf, MAX_PAGE_SIZ, "%u.%03lu", (u32)ts.tv_sec, ((u64)ts.tv_nsec) /
         1000000);
-
     answer_msg(fp, id, buf);
+    release(buf);
 #endif
 }
 
@@ -1005,32 +1091,37 @@ static void gtp_final_status_list(
     int id,
     const char * status
 ){
-    char * buf = get_buffer();
-    d32 sz = MAX_PAGE_SIZ;
-    buf[0] = 0;
-    d32 pos = 0;
+    char * buf = alloc();
+    char * mstr = alloc();
+    d32 idx = 0;
 
     bool is_black = current_player_color(&current_game);
-    board * current_state = current_game_state(&current_game);
+    board current_state;
+    current_game_state(&current_state, &current_game);
 
     u8 e[BOARD_SIZ * BOARD_SIZ];
-    estimate_final_position(current_state, is_black, e);
+    estimate_final_position(e, &current_state, is_black);
 
     if(strcmp(status, "dead") == 0)
     {
         for(move m = 0; m < BOARD_SIZ * BOARD_SIZ; ++m)
-            if(current_state->p[m] != EMPTY && e[m] != current_state->p[m])
-                pos += snprintf(buf + pos, sz - pos, "%s\n",
-                    coord_to_alpha_num(m));
+            if(current_state.p[m] != EMPTY && e[m] != current_state.p[m])
+            {
+                coord_to_alpha_num(mstr, m);
+                idx += snprintf(buf + idx, MAX_PAGE_SIZ - idx, "%s\n", mstr);
+            }
         answer_msg(fp, id, buf);
     }
     else
         if(strcmp(status, "alive") == 0)
         {
             for(move m = 0; m < BOARD_SIZ * BOARD_SIZ; ++m)
-                if(current_state->p[m] != EMPTY && e[m] == current_state->p[m])
-                    pos += snprintf(buf + pos, sz - pos, "%s\n",
-                        coord_to_alpha_num(m));
+                if(current_state.p[m] != EMPTY && e[m] == current_state.p[m])
+                {
+                    coord_to_alpha_num(mstr, m);
+                    idx += snprintf(buf + idx, MAX_PAGE_SIZ - idx, "%s\n",
+                        mstr);
+                }
             answer_msg(fp, id, buf);
         }
         else
@@ -1044,24 +1135,36 @@ rted");
             else
                 error_msg(fp, id, "syntax error");
         }
+
+    release(mstr);
+    release(buf);
 }
 
 static void gtp_gomill_describe_engine(
     FILE * fp,
     int id
 ){
-    answer_msg(fp, id, build_info());
+    char * s = alloc();
+    build_info(s);
+    answer_msg(fp, id, s);
+    release(s);
 }
 
 static void gtp_showboard(
     FILE * fp,
     int id
 ){
-    board * b = current_game_state(&current_game);
-    char * str = get_buffer();
-    snprintf(str, MAX_PAGE_SIZ, "\n%s",
-        board_to_string(b->p, b->last_played, b->last_eaten));
+    board b;
+    current_game_state(&b, &current_game);
+    char * str = alloc();
+    char * str2 = alloc();
+    board_to_string(str2, b.p, b.last_played, b.last_eaten);
+
+    snprintf(str, MAX_PAGE_SIZ, "\n%s", str2);
     answer_msg(fp, id, str);
+
+    release(str2);
+    release(str);
 }
 
 /*
@@ -1118,8 +1221,9 @@ static void gtp_frisbee_accuracy(
         flog_warn("gtp", "unable to change frisbee accuracy midgame");
         return;
     }
+    answer_msg(fp, id, NULL);
 
-    char * buf = get_buffer();
+    char * buf = alloc();
     if(v == frisbee_prob)
         snprintf(buf, MAX_PAGE_SIZ, "frisbee accuracy kept at %.2f",
             frisbee_prob);
@@ -1131,7 +1235,7 @@ static void gtp_frisbee_accuracy(
     }
 
     flog_info("gtp", buf);
-    answer_msg(fp, id, NULL);
+    release(buf);
 }
 
 static void gtp_undo_multiple(
@@ -1159,21 +1263,27 @@ static void gtp_last_evaluation(
     FILE * fp,
     int id
 ){
-    answer_msg(fp, id, out_board_to_string(&last_out_board));
+    char * s = alloc();
+    out_board_to_string(s, &last_out_board);
+    answer_msg(fp, id, s);
+    release(s);
 }
 
 static void gtp_final_position(
     FILE * fp,
     int id
 ){
-    board * current_state = current_game_state(&current_game);
+    board current_state;
+    current_game_state(&current_state, &current_game);
     bool is_black = current_player_color(&current_game);
 
-    board e;
-    e.last_eaten = e.last_played = NONE;
-    estimate_final_position(current_state, is_black, e.p);
+    u8 e[BOARD_SIZ * BOARD_SIZ];
+    estimate_final_position(e, &current_state, is_black);
 
-    answer_msg(fp, id, board_to_string(e.p, e.last_played, e.last_eaten));
+    char * s = alloc();
+    board_to_string(s, e, NONE, NONE);
+    answer_msg(fp, id, s);
+    release(s);
 }
 
 static void gtp_final_score(
@@ -1183,16 +1293,20 @@ static void gtp_final_score(
     d16 score;
     if(estimate_score)
     {
-        board * current_state = current_game_state(&current_game);
+        board current_state;
+        current_game_state(&current_state, &current_game);
         bool is_black = current_player_color(&current_game);
-        score = score_estimate(current_state, is_black);
+        score = score_estimate(&current_state, is_black);
     }else
         score = 0;
 
     current_game.game_finished = true;
     current_game.final_score = score;
 
-    answer_msg(fp, id, score_to_string(score));
+    char * s = alloc();
+    score_to_string(s, score);
+    answer_msg(fp, id, s);
+    release(s);
 }
 
 static void gtp_place_free_handicap(
@@ -1206,8 +1320,9 @@ static void gtp_place_free_handicap(
         error_msg(fp, id, "syntax error");
         return;
     }
-    board * current_state = current_game_state(&current_game);
-    if(stone_count(current_state->p) > 0)
+    board current_state;
+    current_game_state(&current_state, &current_game);
+    if(stone_count(current_state.p) > 0)
     {
         error_msg(fp, id, "board is not empty");
         return;
@@ -1218,11 +1333,9 @@ static void gtp_place_free_handicap(
         return;
     }
 
-    char * buf = malloc(MAX_PAGE_SIZ);
-    if(buf == NULL)
-        flog_crit("gtp", "system out of memory");
-
-    char * b2 = buf;
+    char * buf = alloc();
+    u32 idx = 0;
+    char * mstr = alloc();
 
     move_seq handicaps;
     get_ordered_handicap(&handicaps);
@@ -1233,7 +1346,8 @@ static void gtp_place_free_handicap(
             flog_crit("gtp", "add handicap stone failed (1)");
 
         --num_stones;
-        b2 += snprintf(b2, 8, "%s ", coord_to_alpha_num(m));
+        coord_to_alpha_num(mstr, m);
+        idx += snprintf(buf + idx, MAX_PAGE_SIZ - idx, "%s ", mstr);
     }
 
     /*
@@ -1246,21 +1360,24 @@ static void gtp_place_free_handicap(
         if((x == 0 || y == 0 || x == BOARD_SIZ - 1 || y == BOARD_SIZ - 1) &&
             rand_u16(10) > 0)
             continue;
-        board * current_state = current_game_state(&current_game);
+
+        current_game_state(&current_state, &current_game);
         move m = coord_to_move(x, y);
-        if(current_state->p[m] == EMPTY)
+        if(current_state.p[m] == EMPTY)
         {
             if(!add_handicap_stone(&current_game, m))
                 flog_crit("gtp", "add handicap stone failed (2)");
 
             --num_stones;
-            b2 += snprintf(b2, 8, "%s ", coord_to_alpha_num(m));
+            coord_to_alpha_num(mstr, m);
+            idx += snprintf(buf + idx, MAX_PAGE_SIZ - idx, "%s ", mstr);
         }
     }
 
     answer_msg(fp, id, buf);
 
-    free(buf);
+    release(mstr);
+    release(buf);
 }
 
 static void gtp_set_free_handicap(
@@ -1320,7 +1437,7 @@ static void gtp_loadsgf(
             return;
         }
 
-    char * buf = get_buffer();
+    char * buf = alloc();
     snprintf(buf, MAX_PAGE_SIZ, "%s%s", get_data_folder(), filename);
 
     game_record tmp;
@@ -1329,14 +1446,17 @@ static void gtp_loadsgf(
     if(!imported)
     {
         error_msg(fp, id, "cannot load file");
+        release(buf);
         return;
     }
+
+    answer_msg(fp, id, NULL);
 
     tmp.turns = MIN(tmp.turns, move_until - 1);
 
     memcpy(&current_game, &tmp, sizeof(game_record));
 
-    answer_msg(fp, id, NULL);
+    release(buf);
 }
 
 static void gtp_printsgf(
@@ -1346,9 +1466,10 @@ static void gtp_printsgf(
 ){
     update_player_names();
 
+    char * buf = alloc();
+
     if(filename == NULL)
     {
-        char * buf = get_buffer();
         export_game_as_sgf_to_buffer(&current_game, buf, MAX_PAGE_SIZ);
         answer_msg(fp, id, buf);
     }
@@ -1356,12 +1477,12 @@ static void gtp_printsgf(
     {
         if(!validate_filename(filename))
         {
-            fprintf(stderr, "illegal file name\n");
             error_msg(fp, id, "cannot save file");
+            fprintf(stderr, "illegal file name\n");
+            release(buf);
             return;
         }
 
-        char * buf = get_buffer();
         snprintf(buf, MAX_PAGE_SIZ, "%s%s", get_data_folder(), filename);
 
         bool success = export_game_as_sgf(&current_game, buf);
@@ -1376,6 +1497,8 @@ static void gtp_printsgf(
             fprintf(stderr, "saved to file %s\n", buf);
         }
     }
+
+    release(buf);
 }
 
 /*
@@ -1389,9 +1512,13 @@ void main_gtp(
     bool think_in_opt_turn
 ){
     load_hoshi_points();
+    transpositions_table_init();
 
     flog_info("gtp", "matilda now running over GTP");
-    flog_info("gtp", build_info());
+    char * s = alloc();
+    build_info(s);
+    flog_info("gtp", s);
+    release(s);
 
     if(ENABLE_FRISBEE_GO && frisbee_prob < 1.0)
         flog_warn("gtp", "while playing Frisbee Go in GTP mode it is assumed th\
@@ -1416,17 +1543,18 @@ ead.");
     bool time_frame_set = false;
 #endif
 
+    char * in_buf = alloc();
+
     while(1)
     {
         bool is_black = current_player_color(&current_game);
 
         board current_state;
-        memcpy(&current_state, current_game_state(&current_game),
-            sizeof(board));
+        current_game_state(&current_state, &current_game);
 
         while(1)
         {
-            if(think_in_opt_turn && current_state.last_played != NONE)
+            if(think_in_opt_turn)
             {
                 fd_set readfs;
                 FD_ZERO(&readfs);
@@ -1438,7 +1566,7 @@ ead.");
                 int ready = select(STDIN_FILENO + 1, &readfs, NULL, NULL, &tm);
                 if(ready == 0)
                 {
-                    mcts_resume(&current_state, is_black);
+                    evaluate_in_background(&current_state, is_black);
                     continue;
                 }
             }
@@ -1448,8 +1576,7 @@ ead.");
         opt_turn_maintenance(&current_state, is_black);
         reset_mcts_can_resume();
 
-        char * buf = get_buffer();
-        char * line = fgets(buf, MAX_PAGE_SIZ, stdin);
+        char * line = fgets(in_buf, MAX_PAGE_SIZ, stdin);
         request_received_mark = current_time_in_millis();
 
 #if DETECT_NETWORK_LATENCY
@@ -1489,7 +1616,7 @@ to %u milliseconds", network_roundtrip_delay);
         if(line == NULL)
             continue;
 
-        line = trim(buf);
+        line = trim(line);
         if(line == NULL)
             continue;
 
@@ -1762,14 +1889,14 @@ cmd_matcher:
         u16 i = 0;
         while(supported_commands[i] != NULL)
         {
-            if(strcmp(buf, supported_commands[i]) == 0)
+            if(strcmp(cmd, supported_commands[i]) == 0)
             {
                 command_exists = true;
                 break;
             }
             else
             {
-                u16 lev_dst = levenshtein_dst(supported_commands[i], buf);
+                u16 lev_dst = levenshtein_dst(supported_commands[i], cmd);
                 if(best_dst_str == NULL || lev_dst < best_dst_val)
                 {
                     best_dst_str = supported_commands[i];
@@ -1782,21 +1909,21 @@ cmd_matcher:
         if(command_exists)
         {
             fprintf(stderr, "warning: command '%s' exists but the parameter lis\
-t is wrong; please check the documentation\n", buf);
+t is wrong; please check the documentation\n", cmd);
             error_msg(out_fp, idn, "syntax error");
         }
         else
         {
             if(best_dst_val < 2){
-                strcpy(buf, best_dst_str);
+                strcpy(cmd, best_dst_str);
                 goto cmd_matcher;
             }
             if(best_dst_val < 4)
                 fprintf(stderr, "warning: command '%s' was not understood; did \
-you mean '%s'?\n", buf, best_dst_str);
+you mean '%s'?\n", cmd, best_dst_str);
             else
                 fprintf(stderr, "warning: command '%s' was not understood; run \
-\"help\" for a list of available commands\n", buf);
+\"help\" for a list of available commands\n", cmd);
 
             error_msg(out_fp, idn, "unknown command");
         }

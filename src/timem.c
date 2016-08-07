@@ -16,7 +16,7 @@ are in milliseconds.
 #endif
 
 #include "types.h"
-#include "buffer.h"
+#include "alloc.h"
 
 
 /*
@@ -94,18 +94,15 @@ u64 current_nanoseconds()
 
 /*
 Produces a textual timestamp based on the local timezone and system time.
-RETURNS timestamp
 */
-const char * timestamp()
-{
-    char * buf = get_buffer();
-
+void timestamp(
+    char * buffer
+){
     time_t t = time(NULL);
     struct tm tm = *localtime(&t);
     u64 millis = current_time_in_millis();
 
-    snprintf(buf, MAX_PAGE_SIZ, "%02u-%02u-%02u %02u:%02u:%02u.%04u", tm.tm_year
-        % 100, tm.tm_mon, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec,
-        (u32)(millis % 1000));
-    return buf;
+    snprintf(buffer, MAX_PAGE_SIZ, "%02u-%02u-%02u %02u:%02u:%02u.%04u",
+        tm.tm_year % 100, tm.tm_mon, tm.tm_mday, tm.tm_hour, tm.tm_min,
+        tm.tm_sec, (u32)(millis % 1000));
 }
