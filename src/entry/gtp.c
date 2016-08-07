@@ -1058,7 +1058,10 @@ static void gtp_showboard(
     int id
 ){
     board * b = current_game_state(&current_game);
-    answer_msg(fp, id, board_to_string(b->p, b->last_played, b->last_eaten));
+    char * str = get_buffer();
+    snprintf(str, MAX_PAGE_SIZ, "\n%s",
+        board_to_string(b->p, b->last_played, b->last_eaten));
+    answer_msg(fp, id, str);
 }
 
 /*
