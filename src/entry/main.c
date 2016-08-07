@@ -49,7 +49,6 @@ extern u16 prior_attack;
 extern u16 prior_defend;
 extern u16 prior_pat3;
 extern u16 prior_near_last;
-extern u16 prior_line1;
 extern u16 prior_line2;
 extern u16 prior_line3;
 extern u16 prior_empty;
@@ -81,7 +80,6 @@ const void * tunable[] =
     "i", "prior_defend", &prior_defend,
     "i", "prior_pat3", &prior_pat3,
     "i", "prior_near_last", &prior_near_last,
-    "i", "prior_line1", &prior_line1,
     "i", "prior_line2", &prior_line2,
     "i", "prior_line3", &prior_line3,
     "i", "prior_empty", &prior_empty,

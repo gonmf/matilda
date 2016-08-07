@@ -55,7 +55,6 @@ u16 prior_attack = PRIOR_ATTACK;
 u16 prior_defend = PRIOR_DEFEND;
 u16 prior_pat3 = PRIOR_PAT3;
 u16 prior_near_last = PRIOR_NEAR_LAST;
-u16 prior_line1 = PRIOR_LINE1;
 u16 prior_line2 = PRIOR_LINE2;
 u16 prior_line3 = PRIOR_LINE3;
 u16 prior_empty = PRIOR_EMPTY;
@@ -67,7 +66,6 @@ u16 prior_corner = PRIOR_CORNER;
 double ucb1_c = UCB1_C;
 
 
-extern d16 komi_offset; /* reset between matches */
 extern u8 out_neighbors4[BOARD_SIZ * BOARD_SIZ];
 
 extern bool border_left[BOARD_SIZ * BOARD_SIZ];
@@ -262,6 +260,9 @@ static void init_new_state(
     u16 capturable[BOARD_SIZ * BOARD_SIZ];
     memset(capturable, 0, BOARD_SIZ * BOARD_SIZ * sizeof(u16));
 
+    bool self_atari[BOARD_SIZ * BOARD_SIZ];
+    memset(self_atari, false, BOARD_SIZ * BOARD_SIZ);
+
     /*
     Tactical analysis of attack/defense of unsettled groups.
     */
@@ -275,9 +276,18 @@ static void init_new_state(
 
             if(g->is_black == is_black)
             {
-                if(can_be_killed(cb, g) != NONE)
+                move candidates2[MAX_GROUPS];
+                u16 candidates_count2 = 0;
+                can_be_killed_all(cb, g, &candidates_count2, candidates2);
+                if(candidates_count2 > 0)
                 {
                     can_be_saved_all(cb, g, &candidates_count, candidates);
+                    if(candidates_count == 0)
+                    {
+                        for(u16 j = 0; j < candidates_count2; ++j)
+                            self_atari[candidates2[j]] = true;
+                        continue;
+                    }
                     for(u16 j = 0; j < candidates_count; ++j)
                         saving_play[candidates[j]] += g->stones.count +
                     g->liberties;
@@ -317,11 +327,9 @@ static void init_new_state(
         if(!viable[m])
             continue;
 
-
-        if(out_neighbors4[m] == 2 && cb->black_neighbors8[m] +
-            cb->white_neighbors8[m] == 0)
+        if(out_neighbors4[m] == 2 && ((is_black && cb->white_neighbors8[m] == 0)
+            || (!is_black && cb->black_neighbors8[m] == 0)))
             continue;
-
 
         move captures;
         u8 libs = libs_after_play(cb, m, is_black, &captures);
@@ -339,23 +347,19 @@ static void init_new_state(
             continue;
 
         /*
-        Don't follow obvious ladders
+        Even game heuristic
         */
-        if(libs == 2 && is_ladder(cb, m, is_black))
-            continue;
+        u32 mc_w = prior_even / 2;
+        u32 mc_v = prior_even;
 
         /*
         Prohibit self-ataris if they don't put the opponent in atari
         (this definition does not prohibit throw-ins)
         */
-        if(libs == 1 && captures == 0 && eye_space_size_gt_two(cb, m))
-            continue;
-
-        /*
-        Even game heuristic
-        */
-        u32 mc_w = prior_even / 2;
-        u32 mc_v = prior_even;
+        if(libs == 1 || self_atari[m])
+        {
+            mc_v += prior_self_atari;
+        }
 
         /*
         Nakade
@@ -370,7 +374,6 @@ static void init_new_state(
                 mc_v += prior_nakade + b;
             }
         }
-
 
         /*
         Saving plays
@@ -421,8 +424,7 @@ static void init_new_state(
             switch(dst_border)
             {
                 case 0:
-                    mc_v += prior_line1;
-                    break;
+                    continue;
                 case 1:
                     mc_v += prior_line2;
                     break;
@@ -656,7 +658,6 @@ static d16 mcts_selection(
         else
             omp_set_lock(&curr_stats->lock);
 
-#if 1
         /* Superko detection */
         if(is_board_move(cb->last_played) && (stats[depth - 4] == curr_stats ||
             stats[depth - 6] == curr_stats))
@@ -666,7 +667,6 @@ static d16 mcts_selection(
             outcome = is_black ? 1 : -1;
             break;
         }
-#endif
 
         if(curr_stats->expansion_delay >= 0)
         {
@@ -872,10 +872,7 @@ double mcts_start(
         init_new_state(&initial_cfg_board, stats, is_black, start_branch_limit);
     }
 
-
-    for(u16 k = 0; k < MAXIMUM_NUM_THREADS; ++k)
-        max_depths[k] = 0;
-
+    memset(max_depths, 0, sizeof(u16) * MAXIMUM_NUM_THREADS);
 
     u32 draws = 0;
     u32 wins = 0;
@@ -1018,24 +1015,13 @@ double mcts_start(
     str_buf = get_buffer();
     if(draws > 0)
     {
-        if(komi_offset != 0)
-            snprintf(str_buf, MAX_PAGE_SIZ, "search finished (sims=%u, depth=%u\
-, wr=%.2f, draws=%u, komi offset %c%u)\n", wins + losses, max_depth, wr, draws,
-                komi_offset > 0 ? '+' : '-', komi_offset > 0 ? komi_offset :
-                -komi_offset);
-        else
-            snprintf(str_buf, MAX_PAGE_SIZ, "search finished (sims=%u, depth=%u\
-, wr=%.2f, draws=%u)\n", wins + losses, max_depth, wr, draws);
+        snprintf(str_buf, MAX_PAGE_SIZ, "search finished (sims=%u, depth=%u, wr\
+=%.2f, draws=%u)\n", wins + losses, max_depth, wr, draws);
     }
     else
     {
-        if(komi_offset != 0)
-            snprintf(str_buf, MAX_PAGE_SIZ, "search finished (sims=%u, depth=%u\
-, wr=%.2f, komi offset %c%u)\n", wins + losses, max_depth, wr, komi_offset > 0 ?
-                '+' : '-', komi_offset > 0 ? komi_offset : -komi_offset);
-        else
-            snprintf(str_buf, MAX_PAGE_SIZ, "search finished (sims=%u, depth=%u\
-, wr=%.2f)\n", wins + losses, max_depth, wr);
+        snprintf(str_buf, MAX_PAGE_SIZ, "search finished (sims=%u, depth=%u, wr\
+=%.2f)\n", wins + losses, max_depth, wr);
     }
     flog_info("uct", str_buf);
 

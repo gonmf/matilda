@@ -54,7 +54,6 @@ extern u16 prior_attack;
 extern u16 prior_defend;
 extern u16 prior_pat3;
 extern u16 prior_near_last;
-extern u16 prior_line1;
 extern u16 prior_line2;
 extern u16 prior_line3;
 extern u16 prior_empty;
@@ -314,8 +313,8 @@ const char * build_info()
     tmp += snprintf(tmp, MAX_PAGE_SIZ + buf - tmp,
         "  Near last play: %u\n", prior_near_last);
     tmp += snprintf(tmp, MAX_PAGE_SIZ + buf - tmp,
-        "  Empty L1/2/3/other: -%u/-%u/%u/%u\n", prior_line1, prior_line2,
-        prior_line3, prior_empty);
+        "  Empty L2/3/other: -%u/%u/%u\n", prior_line2, prior_line3,
+        prior_empty);
     tmp += snprintf(tmp, MAX_PAGE_SIZ + buf - tmp, "  Corners: -%u\n",
         prior_corner);
 
