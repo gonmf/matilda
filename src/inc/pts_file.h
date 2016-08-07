@@ -22,9 +22,10 @@ void open_rule_file(
 
 /*
 Read the next rule line.
-RETURNS rule line string
 */
-char * read_next_rule();
+void read_next_rule(
+    char * dst
+);
 
 /*
 Interpret a string as a rule line, filling a move_seq structure with the points.

@@ -27,8 +27,8 @@ Converts a 1 byte per position representation into a 2 bit per position
 representation.
 */
 void pack_matrix(
-    const u8 src[BOARD_SIZ * BOARD_SIZ],
-    u8 dst[PACKED_BOARD_SIZ]
+    u8 dst[PACKED_BOARD_SIZ],
+    const u8 src[BOARD_SIZ * BOARD_SIZ]
 ){
     memset(dst, 0, PACKED_BOARD_SIZ);
     for(move m = 0; m < BOARD_SIZ * BOARD_SIZ; ++m)

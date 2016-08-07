@@ -23,7 +23,7 @@ Strategy that makes use of an opening book.
 #include "types.h"
 #include "pts_file.h"
 #include "engine.h"
-#include "buffer.h"
+#include "alloc.h"
 
 #define NR_BUCKETS 769
 
@@ -97,7 +97,7 @@ static bool process_opening_book_line(
     m = reduce_move(m, reduction);
 
     u8 packed_board[PACKED_BOARD_SIZ];
-    pack_matrix(b.p, packed_board);
+    pack_matrix(packed_board, b.p);
     u32 hash = crc32(packed_board, PACKED_BOARD_SIZ);
 
     move mt = ob_get_play(hash, packed_board);
@@ -152,7 +152,7 @@ static bool process_state_play_line(
         return false;
 
     u8 packed_board[PACKED_BOARD_SIZ];
-    pack_matrix(b.p, packed_board);
+    pack_matrix(packed_board, b.p);
     u32 hash = crc32(packed_board, PACKED_BOARD_SIZ);
 
     move mt = ob_get_play(hash, packed_board);
@@ -194,59 +194,64 @@ void discover_opening_books()
     u32 files_found = recurse_find_files(get_data_folder(), ".ob", filenames,
         32);
 
-    char * buf = get_buffer();
-    snprintf(buf, MAX_PAGE_SIZ, "found %u opening book files\n", files_found);
-    flog_info("ob", buf);
+    char * s = alloc();
+    snprintf(s, MAX_PAGE_SIZ, "found %u opening book files\n", files_found);
+    flog_info("ob", s);
+
+    char * l = alloc();
 
     for(u32 i = 0; i < files_found; ++i){
         open_rule_file(filenames[i]);
         u32 rules_found = 0;
-        char * s;
-        while((s = read_next_rule()) != NULL)
-        {
-            if(process_opening_book_line(s))
+        while(1){
+            read_next_rule(l);
+            if(l[0] == 0)
+                break;
+
+            if(process_opening_book_line(l))
                 ++rules_found;
         }
         close_rule_file();
         ob_rules += rules_found;
 
-        buf = get_buffer();
-        snprintf(buf, MAX_PAGE_SIZ, "read %s (%u rules)\n", filenames[i],
+        snprintf(s, MAX_PAGE_SIZ, "read %s (%u rules)\n", filenames[i],
             rules_found);
-        flog_info("ob", buf);
+        flog_info("ob", s);
 
         free(filenames[i]);
     }
-
 
     /*
     Discover .spb files
     */
     files_found = recurse_find_files(get_data_folder(), ".spb", filenames, 32);
 
-    buf = get_buffer();
-    snprintf(buf, MAX_PAGE_SIZ, "found %u state,play files\n", files_found);
-    flog_info("spb", buf);
+    snprintf(s, MAX_PAGE_SIZ, "found %u state,play files\n", files_found);
+    flog_info("spb", s);
 
     for(u32 i = 0; i < files_found; ++i)
     {
         open_rule_file(filenames[i]);
         u32 rules_found = 0;
-        char * s;
-        while((s = read_next_rule()) != NULL)
-        {
-            if(process_state_play_line(s))
+        while(1){
+            read_next_rule(l);
+            if(l[0] == 0)
+                break;
+
+            if(process_state_play_line(l))
                 ++rules_found;
         }
         close_rule_file();
 
-        buf = get_buffer();
-        snprintf(buf, MAX_PAGE_SIZ, "read %s (%u rules)\n", filenames[i],
+        snprintf(s, MAX_PAGE_SIZ, "read %s (%u rules)\n", filenames[i],
             rules_found);
-        flog_info("spb", buf);
+        flog_info("spb", s);
 
         free(filenames[i]);
     }
+
+    release(l);
+    release(s);
 }
 
 /*
@@ -254,8 +259,8 @@ Match an opening rule and return it encoded in the board.
 RETURNS true if rule found
 */
 bool opening_book(
-    board * state,
-    out_board * out_b
+    out_board * out_b,
+    board * state
 ){
     discover_opening_books();
 
@@ -268,7 +273,7 @@ bool opening_book(
         return false;
 
     u8 packed_board[PACKED_BOARD_SIZ];
-    pack_matrix(state->p, packed_board);
+    pack_matrix(packed_board, state->p);
     u32 hash = crc32(packed_board, PACKED_BOARD_SIZ);
 
     move m = ob_get_play(hash, packed_board);

@@ -18,7 +18,7 @@ hashes and position invariant 3x3 hashes.
 #include "board.h"
 #include "types.h"
 #include "engine.h"
-#include "buffer.h"
+#include "alloc.h"
 
 static bool _zobrist_inited = false;
 
@@ -57,17 +57,20 @@ void zobrist_init()
     if(_zobrist_inited)
         return;
 
+    alloc_init();
+
     assert(EMPTY == 0);
     assert(BLACK_STONE < 3);
     assert(WHITE_STONE < 3);
     rand_init();
 
-    char * filename = get_buffer();
+    char * filename = alloc();
     snprintf(filename, MAX_PAGE_SIZ, "%s%ux%u.zt", get_data_folder(), BOARD_SIZ,
         BOARD_SIZ);
-    if(read_binary_file(filename, iv, sizeof(u64) * BOARD_SIZ * BOARD_SIZ * 2)
+    if(read_binary_file(iv, sizeof(u64) * BOARD_SIZ * BOARD_SIZ * 2, filename)
         == -1)
         flog_crit("zbst", "zobrist table file not found");
+    release(filename);
 
     for(move pos = 0; pos < BOARD_SIZ * BOARD_SIZ; ++pos)
     {

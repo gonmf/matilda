@@ -23,7 +23,7 @@ Support for interpreting joseki dictionaries and suggesting joseki plays.
 #include "types.h"
 #include "pts_file.h"
 #include "engine.h"
-#include "buffer.h"
+#include "alloc.h"
 
 #define NR_BUCKETS 769
 
@@ -99,7 +99,7 @@ static bool process_opening_book_line(
     m = reduce_move(m, reduction);
 
     u8 packed_board[PACKED_BOARD_SIZ];
-    pack_matrix(b.p, packed_board);
+    pack_matrix(packed_board, b.p);
     u32 hash = crc32(packed_board, PACKED_BOARD_SIZ);
 
     move mt = ob_get_play(hash, packed_board);
@@ -154,7 +154,7 @@ static bool process_state_play_line(
         return false;
 
     u8 packed_board[PACKED_BOARD_SIZ];
-    pack_matrix(b.p, packed_board);
+    pack_matrix(packed_board, b.p);
     u32 hash = crc32(packed_board, PACKED_BOARD_SIZ);
 
     move mt = ob_get_play(hash, packed_board);
@@ -256,8 +256,8 @@ Match an opening rule and return it encoded in the board.
 RETURNS true if rule found
 */
 bool opening_book(
-    board * state,
-    out_board * out_b
+    out_board * out_b,
+    board * state
 ){
     discover_opening_books();
 
@@ -270,7 +270,7 @@ bool opening_book(
         return false;
 
     u8 packed_board[PACKED_BOARD_SIZ];
-    pack_matrix(state->p, packed_board);
+    pack_matrix(packed_board, state->p);
     u32 hash = crc32(packed_board, PACKED_BOARD_SIZ);
 
     move m = ob_get_play(hash, packed_board);

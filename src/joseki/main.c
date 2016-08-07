@@ -17,7 +17,7 @@ Upon running a DATA/output.joseki file should be written.
 #include "file_io.h"
 #include "timem.h"
 #include "stringm.h"
-#include "buffer.h"
+#include "alloc.h"
 #include "flog.h"
 
 
@@ -119,14 +119,24 @@ static char * parse(
                 j->replies.count--;
             }
 
+            char * s = alloc();
+
             fprintf(fp, "%u", BOARD_SIZ);
             for(u16 i = 0; i < j->played.count; ++i)
-                fprintf(fp, " %s", coord_to_alpha_num(j->played.coord[i]));
+            {
+                coord_to_alpha_num(s, j->played.coord[i]);
+                fprintf(fp, " %s", s);
+            }
             fprintf(fp, " |");
             for(u16 i = 0; i < j->replies.count; ++i)
-                fprintf(fp, " %s", coord_to_alpha_num(j->replies.coord[i]));
+            {
+                coord_to_alpha_num(s, j->played.coord[i]);
+                fprintf(fp, " %s", s);
+            }
             fprintf(fp, "\n");
             fflush(fp);
+
+            release(s);
             continue;
         }
 
@@ -177,41 +187,41 @@ int main(
         exit(EXIT_SUCCESS);
     }
 
-    timestamp();
+    alloc_init();
     config_logging(DEFAULT_LOG_MODES);
     assert_data_folder_exists();
 
     char * buffer = calloc(MAX_FILE_SIZ, 1);
 
-    char * filename = get_buffer();
-    snprintf(filename, MAX_PAGE_SIZ, "%s%s", get_data_folder(), "kogo.sgf");
+    char * s = alloc();
+    snprintf(s, MAX_PAGE_SIZ, "%s%s", get_data_folder(), "kogo.sgf");
 
-    d32 rd = read_ascii_file(filename, buffer, MAX_FILE_SIZ);
+    d32 rd = read_ascii_file(buffer, MAX_FILE_SIZ, s);
     if(rd <= 0)
     {
-        fprintf(stderr, "Error reading %s\n", filename);
+        fprintf(stderr, "Error reading %s\n", s);
         exit(EXIT_FAILURE);
     }
 
     printf("Filesize: %u\n", (u32)rd);
 
-    char * board_size_tag = get_buffer();
-    snprintf(board_size_tag, MAX_PAGE_SIZ, "SZ[%u]", BOARD_SIZ);
-    if(strstr(buffer, board_size_tag) == NULL)
+    snprintf(s, MAX_PAGE_SIZ, "SZ[%u]", BOARD_SIZ);
+    if(strstr(buffer, s) == NULL)
     {
         printf("Error: wrong board size or SGF size property is missing.\n");
         exit(EXIT_FAILURE);
     }
 
-    char * out_filename = get_buffer();
-    snprintf(out_filename, MAX_PAGE_SIZ, "%s%s", get_data_folder(),
+    snprintf(s, MAX_PAGE_SIZ, "%s%s", get_data_folder(),
         "output.joseki");
-    fp = fopen(out_filename, "w");
+    fp = fopen(s, "w");
     if(fp == NULL)
     {
-        fprintf(stderr, "Error: failed to open %s for writing\n", out_filename);
+        fprintf(stderr, "Error: failed to open %s for writing\n", s);
         exit(EXIT_FAILURE);
     }
+
+    release(s);
 
     joseki j;
     j.played.count = 0;
@@ -220,6 +230,6 @@ int main(
 
     fclose(fp);
 
-    printf("%s: Job done.\n", timestamp());
+    printf("Job done.\n");
     return EXIT_SUCCESS;
 }

@@ -52,7 +52,9 @@ Obtain a textual description of the capabilities and configuration options of
 matilda. This mostly concerns compile time constants.
 RETURNS string with build information
 */
-const char * build_info();
+void build_info(
+    char * dst
+);
 
 /*
 Log a message with verbosity level critical.

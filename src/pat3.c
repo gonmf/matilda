@@ -32,7 +32,7 @@ The life of these patterns is as follow:
 #include "engine.h"
 #include "stringm.h"
 #include "types.h"
-#include "buffer.h"
+#include "alloc.h"
 
 
 #define NUM_OF_BUCKETS 1543 /* prime number */
@@ -51,7 +51,7 @@ Convert some final symbols; non-final symbols are left as-is here
 static void clean_symbols(
     u8 p[3][3]
 ){
-    char * buf;
+    char * s;
     for(u8 i = 0; i < 3; ++i)
         for(u8 j = 0; j < 3; ++j)
             switch(p[i][j])
@@ -73,11 +73,12 @@ static void clean_symbols(
                 case SYMBOL_STONE_OR_EMPTY:
                     break;
                 default:
-                    buf = get_buffer();
-                    snprintf(buf, MAX_PAGE_SIZ,
-                        "pattern file format error; unknown symbol: '%c', \
-%u\n", p[i][j], p[i][j]);
-                    flog_crit("pat3", buf);
+                    s = alloc();
+                    snprintf(s, MAX_PAGE_SIZ,
+                        "pattern file format error; unknown symbol: '%c', %u\n",
+                        p[i][j], p[i][j]);
+                    flog_crit("pat3", s);
+                    release(s);
             }
 }
 
@@ -230,8 +231,9 @@ Transposes part of an input matrix board into a 3x3 matrix pattern codified,
 with board safety.
 */
 void pat3_transpose(
+    u8 dst[3][3],
     const u8 p[BOARD_SIZ * BOARD_SIZ],
-    move m, u8 v[3][3]
+    move m
 ){
     assert(is_board_move(m));
     assert(p[m] == EMPTY);
@@ -247,9 +249,9 @@ void pat3_transpose(
             if(i >= 0 && j >= 0 && i < BOARD_SIZ && j < BOARD_SIZ)
             {
                 move n = coord_to_move(i, j);
-                v[ki][kj] = p[n];
+                dst[ki][kj] = p[n];
             }else
-                v[ki][kj] = ILLEGAL; /* edge of the board */
+                dst[ki][kj] = ILLEGAL; /* edge of the board */
 }
 
 /*
@@ -420,7 +422,7 @@ static u32 read_pat3_file(
     const char * filename,
     char * buffer
 ){
-    d32 chars_read = read_ascii_file(filename, buffer, MAX_FILE_SIZ);
+    d32 chars_read = read_ascii_file(buffer, MAX_FILE_SIZ, filename);
     if(chars_read < 0)
         flog_crit("pat3", "couldn't open file for reading");
 
@@ -541,21 +543,20 @@ void pat3_init()
     if(file_buf == NULL)
         flog_crit("pat3", "system out of memory");
 
-    char * buf;
+    char * buf = alloc();
 
     if(USE_PATTERN_WEIGHTS)
     {
         /*
         Read pattern weights file
         */
-        char * filename = get_buffer();
+        char * filename = alloc();
         snprintf(filename, MAX_PAGE_SIZ, "%s%ux%u.weights", get_data_folder(),
             BOARD_SIZ, BOARD_SIZ);
 
-        d32 chars_read = read_ascii_file(filename, file_buf, MAX_FILE_SIZ);
+        d32 chars_read = read_ascii_file(file_buf, MAX_FILE_SIZ, filename);
         if(chars_read < 0)
         {
-            buf = get_buffer();
             snprintf(buf, MAX_PAGE_SIZ, "couldn't read pattern weights");
             flog_info("pat3", buf);
         }
@@ -563,10 +564,10 @@ void pat3_init()
         {
             read_patern_weights(file_buf);
 
-            buf = get_buffer();
             snprintf(buf, MAX_PAGE_SIZ, "read weights from %s", filename);
             flog_info("pat3", buf);
         }
+        release(filename);
     }
 
     /*
@@ -576,7 +577,6 @@ void pat3_init()
     u32 files_found = recurse_find_files(get_data_folder(), ".pat3",
         pat3_filenames, 128);
 
-    buf = get_buffer();
     snprintf(buf, MAX_PAGE_SIZ, "found %u 3x3 pattern files", files_found);
     flog_info("pat3", buf);
 
@@ -584,7 +584,6 @@ void pat3_init()
     {
         u32 patterns_found = read_pat3_file(pat3_filenames[i], file_buf);
 
-        buf = get_buffer();
         snprintf(buf, MAX_PAGE_SIZ, "read %s (%u patterns)", pat3_filenames[i], patterns_found);
         flog_info("pat3", buf);
 
@@ -595,13 +594,14 @@ void pat3_init()
 
     if(USE_PATTERN_WEIGHTS && weights_table != NULL)
     {
-        buf = get_buffer();
         snprintf(buf, MAX_PAGE_SIZ, "%u/%u patterns weighted", weights_found,
             weights_found + weights_not_found);
         flog_info("pat3", buf);
 
         hash_table_destroy(weights_table, true);
     }
+
+    release(buf);
 }
 
 

@@ -116,7 +116,7 @@ tt_stats * transpositions_lookup_null(
 /*
 Frees all game states and resets counters.
 */
-void tt_clean_all();
+u32 tt_clean_all();
 
 /*
 Mostly for debugging -- log the current memory status of the transpositions

@@ -129,28 +129,27 @@ move coord_parse_num_num(
 
 /*
 Converts a move to a string representation, like 4-4.
-Warning: not thread-safe.
-RETURNS string
 */
-const char * coord_to_num_num(
+void coord_to_num_num(
+    char * dst,
     move m
 );
 
 /*
 Converts a move to a string representation, like D4.
 The value I is skipped.
-RETURNS string
 */
-const char * coord_to_alpha_num(
+void coord_to_alpha_num(
+    char * dst,
     move m
 );
 
 /*
 Converts a move to a string representation, like DD.
 The character I is allowed.
-RETURNS string
 */
-const char * coord_to_alpha_alpha(
+void coord_to_alpha_alpha(
+    char * dst,
     move m
 );
 

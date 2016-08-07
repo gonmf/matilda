@@ -14,7 +14,7 @@ unlikely) for floating point functions.
 #include "timem.h"
 #include "flog.h"
 #include "types.h"
-#include "buffer.h"
+#include "alloc.h"
 
 static u32 state[MAXIMUM_NUM_THREADS];
 static bool rand_inited = false;
@@ -24,11 +24,10 @@ Initiate the seeds for the different thread RNG, again.
 */
 void rand_reinit()
 {
-    u16 sz = 1024;
-    char * buf = get_buffer();
+    char * buf = alloc();
 
     u16 idx = 0;
-    idx += snprintf(buf + idx, sz - idx, "RNG seed vector:\n");
+    idx += snprintf(buf + idx, MAX_PAGE_SIZ - idx, "RNG seed vector:\n");
 
     for(u16 i = 0; i < MAXIMUM_NUM_THREADS; )
     {
@@ -46,9 +45,10 @@ void rand_reinit()
     }
 
     for(u16 i = 0; i < MAXIMUM_NUM_THREADS; ++i)
-        idx += snprintf(buf + idx, sz - idx, "%u: %x\n", i, state[i]);
+        idx += snprintf(buf + idx, MAX_PAGE_SIZ - idx, "%u: %x\n", i, state[i]);
 
     flog_info("time", buf);
+    release(buf);
 
     rand_inited = true;
 }
@@ -59,7 +59,10 @@ Initiate the seeds for the different thread RNG.
 void rand_init()
 {
     if(!rand_inited)
+    {
+        alloc_init();
         rand_reinit();
+    }
 }
 
 /*

@@ -15,20 +15,18 @@ Remember that in Matilda, scores and komi are always doubled to become integer.
 
 
 /*
-Returns a statically allocated string with the textual representation of a Go
-match score.
-RETURNS string with score
+Produces a textual representation of a Go match score., ex: B+3.5, 0
 */
-const char * score_to_string(
+void score_to_string(
+    char * dst,
     d16 score
 );
 
 /*
-Returns a statically allocated string with the textual representation of a
-komidashi value.
-RETURNS string with komi
+Produces a textual representation of a komidashi value.
 */
-const char * komi_to_string(
+void komi_to_string(
+    char * dst,
     d16 komi
 );
 
@@ -83,9 +81,9 @@ Estimate the final game position from the current state. Is the most accurate
 the later in the game.
 */
 void estimate_final_position(
+    u8 dst[BOARD_SIZ * BOARD_SIZ],
     const board * b,
-    bool is_black,
-    u8 e[BOARD_SIZ * BOARD_SIZ]
+    bool is_black
 );
 
 /*

@@ -19,8 +19,15 @@
 #include "timem.h"
 #include "types.h"
 #include "flog.h"
+#include "alloc.h"
 
 extern u16 iv_3x3[BOARD_SIZ * BOARD_SIZ][BOARD_SIZ * BOARD_SIZ][3];
+
+static char _ts[MAX_PAGE_SIZ];
+static char * _timestamp(){
+    timestamp(_ts);
+    return _ts;
+}
 
 static void massert(
     bool expr,
@@ -36,7 +43,7 @@ static void massert(
 
 static void test_cfg_board()
 {
-    fprintf(stderr, "%s: cfg_board operations...", timestamp());
+    fprintf(stderr, "%s: cfg_board operations...", _timestamp());
     u32 tests = BOARD_SIZ > 16 ? 50 : (BOARD_SIZ > 12 ? 200 : 1000);
     for(u32 tes = 0; tes < tests; ++tes)
     {
@@ -188,11 +195,11 @@ ed4");
 }
 
 static void test_pattern(){
-    fprintf(stderr, "%s: patterns...", timestamp());
+    fprintf(stderr, "%s: patterns...", _timestamp());
     u16 v1 = rand_u16(65535);
-    u8 p[3][3];
-    string_to_pat3(p, v1);
-    u16 v2 = pat3_to_string((const u8(*)[3])p);
+    u8 v[3][3];
+    string_to_pat3(v, v1);
+    u16 v2 = pat3_to_string((const u8(*)[3])v);
     massert(v1 == v2, "encoding/decoding 3x3 pattern");
 
 
@@ -219,8 +226,8 @@ static void test_pattern(){
                     continue;
 
                 u16 hash_cfg = cb.hash[m];
-                pat3_transpose(cb.p, m, p);
-                u16 hash_pat3 = pat3_to_string((const u8(*)[3])p);
+                pat3_transpose(v, cb.p, m);
+                u16 hash_pat3 = pat3_to_string((const u8(*)[3])v);
                 massert(hash_cfg == hash_pat3,
                     "CFG from play and pat3 patterns 1");
 
@@ -242,7 +249,7 @@ static void test_pattern(){
 
 static void test_ladders()
 {
-    fprintf(stderr, "%s: tactical functions...", timestamp());
+    fprintf(stderr, "%s: tactical functions...", _timestamp());
     board b;
     cfg_board cb;
 
@@ -380,7 +387,7 @@ static void test_ladders()
 
 static void test_board()
 {
-    fprintf(stderr, "%s: board reduction and operations...", timestamp());
+    fprintf(stderr, "%s: board reduction and operations...", _timestamp());
     for(u32 tes = 0; tes < 10000; ++tes){
         board b;
         clear_board(&b);
@@ -395,7 +402,7 @@ static void test_board()
         board b2;
 
         u8 packed[PACKED_BOARD_SIZ];
-        pack_matrix(b.p, packed);
+        pack_matrix(packed, b.p);
         unpack_matrix(b2.p, packed);
 
         massert(memcmp(b.p, b2.p, BOARD_SIZ * BOARD_SIZ) == 0,
@@ -412,7 +419,7 @@ static void test_board()
 
         out_board ob;
         clear_out_board(&ob);
-        random_play(&b, true, &ob); /* always as black */
+        random_play(&ob, &b, true); /* always as black */
         move m = select_play_fast(&ob);
 
         massert(b.p[m] == EMPTY, "busy intersection\n");
@@ -490,54 +497,54 @@ static void calc_distributionf(
 
 static void test_rand_gen()
 {
-    fprintf(stderr, "%s: pseudo random generator...\n", timestamp());
+    fprintf(stderr, "%s: pseudo random generator...\n", _timestamp());
 
-    printf("%s: rand_u16(0)\n", timestamp());
+    printf("%s: rand_u16(0)\n", _timestamp());
     for(u32 i = 0; i < SAMPLES; ++i)
         samples[i] = rand_u16(0);
     calc_distribution(0);
 
-    printf("%s: rand_u16(1)\n", timestamp());
+    printf("%s: rand_u16(1)\n", _timestamp());
     for(u32 i = 0; i < SAMPLES; ++i)
         samples[i] = rand_u16(1);
     calc_distribution(1);
 
-    printf("%s: rand_u16(7)\n", timestamp());
+    printf("%s: rand_u16(7)\n", _timestamp());
     for(u32 i = 0; i < SAMPLES; ++i)
         samples[i] = rand_u16(7);
     calc_distribution(7);
 
-    printf("%s: rand_u16(81)\n", timestamp());
+    printf("%s: rand_u16(81)\n", _timestamp());
     for(u32 i = 0; i < SAMPLES; ++i)
         samples[i] = rand_u16(81);
     calc_distribution(81);
 
-    printf("%s: rand_u16(100)\n", timestamp());
+    printf("%s: rand_u16(100)\n", _timestamp());
     for(u32 i = 0; i < SAMPLES; ++i)
         samples[i] = rand_u16(100);
     calc_distribution(100);
 
-    printf("%s: rand_u16(361)\n", timestamp());
+    printf("%s: rand_u16(361)\n", _timestamp());
     for(u32 i = 0; i < SAMPLES; ++i)
         samples[i] = rand_u16(361);
     calc_distribution(361);
 
-    printf("%s: rand_u32(0)\n", timestamp());
+    printf("%s: rand_u32(0)\n", _timestamp());
     for(u32 i = 0; i < SAMPLES; ++i)
         samples[i] = rand_u32(0);
     calc_distribution(0);
 
-    printf("%s: rand_u32(1)\n", timestamp());
+    printf("%s: rand_u32(1)\n", _timestamp());
     for(u32 i = 0; i < SAMPLES; ++i)
         samples[i] = rand_u32(1);
     calc_distribution(1);
 
-    printf("%s: rand_u32(8000)\n", timestamp());
+    printf("%s: rand_u32(8000)\n", _timestamp());
     for(u32 i = 0; i < SAMPLES; ++i)
         samples[i] = rand_u32(8000);
     calc_distribution(8000);
 
-    printf("%s: rand_float(1)\n", timestamp());
+    printf("%s: rand_float(1)\n", _timestamp());
     for(u32 i = 0; i < SAMPLES; ++i)
     {
         samplesf[i] = rand_float(1.0);
@@ -546,7 +553,7 @@ static void test_rand_gen()
     }
     calc_distributionf(1.0);
 
-    printf("%s: rand_float(2.4)\n", timestamp());
+    printf("%s: rand_float(2.4)\n", _timestamp());
     for(u32 i = 0; i < SAMPLES; ++i)
     {
         samplesf[i] = rand_float(2.4);
@@ -554,12 +561,12 @@ static void test_rand_gen()
         massert(samplesf[i] < 2.4 + 0.0001, "upper limit violation");
     }
     calc_distributionf(2.4);
-    printf("%s: test passed\n", timestamp());
+    printf("%s: test passed\n", _timestamp());
 }
 
 static void test_time_keeping()
 {
-    fprintf(stderr, "%s: time keeping...", timestamp());
+    fprintf(stderr, "%s: time keeping...", _timestamp());
 
     u64 t = current_time_in_millis();
     sleep(1);
@@ -572,7 +579,7 @@ static void test_time_keeping()
 
 static void test_zobrist_hashing()
 {
-    fprintf(stderr, "%s: zobrist hashing...", timestamp());
+    fprintf(stderr, "%s: zobrist hashing...", _timestamp());
 
     zobrist_init();
     board b;
@@ -587,7 +594,7 @@ static void test_zobrist_hashing()
 
     out_board ob;
     clear_out_board(&ob);
-    random_play(&b, true, &ob);
+    random_play(&ob, &b, true);
     move m = select_play_fast(&ob);
     zobrist_update_hash(&hash2, m, BLACK_STONE);
     hash1 = just_play_slow_and_get_hash(&b, m, true, hash1);
@@ -601,7 +608,7 @@ static void test_zobrist_hashing()
 
 static void test_whole_game()
 {
-    fprintf(stderr, "%s: game record and MCTS...\n", timestamp());
+    fprintf(stderr, "%s: game record and MCTS...\n", _timestamp());
 
     out_board out_b;
     game_record gr;
@@ -610,15 +617,16 @@ static void test_whole_game()
 
     while(1)
     {
-        board * b = current_game_state(&gr);
+        board b;
+        current_game_state(&b, &gr);
         bool is_black = current_player_color(&gr);
-        opt_turn_maintenance(b, is_black);
+        opt_turn_maintenance(&b, is_black);
 
         u64 curr_time = current_time_in_millis();
-        u64 stop_time = curr_time + 500;
-        u64 early_stop_time = curr_time + 125;
+        u64 stop_time = curr_time + 1000;
+        u64 early_stop_time = curr_time + 800;
 
-        bool has_play = evaluate_position(b, is_black, &out_b, stop_time,
+        bool has_play = evaluate_position(&b, is_black, &out_b, stop_time,
             early_stop_time);
         if(!has_play)
             break;
@@ -636,7 +644,7 @@ static void test_whole_game()
     }
     new_match_maintenance();
 
-    fprintf(stderr, "%s: test passed\n", timestamp());
+    fprintf(stderr, "%s: test passed\n", _timestamp());
 }
 
 int main(
@@ -655,7 +663,8 @@ int main(
             return 0;
         }
 
-    config_logging(LOG_CRITICAL);
+    alloc_init();
+    config_logging(LOG_CRITICAL | LOG_WARNING | LOG_INFORMATION);
     assert_data_folder_exists();
     rand_init();
     cfg_board_init();

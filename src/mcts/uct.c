@@ -42,7 +42,7 @@ It can also record the average final score, for the purpose of score estimation.
 #include "transpositions.h"
 #include "types.h"
 #include "zobrist.h"
-#include "buffer.h"
+#include "alloc.h"
 
 /*
 Public to allow parameter optimization
@@ -242,7 +242,7 @@ static void init_new_state(
 ){
     bool near_last_play[BOARD_SIZ * BOARD_SIZ];
     if(is_board_move(cb->last_played))
-        mark_near_pos(cb, cb->last_played, near_last_play);
+        mark_near_pos(near_last_play, cb, cb->last_played);
     else
         memset(near_last_play, false, BOARD_SIZ * BOARD_SIZ);
 
@@ -830,9 +830,9 @@ out.
 RETURNS the estimated probability of winning the match (ignoring passes)
 */
 double mcts_start(
+    out_board * out_b,
     const board * b,
     bool is_black,
-    out_board * out_b,
     u64 stop_time,
     u64 early_stop_time
 ){
@@ -985,16 +985,15 @@ double mcts_start(
 
 #endif
 
-    char * str_buf;
     if(ran_out_of_memory)
         flog_warn("uct", "search ran out of memory");
 
+    char * s = alloc();
     if(stopped_early_by_wr)
     {
-        str_buf = get_buffer();
         d64 diff = stop_time - current_time_in_millis();
-        snprintf(str_buf, MAX_PAGE_SIZ, "search ended %" PRId64 "ms early", diff);
-        flog_info("uct", str_buf);
+        snprintf(s, MAX_PAGE_SIZ, "search ended %" PRId64 "ms early", diff);
+        flog_info("uct", s);
     }
 
     clear_out_board(out_b);
@@ -1012,19 +1011,19 @@ double mcts_start(
 
     double wr = ((double)wins) / ((double)(wins + losses));
 
-    str_buf = get_buffer();
     if(draws > 0)
     {
-        snprintf(str_buf, MAX_PAGE_SIZ, "search finished (sims=%u, depth=%u, wr\
+        snprintf(s, MAX_PAGE_SIZ, "search finished (sims=%u, depth=%u, wr\
 =%.2f, draws=%u)\n", wins + losses, max_depth, wr, draws);
     }
     else
     {
-        snprintf(str_buf, MAX_PAGE_SIZ, "search finished (sims=%u, depth=%u, wr\
+        snprintf(s, MAX_PAGE_SIZ, "search finished (sims=%u, depth=%u, wr\
 =%.2f)\n", wins + losses, max_depth, wr);
     }
-    flog_info("uct", str_buf);
+    flog_info("uct", s);
 
+    release(s);
     cfg_board_free(&initial_cfg_board);
 
     return wr;

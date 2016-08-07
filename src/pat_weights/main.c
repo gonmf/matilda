@@ -24,7 +24,7 @@ records. The results are printed to data/pat3_weights.
 #include "pat3.h"
 #include "tactical.h"
 #include "file_io.h"
-#include "buffer.h"
+#include "alloc.h"
 #include "flog.h"
 
 
@@ -72,10 +72,12 @@ int main(
             return 0;
         }
 
-    timestamp();
+    alloc_init();
     config_logging(DEFAULT_LOG_MODES);
     assert_data_folder_exists();
     cfg_board_init();
+
+    char * ts = alloc();
 
     printf("Discovering game states\n");
 
@@ -83,12 +85,15 @@ int main(
         filenames, MAX_FILES);
     if(filenames_found == 0)
     {
-        printf("%s: No SGF files found, exiting.\n", timestamp());
+        timestamp(ts);
+        printf("%s: No SGF files found, exiting.\n", ts);
+        release(ts);
         return EXIT_SUCCESS;
     }
     printf("\nfound %u SGF files\n", filenames_found);
 
-    printf("%s: 2/3 Extracting state plays\n", timestamp());
+    timestamp(ts);
+    printf("%s: 2/3 Extracting state plays\n", ts);
 
     u32 games_skipped = 0;
     u32 games_used = 0;
@@ -96,6 +101,8 @@ int main(
 
     hash_table * feature_table = hash_table_create(1543, sizeof(pat3t),
         pat3t_hash_function, pat3t_compare_function);
+
+    char  * buf = alloc();
 
     u32 fid;
     for(fid = 0; fid < filenames_found; ++fid)
@@ -106,8 +113,7 @@ int main(
             fflush(stdout);
         }
 
-        char * buf = get_buffer();
-        d32 r = read_ascii_file(filenames[fid], buf, MAX_PAGE_SIZ);
+        d32 r = read_ascii_file(buf, MAX_PAGE_SIZ, filenames[fid]);
         if(r <= 0 || r >= MAX_PAGE_SIZ)
         {
             fprintf(stderr, "error: unexpected file size\n");
@@ -187,7 +193,7 @@ int main(
                                 continue;
 
                             u8 v[3][3];
-                            pat3_transpose(cb.p, m, v);
+                            pat3_transpose(v, cb.p, m);
 
                             pat3_reduce_auto(v);
                             u16 pattern = pat3_to_string((const u8 (*)[3])v);
@@ -222,14 +228,15 @@ int main(
     printf("Games used: %u Skipped: %u\nUnique patterns: %u\n", games_used,
         games_skipped, unique_patterns);
 
-    printf("%s: 3/3 Exporting to file\n", timestamp());
+    timestamp(ts);
+    printf("%s: 3/3 Exporting to file\n", ts);
 
     pat3t ** table = (pat3t **)hash_table_export_to_array(feature_table);
 
-    char  * buf = get_buffer();
     snprintf(buf, MAX_PAGE_SIZ, "%s%ux%u.weights", get_data_folder(), BOARD_SIZ,
         BOARD_SIZ);
     FILE * fp = fopen(buf, "w");
+    release(buf);
     if(fp == NULL)
     {
         fprintf(stderr, "error: couldn't open file for writing\n");

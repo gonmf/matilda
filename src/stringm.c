@@ -10,7 +10,7 @@ Miscellanea C string functions.
 
 #include "board.h"
 #include "types.h"
-#include "buffer.h"
+#include "alloc.h"
 #include "move.h"
 
 
@@ -113,29 +113,33 @@ void lower_case(
 }
 
 /*
-Not thread-safe.
-RETURNS a copy of the string between the tokens; or NULL
+Produces a copy of the string between the tokens; or empty
 */
-char * str_between(
+void str_between(
+    char * dst,
     const char * s,
     const char * start,
     const char * end
 ){
     char * t = strstr(s, start);
     if(t == NULL)
-        return NULL;
+    {
+        dst[0] = 0;
+        return;
+    }
     t += strlen(start);
 
     char * t2 = strstr(t, end);
     if(t2 == NULL)
-        return NULL;
+    {
+        dst[0] = 0;
+        return;
+    }
 
     u32 len = MIN(1023, t2 - t);
 
-    char * buf = get_buffer();
-    strncpy(buf, t, len);
-    buf[len] = 0;
-    return buf;
+    strncpy(dst, t, len);
+    dst[len] = 0;
 }
 
 /*
@@ -260,19 +264,24 @@ bool parse_gtp_vertex(
 
 /*
 Converts a GTP move (play, pass or resign) to text.
-Not thread-safe.
-RETURNS move representation
 */
-const char * coord_to_gtp_vertex(
+void coord_to_gtp_vertex(
+    char * dst,
     move m
 ){
     if(m == PASS)
-        return "pass";
+    {
+        strncpy(dst, "pass", MAX_PAGE_SIZ);
+        return;
+    }
 
     if(m == NONE)
-        return "null";
+    {
+        strncpy(dst, "null", MAX_PAGE_SIZ);
+        return;
+    }
 
-    return coord_to_alpha_num(m);
+    coord_to_alpha_num(dst, m);
 }
 
 /*

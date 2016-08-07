@@ -17,7 +17,10 @@ system. Remember to edit the line
 
 #define UCT_MEMORY 512
 
-with the amount of memory (in MiB) that Matilda can use for MCTS.
+with the amount of memory (in MiB) that Matilda can use for MCTS. Please notice
+Matilda is agressive in its use of the available memory. It will cache game
+state information instead of freeing it, so do not be surprised to see the
+memory used always go up.
 
 Other settings may also be configured for testing by mistake, so please
 understand what each setting does and set them correctly.

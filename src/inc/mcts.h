@@ -121,9 +121,9 @@ out.
 RETURNS the estimated probability of winning the match (ignoring passes)
 */
 double mcts_start(
+    out_board * out_b,
     const board * b,
     bool is_black,
-    out_board * out_b,
     u64 stop_time,
     u64 early_stop_time
 );

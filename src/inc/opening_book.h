@@ -31,8 +31,8 @@ Match an opening rule and return it encoded in the board.
 RETURNS true if rule found
 */
 bool opening_book(
-    board * state,
-    out_board * out_b
+    out_board * out_b,
+    board * state
 );
 
 

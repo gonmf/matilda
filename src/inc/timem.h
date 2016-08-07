@@ -26,9 +26,10 @@ u64 current_nanoseconds();
 
 /*
 Produces a textual timestamp based on the local timezone and system time.
-RETURNS timestamp
 */
-const char * timestamp();
+void timestamp(
+    char * buffer
+);
 
 
 #endif

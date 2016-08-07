@@ -11,7 +11,7 @@
 #include "randg.h"
 #include "engine.h"
 #include "timem.h"
-#include "buffer.h"
+#include "alloc.h"
 #include "flog.h"
 
 static u8 count_bits(
@@ -42,7 +42,7 @@ int main(
             return 0;
         }
 
-    timestamp();
+    alloc_init();
     config_logging(DEFAULT_LOG_MODES);
     assert_data_folder_exists();
 
@@ -126,7 +126,7 @@ ta.\nWhen you are satisfied press ENTER\n\n");
 
     printf("\nSearch stopped.\n");
 
-    char * filename = get_buffer();
+    char * filename = alloc();
     snprintf(filename, MAX_PAGE_SIZ, "%s%ux%u.zt.bak", get_data_folder(),
         BOARD_SIZ, BOARD_SIZ);
 
@@ -136,6 +136,7 @@ ta.\nWhen you are satisfied press ENTER\n\n");
     {
         fprintf(stderr, "Error: failed to open file %s for writing\n",
             filename);
+        release(filename);
         exit(EXIT_FAILURE);
     }
 
@@ -143,12 +144,13 @@ ta.\nWhen you are satisfied press ENTER\n\n");
     if(w != BOARD_SIZ * BOARD_SIZ * 2)
     {
         fprintf(stderr, "Error: unexpected number of bytes written\n");
+        release(filename);
         exit(EXIT_FAILURE);
     }
 
     fclose(h);
 
     printf("Zobrist table written to %s\n", filename);
-
+    release(filename);
     return EXIT_SUCCESS;
 }

@@ -13,14 +13,13 @@ say anything. All times are in milliseconds.
 
 #include "types.h"
 #include "time_ctrl.h"
-#include "buffer.h"
+#include "alloc.h"
 #include "stringm.h"
 
 u32 network_roundtrip_delay = LATENCY_COMPENSATION;
 bool network_round_trip_set = false;
 
 double time_allot_factor = TIME_ALLOT_FACTOR;
-u16 avg_game_length = EXPECTED_GAME_LENGTH; // TODO remove later
 
 
 /*
@@ -36,9 +35,8 @@ u32 calc_time_to_play(
     /*
 TODO testing for paper
     */
-    d32 avg_game_length2 = avg_game_length;
     d32 turns_played2 = turns_played;
-    double e1 = (double)(avg_game_length2 - turns_played2);
+    double e1 = (double)(EXPECTED_GAME_LENGTH - turns_played2);
     double turns_left = MAX(e1, 4.0);
     return  ts->main_time_remaining / turns_left;
 
@@ -55,9 +53,10 @@ TODO testing for paper
 
 
 
-    double e1 = avg_game_length - turns_played;
+    double e1 = EXPECTED_GAME_LENGTH - turns_played;
     double turns_left = MAX(e1, BOARD_SIZ) / 2.0;
     double mtt = ts->main_time_remaining / turns_left;
+    mtt *= time_allot_factor;
 
     double t_t;
     if(ts->byo_yomi_stones_remaining > 0)
@@ -74,7 +73,6 @@ TODO testing for paper
     /*
     Non-linear factor
     */
-    t_t *= time_allot_factor;
 
     /*
     Network lag correction
@@ -233,9 +231,9 @@ void reset_clock(
 
 /*
 Convert a time system into a textual description.
-RETURNS textual description
 */
-const char * time_system_to_str(
+void time_system_to_str(
+    char * dst,
     time_system * ts
 ){
     char * a;
@@ -286,10 +284,8 @@ const char * time_system_to_str(
         }
     }
 
-    char * buf = get_buffer();
-    snprintf(buf, 64, "%u%s+%ux%u%s/%u", abs_time, a, ts->byo_yomi_periods,
-        byo_time, b, ts->byo_yomi_stones);
-    return buf;
+    snprintf(dst, MAX_PAGE_SIZ, "%u%s+%ux%u%s/%u", abs_time, a,
+        ts->byo_yomi_periods, byo_time, b, ts->byo_yomi_stones);
 }
 
 static d32 str_to_milliseconds(const char * s){
@@ -349,8 +345,8 @@ Convert a string in the format time+numberxtime/number to a time system struct.
 RETURNS true if successful and value stored in dst
 */
 bool str_to_time_system(
-    const char * src,
-    time_system * dst
+    time_system * dst,
+    const char * src
 ){
     if(src == NULL)
         return false;

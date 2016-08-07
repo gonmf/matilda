@@ -26,7 +26,7 @@ http://www.weddslist.com/kgs/past/superko.html
 #include "state_changes.h"
 #include "stringm.h"
 #include "types.h"
-#include "buffer.h"
+#include "alloc.h"
 
 static void apply_handicap_stones(
     board * b,
@@ -99,16 +99,17 @@ void fprint_game_record(
                 gr->black_name : gr->white_name, abs(gr->final_score) / 2);
     }
 
+    char * v = alloc();
+
     if(gr->handicap_stones.count > 0)
     {
         fprintf(fp, "Handicap stones (%u):", gr->handicap_stones.count);
         for(u16 i = 0; i < gr->handicap_stones.count; ++i)
         {
-            const char * v;
 #if EUROPEAN_NOTATION
-            v = coord_to_alpha_num(gr->handicap_stones.coord[i]);
+            coord_to_alpha_num(v, gr->handicap_stones.coord[i]);
 #else
-            v = coord_to_num_num(gr->handicap_stones.coord[i]);
+            coord_to_num_num(v, gr->handicap_stones.coord[i]);
 #endif
             fprintf(fp, " %s", v);
         }
@@ -121,12 +122,11 @@ void fprint_game_record(
         for(u16 i = 0; i < gr->turns; ++i)
             if(is_board_move(gr->moves[i]))
             {
-                char * v;
 #if EUROPEAN_NOTATION
-                v = (char *)coord_to_alpha_num(gr->moves[i]);
+                coord_to_alpha_num(v, gr->moves[i]);
                 lower_case(v);
 #else
-                v = (char *)coord_to_num_num(gr->moves[i]);
+                coord_to_num_num(v, gr->moves[i]);
 #endif
                 if(gr->handicap_stones.count == 0)
                     fprintf(fp, " %c%s", (i & 1) == 0 ? 'B' : 'W', v);
@@ -143,6 +143,8 @@ void fprint_game_record(
 
         fprintf(fp, "\n");
     }
+
+    release(v);
 }
 
 /*
@@ -156,12 +158,10 @@ bool superko_violation(
     move m
 ){
     board tmp;
-    board * t = first_game_state(gr);
-    memcpy(&tmp, t, sizeof(board));
+    first_game_state(&tmp, gr);
 
     board current_state;
-    t = current_game_state(gr);
-    memcpy(&current_state, t, sizeof(board));
+    current_game_state(&current_state, gr);
 
     /*
     State after playing
@@ -199,8 +199,9 @@ bool play_is_legal(
     if(!is_board_move(m))
         return false;
 
-    board * b = current_game_state(gr);
-    if(!can_play_slow(b, m, is_black))
+    board tmp;
+    current_game_state(&tmp, gr);
+    if(!can_play_slow(&tmp, m, is_black))
         return false;
 
     if(gr->turns > 0 && superko_violation(gr, is_black, m))
@@ -316,9 +317,8 @@ bool undo_last_play(
     if(gr->turns == 0)
         return false;
 
-    board * t = first_game_state(gr);
     board tmp;
-    memcpy(&tmp, t, sizeof(board));
+    first_game_state(&tmp, gr);
 
     gr->turns--;
 
@@ -359,40 +359,35 @@ bool add_handicap_stone(
 }
 
 /*
-RETURNS a copy of the current game state
+Produce the current game state to board form.
 */
-board * current_game_state(
-    const game_record * gr
+void current_game_state(
+    board * dst,
+    const game_record * src
 ){
-    board * state_copy = get_buffer();
-    clear_board(state_copy);
-    apply_handicap_stones(state_copy, gr);
+    clear_board(dst);
+    apply_handicap_stones(dst, src);
 
-    bool is_black = first_player_color(gr);
-    for(u16 i = 0; i < gr->turns; ++i)
+    bool is_black = first_player_color(src);
+    for(u16 i = 0; i < src->turns; ++i)
     {
-        if(is_board_move(gr->moves[i]))
-            just_play_slow(state_copy, gr->moves[i], is_black);
+        if(is_board_move(src->moves[i]))
+            just_play_slow(dst, src->moves[i], is_black);
         else
-            pass(state_copy);
+            pass(dst);
         is_black = !is_black;
     }
-
-    return state_copy;
 }
 
 /*
 Produces the first game state, with handicap stones placed.
-RETURNS a copy of the first game state
 */
-board * first_game_state(
-    const game_record * gr
+void first_game_state(
+    board * dst,
+    const game_record * src
 ){
-    board * state_copy = get_buffer();
-    clear_board(state_copy);
-    apply_handicap_stones(state_copy, gr);
-
-    return state_copy;
+    clear_board(dst);
+    apply_handicap_stones(dst, src);
 }
 
 /*

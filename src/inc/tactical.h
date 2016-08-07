@@ -176,19 +176,19 @@ intersections adjacent to liberties of nearby groups, plus the 3x3 neighborhood
 of the intersection m. near_pos is cleared before marking.
 */
 void mark_near_pos(
+    bool near_pos[BOARD_SIZ * BOARD_SIZ],
     const cfg_board * cb,
-    move m,
-    bool near_pos[BOARD_SIZ * BOARD_SIZ]
+    move m
 );
 
 /*
 Marks points in seki in the whole board. Only catches simple sekis with two
 shared liberties or one shared liberty and two eyes, that have the same or
-almost the same number of stones in_seki is cleared before marking.
+almost the same number of stones.
 */
 void mark_pts_in_seki(
-    cfg_board * cb,
-    bool in_seki[BOARD_SIZ * BOARD_SIZ]
+    bool in_seki[BOARD_SIZ * BOARD_SIZ],
+    cfg_board * cb
 );
 
 /*
@@ -227,7 +227,7 @@ Return the minimum amount of liberties of groups with stones adjacent to an
 intersection.
 RETURNS minimum number of liberties found, or NONE
 */
-u8 min_neighbor_libs(
+u16 min_neighbor_libs(
     const cfg_board * cb,
     move m,
     u8 stone

@@ -32,7 +32,7 @@ crashes, but it is impossible to guarantee this in all cases.
 #include "scoring.h"
 #include "time_ctrl.h"
 #include "types.h"
-#include "buffer.h"
+#include "alloc.h"
 
 static int log_file = -1;
 static u16 log_mode = 0;
@@ -90,27 +90,27 @@ void config_logging(
         {
             log_mode = new_mode;
 
-            char * buf = get_buffer();
+            char * s = alloc();
             u32 idx = 0;
-            idx += snprintf(buf + idx, MAX_PAGE_SIZ - idx,
-                "logging mask changed: ");
+            idx += snprintf(s + idx, MAX_PAGE_SIZ - idx, "log mask changed: ");
             if(log_mode == 0)
-                snprintf(buf + idx, MAX_PAGE_SIZ - idx, "none");
+                snprintf(s + idx, MAX_PAGE_SIZ - idx, "none");
             else
             {
                 if(log_mode & LOG_CRITICAL)
-                    idx += snprintf(buf + idx, MAX_PAGE_SIZ - idx, "crit,");
+                    idx += snprintf(s + idx, MAX_PAGE_SIZ - idx, "crit,");
                 if(log_mode & LOG_WARNING)
-                    idx += snprintf(buf + idx, MAX_PAGE_SIZ - idx, "warn,");
+                    idx += snprintf(s + idx, MAX_PAGE_SIZ - idx, "warn,");
                 if(log_mode & LOG_PROTOCOL)
-                    idx += snprintf(buf + idx, MAX_PAGE_SIZ - idx, "prot,");
+                    idx += snprintf(s + idx, MAX_PAGE_SIZ - idx, "prot,");
                 if(log_mode & LOG_INFORMATION)
-                    idx += snprintf(buf + idx, MAX_PAGE_SIZ - idx, "info,");
+                    idx += snprintf(s + idx, MAX_PAGE_SIZ - idx, "info,");
                 if(log_mode & LOG_DEBUG)
-                    idx += snprintf(buf + idx, MAX_PAGE_SIZ - idx, "dbug,");
-                buf[idx - 1] = 0;
+                    idx += snprintf(s + idx, MAX_PAGE_SIZ - idx, "dbug,");
+                s[idx - 1] = 0;
             }
-            flog(NULL, "flog", buf);
+            flog(NULL, "flog", s);
+            release(s);
             return;
         }
     }
@@ -159,17 +159,20 @@ static void flog(
     open_log_file();
     char * s = _tmp_buffer;
 
+    char * ts = alloc();
+    timestamp(ts);
+
     if(multiline(msg))
     {
-        snprintf(s, MAX_PAGE_SIZ, "%22s | %4s | %4s | [\n%s%s]\n", timestamp(),
+        snprintf(s, MAX_PAGE_SIZ, "%22s | %4s | %4s | [\n%s%s]\n", ts,
             severity == NULL ? "    " : severity, context, msg,
             ends_in_new_line(msg) ? "" : "\n");
     }
     else
     {
-        snprintf(s, MAX_PAGE_SIZ, "%22s | %4s | %4s | %s%s", timestamp(), severity
-            == NULL ? "    " : severity, context, msg, ends_in_new_line(msg) ?
-            "" : "\n");
+        snprintf(s, MAX_PAGE_SIZ, "%22s | %4s | %4s | %s%s", ts,
+            severity == NULL ? "    " : severity, context, msg,
+            ends_in_new_line(msg) ? "" : "\n");
     }
 
     if(print_to_stderr)
@@ -178,6 +181,7 @@ static void flog(
     u32 len = strlen(s);
     write(log_file, s, len);
     fsync(log_file);
+    release(ts);
 }
 
 static void open_log_file()
@@ -198,28 +202,29 @@ static void open_log_file()
             exit(EXIT_FAILURE);
         }
 
-        char * buf = get_buffer();
+        char * s = alloc();
         u32 idx = 0;
-        idx += snprintf(buf + idx, MAX_PAGE_SIZ - idx,
+        idx += snprintf(s + idx, MAX_PAGE_SIZ - idx,
             "logging enabled with mask: ");
         if(log_mode == 0)
-            snprintf(buf + idx, MAX_PAGE_SIZ - idx, "none");
+            snprintf(s + idx, MAX_PAGE_SIZ - idx, "none");
         else
         {
             if(log_mode & LOG_CRITICAL)
-                idx += snprintf(buf + idx, MAX_PAGE_SIZ - idx, "crit,");
+                idx += snprintf(s + idx, MAX_PAGE_SIZ - idx, "crit,");
             if(log_mode & LOG_WARNING)
-                idx += snprintf(buf + idx, MAX_PAGE_SIZ - idx, "warn,");
+                idx += snprintf(s + idx, MAX_PAGE_SIZ - idx, "warn,");
             if(log_mode & LOG_PROTOCOL)
-                idx += snprintf(buf + idx, MAX_PAGE_SIZ - idx, "prot,");
+                idx += snprintf(s + idx, MAX_PAGE_SIZ - idx, "prot,");
             if(log_mode & LOG_INFORMATION)
-                idx += snprintf(buf + idx, MAX_PAGE_SIZ - idx, "info,");
+                idx += snprintf(s + idx, MAX_PAGE_SIZ - idx, "info,");
             if(log_mode & LOG_DEBUG)
-                idx += snprintf(buf + idx, MAX_PAGE_SIZ - idx, "dbug,");
-            buf[idx - 1] = 0;
+                idx += snprintf(s + idx, MAX_PAGE_SIZ - idx, "dbug,");
+            s[idx - 1] = 0;
         }
 
-        flog(NULL, "flog", buf);
+        flog(NULL, "flog", s);
+        release(s);
     }
 }
 
@@ -229,122 +234,127 @@ Obtain a textual description of the capabilities and configuration options of
 matilda. This mostly concerns compile time constants.
 RETURNS string with build information
 */
-const char * build_info()
-{
-    char * buf = get_buffer();
-    char * tmp = buf;
-    tmp += snprintf(tmp, MAX_PAGE_SIZ + buf - tmp,
+void build_info(
+    char * dst
+){
+    u32 idx = 0;
+    idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx,
         "Matilda build information\n");
     if(MATILDA_RELEASE_MODE)
-        tmp += snprintf(tmp, MAX_PAGE_SIZ + buf - tmp,
+        idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx,
             "Compiled for: release\n");
     else
-        tmp += snprintf(tmp, MAX_PAGE_SIZ + buf - tmp,
+        idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx,
             "Compiled for: debugging\n");
-    tmp += snprintf(tmp, MAX_PAGE_SIZ + buf - tmp, "Version: %u.%u\n",
+    idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx, "Version: %u.%u\n",
         VERSION_MAJOR, VERSION_MINOR);
-    tmp += snprintf(tmp, MAX_PAGE_SIZ + buf - tmp, "Data folder: %s\n",
+    idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx, "Data folder: %s\n",
         get_data_folder());
-    tmp += snprintf(tmp, MAX_PAGE_SIZ + buf - tmp,
-        "Frisbee Go enabled: %s\n", YN(ENABLE_FRISBEE_GO));
+    idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx, "Frisbee Go enabled: %s\n",
+        YN(ENABLE_FRISBEE_GO));
 
     if(ENABLE_FRISBEE_GO)
-        tmp += snprintf(tmp, MAX_PAGE_SIZ + buf - tmp,
-            "  Accuracy: %.2f\n", frisbee_prob);
+        idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx, "  Accuracy: %.2f\n",
+            frisbee_prob);
 
-    tmp += snprintf(tmp, MAX_PAGE_SIZ + buf - tmp, "Board size: %ux%u\n",
+    idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx, "Board size: %ux%u\n",
         BOARD_SIZ, BOARD_SIZ);
-    tmp += snprintf(tmp, MAX_PAGE_SIZ + buf - tmp,
-        "Komidashi: %s stones\n", komi_to_string(komi));
-    tmp += snprintf(tmp, MAX_PAGE_SIZ + buf - tmp,
+
+    char * kstr = alloc();
+    komi_to_string(kstr, komi);
+    idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx, "Komidashi: %s stones\n",
+        kstr);
+    release(kstr);
+
+    idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx,
         "MCTS-UCT branch limiter: %s\n", YN(USE_UCT_BRANCH_LIMITER));
-    tmp += snprintf(tmp, MAX_PAGE_SIZ + buf - tmp, "Can resign: %s\n",
+    idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx, "Can resign: %s\n",
         YN(CAN_RESIGN));
-    tmp += snprintf(tmp, MAX_PAGE_SIZ + buf - tmp, "Can stop early: %s\n",
+    idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx, "Can stop early: %s\n",
         YN(CAN_STOP_EARLY));
     if(CAN_STOP_EARLY)
-        tmp += snprintf(tmp, MAX_PAGE_SIZ + buf - tmp,
+        idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx,
             "  Min/max win rate: %.2f/%.2f\n", UCT_MIN_WINRATE,
             UCT_MAX_WINRATE);
-    tmp += snprintf(tmp, MAX_PAGE_SIZ + buf - tmp,
+    idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx,
         "Transpositions table memory: %" PRIu64 " MiB\n", max_size_in_mbs);
-    tmp += snprintf(tmp, MAX_PAGE_SIZ + buf - tmp,
+    idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx,
         "Limit by playouts instead of time: %s\n", YN(LIMIT_BY_PLAYOUTS));
 
     if(LIMIT_BY_PLAYOUTS)
-        tmp += snprintf(tmp, MAX_PAGE_SIZ + buf - tmp,
+        idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx,
             "  Playouts per turn: %u\n", PLAYOUTS_PER_TURN);
 
-    tmp += snprintf(tmp, MAX_PAGE_SIZ + buf - tmp,
+    idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx,
         "  Chance of skipping save: 1:%u\n", pl_skip_saving);
-    tmp += snprintf(tmp, MAX_PAGE_SIZ + buf - tmp,
+    idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx,
         "  Chance of skipping capture: 1:%u\n", pl_skip_capture);
-    tmp += snprintf(tmp, MAX_PAGE_SIZ + buf - tmp,
+    idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx,
         "  Chance of skipping pattern: 1:%u\n", pl_skip_pattern);
-    tmp += snprintf(tmp, MAX_PAGE_SIZ + buf - tmp,
+    idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx,
         "  Chance of skipping nakade: 1:%u\n", pl_skip_nakade);
-    tmp += snprintf(tmp, MAX_PAGE_SIZ + buf - tmp,
+    idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx,
         "  Use pattern weights: %s\n", YN(USE_PATTERN_WEIGHTS));
-    tmp += snprintf(tmp, MAX_PAGE_SIZ + buf - tmp,
+    idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx,
         "Use AMAF/RAVE: %s\n", YN(USE_AMAF_RAVE));
     if(USE_AMAF_RAVE)
     {
-        tmp += snprintf(tmp, MAX_PAGE_SIZ + buf - tmp,
+        idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx,
             "  MSE b constant: %.2f\n", rave_mse_b);
-        tmp += snprintf(tmp, MAX_PAGE_SIZ + buf - tmp,
+        idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx,
             "  Criticality threshold: %u\n", CRITICALITY_THRESHOLD);
     }
-    tmp += snprintf(tmp, MAX_PAGE_SIZ + buf - tmp,
+    idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx,
         "UCB1-TUNED coefficient: %.2f\n", ucb1_c);
-    tmp += snprintf(tmp, MAX_PAGE_SIZ + buf - tmp,
+    idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx,
         "  Stone value scale factor: %.1f\n", prior_stone_scale_factor);
-    tmp += snprintf(tmp, MAX_PAGE_SIZ + buf - tmp, "  Even: %u\n",
+    idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx, "  Even: %u\n",
         prior_even);
-    tmp += snprintf(tmp, MAX_PAGE_SIZ + buf - tmp, "  Nakade: %u\n",
+    idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx, "  Nakade: %u\n",
         prior_nakade);
-    tmp += snprintf(tmp, MAX_PAGE_SIZ + buf - tmp, "  Self-atari: -%u\n",
+    idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx, "  Self-atari: -%u\n",
         prior_self_atari);
-    tmp += snprintf(tmp, MAX_PAGE_SIZ + buf - tmp,
+    idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx,
         "  Attack 1/2 lib group: %u\n", prior_attack);
-    tmp += snprintf(tmp, MAX_PAGE_SIZ + buf - tmp,
+    idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx,
         "  Defend 1/2 lib group: %u\n", prior_defend);
-    tmp += snprintf(tmp, MAX_PAGE_SIZ + buf - tmp,
-        "  MoGo patterns: %u\n", prior_pat3);
-    tmp += snprintf(tmp, MAX_PAGE_SIZ + buf - tmp,
-        "  Near last play: %u\n", prior_near_last);
-    tmp += snprintf(tmp, MAX_PAGE_SIZ + buf - tmp,
+    idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx, "  MoGo patterns: %u\n",
+        prior_pat3);
+    idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx, "  Near last play: %u\n",
+        prior_near_last);
+    idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx,
         "  Empty L2/3/other: -%u/%u/%u\n", prior_line2, prior_line3,
         prior_empty);
-    tmp += snprintf(tmp, MAX_PAGE_SIZ + buf - tmp, "  Corners: -%u\n",
+    idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx, "  Corners: -%u\n",
         prior_corner);
 
-    tmp += snprintf(tmp, MAX_PAGE_SIZ + buf - tmp, "Max UCT depth: %u\n",
+    idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx, "Max UCT depth: %u\n",
         MAX_UCT_DEPTH);
-    tmp += snprintf(tmp, MAX_PAGE_SIZ + buf - tmp,
+    idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx,
         "UCT expansion delay: %u\n", UCT_EXPANSION_DELAY);
-    tmp += snprintf(tmp, MAX_PAGE_SIZ + buf - tmp,
+    idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx,
         "Playout depth over number of empty points: %u\n",
         MAX_PLAYOUT_DEPTH_OVER_EMPTY);
     if(UCT_MIN_WINRATE <= 0.0)
-        tmp += snprintf(tmp, MAX_PAGE_SIZ + buf - tmp,
+        idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx,
             "UCT winrate for resigning: disabled\n");
     else
-        tmp += snprintf(tmp, MAX_PAGE_SIZ + buf - tmp,
+        idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx,
             "UCT winrate for resigning: %.2f%%\n", UCT_MIN_WINRATE);
     if(UCT_MAX_WINRATE >= 1.0)
-        tmp += snprintf(tmp, MAX_PAGE_SIZ + buf - tmp,
+        idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx,
             "UCT winrate for passing: disabled\n");
     else
-        tmp += snprintf(tmp, MAX_PAGE_SIZ + buf - tmp,
+        idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx,
             "UCT winrate for passing: %.2f%%\n", UCT_MAX_WINRATE);
-    tmp += snprintf(tmp, MAX_PAGE_SIZ + buf - tmp,
+    idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx,
         "Mercy threshold: %u stones\n", MERCY_THRESHOLD);
 
-    tmp += snprintf(tmp, MAX_PAGE_SIZ + buf - tmp,
+    idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx,
         "Detect network latency: %s\n", YN(DETECT_NETWORK_LATENCY));
-    tmp += snprintf(tmp, MAX_PAGE_SIZ + buf - tmp,
+    idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx,
         "Constant latency compensation: %u ms\n", LATENCY_COMPENSATION);
-    tmp += snprintf(tmp, MAX_PAGE_SIZ + buf - tmp,
+    idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx,
         "Time allotment factor: %.2f\n", TIME_ALLOT_FACTOR);
 
     u32 num_threads;
@@ -354,17 +364,15 @@ const char * build_info()
         num_threads = omp_get_num_threads();
     }
     if(DEFAULT_NUM_THREADS == 0)
-        tmp += snprintf(tmp, MAX_PAGE_SIZ + buf - tmp,
+        idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx,
             "Default number of threads: automatic (%u)\n", num_threads);
     else
-        tmp += snprintf(tmp, MAX_PAGE_SIZ + buf - tmp,
+        idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx,
             "Default number of threads: %u (%u)\n", DEFAULT_NUM_THREADS,
             num_threads);
-    tmp += snprintf(tmp, MAX_PAGE_SIZ + buf - tmp,
+    idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx,
         "Maximum number of threads: %u\n", MAXIMUM_NUM_THREADS);
-    snprintf(tmp, MAX_PAGE_SIZ + buf - tmp, "\n");
-
-    return buf;
+    snprintf(dst + idx, MAX_PAGE_SIZ - idx, "\n");
 }
 
 /*
