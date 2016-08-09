@@ -270,12 +270,18 @@ void build_info(
         "MCTS-UCT branch limiter: %s\n", YN(USE_UCT_BRANCH_LIMITER));
     idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx, "Can resign: %s\n",
         YN(CAN_RESIGN));
-    idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx, "Can stop early: %s\n",
-        YN(CAN_STOP_EARLY));
-    if(CAN_STOP_EARLY)
-        idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx,
-            "  Min/max win rate: %.2f/%.2f\n", UCT_MIN_WINRATE,
-            UCT_MAX_WINRATE);
+    if(CAN_RESIGN)
+    {
+        idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx, "  Bellow win rate: %.2f\n",
+            UCT_RESIGN_WINRATE);
+        idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx, "  Minimum simulations: %u\n",
+            UCT_RESIGN_PLAYOUTS);
+    }
+    idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx, "Can stop MCTS early: %s\n",
+        YN(UCT_CAN_STOP_EARLY));
+    if(UCT_CAN_STOP_EARLY)
+        idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx, "  At win rate: %.2f\n",
+            UCT_EARLY_WINRATE);
     idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx,
         "Transpositions table memory: %" PRIu64 " MiB\n", max_size_in_mbs);
     idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx,
@@ -335,18 +341,6 @@ void build_info(
     idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx,
         "Playout depth over number of empty points: %u\n",
         MAX_PLAYOUT_DEPTH_OVER_EMPTY);
-    if(UCT_MIN_WINRATE <= 0.0)
-        idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx,
-            "UCT winrate for resigning: disabled\n");
-    else
-        idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx,
-            "UCT winrate for resigning: %.2f%%\n", UCT_MIN_WINRATE);
-    if(UCT_MAX_WINRATE >= 1.0)
-        idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx,
-            "UCT winrate for passing: disabled\n");
-    else
-        idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx,
-            "UCT winrate for passing: %.2f%%\n", UCT_MAX_WINRATE);
     idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx,
         "Mercy threshold: %u stones\n", MERCY_THRESHOLD);
 

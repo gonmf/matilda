@@ -23,11 +23,18 @@ It can also record the average final score, for the purpose of score estimation.
 #include "types.h"
 
 /*
-Ranges outside which the MCTS UCT algorithm stops early.
+When to resign instead of insisting on playing.
 */
-#define CAN_STOP_EARLY true
-#define UCT_MIN_WINRATE 0.10
-#define UCT_MAX_WINRATE 0.95
+#define UCT_RESIGN_PLAYOUTS 100
+#define UCT_RESIGN_WINRATE 0.10
+
+/*
+When to stop the search early because it is already very overwhelmingly
+positive.
+*/
+#define UCT_CAN_STOP_EARLY true
+#define UCT_EARLY_WINRATE 0.95
+
 
 #define USE_UCT_BRANCH_LIMITER true
 
@@ -118,9 +125,9 @@ Performs a MCTS in at least the available time.
 The search may end early if the estimated win rate is very one sided, in which
 case the play selected is a pass. The search is also interrupted if memory runs
 out.
-RETURNS the estimated probability of winning the match (ignoring passes)
+RETURNS true if a play or pass is suggested instead of resigning
 */
-double mcts_start(
+bool mcts_start(
     out_board * out_b,
     const board * b,
     bool is_black,

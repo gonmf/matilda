@@ -82,7 +82,7 @@ void set_use_of_opening_book(
 /*
 Evaluates the position given the time available to think, by using a number of
 strategies in succession.
-RETURNS false if the player can resign
+RETURNS true if a play or pass is suggested instead of resigning
 */
 bool evaluate_position(
     const board * b,
@@ -91,24 +91,21 @@ bool evaluate_position(
     u64 stop_time,
     u64 early_stop_time
 ){
-    board tmp;
-    memcpy(&tmp, b, sizeof(board));
-
     if(use_opening_book)
     {
+        board tmp;
+        memcpy(&tmp, b, sizeof(board));
         d8 reduction = reduce_auto(&tmp, is_black);
         if(opening_book(out_b, &tmp))
         {
             oboard_revert_reduce(out_b, reduction);
             return true;
         }
-        memcpy(&tmp, b, sizeof(board));
     }
 
-    double win_rate = mcts_start(out_b, &tmp, is_black, stop_time,
-        early_stop_time);
+    bool ret = mcts_start(out_b, b, is_black, stop_time, early_stop_time);
     tt_requires_maintenance = true;
-    return (win_rate >= UCT_MIN_WINRATE);
+    return ret;
 }
 
 /*

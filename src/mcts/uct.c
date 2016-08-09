@@ -827,9 +827,9 @@ Performs a MCTS in at least the available time.
 The search may end early if the estimated win rate is very one sided, in which
 case the play selected is a pass. The search is also interrupted if memory runs
 out.
-RETURNS the estimated probability of winning the match (ignoring passes)
+RETURNS true if a play or pass is suggested instead of resigning
 */
-double mcts_start(
+bool mcts_start(
     out_board * out_b,
     const board * b,
     bool is_black,
@@ -960,6 +960,7 @@ double mcts_start(
             {
                 u64 curr_time = current_time_in_millis();
 
+#if UCT_CAN_STOP_EARLY
                 if(curr_time >= early_stop_time)
                 {
                     if(curr_time >= stop_time)
@@ -967,15 +968,20 @@ double mcts_start(
                         search_stop = true;
                         continue;
                     }
-#if CAN_STOP_EARLY
                     double wr = ((double)wins) / ((double)(wins + losses));
-                    if(wr < UCT_MIN_WINRATE || wr > UCT_MAX_WINRATE)
+                    if(wr >= UCT_EARLY_WINRATE)
                     {
                         stopped_early_by_wr = true;
                         search_stop = true;
                     }
-#endif
                 }
+#else
+                if(curr_time >= stop_time)
+                {
+                    search_stop = true;
+                    continue;
+                }
+#endif
             }
         }
 
@@ -997,7 +1003,7 @@ double mcts_start(
     }
 
     clear_out_board(out_b);
-    out_b->pass = UCT_MIN_WINRATE;
+    out_b->pass = UCT_RESIGN_WINRATE;
     for(move k = 0; k < stats->plays_count; ++k)
     {
         out_b->tested[stats->plays[k].m] = true;
@@ -1009,24 +1015,29 @@ double mcts_start(
         if(max_depths[k] > max_depth)
             max_depth = max_depths[k];
 
-    double wr = ((double)wins) / ((double)(wins + losses));
+    u32 sims = wins + losses;
+    double wr = ((double)wins) / ((double)sims);
 
     if(draws > 0)
     {
         snprintf(s, MAX_PAGE_SIZ, "search finished (sims=%u, depth=%u, wr\
-=%.2f, draws=%u)\n", wins + losses, max_depth, wr, draws);
+=%.2f, draws=%u)\n", sims, max_depth, wr, draws);
     }
     else
     {
         snprintf(s, MAX_PAGE_SIZ, "search finished (sims=%u, depth=%u, wr\
-=%.2f)\n", wins + losses, max_depth, wr);
+=%.2f)\n", sims, max_depth, wr);
     }
     flog_info("uct", s);
 
     release(s);
     cfg_board_free(&initial_cfg_board);
 
-    return wr;
+    /* prevent resignation if we have played very few simulations */
+    if(sims < UCT_RESIGN_PLAYOUTS && wr < UCT_RESIGN_WINRATE)
+        return false;
+
+    return true;
 }
 
 /*
