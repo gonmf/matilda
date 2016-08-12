@@ -251,8 +251,10 @@ static void init_new_state(
 
     bool viable[TOTAL_BOARD_SIZ];
     memcpy(viable, branch_limit, TOTAL_BOARD_SIZ * sizeof(bool));
+    bool play_okay[TOTAL_BOARD_SIZ];
+    memcpy(play_okay, branch_limit, TOTAL_BOARD_SIZ * sizeof(bool));
 
-    estimate_eyes(cb, is_black, viable, in_nakade);
+    estimate_eyes(cb, is_black, viable, play_okay, in_nakade);
 
     u16 saving_play[TOTAL_BOARD_SIZ];
     memset(saving_play, 0, TOTAL_BOARD_SIZ * sizeof(u16));
@@ -327,10 +329,6 @@ static void init_new_state(
         if(!viable[m])
             continue;
 
-        if(out_neighbors4[m] == 2 && ((is_black && cb->white_neighbors8[m] == 0)
-            || (!is_black && cb->black_neighbors8[m] == 0)))
-            continue;
-
         move captures;
         u8 libs = libs_after_play(cb, m, is_black, &captures);
 
@@ -351,6 +349,13 @@ static void init_new_state(
         */
         u32 mc_w = prior_even / 2;
         u32 mc_v = prior_even;
+
+        if(!play_okay[m])
+            mc_v += TOTAL_BOARD_SIZ;
+
+        if(out_neighbors4[m] == 2 && ((is_black && cb->white_neighbors8[m] == 0)
+            || (!is_black && cb->black_neighbors8[m] == 0)))
+            mc_v += TOTAL_BOARD_SIZ;
 
         /*
         Prohibit self-ataris if they don't put the opponent in atari
@@ -380,7 +385,7 @@ static void init_new_state(
         Don't try safe tiger mouths.
         */
         if(safe_tigers_mouth(cb, is_black, m))
-            continue;
+            mc_v += TOTAL_BOARD_SIZ;
 #endif
 
         /*

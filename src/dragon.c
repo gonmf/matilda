@@ -87,6 +87,7 @@ void estimate_eyes(
     cfg_board * cb,
     bool is_black,
     bool viable[TOTAL_BOARD_SIZ],
+    bool play_okay[TOTAL_BOARD_SIZ],
     u8 in_nakade[TOTAL_BOARD_SIZ]
 ){
     for(u8 i = 0; i < cb->unique_groups_count; ++i)
@@ -102,7 +103,7 @@ void estimate_eyes(
         move m = cb->empty.coord[k];
         bool can_have_forcing_move;
 
-        if(!viable[m])
+        if(!viable[m] || !play_okay[m])
             continue;
 
         /*
@@ -132,10 +133,10 @@ void estimate_eyes(
             group * g = get_closest_group(cb, m);
             dragon_head(g)->eyes++;
 
-            viable[m + RIGHT] = false;
-            viable[m + BOTTOM] = false;
+            play_okay[m + RIGHT] = false;
+            play_okay[m + BOTTOM] = false;
             if(!can_have_forcing_move)
-                viable[m] = false;
+                play_okay[m] = false;
             continue;
         }
 
@@ -144,8 +145,8 @@ void estimate_eyes(
             group * g = get_closest_group(cb, m);
             dragon_head(g)->eyes++;
 
-            viable[m + RIGHT] = false;
-            viable[m + BOTTOM] = false;
+            play_okay[m + RIGHT] = false;
+            play_okay[m + BOTTOM] = false;
             continue;
         }
 
@@ -172,19 +173,19 @@ void estimate_eyes(
 
             if(m == 0)
             {
-                viable[m] = false;
-                viable[m + RIGHT] = false;
-                viable[m + BOTTOM] = false;
+                play_okay[m] = false;
+                play_okay[m + RIGHT] = false;
+                play_okay[m + BOTTOM] = false;
                 if(!can_have_forcing_move)
-                    viable[m + RIGHT + BOTTOM] = false;
+                    play_okay[m + RIGHT + BOTTOM] = false;
             }
             else
             {
-                viable[m + RIGHT] = false;
-                viable[m + BOTTOM] = false;
-                viable[m + RIGHT + BOTTOM] = false;
+                play_okay[m + RIGHT] = false;
+                play_okay[m + BOTTOM] = false;
+                play_okay[m + RIGHT + BOTTOM] = false;
                 if(!can_have_forcing_move)
-                    viable[m] = false;
+                    play_okay[m] = false;
             }
             continue;
         }
@@ -207,15 +208,15 @@ void estimate_eyes(
 
             if(m == 0)
             {
-                viable[m] = false;
-                viable[m + RIGHT] = false;
-                viable[m + BOTTOM] = false;
+                play_okay[m] = false;
+                play_okay[m + RIGHT] = false;
+                play_okay[m + BOTTOM] = false;
             }
             else
             {
-                viable[m + RIGHT] = false;
-                viable[m + BOTTOM] = false;
-                viable[m + RIGHT + BOTTOM] = false;
+                play_okay[m + RIGHT] = false;
+                play_okay[m + BOTTOM] = false;
+                play_okay[m + RIGHT + BOTTOM] = false;
             }
             continue;
         }
@@ -247,13 +248,13 @@ void estimate_eyes(
                 unite_dragons(gs[0], gs[i]);
             dragon_head(gs[0])->eyes++;
 
-            disqualify_square(viable, m);
+            disqualify_square(play_okay, m);
             in_nakade[m] = nk;
             continue;
         }
 
         if(is_corner_liberty(cb, m, true) || is_corner_liberty(cb, m, false))
-            viable[m] = false;
+            play_okay[m] = false;
 
         /*
         Bamboo joints
@@ -306,7 +307,7 @@ void estimate_eyes(
     {
         move m = cb->empty.coord[k];
 
-        if(!viable[m])
+        if(!viable[m] || !play_okay[m])
             continue;
 
         if(sheltered_liberty(cb, m) && !is_eye(cb, m, !is_black))
@@ -349,14 +350,14 @@ void estimate_eyes(
             for(u8 i = 1; i < fn; ++i)
                 unite_dragons(gs[0], gs[i]);
             gs[0]->eyes++;
-            viable[m] = false;
+            play_okay[m] = false;
             continue;
         }
 
 not_sheltered_liberty:
 
         if(is_relaxed_eye(cb, m, is_black))
-            viable[m] = false;
+            play_okay[m] = false;
     }
 
     /*

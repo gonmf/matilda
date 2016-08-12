@@ -38,6 +38,7 @@ void estimate_eyes(
     cfg_board * cb,
     bool is_black,
     bool viable[TOTAL_BOARD_SIZ],
+    bool play_okay[TOTAL_BOARD_SIZ],
     u8 in_nakade[TOTAL_BOARD_SIZ]
 );
 
