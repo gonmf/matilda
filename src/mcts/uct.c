@@ -226,6 +226,19 @@ static u16 stones_in_manhattan_dst3(
     return ret;
 }
 
+static bool tigers_mouth(
+    cfg_board * cb,
+    bool is_black,
+    move m
+){
+    if(is_black)
+        return (out_neighbors4[m] == 0 && cb->white_neighbors4[m] == 0 &&
+            cb->black_neighbors4[m] >= 3 && cb->white_neighbors8[m] <= 1);
+
+    return (out_neighbors4[m] == 0 && cb->black_neighbors4[m] == 0 &&
+            cb->white_neighbors4[m] >= 3 && cb->black_neighbors8[m] <= 1);
+}
+
 /*
 Priors values with heuristic MC-RAVE
 
@@ -374,6 +387,11 @@ static void init_new_state(
                 mc_v += prior_nakade + b;
             }
         }
+
+#if 1
+        if(tigers_mouth(cb, is_black, m))
+            continue;
+#endif
 
         /*
         Saving plays
@@ -1034,7 +1052,7 @@ bool mcts_start(
     cfg_board_free(&initial_cfg_board);
 
     /* prevent resignation if we have played very few simulations */
-    if(sims < UCT_RESIGN_PLAYOUTS && wr < UCT_RESIGN_WINRATE)
+    if(sims >= UCT_RESIGN_PLAYOUTS && wr < UCT_RESIGN_WINRATE)
         return false;
 
     return true;
