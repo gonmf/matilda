@@ -226,19 +226,6 @@ static u16 stones_in_manhattan_dst3(
     return ret;
 }
 
-static bool tigers_mouth(
-    cfg_board * cb,
-    bool is_black,
-    move m
-){
-    if(is_black)
-        return (out_neighbors4[m] == 0 && cb->white_neighbors4[m] == 0 &&
-            cb->black_neighbors4[m] >= 3 && cb->white_neighbors8[m] <= 1);
-
-    return (out_neighbors4[m] == 0 && cb->black_neighbors4[m] == 0 &&
-            cb->white_neighbors4[m] >= 3 && cb->black_neighbors8[m] <= 1);
-}
-
 /*
 Priors values with heuristic MC-RAVE
 
@@ -388,8 +375,11 @@ static void init_new_state(
             }
         }
 
-#if 1
-        if(tigers_mouth(cb, is_black, m))
+#if BOARD_SIZ < 10
+        /*
+        Don't try safe tiger mouths.
+        */
+        if(safe_tigers_mouth(cb, is_black, m))
             continue;
 #endif
 

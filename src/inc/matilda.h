@@ -14,7 +14,7 @@ Board/goban size given by the length of one side.
 
 EXPECTED: 5, 7, 9, 11, 13, 15, 17, 19 or 21
 */
-#define BOARD_SIZ 13
+#define BOARD_SIZ 9
 
 /*
 Default komidashi used, multiplied by 2 to give an integer number.
@@ -150,6 +150,11 @@ It is reset when the major mark is increased.
 
 
 
+
+
+
+
+#define TOTAL_BOARD_SIZ (BOARD_SIZ * BOARD_SIZ)
 
 /*
 Preprocessor stringification of board size.

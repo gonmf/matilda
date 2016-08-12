@@ -392,6 +392,23 @@ bool is_horizontal_bamboo_joint(
 }
 
 /*
+Test if play is in an apparently safe tigers mouth.
+RETURNS true if inside tigers mouth
+*/
+bool safe_tigers_mouth(
+    const cfg_board * cb,
+    bool is_black,
+    move m
+){
+    if(is_black)
+        return (out_neighbors4[m] == 0 && cb->white_neighbors4[m] == 0 &&
+            cb->black_neighbors4[m] >= 3 && cb->white_neighbors8[m] <= 1);
+
+    return (out_neighbors4[m] == 0 && cb->black_neighbors4[m] == 0 &&
+            cb->white_neighbors4[m] >= 3 && cb->black_neighbors8[m] <= 1);
+}
+
+/*
 Tests whether the point is an empty space besides a kosumi (by the same player),
 of the type:
 *X
