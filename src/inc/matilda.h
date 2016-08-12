@@ -89,7 +89,7 @@ MCTS early stopping is also deactivated, even if memory runs out.
 EXPECTED: 0 or 1
 EXPECTED: 100 to 100000
 */
-#define LIMIT_BY_PLAYOUTS 1
+#define LIMIT_BY_PLAYOUTS 0
 #define PLAYOUTS_PER_TURN 1000
 
 

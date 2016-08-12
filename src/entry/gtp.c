@@ -251,17 +251,14 @@ static void gtp_list_commands(
 ){
     char * buf = alloc();
     u16 idx = 0;
+
     for(u16 i = 0; supported_commands[i] != NULL; ++i)
-    {
-        strcpy(buf + idx, supported_commands[i]);
-        idx += strlen(supported_commands[i]);
-        if(supported_commands[i + 1] != NULL)
-        {
-            strcpy(buf + idx, "\n");
-            idx++;
-        }
-        ++i;
-    }
+        idx += snprintf(buf + idx, MAX_PAGE_SIZ - idx, "%s\n",
+            supported_commands[i]);
+
+    if(idx > 0)
+        buf[idx - 1] = 0;
+
     answer_msg(fp, id, buf);
     release(buf);
 }
