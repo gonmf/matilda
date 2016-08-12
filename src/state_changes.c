@@ -57,7 +57,7 @@ static bool surrounded_stone(
 static u8 _liberties(
     const board * b,
     move m,
-    bool aux[BOARD_SIZ * BOARD_SIZ],
+    bool aux[TOTAL_BOARD_SIZ],
     const u8 own_stone
 ){
     u8 x;
@@ -125,8 +125,8 @@ u8 libs_after_play_slow(
     }
     *caps = abs(stone_diff(b->p) - stone_diff(tmp.p)) - 1;
     /* Then count liberties */
-    bool aux[BOARD_SIZ * BOARD_SIZ];
-    memset(aux, false, BOARD_SIZ * BOARD_SIZ * sizeof(bool));
+    bool aux[TOTAL_BOARD_SIZ];
+    memset(aux, false, TOTAL_BOARD_SIZ * sizeof(bool));
     aux[m] = true;
     return _liberties(&tmp, m, aux, is_black ? BLACK_STONE : WHITE_STONE);
 }
@@ -140,8 +140,8 @@ u8 slow_liberty_count(
     move m
 ){
     assert(b->p[m] != EMPTY);
-    bool aux[BOARD_SIZ * BOARD_SIZ];
-    memset(aux, false, BOARD_SIZ * BOARD_SIZ * sizeof(bool));
+    bool aux[TOTAL_BOARD_SIZ];
+    memset(aux, false, TOTAL_BOARD_SIZ * sizeof(bool));
     aux[m] = true;
     return _liberties(b, m, aux, b->p[m]);
 }
@@ -151,7 +151,7 @@ static bool _is_alive(
     const board * b,
     move m,
     u8 value,
-    bool aux[BOARD_SIZ * BOARD_SIZ]
+    bool aux[TOTAL_BOARD_SIZ]
 ){
     u8 x;
     u8 y;
@@ -213,8 +213,8 @@ static bool is_alive(
     if(surrounded_stone(b, m))
         return false;
 
-    bool aux[BOARD_SIZ * BOARD_SIZ];
-    memset(aux, false, BOARD_SIZ * BOARD_SIZ * sizeof(bool));
+    bool aux[TOTAL_BOARD_SIZ];
+    memset(aux, false, TOTAL_BOARD_SIZ * sizeof(bool));
     aux[m] = true;
     return _is_alive(b, m, b->p[m], aux);
 }

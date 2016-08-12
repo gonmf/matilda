@@ -35,7 +35,7 @@ Scoring by counting stones on the board only.
 RETURNS positive score for a black win; negative for a white win; 0 for a draw
 */
 d16 score_stones_only(
-    const u8 p[BOARD_SIZ * BOARD_SIZ]
+    const u8 p[TOTAL_BOARD_SIZ]
 );
 
 /*
@@ -60,7 +60,7 @@ not remove dead stones.
 RETURNS positive score for a black win; negative for a white win; 0 for a draw
 */
 d16 score_stones_and_area(
-    const u8 p[BOARD_SIZ * BOARD_SIZ]
+    const u8 p[TOTAL_BOARD_SIZ]
 );
 
 /*
@@ -81,7 +81,7 @@ Estimate the final game position from the current state. Is the most accurate
 the later in the game.
 */
 void estimate_final_position(
-    u8 dst[BOARD_SIZ * BOARD_SIZ],
+    u8 dst[TOTAL_BOARD_SIZ],
     const board * b,
     bool is_black
 );

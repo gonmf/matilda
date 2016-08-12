@@ -37,7 +37,7 @@ a state->play file (.spb), to be used for further play suggestions besides
 static char * filenames[MAX_FILES];
 
 static bool relax_komi = true;
-static d32 ob_depth = (BOARD_SIZ * BOARD_SIZ) / 2;
+static d32 ob_depth = TOTAL_BOARD_SIZ / 2;
 static d32 minimum_samples = 32;
 
 
@@ -300,7 +300,7 @@ t: %u)\n", ob_depth);
             u32 idx = 0;
             idx += snprintf(str + idx, MAX_PAGE_SIZ - idx, "%u ", BOARD_SIZ);
 
-            for(move m = 0; m < BOARD_SIZ * BOARD_SIZ; ++m)
+            for(move m = 0; m < TOTAL_BOARD_SIZ; ++m)
             {
                 if(b.p[m] == BLACK_STONE)
                     idx += snprintf(str + idx, MAX_PAGE_SIZ - idx, "X");

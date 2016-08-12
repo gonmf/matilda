@@ -37,8 +37,8 @@ perspective of the current player.
 void estimate_eyes(
     cfg_board * cb,
     bool is_black,
-    bool viable[BOARD_SIZ * BOARD_SIZ],
-    u8 in_nakade[BOARD_SIZ * BOARD_SIZ]
+    bool viable[TOTAL_BOARD_SIZ],
+    u8 in_nakade[TOTAL_BOARD_SIZ]
 );
 
 #endif

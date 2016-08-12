@@ -25,9 +25,9 @@ And chooses a play based on (by order of importance):
 #include "cfg_board.h"
 
 
-#define MAX_PLAYOUT_DEPTH_OVER_EMPTY ((BOARD_SIZ * BOARD_SIZ) / 3)
+#define MAX_PLAYOUT_DEPTH_OVER_EMPTY (TOTAL_BOARD_SIZ / 3)
 
-#define MERCY_THRESHOLD ((BOARD_SIZ * BOARD_SIZ) / 5)
+#define MERCY_THRESHOLD (TOTAL_BOARD_SIZ / 5)
 
 
 /*
@@ -70,7 +70,7 @@ Uses a cache of play statuses that is updated as needed.
 move heavy_select_play(
     cfg_board * cb,
     bool is_black,
-    u8 cache[BOARD_SIZ * BOARD_SIZ]
+    u8 cache[TOTAL_BOARD_SIZ]
 );
 
 /*
@@ -83,7 +83,7 @@ RETURNS the final score
 d16 playout_heavy_amaf(
     cfg_board * cb,
     bool is_black,
-    u8 traversed[BOARD_SIZ * BOARD_SIZ]
+    u8 traversed[TOTAL_BOARD_SIZ]
 );
 
 

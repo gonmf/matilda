@@ -13,10 +13,10 @@ Support for Frisbee go play random shifts.
 #include "randg.h"
 
 
-extern bool border_left[BOARD_SIZ * BOARD_SIZ];
-extern bool border_right[BOARD_SIZ * BOARD_SIZ];
-extern bool border_top[BOARD_SIZ * BOARD_SIZ];
-extern bool border_bottom[BOARD_SIZ * BOARD_SIZ];
+extern bool border_left[TOTAL_BOARD_SIZ];
+extern bool border_right[TOTAL_BOARD_SIZ];
+extern bool border_top[TOTAL_BOARD_SIZ];
+extern bool border_bottom[TOTAL_BOARD_SIZ];
 
 /*
 Only shift a board move.

@@ -23,14 +23,14 @@ purpose of eye counting.
 #include "types.h"
 
 
-extern u8 out_neighbors8[BOARD_SIZ * BOARD_SIZ];
-extern u8 out_neighbors4[BOARD_SIZ * BOARD_SIZ];
-extern move_seq neighbors_3x3[BOARD_SIZ * BOARD_SIZ];
+extern u8 out_neighbors8[TOTAL_BOARD_SIZ];
+extern u8 out_neighbors4[TOTAL_BOARD_SIZ];
+extern move_seq neighbors_3x3[TOTAL_BOARD_SIZ];
 
-extern bool border_left[BOARD_SIZ * BOARD_SIZ];
-extern bool border_right[BOARD_SIZ * BOARD_SIZ];
-extern bool border_top[BOARD_SIZ * BOARD_SIZ];
-extern bool border_bottom[BOARD_SIZ * BOARD_SIZ];
+extern bool border_left[TOTAL_BOARD_SIZ];
+extern bool border_right[TOTAL_BOARD_SIZ];
+extern bool border_top[TOTAL_BOARD_SIZ];
+extern bool border_bottom[TOTAL_BOARD_SIZ];
 
 /* number of active bits for every byte combination */
 extern u8 dyn_active_bits[256];
@@ -825,11 +825,11 @@ intersections adjacent to liberties of nearby groups, plus the 3x3 neighborhood
 of the intersection m. near_pos is cleared before marking.
 */
 void mark_near_pos(
-    bool near_pos[BOARD_SIZ * BOARD_SIZ],
+    bool near_pos[TOTAL_BOARD_SIZ],
     const cfg_board * cb,
     move m
 ){
-    memset(near_pos, false, BOARD_SIZ * BOARD_SIZ);
+    memset(near_pos, false, TOTAL_BOARD_SIZ);
     assert(is_board_move(m));
 
     /* Fill a square around (x,y) */
@@ -861,7 +861,7 @@ shared liberties or one shared liberty and two eyes, that have the same or
 almost the same number of stones.
 */
 void mark_pts_in_seki(
-    bool in_seki[BOARD_SIZ * BOARD_SIZ],
+    bool in_seki[TOTAL_BOARD_SIZ],
     cfg_board * cb
 ){
     /*
@@ -870,7 +870,7 @@ void mark_pts_in_seki(
     group * black_groups[MAX_GROUPS];
     u16 black_groups_count = 0;
 
-    for(move m = 0; m < BOARD_SIZ * BOARD_SIZ; ++m)
+    for(move m = 0; m < TOTAL_BOARD_SIZ; ++m)
         if(cb->g[m] != NULL && cb->g[m]->is_black && cb->g[m]->liberties == 2)
         {
             bool found = false;
@@ -896,7 +896,7 @@ void mark_pts_in_seki(
         move not_eye = NONE;
         u8 eye_libs = 0;
         u8 libs = 0;
-        for(move m = g->liberties_min_coord; m < BOARD_SIZ * BOARD_SIZ; ++m)
+        for(move m = g->liberties_min_coord; m < TOTAL_BOARD_SIZ; ++m)
         {
             u8 mask = (1 << (m % 8));
             if(g->ls[m / 8] & mask)
@@ -937,7 +937,7 @@ void mark_pts_in_seki(
                     continue;
 
                 bool share_same_liberty = false;
-                for(move m = n->liberties_min_coord; m < BOARD_SIZ * BOARD_SIZ;
+                for(move m = n->liberties_min_coord; m < TOTAL_BOARD_SIZ;
                     ++m)
                 {
                     u8 mask = (1 << (m % 8));
@@ -1002,7 +1002,7 @@ void mark_pts_in_seki(
                 prior, we just have to mark them now
                 */
                 u8 libs2 = 0;
-                for(move m = g->liberties_min_coord; m < BOARD_SIZ * BOARD_SIZ;
+                for(move m = g->liberties_min_coord; m < TOTAL_BOARD_SIZ;
                     ++m)
                 {
                     u8 mask = (1 << (m % 8));
@@ -1254,7 +1254,7 @@ u8 max_neighbor_libs(
 static void _eye_space_size_gt_two(
     const cfg_board * cb,
     move m,
-    bool searched[BOARD_SIZ * BOARD_SIZ],
+    bool searched[TOTAL_BOARD_SIZ],
     u8 * count
 ){
     if(searched[m] || cb->p[m] != EMPTY)
@@ -1285,8 +1285,8 @@ bool eye_space_size_gt_two(
     move m
 ){
     u8 count = 0;
-    bool searched[BOARD_SIZ * BOARD_SIZ];
-    memset(searched, false, BOARD_SIZ * BOARD_SIZ);
+    bool searched[TOTAL_BOARD_SIZ];
+    memset(searched, false, TOTAL_BOARD_SIZ);
     _eye_space_size_gt_two(cb, m, searched, &count);
     return count > 2;
 }
@@ -1397,7 +1397,7 @@ static bool can_be_killed3(
     bool is_black,
     u32 depth
 ){
-    if(depth >= (BOARD_SIZ * BOARD_SIZ) / 2)
+    if(depth >= TOTAL_BOARD_SIZ / 2)
         return false; /* probably superko */
 
     group * g = cb->g[om];
@@ -1442,7 +1442,7 @@ static bool can_be_killed2(
     bool is_black,
     u32 depth
 ){
-    if(depth >= (BOARD_SIZ * BOARD_SIZ) / 2)
+    if(depth >= TOTAL_BOARD_SIZ / 2)
         return false; /* probably superko */
 
     group * g = cb->g[om];

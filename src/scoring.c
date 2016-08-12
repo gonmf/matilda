@@ -81,10 +81,10 @@ Scoring by counting stones on the board only.
 RETURNS positive score for a black win; negative for a white win; 0 for a draw
 */
 d16 score_stones_only(
-    const u8 p[BOARD_SIZ * BOARD_SIZ]
+    const u8 p[TOTAL_BOARD_SIZ]
 ){
     d16 r = 0;
-    for(move m = 0; m < BOARD_SIZ * BOARD_SIZ; ++m)
+    for(move m = 0; m < TOTAL_BOARD_SIZ; ++m)
         switch(p[m])
         {
             case BLACK_STONE:
@@ -108,7 +108,7 @@ d16 score_stones_and_eyes2(
 ){
     bool _ignored;
     d16 r = 0;
-    for(move m = 0; m < BOARD_SIZ * BOARD_SIZ; ++m)
+    for(move m = 0; m < TOTAL_BOARD_SIZ; ++m)
         switch(cb->p[m])
     {
             case BLACK_STONE:
@@ -171,9 +171,9 @@ d16 score_stones_and_eyes(
 
 
 static void _search(
-    const u8 p[BOARD_SIZ * BOARD_SIZ],
+    const u8 p[TOTAL_BOARD_SIZ],
     move m,
-    bool explored[BOARD_SIZ * BOARD_SIZ],
+    bool explored[TOTAL_BOARD_SIZ],
     bool * black,
     bool * white
 ){
@@ -243,7 +243,7 @@ static void _search(
 }
 
 static void _apply(
-    u8 p[BOARD_SIZ * BOARD_SIZ],
+    u8 p[TOTAL_BOARD_SIZ],
     move m,
     u8 val
 ){
@@ -282,16 +282,16 @@ not remove dead stones.
 RETURNS positive score for a black win; negative for a white win; 0 for a draw
 */
 d16 score_stones_and_area(
-    const u8 p[BOARD_SIZ * BOARD_SIZ]
+    const u8 p[TOTAL_BOARD_SIZ]
 ){
     /* explored intersections array is only used for empty intersections */
-    bool explored[BOARD_SIZ * BOARD_SIZ];
-    memset(explored, false, BOARD_SIZ * BOARD_SIZ * sizeof(bool));
+    bool explored[TOTAL_BOARD_SIZ];
+    memset(explored, false, TOTAL_BOARD_SIZ * sizeof(bool));
 
-    u8 bak[BOARD_SIZ * BOARD_SIZ];
-    memcpy(bak, p, BOARD_SIZ * BOARD_SIZ);
+    u8 bak[TOTAL_BOARD_SIZ];
+    memcpy(bak, p, TOTAL_BOARD_SIZ);
 
-    for(move m = 0; m < BOARD_SIZ * BOARD_SIZ; ++m)
+    for(move m = 0; m < TOTAL_BOARD_SIZ; ++m)
         if(p[m] == EMPTY && !explored[m]) /* Find owner of empty intersection */
         {
             bool found_black = false;
@@ -314,7 +314,7 @@ d16 score_stones_and_area(
         }
 
     d16 r = 0;
-    for(move m = 0; m < BOARD_SIZ * BOARD_SIZ; ++m)
+    for(move m = 0; m < TOTAL_BOARD_SIZ; ++m)
         if(bak[m] == BLACK_STONE)
             r += 2;
         else
@@ -336,7 +336,7 @@ d16 score_estimate(
     const board * b,
     bool is_black
 ){
-    u8 e[BOARD_SIZ * BOARD_SIZ];
+    u8 e[TOTAL_BOARD_SIZ];
     estimate_final_position(e, b, is_black);
 
     /* Apply area scoring */
@@ -348,15 +348,15 @@ Estimate the final game position from the current state. Is the most accurate
 the later in the game.
 */
 void estimate_final_position(
-    u8 e[BOARD_SIZ * BOARD_SIZ],
+    u8 e[TOTAL_BOARD_SIZ],
     const board * b,
     bool is_black
 ){
     /*
     Final position estimation
     */
-    u32 black_ownership[BOARD_SIZ * BOARD_SIZ];
-    u32 white_ownership[BOARD_SIZ * BOARD_SIZ];
+    u32 black_ownership[TOTAL_BOARD_SIZ];
+    u32 white_ownership[TOTAL_BOARD_SIZ];
     out_board out_b;
     enable_estimate_score();
     u64 curr_time = current_time_in_millis();
@@ -367,10 +367,10 @@ void estimate_final_position(
     /*
     Making most likely final position
     */
-    memset(e, EMPTY, BOARD_SIZ * BOARD_SIZ);
+    memset(e, EMPTY, TOTAL_BOARD_SIZ);
 
     double ownership;
-    for(move m = 0; m < BOARD_SIZ * BOARD_SIZ; ++m)
+    for(move m = 0; m < TOTAL_BOARD_SIZ; ++m)
     {
         u32 sum = black_ownership[m] + white_ownership[m];
         if(sum == 0)
@@ -392,8 +392,8 @@ void remove_dead_stones(
     board * b
 ){
     board bak;
-    bool save[BOARD_SIZ * BOARD_SIZ];
-    memset(save, false, BOARD_SIZ * BOARD_SIZ * sizeof(bool));
+    bool save[TOTAL_BOARD_SIZ];
+    memset(save, false, TOTAL_BOARD_SIZ * sizeof(bool));
     bool placed;
 
     /* unconditionally alive white stones */
@@ -402,11 +402,11 @@ void remove_dead_stones(
     while(placed)
     {
         placed = false;
-        for(move m = 0; m < BOARD_SIZ * BOARD_SIZ; ++m)
+        for(move m = 0; m < TOTAL_BOARD_SIZ; ++m)
             if(attempt_play_slow(&bak, m, true))
                 placed = true;
     }
-    for(move m = 0; m < BOARD_SIZ * BOARD_SIZ; ++m)
+    for(move m = 0; m < TOTAL_BOARD_SIZ; ++m)
         if(bak.p[m] == WHITE_STONE)
             save[m] = true;
 
@@ -416,15 +416,15 @@ void remove_dead_stones(
     while(placed)
     {
         placed = false;
-        for(move m = 0; m < BOARD_SIZ * BOARD_SIZ; ++m)
+        for(move m = 0; m < TOTAL_BOARD_SIZ; ++m)
             if(attempt_play_slow(&bak, m, false))
                 placed = true;
     }
-    for(move m = 0; m < BOARD_SIZ * BOARD_SIZ; ++m)
+    for(move m = 0; m < TOTAL_BOARD_SIZ; ++m)
         if(bak.p[m] == BLACK_STONE)
             save[m] = true;
 
-    for(move m = 0; m < BOARD_SIZ * BOARD_SIZ; ++m)
+    for(move m = 0; m < TOTAL_BOARD_SIZ; ++m)
         if(!save[m])
             b->p[m] = EMPTY;
 }

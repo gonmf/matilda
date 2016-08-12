@@ -66,15 +66,15 @@ u16 prior_corner = PRIOR_CORNER;
 double ucb1_c = UCB1_C;
 
 
-extern u8 out_neighbors4[BOARD_SIZ * BOARD_SIZ];
+extern u8 out_neighbors4[TOTAL_BOARD_SIZ];
 
-extern bool border_left[BOARD_SIZ * BOARD_SIZ];
-extern bool border_right[BOARD_SIZ * BOARD_SIZ];
-extern bool border_top[BOARD_SIZ * BOARD_SIZ];
-extern bool border_bottom[BOARD_SIZ * BOARD_SIZ];
+extern bool border_left[TOTAL_BOARD_SIZ];
+extern bool border_right[TOTAL_BOARD_SIZ];
+extern bool border_top[TOTAL_BOARD_SIZ];
+extern bool border_bottom[TOTAL_BOARD_SIZ];
 
-static u8 distances_to_border[BOARD_SIZ * BOARD_SIZ];
-static move_seq nei_dst_3[BOARD_SIZ * BOARD_SIZ];
+static u8 distances_to_border[TOTAL_BOARD_SIZ];
+static move_seq nei_dst_3[TOTAL_BOARD_SIZ];
 static bool ran_out_of_memory;
 static bool search_stop;
 static u16 max_depths[MAXIMUM_NUM_THREADS];
@@ -142,16 +142,16 @@ Disable score estimation and return the number of times each position belonged
 to each player color.
 */
 void disable_estimate_score(
-    u32 black_occupied[BOARD_SIZ * BOARD_SIZ],
-    u32 white_occupied[BOARD_SIZ * BOARD_SIZ]
+    u32 black_occupied[TOTAL_BOARD_SIZ],
+    u32 white_occupied[TOTAL_BOARD_SIZ]
 ){
     record_final_score = false;
 
-    memset(black_occupied, 0, BOARD_SIZ * BOARD_SIZ * sizeof(u32));
-    memset(white_occupied, 0, BOARD_SIZ * BOARD_SIZ * sizeof(u32));
+    memset(black_occupied, 0, TOTAL_BOARD_SIZ * sizeof(u32));
+    memset(white_occupied, 0, TOTAL_BOARD_SIZ * sizeof(u32));
 
     for(u16 k = 0; k < MAXIMUM_NUM_THREADS; ++k)
-        for(move m = 0; m < BOARD_SIZ * BOARD_SIZ; ++m)
+        for(move m = 0; m < TOTAL_BOARD_SIZ; ++m)
         {
             black_occupied[m] += final_score_black_occupied[k][m];
             white_occupied[m] += final_score_white_occupied[k][m];
@@ -161,7 +161,7 @@ void disable_estimate_score(
 static void update_estimate_score(
     const cfg_board * cb
 ){
-    for(move m = 0; m < BOARD_SIZ * BOARD_SIZ; ++m)
+    for(move m = 0; m < TOTAL_BOARD_SIZ; ++m)
     {
         if(cb->p[m] == BLACK_STONE)
             final_score_black_occupied[omp_get_thread_num()][m]++;
@@ -180,7 +180,7 @@ stone.
 static bool enable_branch_limit = false;
 
 static void update_branch_limit(
-    bool b[BOARD_SIZ * BOARD_SIZ],
+    bool b[TOTAL_BOARD_SIZ],
     move m
 ){
     for(u16 n = 0; n < nei_dst_3[m].count; ++n)
@@ -191,14 +191,14 @@ static void update_branch_limit(
 }
 
 static void init_branch_limit(
-    const u8 p[BOARD_SIZ * BOARD_SIZ],
-    bool b[BOARD_SIZ * BOARD_SIZ]
+    const u8 p[TOTAL_BOARD_SIZ],
+    bool b[TOTAL_BOARD_SIZ]
 ){
     move_seq ms;
     get_starting_points(&ms);
 
-    memset(b, false, BOARD_SIZ * BOARD_SIZ);
-    for(move m = 0; m < BOARD_SIZ * BOARD_SIZ; ++m)
+    memset(b, false, TOTAL_BOARD_SIZ);
+    for(move m = 0; m < TOTAL_BOARD_SIZ; ++m)
         if(p[m] != EMPTY)
             update_branch_limit(b, m);
 
@@ -238,30 +238,30 @@ static void init_new_state(
     cfg_board * cb,
     tt_stats * stats,
     bool is_black,
-    const bool branch_limit[BOARD_SIZ * BOARD_SIZ]
+    const bool branch_limit[TOTAL_BOARD_SIZ]
 ){
-    bool near_last_play[BOARD_SIZ * BOARD_SIZ];
+    bool near_last_play[TOTAL_BOARD_SIZ];
     if(is_board_move(cb->last_played))
         mark_near_pos(near_last_play, cb, cb->last_played);
     else
-        memset(near_last_play, false, BOARD_SIZ * BOARD_SIZ);
+        memset(near_last_play, false, TOTAL_BOARD_SIZ);
 
-    u8 in_nakade[BOARD_SIZ * BOARD_SIZ];
-    memset(in_nakade, 0, BOARD_SIZ * BOARD_SIZ);
+    u8 in_nakade[TOTAL_BOARD_SIZ];
+    memset(in_nakade, 0, TOTAL_BOARD_SIZ);
 
-    bool viable[BOARD_SIZ * BOARD_SIZ];
-    memcpy(viable, branch_limit, BOARD_SIZ * BOARD_SIZ * sizeof(bool));
+    bool viable[TOTAL_BOARD_SIZ];
+    memcpy(viable, branch_limit, TOTAL_BOARD_SIZ * sizeof(bool));
 
     estimate_eyes(cb, is_black, viable, in_nakade);
 
-    u16 saving_play[BOARD_SIZ * BOARD_SIZ];
-    memset(saving_play, 0, BOARD_SIZ * BOARD_SIZ * sizeof(u16));
+    u16 saving_play[TOTAL_BOARD_SIZ];
+    memset(saving_play, 0, TOTAL_BOARD_SIZ * sizeof(u16));
 
-    u16 capturable[BOARD_SIZ * BOARD_SIZ];
-    memset(capturable, 0, BOARD_SIZ * BOARD_SIZ * sizeof(u16));
+    u16 capturable[TOTAL_BOARD_SIZ];
+    memset(capturable, 0, TOTAL_BOARD_SIZ * sizeof(u16));
 
-    bool self_atari[BOARD_SIZ * BOARD_SIZ];
-    memset(self_atari, false, BOARD_SIZ * BOARD_SIZ);
+    bool self_atari[TOTAL_BOARD_SIZ];
+    memset(self_atari, false, TOTAL_BOARD_SIZ);
 
     /*
     Tactical analysis of attack/defense of unsettled groups.
@@ -515,7 +515,7 @@ static void select_play(
     }
 #endif
 
-    tt_play * best_plays[BOARD_SIZ * BOARD_SIZ];
+    tt_play * best_plays[TOTAL_BOARD_SIZ];
     double best_q = -1.0;
     u16 equal_quality_plays = 0;
 
@@ -568,8 +568,8 @@ static d16 mcts_expansion(
     cfg_board * cb,
     bool is_black,
     tt_stats * stats,
-    const bool branch_limit[BOARD_SIZ * BOARD_SIZ],
-    u8 traversed[BOARD_SIZ * BOARD_SIZ]
+    const bool branch_limit[TOTAL_BOARD_SIZ],
+    u8 traversed[TOTAL_BOARD_SIZ]
 ){
     stats->expansion_delay--;
     if(stats->expansion_delay == -1)
@@ -616,7 +616,7 @@ static d16 mcts_selection(
     cfg_board * cb,
     u64 zobrist_hash,
     bool is_black,
-    bool branch_limit[BOARD_SIZ * BOARD_SIZ]
+    bool branch_limit[TOTAL_BOARD_SIZ]
 ){
 
     d16 depth = 6;
@@ -625,8 +625,8 @@ static d16 mcts_selection(
     /* for testing superko */
     stats[0] = stats[1] = stats[2] = stats[3] = stats[4] = stats[5] = NULL;
 
-    u8 traversed[BOARD_SIZ * BOARD_SIZ];
-    memset(traversed, EMPTY, BOARD_SIZ * BOARD_SIZ);
+    u8 traversed[TOTAL_BOARD_SIZ];
+    memset(traversed, EMPTY, TOTAL_BOARD_SIZ);
 
     d16 outcome;
     tt_stats * curr_stats = NULL;
@@ -850,18 +850,18 @@ bool mcts_start(
 
     mcts_init();
 
-    bool start_branch_limit[BOARD_SIZ * BOARD_SIZ];
+    bool start_branch_limit[TOTAL_BOARD_SIZ];
 #if USE_UCT_BRANCH_LIMITER
     /* ignore branch limiting if too many stones on the board */
     u16 stones = stone_count(b->p);
-    if(stones <= (BOARD_SIZ * BOARD_SIZ) / 3)
+    if(stones <= TOTAL_BOARD_SIZ / 3)
     {
         init_branch_limit(b->p, start_branch_limit);
         enable_branch_limit = true;
     }
     else
     {
-        memset(start_branch_limit, true, BOARD_SIZ * BOARD_SIZ);
+        memset(start_branch_limit, true, TOTAL_BOARD_SIZ);
         enable_branch_limit = false;
     }
 #endif
@@ -895,9 +895,9 @@ bool mcts_start(
     #pragma omp parallel for
     for(u32 sim = 0; sim < PLAYOUTS_PER_TURN; ++sim)
     {
-        bool branch_limit[BOARD_SIZ * BOARD_SIZ];
+        bool branch_limit[TOTAL_BOARD_SIZ];
 #if USE_UCT_BRANCH_LIMITER
-        memcpy(branch_limit, start_branch_limit, BOARD_SIZ * BOARD_SIZ);
+        memcpy(branch_limit, start_branch_limit, TOTAL_BOARD_SIZ);
 #endif
 
         cfg_board cb;
@@ -935,9 +935,9 @@ bool mcts_start(
             if(search_stop)
                 continue;
 
-            bool branch_limit[BOARD_SIZ * BOARD_SIZ];
+            bool branch_limit[TOTAL_BOARD_SIZ];
 #if USE_UCT_BRANCH_LIMITER
-            memcpy(branch_limit, start_branch_limit, BOARD_SIZ * BOARD_SIZ);
+            memcpy(branch_limit, start_branch_limit, TOTAL_BOARD_SIZ);
 #endif
 
             cfg_board cb;
@@ -1074,18 +1074,18 @@ void mcts_resume(
     search_stop = false;
 
     u64 start_zobrist_hash = zobrist_new_hash(b);
-    bool start_branch_limit[BOARD_SIZ * BOARD_SIZ];
+    bool start_branch_limit[TOTAL_BOARD_SIZ];
 #if USE_UCT_BRANCH_LIMITER
      /* ignore branch limiting if too many stones on the board */
     u16 stones = stone_count(b->p);
-    if(stones <= (BOARD_SIZ * BOARD_SIZ) / 3)
+    if(stones <= TOTAL_BOARD_SIZ / 3)
     {
         init_branch_limit(b->p, start_branch_limit);
         enable_branch_limit = true;
     }
     else
     {
-        memset(start_branch_limit, true, BOARD_SIZ * BOARD_SIZ);
+        memset(start_branch_limit, true, TOTAL_BOARD_SIZ);
         enable_branch_limit = false;
     }
 #endif
@@ -1102,9 +1102,9 @@ void mcts_resume(
             if(search_stop)
                 continue;
 
-            bool branch_limit[BOARD_SIZ * BOARD_SIZ];
+            bool branch_limit[TOTAL_BOARD_SIZ];
 #if USE_UCT_BRANCH_LIMITER
-            memcpy(branch_limit, start_branch_limit, BOARD_SIZ * BOARD_SIZ);
+            memcpy(branch_limit, start_branch_limit, TOTAL_BOARD_SIZ);
 #endif
 
             cfg_board cb;

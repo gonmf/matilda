@@ -38,7 +38,7 @@ u16 pl_skip_nakade = PL_SKIP_NAKADE;
 u16 pl_skip_pattern = PL_SKIP_PATTERN;
 u16 pl_skip_capture = PL_SKIP_CAPTURE;
 
-extern move_seq neighbors_3x3[BOARD_SIZ * BOARD_SIZ];
+extern move_seq neighbors_3x3[TOTAL_BOARD_SIZ];
 
 /*
 For mercy Threshold
@@ -53,8 +53,8 @@ extern float frisbee_prob;
 
 static void invalidate_cache_of_the_past(
     const cfg_board * cb,
-    u8 c1[BOARD_SIZ * BOARD_SIZ],
-    u8 c2[BOARD_SIZ * BOARD_SIZ]
+    u8 c1[TOTAL_BOARD_SIZ],
+    u8 c2[TOTAL_BOARD_SIZ]
 ){
     /*
     Positions previously illegal because of possible ko
@@ -72,9 +72,9 @@ positions marked captured
 */
 static void invalidate_cache_after_play(
     const cfg_board * cb,
-    u8 c1[BOARD_SIZ * BOARD_SIZ],
-    u8 c2[BOARD_SIZ * BOARD_SIZ],
-    bool stones_captured[BOARD_SIZ * BOARD_SIZ],
+    u8 c1[TOTAL_BOARD_SIZ],
+    u8 c2[TOTAL_BOARD_SIZ],
+    bool stones_captured[TOTAL_BOARD_SIZ],
     u8 libs_of_nei_of_captured[LIB_BITMAP_SIZ]
 ){
     assert(is_board_move(cb->last_played));
@@ -123,7 +123,7 @@ static void invalidate_cache_after_play(
 
 
     /* Dirty liberties and positions eaten */
-    for(m = 0; m < BOARD_SIZ * BOARD_SIZ; ++m)
+    for(m = 0; m < TOTAL_BOARD_SIZ; ++m)
     {
         if(stones_captured[m])
         {
@@ -144,7 +144,7 @@ Uses a cache of play statuses that is updated as needed.
 move heavy_select_play(
     cfg_board * cb,
     bool is_black,
-    u8 cache[BOARD_SIZ * BOARD_SIZ]
+    u8 cache[TOTAL_BOARD_SIZ]
 ){
     u8 libs;
     bool captures;
@@ -252,8 +252,8 @@ move heavy_select_play(
     u16 candidate_plays = 0;
     /* x2 because the same liberties can appear repeated when adding neighbor
     liberties */
-    move candidate_play[BOARD_SIZ * BOARD_SIZ * 2];
-    u16 weights[BOARD_SIZ * BOARD_SIZ * 2];
+    move candidate_play[TOTAL_BOARD_SIZ * 2];
+    u16 weights[TOTAL_BOARD_SIZ * 2];
     u16 weight_total = 0;
 
 
@@ -443,7 +443,7 @@ RETURNS the final score
 d16 playout_heavy_amaf(
     cfg_board * cb,
     bool is_black,
-    u8 traversed[BOARD_SIZ * BOARD_SIZ]
+    u8 traversed[TOTAL_BOARD_SIZ]
 ){
     assert(verify_cfg_board(cb));
     u16 depth_max = MAX_PLAYOUT_DEPTH_OVER_EMPTY + cb->empty.count +
@@ -451,11 +451,11 @@ d16 playout_heavy_amaf(
     /* stones are counted as 2 units in matilda */
     d16 diff = stone_diff(cb->p) - (komi_offset + komi) / 2;
 
-    u8 b_cache[BOARD_SIZ * BOARD_SIZ];
-    u8 w_cache[BOARD_SIZ * BOARD_SIZ];
-    memset(b_cache, CACHE_PLAY_DIRTY, BOARD_SIZ * BOARD_SIZ);
-    memset(w_cache, CACHE_PLAY_DIRTY, BOARD_SIZ * BOARD_SIZ);
-    bool stones_captured[BOARD_SIZ * BOARD_SIZ];
+    u8 b_cache[TOTAL_BOARD_SIZ];
+    u8 w_cache[TOTAL_BOARD_SIZ];
+    memset(b_cache, CACHE_PLAY_DIRTY, TOTAL_BOARD_SIZ);
+    memset(w_cache, CACHE_PLAY_DIRTY, TOTAL_BOARD_SIZ);
+    bool stones_captured[TOTAL_BOARD_SIZ];
     u8 libs_of_nei_of_captured[LIB_BITMAP_SIZ];
 
     while(--depth_max)
@@ -492,7 +492,7 @@ d16 playout_heavy_amaf(
             }
 #endif
 
-            memset(stones_captured, 0, BOARD_SIZ * BOARD_SIZ);
+            memset(stones_captured, 0, TOTAL_BOARD_SIZ);
             memset(libs_of_nei_of_captured, 0, LIB_BITMAP_SIZ);
 
             just_play3(cb, m, is_black, &diff, stones_captured,
@@ -525,8 +525,8 @@ void playout_as_strategy(
     cfg_board cb;
     cfg_from_board(&cb, b);
 
-    u8 ignored_cache[BOARD_SIZ * BOARD_SIZ];
-    memset(ignored_cache, CACHE_PLAY_DIRTY, BOARD_SIZ * BOARD_SIZ);
+    u8 ignored_cache[TOTAL_BOARD_SIZ];
+    memset(ignored_cache, CACHE_PLAY_DIRTY, TOTAL_BOARD_SIZ);
 
     /* only passes when there are no more plays */
     move m = heavy_select_play(&cb, true, ignored_cache);

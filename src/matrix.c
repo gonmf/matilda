@@ -35,7 +35,7 @@ void matrix_rotate(
             break;
         case 1:
             --side_len;
-            for(move m = 0; m < BOARD_SIZ * BOARD_SIZ; ++m)
+            for(move m = 0; m < TOTAL_BOARD_SIZ; ++m)
             {
                 move_to_coord(m, &x, &y);
                 dst[m] = src[coord_to_move(side_len - y, x)];
@@ -43,14 +43,14 @@ void matrix_rotate(
             break;
         case 2:
             --side_len;
-            for(move m = 0; m < BOARD_SIZ * BOARD_SIZ; ++m)
+            for(move m = 0; m < TOTAL_BOARD_SIZ; ++m)
             {
-                dst[m] = src[BOARD_SIZ * BOARD_SIZ - 1 - m];
+                dst[m] = src[TOTAL_BOARD_SIZ - 1 - m];
             }
             break;
         case 3:
             --side_len;
-            for(move m = 0; m < BOARD_SIZ * BOARD_SIZ; ++m)
+            for(move m = 0; m < TOTAL_BOARD_SIZ; ++m)
             {
                 move_to_coord(m, &x, &y);
                 dst[m] = src[coord_to_move(y, side_len - x)];
@@ -75,12 +75,12 @@ void matrix_rotate2(
     switch(rotations)
     {
         case 0:
-            memcpy(dst->value, src->value, BOARD_SIZ * BOARD_SIZ *
+            memcpy(dst->value, src->value, TOTAL_BOARD_SIZ *
                 sizeof(double));
-            memcpy(dst->tested, src->tested, BOARD_SIZ * BOARD_SIZ);
+            memcpy(dst->tested, src->tested, TOTAL_BOARD_SIZ);
             break;
         case 1:
-            for(move m = 0; m < BOARD_SIZ * BOARD_SIZ; ++m)
+            for(move m = 0; m < TOTAL_BOARD_SIZ; ++m)
             {
                 move_to_coord(m, &x, &y);
                 move n = coord_to_move(BOARD_SIZ - 1 - y, x);
@@ -89,14 +89,14 @@ void matrix_rotate2(
             }
             break;
         case 2:
-            for(move m = 0; m < BOARD_SIZ * BOARD_SIZ; ++m)
+            for(move m = 0; m < TOTAL_BOARD_SIZ; ++m)
             {
-                dst->value[m] = src->value[BOARD_SIZ * BOARD_SIZ - 1 - m];
-                dst->tested[m] = src->tested[BOARD_SIZ * BOARD_SIZ - 1 - m];
+                dst->value[m] = src->value[TOTAL_BOARD_SIZ - 1 - m];
+                dst->tested[m] = src->tested[TOTAL_BOARD_SIZ - 1 - m];
             }
             break;
         case 3:
-            for(move m = 0; m < BOARD_SIZ * BOARD_SIZ; ++m)
+            for(move m = 0; m < TOTAL_BOARD_SIZ; ++m)
             {
                 move_to_coord(m, &x, &y);
                 move n = coord_to_move(y, BOARD_SIZ - 1 - x);
@@ -121,7 +121,7 @@ void matrix_flip(
     u8 y;
 
     --side_len;
-    for(move m = 0; m < BOARD_SIZ * BOARD_SIZ; ++m)
+    for(move m = 0; m < TOTAL_BOARD_SIZ; ++m)
     {
         move_to_coord(m, &x, &y);
         dst[m] = src[coord_to_move(side_len - x, y)];
@@ -138,7 +138,7 @@ void matrix_flip2(
     u8 x;
     u8 y;
 
-    for(move m = 0; m < BOARD_SIZ * BOARD_SIZ; ++m)
+    for(move m = 0; m < TOTAL_BOARD_SIZ; ++m)
     {
         move_to_coord(m, &x, &y);
         move n = coord_to_move(BOARD_SIZ - 1 - x, y);

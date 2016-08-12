@@ -38,20 +38,20 @@ explicitly said so.
 #include "zobrist.h"
 
 
-u8 out_neighbors8[BOARD_SIZ * BOARD_SIZ];
-u8 out_neighbors4[BOARD_SIZ * BOARD_SIZ];
-move_seq neighbors_side[BOARD_SIZ * BOARD_SIZ];
-move_seq neighbors_diag[BOARD_SIZ * BOARD_SIZ];
-move_seq neighbors_3x3[BOARD_SIZ * BOARD_SIZ];
+u8 out_neighbors8[TOTAL_BOARD_SIZ];
+u8 out_neighbors4[TOTAL_BOARD_SIZ];
+move_seq neighbors_side[TOTAL_BOARD_SIZ];
+move_seq neighbors_diag[TOTAL_BOARD_SIZ];
+move_seq neighbors_3x3[TOTAL_BOARD_SIZ];
 
-bool border_left[BOARD_SIZ * BOARD_SIZ];
-bool border_right[BOARD_SIZ * BOARD_SIZ];
-bool border_top[BOARD_SIZ * BOARD_SIZ];
-bool border_bottom[BOARD_SIZ * BOARD_SIZ];
+bool border_left[TOTAL_BOARD_SIZ];
+bool border_right[TOTAL_BOARD_SIZ];
+bool border_top[TOTAL_BOARD_SIZ];
+bool border_bottom[TOTAL_BOARD_SIZ];
 
 /* for 3x3 neighborhood Zobrist hashing */
-extern u16 iv_3x3[BOARD_SIZ * BOARD_SIZ][BOARD_SIZ * BOARD_SIZ][3];
-extern u16 initial_3x3_hash[BOARD_SIZ * BOARD_SIZ];
+extern u16 iv_3x3[TOTAL_BOARD_SIZ][TOTAL_BOARD_SIZ][3];
+extern u16 initial_3x3_hash[TOTAL_BOARD_SIZ];
 
 u8 dyn_active_bits[256]; /* number of active bits for every byte combination */
 static bool cfg_inited = false;
@@ -82,10 +82,10 @@ void cfg_board_init()
     /* Adjacent neighbor positions */
     init_moves_by_distance(neighbors_side, 1, false);
 
-    memset(border_left, false, BOARD_SIZ * BOARD_SIZ);
-    memset(border_right, false, BOARD_SIZ * BOARD_SIZ);
-    memset(border_top, false, BOARD_SIZ * BOARD_SIZ);
-    memset(border_bottom, false, BOARD_SIZ * BOARD_SIZ);
+    memset(border_left, false, TOTAL_BOARD_SIZ);
+    memset(border_right, false, TOTAL_BOARD_SIZ);
+    memset(border_top, false, TOTAL_BOARD_SIZ);
+    memset(border_bottom, false, TOTAL_BOARD_SIZ);
 
     /* Diagonal neighbor positions */
     for(d8 x = 0; x < BOARD_SIZ; ++x)
@@ -114,13 +114,13 @@ void cfg_board_init()
         }
 
     /* 3x3 positions excluding self */
-    memcpy(neighbors_3x3, neighbors_side, BOARD_SIZ * BOARD_SIZ *
+    memcpy(neighbors_3x3, neighbors_side, TOTAL_BOARD_SIZ *
         sizeof(move_seq));
-    for(move m = 0; m < BOARD_SIZ * BOARD_SIZ; ++m)
+    for(move m = 0; m < TOTAL_BOARD_SIZ; ++m)
         copy_moves(&neighbors_3x3[m], &neighbors_diag[m]);
 
-    memset(out_neighbors4, 0, BOARD_SIZ * BOARD_SIZ);
-    memset(out_neighbors8, 0, BOARD_SIZ * BOARD_SIZ);
+    memset(out_neighbors4, 0, TOTAL_BOARD_SIZ);
+    memset(out_neighbors8, 0, TOTAL_BOARD_SIZ);
     for(u8 i = 0; i < BOARD_SIZ; ++i)
     {
         out_neighbors4[coord_to_move(i, 0)] = out_neighbors4[coord_to_move(0,
@@ -400,7 +400,7 @@ static void add_stone(
     cb->g[m]->is_black = is_black;
     cb->g[m]->liberties = 0;
     memset(cb->g[m]->ls, 0, LIB_BITMAP_SIZ);
-    cb->g[m]->liberties_min_coord = BOARD_SIZ * BOARD_SIZ;
+    cb->g[m]->liberties_min_coord = TOTAL_BOARD_SIZ;
     cb->g[m]->neighbors_count = 0;
     cb->g[m]->stones.count = 1;
     cb->g[m]->stones.coord[0] = m;
@@ -528,7 +528,7 @@ bool cfg_board_are_equal(
     cfg_board * restrict a,
     const board * restrict b
 ){
-    return memcmp(a->p, b->p, BOARD_SIZ * BOARD_SIZ) == 0 && a->last_played ==
+    return memcmp(a->p, b->p, TOTAL_BOARD_SIZ) == 0 && a->last_played ==
     b->last_played && a->last_eaten == b->last_eaten;
 }
 
@@ -540,19 +540,19 @@ void cfg_init_board(
 ){
     assert(cfg_inited);
 
-    memset(cb->p, EMPTY, BOARD_SIZ * BOARD_SIZ);
+    memset(cb->p, EMPTY, TOTAL_BOARD_SIZ);
     cb->last_played = cb->last_eaten = NONE;
 
-    memcpy(cb->hash, initial_3x3_hash, BOARD_SIZ * BOARD_SIZ * sizeof(u16));
-    memset(cb->black_neighbors4, 0, BOARD_SIZ * BOARD_SIZ);
-    memset(cb->white_neighbors4, 0, BOARD_SIZ * BOARD_SIZ);
-    memset(cb->black_neighbors8, 0, BOARD_SIZ * BOARD_SIZ);
-    memset(cb->white_neighbors8, 0, BOARD_SIZ * BOARD_SIZ);
-    memset(cb->g, 0, BOARD_SIZ * BOARD_SIZ * sizeof(group *));
+    memcpy(cb->hash, initial_3x3_hash, TOTAL_BOARD_SIZ * sizeof(u16));
+    memset(cb->black_neighbors4, 0, TOTAL_BOARD_SIZ);
+    memset(cb->white_neighbors4, 0, TOTAL_BOARD_SIZ);
+    memset(cb->black_neighbors8, 0, TOTAL_BOARD_SIZ);
+    memset(cb->white_neighbors8, 0, TOTAL_BOARD_SIZ);
+    memset(cb->g, 0, TOTAL_BOARD_SIZ * sizeof(group *));
     cb->empty.count = 0;
     cb->unique_groups_count = 0;
 
-    for(move m = 0; m < BOARD_SIZ * BOARD_SIZ; ++m)
+    for(move m = 0; m < TOTAL_BOARD_SIZ; ++m)
     {
         cb->empty.coord[cb->empty.count] = m;
         cb->empty.count++;
@@ -572,16 +572,16 @@ void cfg_from_board(
     assert(cfg_inited);
 
     memcpy(dst, src, sizeof(board));
-    memcpy(dst->hash, initial_3x3_hash, BOARD_SIZ * BOARD_SIZ * sizeof(u16));
-    memset(dst->black_neighbors4, 0, BOARD_SIZ * BOARD_SIZ);
-    memset(dst->white_neighbors4, 0, BOARD_SIZ * BOARD_SIZ);
-    memset(dst->black_neighbors8, 0, BOARD_SIZ * BOARD_SIZ);
-    memset(dst->white_neighbors8, 0, BOARD_SIZ * BOARD_SIZ);
-    memset(dst->g, 0, BOARD_SIZ * BOARD_SIZ * sizeof(group *));
+    memcpy(dst->hash, initial_3x3_hash, TOTAL_BOARD_SIZ * sizeof(u16));
+    memset(dst->black_neighbors4, 0, TOTAL_BOARD_SIZ);
+    memset(dst->white_neighbors4, 0, TOTAL_BOARD_SIZ);
+    memset(dst->black_neighbors8, 0, TOTAL_BOARD_SIZ);
+    memset(dst->white_neighbors8, 0, TOTAL_BOARD_SIZ);
+    memset(dst->g, 0, TOTAL_BOARD_SIZ * sizeof(group *));
     dst->empty.count = 0;
     dst->unique_groups_count = 0;
 
-    for(move m = 0; m < BOARD_SIZ * BOARD_SIZ; ++m)
+    for(move m = 0; m < TOTAL_BOARD_SIZ; ++m)
         if(src->p[m] == EMPTY)
         {
             dst->empty.coord[dst->empty.count] = m;
@@ -603,9 +603,9 @@ void cfg_board_clone(
     assert(cfg_inited);
 
     /* copy most of the structure */
-    memcpy(dst, src, sizeof(cfg_board) - (BOARD_SIZ * BOARD_SIZ * sizeof(group
+    memcpy(dst, src, sizeof(cfg_board) - (TOTAL_BOARD_SIZ * sizeof(group
         *)));
-    memset(dst->g, 0, BOARD_SIZ * BOARD_SIZ * sizeof(group *));
+    memset(dst->g, 0, TOTAL_BOARD_SIZ * sizeof(group *));
 
     for(u8 i = 0; i < src->unique_groups_count; ++i)
     {
@@ -720,7 +720,7 @@ static void cfg_board_kill_group3(
     cfg_board * cb,
     group * g,
     u8 own,
-    bool stones_removed[BOARD_SIZ * BOARD_SIZ],
+    bool stones_removed[TOTAL_BOARD_SIZ],
     u8 rem_nei_libs[LIB_BITMAP_SIZ]
 ){
     move id = g->stones.coord[0];
@@ -1036,7 +1036,7 @@ void just_play3(
     move m,
     bool is_black,
     d16 * stone_difference,
-    bool stones_removed[BOARD_SIZ * BOARD_SIZ],
+    bool stones_removed[TOTAL_BOARD_SIZ],
     u8 rem_nei_libs[LIB_BITMAP_SIZ]
 ){
     assert(verify_cfg_board(cb));
@@ -1227,7 +1227,7 @@ u8 libs_after_play(
     /* warning: some fields are not initialized because they're not used */
     group g;
     g.liberties = 0;
-    g.liberties_min_coord = BOARD_SIZ * BOARD_SIZ;
+    g.liberties_min_coord = TOTAL_BOARD_SIZ;
     memset(g.ls, 0, LIB_BITMAP_SIZ);
     add_liberty_unchecked(&g, m);
 
@@ -1453,7 +1453,7 @@ u8 safe_to_play(
     /* warning: some fields are not initialized because they're not used */
     group g;
     g.liberties = 0;
-    g.liberties_min_coord = BOARD_SIZ * BOARD_SIZ;
+    g.liberties_min_coord = TOTAL_BOARD_SIZ;
     memset(g.ls, 0, LIB_BITMAP_SIZ);
     add_liberty_unchecked(&g, m);
 
@@ -1876,7 +1876,7 @@ move get_next_liberty(
     const group * g,
     move start
 ){
-    for(move m = start + 1; m < BOARD_SIZ * BOARD_SIZ; ++m)
+    for(move m = start + 1; m < TOTAL_BOARD_SIZ; ++m)
     {
         u8 mask = (1 << (m % 8));
         if(g->ls[m / 8] & mask)
@@ -1932,7 +1932,7 @@ void fprint_cfg_board(
     release(s);
 
     fprintf(fp, "\nSTONES\n");
-    for(move m = 0; m < BOARD_SIZ * BOARD_SIZ; ++m)
+    for(move m = 0; m < TOTAL_BOARD_SIZ; ++m)
     {
         if(cb->g[m] == NULL)
             fprintf(fp, "   %c", EMPTY_STONE_CHAR);
@@ -1943,7 +1943,7 @@ void fprint_cfg_board(
     }
 
     fprintf(fp, "\nLIBERTIES\n");
-    for(move m = 0; m < BOARD_SIZ * BOARD_SIZ; ++m)
+    for(move m = 0; m < TOTAL_BOARD_SIZ; ++m)
     {
         if(cb->g[m] == NULL)
             fprintf(fp, "   %c", EMPTY_STONE_CHAR);
@@ -1954,7 +1954,7 @@ void fprint_cfg_board(
     }
 
     fprintf(fp, "\nUNIQUES %u\n", cb->unique_groups_count);
-    for(move m = 0; m < BOARD_SIZ * BOARD_SIZ; ++m)
+    for(move m = 0; m < TOTAL_BOARD_SIZ; ++m)
     {
         if(cb->g[m] == NULL)
             fprintf(fp, "   %c", EMPTY_STONE_CHAR);
@@ -1965,7 +1965,7 @@ void fprint_cfg_board(
     }
 
     fprintf(fp, "\nHASHES %u\n", cb->unique_groups_count);
-    for(move m = 0; m < BOARD_SIZ * BOARD_SIZ; ++m)
+    for(move m = 0; m < TOTAL_BOARD_SIZ; ++m)
     {
         fprintf(fp, " %04x", cb->hash[m]);
         if(((m + 1) % BOARD_SIZ) == 0)
@@ -1985,7 +1985,7 @@ bool verify_cfg_board(
         fprintf(stderr, "error: verify_cfg_board: null reference\n");
         return false;
     }
-    for(move m = 0; m < BOARD_SIZ * BOARD_SIZ; ++m)
+    for(move m = 0; m < TOTAL_BOARD_SIZ; ++m)
     {
         if(cb->p[m] != EMPTY && cb->p[m] != BLACK_STONE && cb->p[m] !=
             WHITE_STONE)
@@ -2085,7 +2085,7 @@ bool verify_cfg_board(
                 return false;
             }
 
-            if(g->stones.count > BOARD_SIZ * BOARD_SIZ)
+            if(g->stones.count > TOTAL_BOARD_SIZ)
             {
                 fprintf(stderr,
                     "error: verify_cfg_board: illegal number of stones\n");
@@ -2147,7 +2147,7 @@ bool verify_cfg_board(
         return false;
     }
 
-    if(cb->empty.count > BOARD_SIZ * BOARD_SIZ)
+    if(cb->empty.count > TOTAL_BOARD_SIZ)
     {
         fprintf(stderr,
             "error: verify_cfg_board: illegal number of empty points (%u)\n",

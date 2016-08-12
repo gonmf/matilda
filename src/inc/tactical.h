@@ -186,7 +186,7 @@ intersections adjacent to liberties of nearby groups, plus the 3x3 neighborhood
 of the intersection m. near_pos is cleared before marking.
 */
 void mark_near_pos(
-    bool near_pos[BOARD_SIZ * BOARD_SIZ],
+    bool near_pos[TOTAL_BOARD_SIZ],
     const cfg_board * cb,
     move m
 );
@@ -197,7 +197,7 @@ shared liberties or one shared liberty and two eyes, that have the same or
 almost the same number of stones.
 */
 void mark_pts_in_seki(
-    bool in_seki[BOARD_SIZ * BOARD_SIZ],
+    bool in_seki[TOTAL_BOARD_SIZ],
     cfg_board * cb
 );
 

@@ -25,7 +25,7 @@ Simple board definition
 Warning: don't change the order of the fields
 */
 typedef struct __board_ {
-	u8 p[BOARD_SIZ * BOARD_SIZ];
+	u8 p[TOTAL_BOARD_SIZ];
 	move last_eaten;
 	move last_played;
 } board;
@@ -55,8 +55,8 @@ WARNING: DO NOT CHANGE
 #define ILLEGAL     3 /* seldom used */
 
 typedef struct __out_board_ {
-	double value[BOARD_SIZ * BOARD_SIZ];
-	bool tested[BOARD_SIZ * BOARD_SIZ];
+	double value[TOTAL_BOARD_SIZ];
+	bool tested[TOTAL_BOARD_SIZ];
 	double pass;
 } out_board;
 
@@ -68,7 +68,7 @@ typedef struct __out_board_ {
 /*
 Number of bytes needed to store SxS positions, 2 bits per position
 */
-#define PACKED_BOARD_SIZ (BOARD_SIZ * BOARD_SIZ / 4 + 1)
+#define PACKED_BOARD_SIZ (TOTAL_BOARD_SIZ / 4 + 1)
 
 
 
@@ -78,7 +78,7 @@ representation.
 */
 void pack_matrix(
     u8 dst[PACKED_BOARD_SIZ],
-    const u8 src[BOARD_SIZ * BOARD_SIZ]
+    const u8 src[TOTAL_BOARD_SIZ]
 );
 
 /*
@@ -86,7 +86,7 @@ Converts a 2 bit per position representation into a 1 byte per position
 representation.
 */
 void unpack_matrix(
-    u8 dst[BOARD_SIZ * BOARD_SIZ],
+    u8 dst[TOTAL_BOARD_SIZ],
     const u8 src[PACKED_BOARD_SIZ]
 );
 
@@ -104,7 +104,7 @@ Counts the number of non-empty intersections on the board.
 RETURNS stone count
 */
 u16 stone_count(
-    const u8 p[BOARD_SIZ * BOARD_SIZ]
+    const u8 p[TOTAL_BOARD_SIZ]
 );
 
 /*
@@ -112,7 +112,7 @@ Counts the difference in the number of black and white stones on the board.
 RETURNS difference in stone numbers, positive values for more black stones
 */
 d16 stone_diff(
-    const u8 p[BOARD_SIZ * BOARD_SIZ]
+    const u8 p[TOTAL_BOARD_SIZ]
 );
 
 /*
@@ -121,7 +121,7 @@ count is affected with the stone count and diff is affected with the difference
 in stone colors (positive values if more black stones).
 */
 void stone_count_and_diff(
-    const u8 p[BOARD_SIZ * BOARD_SIZ],
+    const u8 p[TOTAL_BOARD_SIZ],
     u16 * count, d16 * diff
 );
 
@@ -129,7 +129,7 @@ void stone_count_and_diff(
 Inverts the color of the stones on the board.
 */
 void invert_color(
-    u8 p[BOARD_SIZ * BOARD_SIZ]
+    u8 p[TOTAL_BOARD_SIZ]
 );
 
 /*
@@ -198,7 +198,7 @@ RETURNS string representation
 */
 void board_to_string(
     char * dst,
-    const u8 p[BOARD_SIZ * BOARD_SIZ],
+    const u8 p[TOTAL_BOARD_SIZ],
     move last_played,
     move last_eaten
 );

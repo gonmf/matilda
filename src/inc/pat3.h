@@ -72,7 +72,7 @@ with board safety.
 */
 void pat3_transpose(
     u8 dst[3][3],
-    const u8 p[BOARD_SIZ * BOARD_SIZ],
+    const u8 p[TOTAL_BOARD_SIZ],
     move m
 );
 

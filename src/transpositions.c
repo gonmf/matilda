@@ -116,7 +116,7 @@ static tt_stats * find_state(
 
     while(p != NULL)
     {
-        if(p->zobrist_hash == hash && memcmp(p->p, b->p, BOARD_SIZ * BOARD_SIZ)
+        if(p->zobrist_hash == hash && memcmp(p->p, b->p, TOTAL_BOARD_SIZ)
             == 0 && p->last_eaten == b->last_eaten && p->last_passed ==
             last_passed)
             return p;
@@ -144,7 +144,7 @@ static tt_stats * find_state2(
 
     while(p != NULL)
     {
-        if(p->zobrist_hash == hash && memcmp(p->p, cb->p, BOARD_SIZ * BOARD_SIZ)
+        if(p->zobrist_hash == hash && memcmp(p->p, cb->p, TOTAL_BOARD_SIZ)
             == 0 && p->last_eaten == cb->last_eaten && p->last_passed ==
             last_passed)
             return p;
@@ -335,7 +335,7 @@ tt_stats * transpositions_lookup_create(
         }
 
         ret = create_state(hash);
-        memcpy(ret->p, b->p, BOARD_SIZ * BOARD_SIZ);
+        memcpy(ret->p, b->p, TOTAL_BOARD_SIZ);
         ret->last_eaten = b->last_eaten;
         ret->last_passed = (b->last_played == PASS);
         omp_set_lock(&ret->lock);
@@ -388,7 +388,7 @@ tt_stats * transpositions_lookup_null(
         }
 
         ret = create_state(hash);
-        memcpy(ret->p, cb->p, BOARD_SIZ * BOARD_SIZ);
+        memcpy(ret->p, cb->p, TOTAL_BOARD_SIZ);
         ret->last_eaten = cb->last_eaten;
         ret->last_passed = (cb->last_played == PASS);
         omp_set_lock(&ret->lock);

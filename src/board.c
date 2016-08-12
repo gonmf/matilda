@@ -28,10 +28,10 @@ representation.
 */
 void pack_matrix(
     u8 dst[PACKED_BOARD_SIZ],
-    const u8 src[BOARD_SIZ * BOARD_SIZ]
+    const u8 src[TOTAL_BOARD_SIZ]
 ){
     memset(dst, 0, PACKED_BOARD_SIZ);
-    for(move m = 0; m < BOARD_SIZ * BOARD_SIZ; ++m)
+    for(move m = 0; m < TOTAL_BOARD_SIZ; ++m)
         dst[m / 4] |= src[m] << ((m % 4) * 2);
 }
 
@@ -40,10 +40,10 @@ Converts a 2 bit per position representation into a 1 byte per position
 representation.
 */
 void unpack_matrix(
-    u8 dst[BOARD_SIZ * BOARD_SIZ],
+    u8 dst[TOTAL_BOARD_SIZ],
     const u8 src[PACKED_BOARD_SIZ]
 ){
-    for(move m = 0; m < BOARD_SIZ * BOARD_SIZ; ++m)
+    for(move m = 0; m < TOTAL_BOARD_SIZ; ++m)
         dst[m] = (src[m / 4] >> ((m % 4) * 2)) & 0x3;
 }
 
@@ -56,7 +56,7 @@ bool board_are_equal(
     board * restrict a,
     const board * restrict b
 ){
-    return memcmp(a->p, b->p, BOARD_SIZ * BOARD_SIZ) == 0 && a->last_played ==
+    return memcmp(a->p, b->p, TOTAL_BOARD_SIZ) == 0 && a->last_played ==
         b->last_played && a->last_eaten == b->last_eaten;
 }
 
@@ -66,10 +66,10 @@ Counts the number of non-empty intersections on the board.
 RETURNS stone count
 */
 u16 stone_count(
-    const u8 p[BOARD_SIZ * BOARD_SIZ]
+    const u8 p[TOTAL_BOARD_SIZ]
 ){
     u16 count = 0;
-    for(move m = 0; m < BOARD_SIZ * BOARD_SIZ; ++m)
+    for(move m = 0; m < TOTAL_BOARD_SIZ; ++m)
         if(p[m] != EMPTY)
             ++count;
     return count;
@@ -80,10 +80,10 @@ Counts the difference in the number of black and white stones on the board.
 RETURNS difference in stone numbers, positive values for more black stones
 */
 d16 stone_diff(
-    const u8 p[BOARD_SIZ * BOARD_SIZ]
+    const u8 p[TOTAL_BOARD_SIZ]
 ){
     d16 diff = 0;
-    for(move m = 0; m < BOARD_SIZ * BOARD_SIZ; ++m)
+    for(move m = 0; m < TOTAL_BOARD_SIZ; ++m)
         if(p[m] == BLACK_STONE)
             ++diff;
         else
@@ -98,12 +98,12 @@ count is affected with the stone count and diff is affected with the difference
 in stone colors (positive values if more black stones).
 */
 void stone_count_and_diff(
-    const u8 p[BOARD_SIZ * BOARD_SIZ],
+    const u8 p[TOTAL_BOARD_SIZ],
     u16 * count, d16 * diff
 ){
     d16 d = 0;
     u16 c = 0;
-    for(move m = 0; m < BOARD_SIZ * BOARD_SIZ; ++m)
+    for(move m = 0; m < TOTAL_BOARD_SIZ; ++m)
         if(p[m] == BLACK_STONE)
         {
             ++d;
@@ -122,9 +122,9 @@ void stone_count_and_diff(
 Inverts the color of the stones on the board.
 */
 void invert_color(
-    u8 p[BOARD_SIZ * BOARD_SIZ]
+    u8 p[TOTAL_BOARD_SIZ]
 ){
-    for(move m = 0; m < BOARD_SIZ * BOARD_SIZ; ++m)
+    for(move m = 0; m < TOTAL_BOARD_SIZ; ++m)
         if(p[m] == BLACK_STONE)
             p[m] = WHITE_STONE;
         else
@@ -145,16 +145,16 @@ d8 reduce_auto(
     if(!is_black)
         invert_color(b->p);
 
-    u8 r1[BOARD_SIZ * BOARD_SIZ];
-    u8 r2[BOARD_SIZ * BOARD_SIZ];
-    u8 r3[BOARD_SIZ * BOARD_SIZ];
+    u8 r1[TOTAL_BOARD_SIZ];
+    u8 r2[TOTAL_BOARD_SIZ];
+    u8 r3[TOTAL_BOARD_SIZ];
     matrix_rotate(r1, b->p, BOARD_SIZ, 1);
     matrix_rotate(r2, b->p, BOARD_SIZ, 2);
     matrix_rotate(r3, b->p, BOARD_SIZ, 3);
-    u8 f0[BOARD_SIZ * BOARD_SIZ];
-    u8 f1[BOARD_SIZ * BOARD_SIZ];
-    u8 f2[BOARD_SIZ * BOARD_SIZ];
-    u8 f3[BOARD_SIZ * BOARD_SIZ];
+    u8 f0[TOTAL_BOARD_SIZ];
+    u8 f1[TOTAL_BOARD_SIZ];
+    u8 f2[TOTAL_BOARD_SIZ];
+    u8 f3[TOTAL_BOARD_SIZ];
     matrix_flip(f0, b->p, BOARD_SIZ);
     matrix_flip(f1, r1, BOARD_SIZ);
     matrix_flip(f2, r2, BOARD_SIZ);
@@ -162,43 +162,43 @@ d8 reduce_auto(
 
     d8 reduction = NOREDUCE;
     void * champion = b->p;
-    if(memcmp(champion, r1, BOARD_SIZ * BOARD_SIZ) > 0)
+    if(memcmp(champion, r1, TOTAL_BOARD_SIZ) > 0)
     {
         champion = r1;
         reduction = ROTATE90;
     }
 
-    if(memcmp(champion, r2, BOARD_SIZ * BOARD_SIZ) > 0)
+    if(memcmp(champion, r2, TOTAL_BOARD_SIZ) > 0)
     {
         champion = r2;
         reduction = ROTATE180;
     }
 
-    if(memcmp(champion, r3, BOARD_SIZ * BOARD_SIZ) > 0)
+    if(memcmp(champion, r3, TOTAL_BOARD_SIZ) > 0)
     {
         champion = r3;
         reduction = ROTATE270;
     }
 
-    if(memcmp(champion, f0, BOARD_SIZ * BOARD_SIZ) > 0)
+    if(memcmp(champion, f0, TOTAL_BOARD_SIZ) > 0)
     {
         champion = f0;
         reduction = ROTFLIP0;
     }
 
-    if(memcmp(champion, f1, BOARD_SIZ * BOARD_SIZ) > 0)
+    if(memcmp(champion, f1, TOTAL_BOARD_SIZ) > 0)
     {
         champion = f1;
         reduction = ROTFLIP90;
     }
 
-    if(memcmp(champion, f2, BOARD_SIZ * BOARD_SIZ) > 0)
+    if(memcmp(champion, f2, TOTAL_BOARD_SIZ) > 0)
     {
         champion = f2;
         reduction = ROTFLIP180;
     }
 
-    if(memcmp(champion, f3, BOARD_SIZ * BOARD_SIZ) > 0)
+    if(memcmp(champion, f3, TOTAL_BOARD_SIZ) > 0)
     {
         reduction = ROTFLIP270;
     }
@@ -206,25 +206,25 @@ d8 reduce_auto(
     switch(reduction)
     {
         case ROTATE90:
-            memcpy(b->p, r1, BOARD_SIZ * BOARD_SIZ);
+            memcpy(b->p, r1, TOTAL_BOARD_SIZ);
             break;
         case ROTATE180:
-            memcpy(b->p, r2, BOARD_SIZ * BOARD_SIZ);
+            memcpy(b->p, r2, TOTAL_BOARD_SIZ);
             break;
         case ROTATE270:
-            memcpy(b->p, r3, BOARD_SIZ * BOARD_SIZ);
+            memcpy(b->p, r3, TOTAL_BOARD_SIZ);
             break;
         case ROTFLIP0:
-            memcpy(b->p, f0, BOARD_SIZ * BOARD_SIZ);
+            memcpy(b->p, f0, TOTAL_BOARD_SIZ);
             break;
         case ROTFLIP90:
-            memcpy(b->p, f1, BOARD_SIZ * BOARD_SIZ);
+            memcpy(b->p, f1, TOTAL_BOARD_SIZ);
             break;
         case ROTFLIP180:
-            memcpy(b->p, f2, BOARD_SIZ * BOARD_SIZ);
+            memcpy(b->p, f2, TOTAL_BOARD_SIZ);
             break;
         case ROTFLIP270:
-            memcpy(b->p, f3, BOARD_SIZ * BOARD_SIZ);
+            memcpy(b->p, f3, TOTAL_BOARD_SIZ);
             break;
     }
 
@@ -250,8 +250,8 @@ void reduce_fixed(
     if(method == NOREDUCE)
         return;
 
-    u8 r[BOARD_SIZ * BOARD_SIZ];
-    u8 f[BOARD_SIZ * BOARD_SIZ];
+    u8 r[TOTAL_BOARD_SIZ];
+    u8 f[TOTAL_BOARD_SIZ];
     switch(method)
     {
         case ROTATE90:
@@ -279,7 +279,7 @@ void reduce_fixed(
             matrix_flip(r, f, BOARD_SIZ);
             break;
     }
-    memcpy(b->p, r, BOARD_SIZ * BOARD_SIZ);
+    memcpy(b->p, r, TOTAL_BOARD_SIZ);
 
     b->last_played = reduce_move(b->last_played, method);
     b->last_eaten = reduce_move(b->last_eaten, method);

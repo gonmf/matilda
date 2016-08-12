@@ -151,6 +151,8 @@ It is reset when the major mark is increased.
 
 
 
+#define TOTAL_BOARD_SIZ (BOARD_SIZ * BOARD_SIZ)
+
 /*
 Preprocessor stringification of board size.
 */

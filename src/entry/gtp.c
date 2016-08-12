@@ -1099,12 +1099,12 @@ static void gtp_final_status_list(
     board current_state;
     current_game_state(&current_state, &current_game);
 
-    u8 e[BOARD_SIZ * BOARD_SIZ];
+    u8 e[TOTAL_BOARD_SIZ];
     estimate_final_position(e, &current_state, is_black);
 
     if(strcmp(status, "dead") == 0)
     {
-        for(move m = 0; m < BOARD_SIZ * BOARD_SIZ; ++m)
+        for(move m = 0; m < TOTAL_BOARD_SIZ; ++m)
             if(current_state.p[m] != EMPTY && e[m] != current_state.p[m])
             {
                 coord_to_alpha_num(mstr, m);
@@ -1115,7 +1115,7 @@ static void gtp_final_status_list(
     else
         if(strcmp(status, "alive") == 0)
         {
-            for(move m = 0; m < BOARD_SIZ * BOARD_SIZ; ++m)
+            for(move m = 0; m < TOTAL_BOARD_SIZ; ++m)
                 if(current_state.p[m] != EMPTY && e[m] == current_state.p[m])
                 {
                     coord_to_alpha_num(mstr, m);
@@ -1277,7 +1277,7 @@ static void gtp_final_position(
     current_game_state(&current_state, &current_game);
     bool is_black = current_player_color(&current_game);
 
-    u8 e[BOARD_SIZ * BOARD_SIZ];
+    u8 e[TOTAL_BOARD_SIZ];
     estimate_final_position(e, &current_state, is_black);
 
     char * s = alloc();
@@ -1327,7 +1327,7 @@ static void gtp_place_free_handicap(
         error_msg(fp, id, "board is not empty");
         return;
     }
-    if(num_stones < 2 || num_stones > BOARD_SIZ * BOARD_SIZ - 1)
+    if(num_stones < 2 || num_stones > TOTAL_BOARD_SIZ - 1)
     {
         error_msg(fp, id, "invalid number of stones");
         return;
@@ -1391,7 +1391,7 @@ static void gtp_set_free_handicap(
         error_msg(fp, id, "board is not empty");
         return;
     }
-    if(num_vertices < 2 || num_vertices > BOARD_SIZ * BOARD_SIZ - 1)
+    if(num_vertices < 2 || num_vertices > TOTAL_BOARD_SIZ - 1)
     {
         error_msg(fp, id, "bad vertex list");
         return;
@@ -1639,14 +1639,14 @@ to %u milliseconds", network_roundtrip_delay);
             continue;
 
         u16 argc = 0;
-        char * args[BOARD_SIZ * BOARD_SIZ];
-        for(u16 i = 0; i < BOARD_SIZ * BOARD_SIZ; ++i)
+        char * args[TOTAL_BOARD_SIZ];
+        for(u16 i = 0; i < TOTAL_BOARD_SIZ; ++i)
         {
             args[i] = strtok_r(NULL, " |", &save_ptr);
             if(args[i] == NULL)
             {
                 ++i;
-                for(; i < BOARD_SIZ * BOARD_SIZ; ++i)
+                for(; i < TOTAL_BOARD_SIZ; ++i)
                     args[i] = NULL;
                 break;
             }

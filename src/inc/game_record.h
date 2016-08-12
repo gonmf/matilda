@@ -22,7 +22,7 @@ http://www.weddslist.com/kgs/past/superko.html
 #include "move.h"
 #include "board.h"
 
-#define MAX_GAME_LENGTH (BOARD_SIZ * BOARD_SIZ * 8)
+#define MAX_GAME_LENGTH (TOTAL_BOARD_SIZ * 8)
 
 #define MAX_PLAYER_NAME_SIZ 32
 

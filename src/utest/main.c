@@ -21,7 +21,7 @@
 #include "flog.h"
 #include "alloc.h"
 
-extern u16 iv_3x3[BOARD_SIZ * BOARD_SIZ][BOARD_SIZ * BOARD_SIZ][3];
+extern u16 iv_3x3[TOTAL_BOARD_SIZ][TOTAL_BOARD_SIZ][3];
 
 static char _ts[MAX_PAGE_SIZ];
 static char * _timestamp(){
@@ -54,9 +54,9 @@ static void test_cfg_board()
         massert(cfg_board_are_equal(&cb, &b), "cfg_from_board");
 
         bool is_black = true;
-        for(u16 i = 0; i <= BOARD_SIZ * BOARD_SIZ; ++i)
+        for(u16 i = 0; i <= TOTAL_BOARD_SIZ; ++i)
         {
-            u16 m = rand_u16(BOARD_SIZ * BOARD_SIZ);
+            u16 m = rand_u16(TOTAL_BOARD_SIZ);
 
             cfg_board sb2;
             cfg_board sb3;
@@ -86,8 +86,8 @@ static void test_cfg_board()
 
             just_play(&sb2, m, is_black);
             massert(cfg_board_are_equal(&sb2, &b), "just_play2");
-            bool stones_cap[BOARD_SIZ * BOARD_SIZ];
-            memset(stones_cap, 0, BOARD_SIZ * BOARD_SIZ);
+            bool stones_cap[TOTAL_BOARD_SIZ];
+            memset(stones_cap, 0, TOTAL_BOARD_SIZ);
             u8 tmp4[LIB_BITMAP_SIZ];
             d16 stone_diff2 = 0;
             just_play3(&sb3, m, is_black, &stone_diff2, stones_cap, tmp4);
@@ -97,7 +97,7 @@ static void test_cfg_board()
             cfg_board_free(&sb3);
 
             u16 stones_captured4 = 0;
-            for(move k = 0; k < BOARD_SIZ * BOARD_SIZ; ++k)
+            for(move k = 0; k < TOTAL_BOARD_SIZ; ++k)
                 if(stones_cap[k])
                     ++stones_captured4;
             massert(stone_diff == stone_diff2, "stone_diff1/2");
@@ -107,7 +107,7 @@ ed4");
             /*
             Test liberty counts for both players
             */
-            for(move m = 0; m < BOARD_SIZ * BOARD_SIZ; ++m)
+            for(move m = 0; m < TOTAL_BOARD_SIZ; ++m)
                 if(b.p[m] == EMPTY && m != b.last_eaten){
                     u16 stones_captured1;
                     u8 l1 = libs_after_play_slow(&b, m, is_black,
@@ -139,7 +139,7 @@ ed4");
 
             is_black = !is_black;
 
-            for(move m = 0; m < BOARD_SIZ * BOARD_SIZ; ++m)
+            for(move m = 0; m < TOTAL_BOARD_SIZ; ++m)
                 if(b.p[m] == EMPTY && m != b.last_eaten)
                 {
                     u16 stones_captured1;
@@ -211,16 +211,16 @@ static void test_pattern(){
     for(u32 tries = 0; tries < 50; ++tries){
         bool is_black = true;
         cfg_from_board(&cb, &b);
-        for(move ki = 0; ki < BOARD_SIZ * BOARD_SIZ; ++ki)
+        for(move ki = 0; ki < TOTAL_BOARD_SIZ; ++ki)
         {
-            move pl = rand_u16(BOARD_SIZ * BOARD_SIZ);
+            move pl = rand_u16(TOTAL_BOARD_SIZ);
 
             if(can_play(&cb, pl, is_black))
                 just_play(&cb, pl, is_black);
             else
                 just_pass(&cb);
 
-            for(move m = 0; m < BOARD_SIZ * BOARD_SIZ; ++m)
+            for(move m = 0; m < TOTAL_BOARD_SIZ; ++m)
             {
                 if(cb.p[m] != EMPTY)
                     continue;
@@ -393,8 +393,8 @@ static void test_board()
         clear_board(&b);
 
         bool is_black = true;
-        for(u16 i = 0; i <= BOARD_SIZ * BOARD_SIZ / 2; ++i){
-            move m = rand_u16(BOARD_SIZ * BOARD_SIZ);
+        for(u16 i = 0; i <= TOTAL_BOARD_SIZ / 2; ++i){
+            move m = rand_u16(TOTAL_BOARD_SIZ);
             if(attempt_play_slow(&b, m, is_black))
                 is_black = !is_black;
         }
@@ -405,7 +405,7 @@ static void test_board()
         pack_matrix(packed, b.p);
         unpack_matrix(b2.p, packed);
 
-        massert(memcmp(b.p, b2.p, BOARD_SIZ * BOARD_SIZ) == 0,
+        massert(memcmp(b.p, b2.p, TOTAL_BOARD_SIZ) == 0,
             "packing/unpacking");
 
 

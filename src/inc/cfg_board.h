@@ -31,7 +31,7 @@ explicitly said so.
 #include "move.h"
 #include "types.h"
 
-#define LIB_BITMAP_SIZ ((BOARD_SIZ * BOARD_SIZ) / 8 + 1)
+#define LIB_BITMAP_SIZ (TOTAL_BOARD_SIZ / 8 + 1)
 
 #define MAX_GROUPS (((BOARD_SIZ / 2) + 1) * BOARD_SIZ)
 
@@ -58,18 +58,18 @@ to that group, and the g field specifies the group that possesses a certain
 intersection (or NULL). So to get the group do cb->g[unique_groups[idx]].
 */
 typedef struct __cfg_board_ {
-	u8 p[BOARD_SIZ * BOARD_SIZ];
+	u8 p[TOTAL_BOARD_SIZ];
 	move last_eaten;
 	move last_played;
-	u16 hash[BOARD_SIZ * BOARD_SIZ]; /* hash of the 3x3 neighborhoods */
+	u16 hash[TOTAL_BOARD_SIZ]; /* hash of the 3x3 neighborhoods */
 	move_seq empty; /* free positions of the board */
-	u8 black_neighbors4[BOARD_SIZ * BOARD_SIZ]; /* stones in the neighborhood */
-	u8 white_neighbors4[BOARD_SIZ * BOARD_SIZ];
-	u8 black_neighbors8[BOARD_SIZ * BOARD_SIZ];
-	u8 white_neighbors8[BOARD_SIZ * BOARD_SIZ];
+	u8 black_neighbors4[TOTAL_BOARD_SIZ]; /* stones in the neighborhood */
+	u8 white_neighbors4[TOTAL_BOARD_SIZ];
+	u8 black_neighbors8[TOTAL_BOARD_SIZ];
+	u8 white_neighbors8[TOTAL_BOARD_SIZ];
 	u8 unique_groups_count;
 	move unique_groups[MAX_GROUPS];
-	group * g[BOARD_SIZ * BOARD_SIZ]; /* CFG stone groups or NULL if empty */
+	group * g[TOTAL_BOARD_SIZ]; /* CFG stone groups or NULL if empty */
 } cfg_board;
 
 
@@ -166,7 +166,7 @@ void just_play3(
     move m,
     bool is_black,
     d16 * stone_difference,
-    bool stones_removed[BOARD_SIZ * BOARD_SIZ],
+    bool stones_removed[TOTAL_BOARD_SIZ],
     u8 rem_nei_libs[LIB_BITMAP_SIZ]
 );
 

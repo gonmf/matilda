@@ -49,10 +49,10 @@ int main(
     printf("This process aims to reduce the bit distribution variance of the da\
 ta.\nWhen you are satisfied press ENTER\n\n");
 
-    u64 iv[BOARD_SIZ * BOARD_SIZ][2];
-    memset(iv, 0, BOARD_SIZ * BOARD_SIZ * sizeof(u64));
+    u64 iv[TOTAL_BOARD_SIZ][2];
+    memset(iv, 0, TOTAL_BOARD_SIZ * sizeof(u64));
 
-    u32 table_size = BOARD_SIZ * BOARD_SIZ * 2;
+    u32 table_size = TOTAL_BOARD_SIZ * 2;
     u64 * table = (u64 *)malloc(table_size * sizeof(u64));
     u32 bits[64];
     double best_variance = 999999.0;
@@ -140,8 +140,8 @@ ta.\nWhen you are satisfied press ENTER\n\n");
         exit(EXIT_FAILURE);
     }
 
-    size_t w = fwrite(iv, sizeof(u64), BOARD_SIZ * BOARD_SIZ * 2, h);
-    if(w != BOARD_SIZ * BOARD_SIZ * 2)
+    size_t w = fwrite(iv, sizeof(u64), TOTAL_BOARD_SIZ * 2, h);
+    if(w != TOTAL_BOARD_SIZ * 2)
     {
         fprintf(stderr, "Error: unexpected number of bytes written\n");
         release(filename);

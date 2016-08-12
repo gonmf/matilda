@@ -38,7 +38,7 @@ positive.
 
 #define USE_UCT_BRANCH_LIMITER true
 
-#define MAX_UCT_DEPTH ((BOARD_SIZ * BOARD_SIZ * 2) / 3)
+#define MAX_UCT_DEPTH ((TOTAL_BOARD_SIZ * 2) / 3)
 
 
 /*
@@ -115,8 +115,8 @@ Disable score estimation and return the number of times each position belonged
 to each player color.
 */
 void disable_estimate_score(
-    u32 black_occupied[BOARD_SIZ * BOARD_SIZ],
-    u32 white_occupied[BOARD_SIZ * BOARD_SIZ]
+    u32 black_occupied[TOTAL_BOARD_SIZ],
+    u32 white_occupied[TOTAL_BOARD_SIZ]
 );
 
 /*

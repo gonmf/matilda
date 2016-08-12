@@ -35,7 +35,7 @@ static d32 minimum_samples = (BOARD_SIZ / 2);
 
 typedef struct __simple_state_transition_ {
     u8 p[PACKED_BOARD_SIZ];
-    u32 count[BOARD_SIZ * BOARD_SIZ];
+    u32 count[TOTAL_BOARD_SIZ];
     u32 hash;
 } simple_state_transition;
 
@@ -62,7 +62,7 @@ static u64 get_total_count(
     simple_state_transition * s
 ){
     u32 ret = 0;
-    for(move i = 0; i < BOARD_SIZ * BOARD_SIZ; ++i)
+    for(move i = 0; i < TOTAL_BOARD_SIZ; ++i)
         ret += s->count[i];
     return ret;
 }
@@ -108,7 +108,7 @@ static void export_table_as_ob(
 
             u32 best_count = 0;
             move best = NONE;
-            for(move i = 0; i < BOARD_SIZ * BOARD_SIZ; ++i)
+            for(move i = 0; i < TOTAL_BOARD_SIZ; ++i)
                 if(h->count[i] > best_count)
                 {
                     best_count = h->count[i];
@@ -129,7 +129,7 @@ static void export_table_as_ob(
                 continue;
             }
 
-            u8 p[BOARD_SIZ * BOARD_SIZ];
+            u8 p[TOTAL_BOARD_SIZ];
             unpack_matrix(p, h->p);
 
             move m1 = 0;
@@ -145,7 +145,7 @@ static void export_table_as_ob(
                 bool found = false;
                 if(is_black)
                 {
-                    for(; m1 < BOARD_SIZ * BOARD_SIZ; ++m1)
+                    for(; m1 < TOTAL_BOARD_SIZ; ++m1)
                         if(p[m1] == BLACK_STONE)
                         {
                             coord_to_alpha_num(mstr, m1);
@@ -156,7 +156,7 @@ static void export_table_as_ob(
                             break;
                         }
                 }else
-                    for(; m2 < BOARD_SIZ * BOARD_SIZ; ++m2)
+                    for(; m2 < TOTAL_BOARD_SIZ; ++m2)
                         if(p[m2] == WHITE_STONE)
                         {
                             coord_to_alpha_num(mstr, m2);

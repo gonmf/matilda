@@ -171,7 +171,7 @@ bool superko_violation(
     bool is_b = first_player_color(gr);
     for(u16 i = 0; i < gr->turns; ++i)
     {
-        if(memcmp(tmp.p, current_state.p, BOARD_SIZ * BOARD_SIZ) == 0)
+        if(memcmp(tmp.p, current_state.p, TOTAL_BOARD_SIZ) == 0)
             return true;
 
         if(is_board_move(gr->moves[i]))
@@ -221,15 +221,15 @@ move select_play(
     bool is_black,
     const game_record * gr
 ){
-    double qualities[BOARD_SIZ * BOARD_SIZ];
-    move playable[BOARD_SIZ * BOARD_SIZ];
+    double qualities[TOTAL_BOARD_SIZ];
+    move playable[TOTAL_BOARD_SIZ];
     u16 playable_count = 0;
     double best_value = evaluation->pass;
 
     /*
     Get legal plays
     */
-    for(move m = 0; m < BOARD_SIZ * BOARD_SIZ; ++m)
+    for(move m = 0; m < TOTAL_BOARD_SIZ; ++m)
         if(evaluation->tested[m] && evaluation->value[m] >= best_value)
         {
             best_value = evaluation->value[m];
@@ -280,11 +280,11 @@ RETURNS the move selected, or a pass
 move select_play_fast(
     const out_board * evaluation
 ){
-    move playable[BOARD_SIZ * BOARD_SIZ];
+    move playable[TOTAL_BOARD_SIZ];
     u16 playable_count = 0;
     double best_value = evaluation->pass;
 
-    for(move m = 0; m < BOARD_SIZ * BOARD_SIZ; ++m)
+    for(move m = 0; m < TOTAL_BOARD_SIZ; ++m)
         if(evaluation->tested[m])
         {
             if(evaluation->value[m] > best_value)
@@ -346,7 +346,7 @@ bool add_handicap_stone(
     if(gr->turns != 0 || !is_board_move(m))
         return false;
 
-    if(gr->handicap_stones.count >= BOARD_SIZ * BOARD_SIZ - 1)
+    if(gr->handicap_stones.count >= TOTAL_BOARD_SIZ - 1)
         return false;
 
     for(u16 i = 0; i < gr->handicap_stones.count; ++i)

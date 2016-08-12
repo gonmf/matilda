@@ -252,7 +252,7 @@ static void text_print_score(bool is_black)
     d16 score;
     if(estimate_score)
     {
-        if(stone_count(current_state.p) > BOARD_SIZ * BOARD_SIZ / 2)
+        if(stone_count(current_state.p) > TOTAL_BOARD_SIZ / 2)
             score = score_estimate(&current_state, is_black);
         else
             score = score_stones_and_area(current_state.p);

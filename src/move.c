@@ -34,7 +34,7 @@ RETURNS true if move is a stone play
 bool is_board_move(
     move m
 ){
-    return m < BOARD_SIZ * BOARD_SIZ;
+    return m < TOTAL_BOARD_SIZ;
 }
 
 /*
@@ -267,14 +267,14 @@ Populates a move_seq structure with the moves of distance equal or closer to
 distance, for every intersection of a board.
 */
 void init_moves_by_distance(
-    move_seq neighbours[BOARD_SIZ * BOARD_SIZ],
+    move_seq neighbours[TOTAL_BOARD_SIZ],
     u16 distance,
     bool include_own
 ){
-    for(move a = 0; a < BOARD_SIZ * BOARD_SIZ; ++a)
+    for(move a = 0; a < TOTAL_BOARD_SIZ; ++a)
     {
         move c = 0;
-        for(move b = 0; b < BOARD_SIZ * BOARD_SIZ; ++b)
+        for(move b = 0; b < TOTAL_BOARD_SIZ; ++b)
             if(include_own || a != b)
                 if(move_distance(a, b) <= distance)
                 {
@@ -293,7 +293,7 @@ void copy_moves(
     move_seq * restrict dst,
     const move_seq * restrict src
 ){
-    assert(dst->count + src->count < BOARD_SIZ * BOARD_SIZ);
+    assert(dst->count + src->count < TOTAL_BOARD_SIZ);
     memcpy(dst->coord + dst->count, src->coord, src->count * sizeof(move));
     dst->count += src->count;
 }

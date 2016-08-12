@@ -59,16 +59,16 @@ static bool process_opening_book_line(
     char * word;
 
     u16 tokens_read = 0;
-    char tokens[BOARD_SIZ * BOARD_SIZ][4];
+    char tokens[TOTAL_BOARD_SIZ][4];
 
     if((word = strtok_r(s, " ", &save_ptr)) != NULL)
         strncpy(tokens[tokens_read++], word, 4);
 
-    while(tokens_read < BOARD_SIZ * BOARD_SIZ && (word = strtok_r(NULL, " ",
+    while(tokens_read < TOTAL_BOARD_SIZ && (word = strtok_r(NULL, " ",
         &save_ptr)) != NULL)
         strncpy(tokens[tokens_read++], word, 4);
 
-    if(tokens_read < 2 || tokens_read == BOARD_SIZ * BOARD_SIZ)
+    if(tokens_read < 2 || tokens_read == TOTAL_BOARD_SIZ)
         return false;
 
     board b;
@@ -124,7 +124,7 @@ static bool process_state_play_line(
         return false;
 
     board b;
-    for(move m = 0; m < BOARD_SIZ * BOARD_SIZ; ++m)
+    for(move m = 0; m < TOTAL_BOARD_SIZ; ++m)
     {
         if(word[m] == EMPTY_STONE_CHAR)
             b.p[m] = EMPTY;

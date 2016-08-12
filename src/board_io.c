@@ -23,7 +23,7 @@ Clears the contents of a board.
 void clear_board(
     board * b
 ){
-    memset(b->p, EMPTY, BOARD_SIZ * BOARD_SIZ);
+    memset(b->p, EMPTY, TOTAL_BOARD_SIZ);
     b->last_played = b->last_eaten = NONE;
 }
 
@@ -34,7 +34,7 @@ Clears the contents of an output board.
 void clear_out_board(
     out_board * b
 ){
-    memset(b->tested, false, BOARD_SIZ * BOARD_SIZ);
+    memset(b->tested, false, TOTAL_BOARD_SIZ);
     b->pass = 0.0;
 }
 
@@ -48,7 +48,7 @@ void out_board_to_string(
     const out_board * src
 ){
     u16 idx = 0;
-    for(move m = 0; m < BOARD_SIZ * BOARD_SIZ; ++m)
+    for(move m = 0; m < TOTAL_BOARD_SIZ; ++m)
     {
         if(src->tested[m])
             idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx, " %4.2f",
@@ -85,7 +85,7 @@ RETURNS string representation
 */
 void board_to_string(
     char * dst,
-    const u8 p[BOARD_SIZ * BOARD_SIZ],
+    const u8 p[TOTAL_BOARD_SIZ],
     move last_played,
     move last_eaten
 ){
@@ -93,7 +93,7 @@ void board_to_string(
     if(last_eaten != NONE)
     {
         board tmp;
-        memcpy(tmp.p, p, BOARD_SIZ * BOARD_SIZ);
+        memcpy(tmp.p, p, TOTAL_BOARD_SIZ);
         tmp.last_played = last_played;
         tmp.last_eaten = last_eaten;
         u8 own = BLACK_STONE;
@@ -138,7 +138,7 @@ void board_to_string(
     /*
     Body
     */
-    for(move m = 0; m < BOARD_SIZ * BOARD_SIZ; ++m)
+    for(move m = 0; m < TOTAL_BOARD_SIZ; ++m)
     {
         if((m % BOARD_SIZ == 0))
         {

@@ -41,7 +41,7 @@ them let me know.
 #elif USE_UCT_BRANCH_LIMITER && BOARD_SIZ == 19
 #define MAX_PLAYS_COUNT 323
 #else
-#define MAX_PLAYS_COUNT (BOARD_SIZ * BOARD_SIZ)
+#define MAX_PLAYS_COUNT TOTAL_BOARD_SIZ
 #endif
 
 typedef struct __tt_play_ {
@@ -60,7 +60,7 @@ typedef struct __tt_play_ {
 
 typedef struct __tt_stats_ {
 	u64 zobrist_hash;
-	u8 p[BOARD_SIZ * BOARD_SIZ];
+	u8 p[TOTAL_BOARD_SIZ];
 	move last_eaten;
 	bool last_passed;
 	u8 maintenance_mark;

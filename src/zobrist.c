@@ -22,11 +22,11 @@ hashes and position invariant 3x3 hashes.
 
 static bool _zobrist_inited = false;
 
-static u64 iv[BOARD_SIZ * BOARD_SIZ][2];
+static u64 iv[TOTAL_BOARD_SIZ][2];
 
 /* for 3x3 neighborhood Zobrist hashing */
-u16 iv_3x3[BOARD_SIZ * BOARD_SIZ][BOARD_SIZ * BOARD_SIZ][3];
-u16 initial_3x3_hash[BOARD_SIZ * BOARD_SIZ];
+u16 iv_3x3[TOTAL_BOARD_SIZ][TOTAL_BOARD_SIZ][3];
+u16 initial_3x3_hash[TOTAL_BOARD_SIZ];
 
 static u16 get_border_hash_slow(
     move m
@@ -67,12 +67,12 @@ void zobrist_init()
     char * filename = alloc();
     snprintf(filename, MAX_PAGE_SIZ, "%s%ux%u.zt", get_data_folder(), BOARD_SIZ,
         BOARD_SIZ);
-    if(read_binary_file(iv, sizeof(u64) * BOARD_SIZ * BOARD_SIZ * 2, filename)
+    if(read_binary_file(iv, sizeof(u64) * TOTAL_BOARD_SIZ * 2, filename)
         == -1)
         flog_crit("zbst", "zobrist table file not found");
     release(filename);
 
-    for(move pos = 0; pos < BOARD_SIZ * BOARD_SIZ; ++pos)
+    for(move pos = 0; pos < TOTAL_BOARD_SIZ; ++pos)
     {
         u16 shift = 14;
         u8 i;
@@ -96,7 +96,7 @@ void zobrist_init()
             }
     }
 
-    for(move m = 0; m < BOARD_SIZ * BOARD_SIZ; ++m)
+    for(move m = 0; m < TOTAL_BOARD_SIZ; ++m)
         initial_3x3_hash[m] = get_border_hash_slow(m);
 
     _zobrist_inited = true;
@@ -111,7 +111,7 @@ u64 zobrist_new_hash(
     const board * src
 ){
     u64 ret = 0;
-    for(move m = 0; m < BOARD_SIZ * BOARD_SIZ; ++m)
+    for(move m = 0; m < TOTAL_BOARD_SIZ; ++m)
         if(src->p[m] != EMPTY)
             ret ^= iv[m][src->p[m] - 1];
     return ret;

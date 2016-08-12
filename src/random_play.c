@@ -23,11 +23,11 @@ move select_safe_play_random(
     bool is_black
 ){
     bool _ignored;
-    bool in_seki[BOARD_SIZ * BOARD_SIZ];
-    memset(in_seki, false, BOARD_SIZ * BOARD_SIZ);
+    bool in_seki[TOTAL_BOARD_SIZ];
+    memset(in_seki, false, TOTAL_BOARD_SIZ);
     mark_pts_in_seki(in_seki, cb);
 
-    move playable[BOARD_SIZ * BOARD_SIZ];
+    move playable[TOTAL_BOARD_SIZ];
     u16 playable_count = 0;
 
     for(u16 k = 0; k < cb->empty.count; ++k)

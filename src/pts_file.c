@@ -122,7 +122,7 @@ void interpret_rule_as_pts_list(
     const char * src
 ){
     u16 tokens_read = 0;
-    char tokens[BOARD_SIZ * BOARD_SIZ][4];
+    char tokens[TOTAL_BOARD_SIZ][4];
 
     char * tmp = alloc();
     strncpy(tmp, src, MAX_PAGE_SIZ);
@@ -132,11 +132,11 @@ void interpret_rule_as_pts_list(
     if((word = strtok_r(tmp, " ", &save_ptr2)) != NULL)
         strncpy(tokens[tokens_read++], word, 4);
 
-    while(tokens_read < BOARD_SIZ * BOARD_SIZ && (word = strtok_r(NULL, " ",
+    while(tokens_read < TOTAL_BOARD_SIZ && (word = strtok_r(NULL, " ",
         &save_ptr2)) != NULL)
         strncpy(tokens[tokens_read++], word, 4);
 
-    if(tokens_read < 1 || tokens_read == BOARD_SIZ * BOARD_SIZ)
+    if(tokens_read < 1 || tokens_read == TOTAL_BOARD_SIZ)
     {
         char * buf = alloc();
         snprintf(buf, MAX_PAGE_SIZ, "malformed line: %s", src);

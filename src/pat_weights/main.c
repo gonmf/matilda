@@ -161,8 +161,8 @@ int main(
                     cfg_board cb;
                     cfg_from_board(&cb, &b);
 
-                    bool valid[BOARD_SIZ * BOARD_SIZ];
-                    memset(valid, true, BOARD_SIZ * BOARD_SIZ);
+                    bool valid[TOTAL_BOARD_SIZ];
+                    memset(valid, true, TOTAL_BOARD_SIZ);
 
                     u8 x;
                     u8 y;

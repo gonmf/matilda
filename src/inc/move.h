@@ -28,7 +28,7 @@ typedef u16 move;
 
 typedef struct __move_seq_ {
 	move count;
-	move coord[BOARD_SIZ * BOARD_SIZ];
+	move coord[TOTAL_BOARD_SIZ];
 } move_seq;
 
 /*
@@ -36,8 +36,8 @@ Special move values
 NONE is used when there is no information, like at the first turn of a match.
 PASS is used on intended passes and signifies an intention to end the match.
 */
-#define NONE (BOARD_SIZ * BOARD_SIZ)
-#define PASS (BOARD_SIZ * BOARD_SIZ + 1)
+#define NONE TOTAL_BOARD_SIZ
+#define PASS (TOTAL_BOARD_SIZ + 1)
 
 
 /*
@@ -158,7 +158,7 @@ Populates a move_seq structure with the moves of distance equal or closer to
 distance, for every intersection of a board.
 */
 void init_moves_by_distance(
-    move_seq neighbours[BOARD_SIZ * BOARD_SIZ],
+    move_seq neighbours[TOTAL_BOARD_SIZ],
     u16 distance,
     bool include_own
 );
