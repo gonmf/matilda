@@ -512,7 +512,7 @@ static void init_new_state(
         Add pass simulation
         */
         stats->plays[plays_found].m = PASS;
-        stats->plays[plays_found].mc_q = UCT_RESIGN_WINRATE;
+        stats->plays[plays_found].mc_q = UCT_RESIGN_WINRATE; // TODO tune
         stats->plays[plays_found].mc_n = TOTAL_BOARD_SIZ; // TODO tune
 
 

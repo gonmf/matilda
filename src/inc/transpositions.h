@@ -33,15 +33,16 @@ Precalculated to save some space for structures.
 
 These values *might* be wrong. If you can find a board layout that falsifies
 them let me know.
+Plus 1 for passing play.
 */
 #if USE_UCT_BRANCH_LIMITER && BOARD_SIZ == 9
-#define MAX_PLAYS_COUNT 75
+#define MAX_PLAYS_COUNT (75 + 1)
 #elif USE_UCT_BRANCH_LIMITER && BOARD_SIZ == 13
-#define MAX_PLAYS_COUNT 153
+#define MAX_PLAYS_COUNT (153 + 1)
 #elif USE_UCT_BRANCH_LIMITER && BOARD_SIZ == 19
-#define MAX_PLAYS_COUNT 323
+#define MAX_PLAYS_COUNT (323 + 1)
 #else
-#define MAX_PLAYS_COUNT TOTAL_BOARD_SIZ
+#define MAX_PLAYS_COUNT (TOTAL_BOARD_SIZ + 1)
 #endif
 
 typedef struct __tt_play_ {
