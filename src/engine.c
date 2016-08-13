@@ -26,7 +26,6 @@ maintenance if needed.
 #include "pat3.h"
 #include "game_record.h"
 #include "randg.h"
-#include "random_play.h"
 #include "scoring.h"
 #include "transpositions.h"
 #include "types.h"

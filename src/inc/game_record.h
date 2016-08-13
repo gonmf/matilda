@@ -100,7 +100,8 @@ bool play_is_legal(
 /*
 Given the current game context select the best play as evaluated without
 violating the superko rule. If several plays have the same quality one of them
-is selected randomly.
+is selected randomly. If passing is of the same quality as the best plays, one
+of the best plays is selected instead of passing.
 RETURNS the move selected, or a pass
 */
 move select_play(

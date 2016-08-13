@@ -1874,9 +1874,10 @@ RETURNS a liberty of the group
 */
 move get_next_liberty(
     const group * g,
-    move start
+    move start /* exclusive */
 ){
-    for(move m = start + 1; m < TOTAL_BOARD_SIZ; ++m)
+    ++start;
+    for(move m = start; m < TOTAL_BOARD_SIZ; ++m)
     {
         u8 mask = (1 << (m % 8));
         if(g->ls[m / 8] & mask)

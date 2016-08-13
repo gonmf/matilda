@@ -13,12 +13,12 @@
 #include "pat3.h"
 #include "primes.h"
 #include "randg.h"
-#include "random_play.h"
 #include "state_changes.h"
 #include "tactical.h"
 #include "timem.h"
 #include "types.h"
 #include "flog.h"
+#include "random_play.h"
 #include "alloc.h"
 
 extern u16 iv_3x3[TOTAL_BOARD_SIZ][TOTAL_BOARD_SIZ][3];
@@ -417,10 +417,7 @@ static void test_board()
         /* fixed reduction works */
         massert(board_are_equal(&b2, &b), "fixed reduction");
 
-        out_board ob;
-        clear_out_board(&ob);
-        random_play(&ob, &b, true); /* always as black */
-        move m = select_play_fast(&ob);
+        move m = random_play2(&b, true); /* always as black */
 
         massert(b.p[m] == EMPTY, "busy intersection\n");
         just_play_slow(&b, m, true);
@@ -592,10 +589,8 @@ static void test_zobrist_hashing()
     u64 hash1 = zobrist_new_hash(&b);
     u64 hash2 = hash1;
 
-    out_board ob;
-    clear_out_board(&ob);
-    random_play(&ob, &b, true);
-    move m = select_play_fast(&ob);
+    move m = random_play2(&b, true);
+
     zobrist_update_hash(&hash2, m, BLACK_STONE);
     hash1 = just_play_slow_and_get_hash(&b, m, true, hash1);
     u64 hash3 = zobrist_new_hash(&b);

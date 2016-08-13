@@ -42,13 +42,13 @@ GTP_README.
 #include "pts_file.h"
 #include "opening_book.h"
 #include "randg.h"
-#include "random_play.h"
 #include "scoring.h"
 #include "sgf.h"
 #include "state_changes.h"
 #include "stringm.h"
 #include "timem.h"
 #include "time_ctrl.h"
+#include "random_play.h"
 #include "transpositions.h"
 #include "alloc.h"
 
@@ -686,54 +686,6 @@ static void gtp_reg_genmove(
     generic_genmove(fp, id, color, true);
 }
 
-/*
-Plays randomly at non-self-atari positions.
-*/
-static void gtp_kgs_genmove_cleanup(
-    FILE * fp,
-    int id,
-    const char * color
-){
-    bool is_black;
-    if(!parse_color(color, &is_black))
-    {
-        error_msg(fp, id, "syntax error");
-        return;
-    }
-
-    out_board out_b;
-
-    if(is_black)
-        has_genmoved_as_black = true;
-    else
-        has_genmoved_as_white = true;
-
-    board current_state;
-    current_game_state(&current_state, &current_game);
-
-    /*
-    We may be asked to play with the same color two times in a row.
-    This may trigger false ko violations; so we prevent them here.
-    */
-    if(current_game.turns > 0 && current_player_color(&current_game) !=
-        is_black)
-    {
-        current_state.last_played = NONE;
-        current_state.last_eaten = NONE;
-    }
-
-    random_play(&out_b, &current_state, is_black);
-    move m = select_play(&out_b, is_black, &current_game);
-
-    add_play_out_of_order(&current_game, is_black, m);
-    current_game.game_finished = false;
-
-    char * s = alloc();
-    coord_to_gtp_vertex(s, m);
-    answer_msg(fp, id, s);
-    release(s);
-}
-
 static void gtp_echo(
     FILE * fp,
     int id,
@@ -1352,23 +1304,15 @@ static void gtp_place_free_handicap(
     */
     while(num_stones > 0)
     {
-        u8 x = rand_u16(BOARD_SIZ);
-        u8 y = rand_u16(BOARD_SIZ);
-        if((x == 0 || y == 0 || x == BOARD_SIZ - 1 || y == BOARD_SIZ - 1) &&
-            rand_u16(10) > 0)
-            continue;
-
         current_game_state(&current_state, &current_game);
-        move m = coord_to_move(x, y);
-        if(current_state.p[m] == EMPTY)
-        {
-            if(!add_handicap_stone(&current_game, m))
-                flog_crit("gtp", "add handicap stone failed (2)");
+        move m = random_play2(&current_state, true);
 
-            --num_stones;
-            coord_to_alpha_num(mstr, m);
-            idx += snprintf(buf + idx, MAX_PAGE_SIZ - idx, "%s ", mstr);
-        }
+        if(!add_handicap_stone(&current_game, m))
+            flog_crit("gtp", "add handicap stone failed (2)");
+
+        --num_stones;
+        coord_to_alpha_num(mstr, m);
+        idx += snprintf(buf + idx, MAX_PAGE_SIZ - idx, "%s ", mstr);
     }
 
     answer_msg(fp, id, buf);
@@ -1740,7 +1684,7 @@ cmd_matcher:
 
         if(argc == 1 && strcmp(cmd, "kgs-genmove_cleanup") == 0)
         {
-            gtp_kgs_genmove_cleanup(out_fp, idn, args[0]);
+            gtp_genmove(out_fp, idn, args[0]);
             continue;
         }
 

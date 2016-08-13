@@ -191,15 +191,6 @@ void mark_near_pos(
     move m
 );
 
-/*
-Marks points in seki in the whole board. Only catches simple sekis with two
-shared liberties or one shared liberty and two eyes, that have the same or
-almost the same number of stones.
-*/
-void mark_pts_in_seki(
-    bool in_seki[TOTAL_BOARD_SIZ],
-    cfg_board * cb
-);
 
 /*
 Tests if the intersection m is the only liberty of a group of color is_black and
@@ -252,15 +243,6 @@ u8 max_neighbor_libs(
     const cfg_board * cb,
     move m,
     u8 stone
-);
-
-/*
-Count the size of the empty space in an empty area.
-RETURNS true if larger than two intersections
-*/
-bool eye_space_size_gt_two(
-    const cfg_board * cb,
-    move m
 );
 
 /*

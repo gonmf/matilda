@@ -506,6 +506,37 @@ static void init_new_state(
         ++plays_found;
     }
 
+    if(plays_found < TOTAL_BOARD_SIZ / 8)
+    {
+        /*
+        Add pass simulation
+        */
+        stats->plays[plays_found].m = PASS;
+        stats->plays[plays_found].mc_q = UCT_RESIGN_WINRATE;
+        stats->plays[plays_found].mc_n = TOTAL_BOARD_SIZ; // TODO tune
+
+
+        /*
+        Heuristic-MC
+
+        Copying the MC prior values to AMAF and initializing other fields
+        */
+        stats->mc_n_total += stats->plays[plays_found].mc_n;
+        stats->plays[plays_found].next_stats = NULL;
+        /* AMAF/RAVE */
+        stats->plays[plays_found].amaf_n = stats->plays[plays_found].mc_n;
+        stats->plays[plays_found].amaf_q = stats->plays[plays_found].mc_q;
+#if !ENABLE_FRISBEE_GO
+        /* LGRF */
+        stats->plays[plays_found].lgrf1_reply = NULL;
+#endif
+        /* Criticality */
+        stats->plays[plays_found].owner_winning = 0.5;
+        stats->plays[plays_found].color_owning = 0.5;
+
+        ++plays_found;
+    }
+
     stats->plays_count = plays_found;
 }
 
@@ -567,7 +598,7 @@ static void select_play(
         return;
     }
 
-    *play = NULL;
+    flog_crit("mcts", "play selection exception");
 }
 
 static d16 mcts_expansion(
@@ -691,8 +722,11 @@ static d16 mcts_selection(
 
         select_play(curr_stats, &play);
 
-        if(play == NULL)
+        if(play->m == PASS)
         {
+            curr_stats->mc_n_total++;
+            play->mc_n++;
+            play->mc_q -= play->mc_q / play->mc_n;
             omp_unset_lock(&curr_stats->lock);
             if(cb->last_played == PASS)
             {
@@ -702,10 +736,10 @@ static d16 mcts_selection(
 
             just_pass(cb);
 
-            plays[depth] = NULL;
+            plays[depth] = play;
             stats[depth] = curr_stats;
             ++depth;
-            curr_stats = NULL;
+            curr_stats = play->next_stats;
         }
         else
         {
@@ -765,21 +799,19 @@ static d16 mcts_selection(
         for(d16 k = depth - 1; k >= 6; --k)
         {
             is_black = !is_black;
-            if(plays[k] != NULL)
-            {
-                move m = plays[k]->m;
-                omp_set_lock(&stats[k]->lock);
+            move m = plays[k]->m;
+            omp_set_lock(&stats[k]->lock);
 
 #if !ENABLE_FRISBEE_GO
-                /* LGRF */
-                plays[k]->lgrf1_reply = NULL;
+            /* LGRF */
+            plays[k]->lgrf1_reply = NULL;
 #endif
 
-                /* AMAF/RAVE */
+            /* AMAF/RAVE */
+            if(m != PASS)
                 traversed[m] = is_black ? BLACK_STONE : WHITE_STONE;
-                update_amaf_stats2(stats[k], traversed, is_black);
-                omp_unset_lock(&stats[k]->lock);
-            }
+            update_amaf_stats2(stats[k], traversed, is_black);
+            omp_unset_lock(&stats[k]->lock);
         }
     }
     else
@@ -788,43 +820,41 @@ static d16 mcts_selection(
         for(d16 k = depth - 1; k >= 6; --k)
         {
             is_black = !is_black;
-            if(plays[k] != NULL)
-            {
-                move m = plays[k]->m;
-                double z = (is_black == (outcome > 0)) ? 1.0 : 0.0;
+            move m = plays[k]->m;
+            double z = (is_black == (outcome > 0)) ? 1.0 : 0.0;
 
-                omp_set_lock(&stats[k]->lock);
-                /* MC sampling */
-                if(is_black == (outcome > 0))
-                    plays[k]->mc_q += 1.0 / plays[k]->mc_n;
+            omp_set_lock(&stats[k]->lock);
+            /* MC sampling */
+            if(is_black == (outcome > 0))
+                plays[k]->mc_q += 1.0 / plays[k]->mc_n;
 
-                /* AMAF/RAVE */
+            /* AMAF/RAVE */
+            if(m != PASS)
                 traversed[m] = is_black ? BLACK_STONE : WHITE_STONE;
-                update_amaf_stats(stats[k], traversed, is_black, z);
+            update_amaf_stats(stats[k], traversed, is_black, z);
 
 #if !ENABLE_FRISBEE_GO
-                /* LGRF */
-                if(is_black == (outcome > 0))
-                    plays[k]->lgrf1_reply = NULL;
-                else
-                    plays[k]->lgrf1_reply = plays[k + 1];
+            /* LGRF */
+            if(is_black == (outcome > 0))
+                plays[k]->lgrf1_reply = NULL;
+            else
+                plays[k]->lgrf1_reply = plays[k + 1];
 #endif
 
-                /* Criticality */
-                if(cb->p[m] != EMPTY)
-                {
-                    double winner_owns_coord = ((outcome > 0) == (cb->p[m] ==
-                        BLACK_STONE)) ? 1.0 : 0.0;
-                    plays[k]->owner_winning += (winner_owns_coord -
-                        plays[k]->owner_winning) / plays[k]->mc_n;
-                    double player_owns_coord = (is_black == (cb->p[m] ==
-                        BLACK_STONE)) ? 1.0 : 0.0;
-                    plays[k]->color_owning += (player_owns_coord -
-                        plays[k]->color_owning) / plays[k]->mc_n;
-                }
-
-                omp_unset_lock(&stats[k]->lock);
+            /* Criticality */
+            if(m != PASS && cb->p[m] != EMPTY)
+            {
+                double winner_owns_coord = ((outcome > 0) == (cb->p[m] ==
+                    BLACK_STONE)) ? 1.0 : 0.0;
+                plays[k]->owner_winning += (winner_owns_coord -
+                    plays[k]->owner_winning) / plays[k]->mc_n;
+                double player_owns_coord = (is_black == (cb->p[m] ==
+                    BLACK_STONE)) ? 1.0 : 0.0;
+                plays[k]->color_owning += (player_owns_coord -
+                    plays[k]->color_owning) / plays[k]->mc_n;
             }
+
+            omp_unset_lock(&stats[k]->lock);
         }
     }
 
@@ -1020,8 +1050,15 @@ bool mcts_start(
     out_b->pass = UCT_RESIGN_WINRATE;
     for(move k = 0; k < stats->plays_count; ++k)
     {
-        out_b->tested[stats->plays[k].m] = true;
-        out_b->value[stats->plays[k].m] = stats->plays[k].mc_q;
+        if(stats->plays[k].m == PASS)
+        {
+            out_b->pass = stats->plays[k].mc_q;
+        }
+        else
+        {
+            out_b->tested[stats->plays[k].m] = true;
+            out_b->value[stats->plays[k].m] = stats->plays[k].mc_q;
+        }
     }
 
     u16 max_depth = max_depths[0];

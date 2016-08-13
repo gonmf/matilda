@@ -255,7 +255,7 @@ RETURNS a liberty of the group
 */
 move get_next_liberty(
     const group * g,
-    move start
+    move start /* exclusive */
 );
 
 
