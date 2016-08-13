@@ -350,21 +350,30 @@ static void init_new_state(
         u32 mc_w = prior_even / 2;
         u32 mc_v = prior_even;
 
+        /*
+        Avoid typically poor plays like eye shape
+        */
         if(!play_okay[m])
-            mc_v += TOTAL_BOARD_SIZ;
+            mc_v += TOTAL_BOARD_SIZ; // TODO optimize this parameter
+        else
+        {
+            /*
+            Avoid safe tiger mouths.
+            */
+            if(safe_tigers_mouth(cb, is_black, m))
+                mc_v += TOTAL_BOARD_SIZ; // TODO optimize this parameter
+        }
 
         if(out_neighbors4[m] == 2 && ((is_black && cb->white_neighbors8[m] == 0)
             || (!is_black && cb->black_neighbors8[m] == 0)))
-            mc_v += TOTAL_BOARD_SIZ;
+            mc_v += TOTAL_BOARD_SIZ; // TODO optimize this parameter
 
         /*
         Prohibit self-ataris if they don't put the opponent in atari
         (this definition does not prohibit throw-ins)
         */
         if(libs == 1 || self_atari[m])
-        {
             mc_v += prior_self_atari;
-        }
 
         /*
         Nakade
@@ -379,14 +388,6 @@ static void init_new_state(
                 mc_v += prior_nakade + b;
             }
         }
-
-#if BOARD_SIZ < 10
-        /*
-        Don't try safe tiger mouths.
-        */
-        if(safe_tigers_mouth(cb, is_black, m))
-            mc_v += TOTAL_BOARD_SIZ;
-#endif
 
         /*
         Saving plays

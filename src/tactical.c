@@ -864,6 +864,8 @@ void mark_pts_in_seki(
     bool in_seki[TOTAL_BOARD_SIZ],
     cfg_board * cb
 ){
+    memset(in_seki, false, TOTAL_BOARD_SIZ);
+
     /*
     Discover unique groups for one of the players
     */

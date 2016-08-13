@@ -24,7 +24,6 @@ move select_safe_play_random(
 ){
     bool _ignored;
     bool in_seki[TOTAL_BOARD_SIZ];
-    memset(in_seki, false, TOTAL_BOARD_SIZ);
     mark_pts_in_seki(in_seki, cb);
 
     move playable[TOTAL_BOARD_SIZ];
