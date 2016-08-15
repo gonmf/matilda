@@ -12,18 +12,17 @@ Strategy that makes use of an opening book.
 #include <sys/stat.h>
 #include <fcntl.h>
 
-#include "board.h"
-#include "flog.h"
-#include "crc32.h"
-#include "timem.h"
-#include "opening_book.h"
-#include "stringm.h"
-#include "file_io.h"
-#include "state_changes.h"
-#include "types.h"
-#include "pts_file.h"
-#include "engine.h"
 #include "alloc.h"
+#include "board.h"
+#include "crc32.h"
+#include "engine.h"
+#include "file_io.h"
+#include "flog.h"
+#include "opening_book.h"
+#include "pts_file.h"
+#include "state_changes.h"
+#include "stringm.h"
+#include "types.h"
 
 #define NR_BUCKETS 769
 

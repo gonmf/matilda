@@ -14,19 +14,19 @@ or pass).
 #include <string.h>
 #include <stdlib.h>
 
+#include "alloc.h"
+#include "analysis.h"
 #include "board.h"
 #include "engine.h"
 #include "flog.h"
 #include "game_record.h"
+#include "pts_file.h"
 #include "scoring.h"
+#include "sgf.h"
 #include "state_changes.h"
 #include "stringm.h"
-#include "analysis.h"
-#include "sgf.h"
-#include "timem.h"
 #include "time_ctrl.h"
-#include "alloc.h"
-#include "pts_file.h"
+#include "timem.h"
 
 extern game_record current_game;
 extern time_system current_clock_black;

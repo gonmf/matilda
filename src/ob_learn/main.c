@@ -12,22 +12,22 @@ a state->play file (.spb), to be used for further play suggestions besides
 #include <stdio.h>
 #include <string.h>
 
+#include "alloc.h"
 #include "board.h"
+#include "constants.h"
 #include "crc32.h"
 #include "engine.h"
 #include "file_io.h"
+#include "hash_table.h"
 #include "mcts.h"
 #include "opening_book.h"
 #include "randg.h"
 #include "sgf.h"
 #include "state_changes.h"
 #include "stringm.h"
-#include "hash_table.h"
 #include "timem.h"
 #include "transpositions.h"
 #include "zobrist.h"
-#include "alloc.h"
-#include "flog.h"
 
 #define SECS_PER_TURN 30
 
@@ -106,10 +106,9 @@ t: %u)\n", ob_depth);
     }
 
     alloc_init();
-    config_logging(DEFAULT_LOG_MODES);
     rand_init();
     assert_data_folder_exists();
-    cfg_board_init();
+    board_constants_init();
     zobrist_init();
     transpositions_table_init();
 

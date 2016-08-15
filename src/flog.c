@@ -13,26 +13,20 @@ crashes, but it is impossible to guarantee this in all cases.
 
 #include <stdio.h>
 #include <string.h>
-#include <stdlib.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <sys/file.h>
-#include <time.h>
-#include <unistd.h>
-#include <fcntl.h>
-#include <errno.h>
+#include <stdlib.h> /* mkstemps */
+#include <time.h> /* localtime */
 
+#include "alloc.h"
 #include "amaf_rave.h"
 #include "engine.h"
 #include "flog.h"
 #include "mcts.h"
 #include "pat3.h"
 #include "playout.h"
-#include "timem.h"
 #include "scoring.h"
 #include "time_ctrl.h"
+#include "timem.h"
 #include "types.h"
-#include "alloc.h"
 
 static int log_file = -1;
 static u16 log_mode = 0;

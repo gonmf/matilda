@@ -10,21 +10,21 @@ Also deals with updating some internal parameters at startup time.
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include <unistd.h>
 #include <omp.h>
 
+#include "alloc.h"
 #include "board.h"
 #include "cfg_board.h"
+#include "constants.h"
 #include "engine.h"
 #include "flog.h"
 #include "game_record.h"
 #include "opening_book.h"
 #include "randg.h"
 #include "stringm.h"
-#include "timem.h"
 #include "time_ctrl.h"
+#include "timem.h"
 #include "zobrist.h"
-#include "alloc.h"
 
 game_record current_game;
 time_system current_clock_black;
@@ -552,7 +552,7 @@ e");
 
     assert_data_folder_exists();
     rand_init();
-    cfg_board_init();
+    board_constants_init();
     zobrist_init();
 
     u32 automatic_num_threads;

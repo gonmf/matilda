@@ -27,122 +27,31 @@ explicitly said so.
 #include <assert.h>
 #include <omp.h>
 
+#include "alloc.h"
 #include "board.h"
 #include "cfg_board.h"
 #include "flog.h"
 #include "move.h"
-#include "state_changes.h"
-#include "timem.h"
 #include "types.h"
-#include "alloc.h"
 #include "zobrist.h"
 
+/* from board_constants */
+extern u8 out_neighbors8[TOTAL_BOARD_SIZ];
+extern u8 out_neighbors4[TOTAL_BOARD_SIZ];
+extern move_seq neighbors_side[TOTAL_BOARD_SIZ];
+extern move_seq neighbors_diag[TOTAL_BOARD_SIZ];
+extern move_seq neighbors_3x3[TOTAL_BOARD_SIZ];
+extern bool border_left[TOTAL_BOARD_SIZ];
+extern bool border_right[TOTAL_BOARD_SIZ];
+extern bool border_top[TOTAL_BOARD_SIZ];
+extern bool border_bottom[TOTAL_BOARD_SIZ];
+extern u8 active_bits_in_byte[256];
 
-u8 out_neighbors8[TOTAL_BOARD_SIZ];
-u8 out_neighbors4[TOTAL_BOARD_SIZ];
-move_seq neighbors_side[TOTAL_BOARD_SIZ];
-move_seq neighbors_diag[TOTAL_BOARD_SIZ];
-move_seq neighbors_3x3[TOTAL_BOARD_SIZ];
-
-bool border_left[TOTAL_BOARD_SIZ];
-bool border_right[TOTAL_BOARD_SIZ];
-bool border_top[TOTAL_BOARD_SIZ];
-bool border_bottom[TOTAL_BOARD_SIZ];
-
-/* for 3x3 neighborhood Zobrist hashing */
+/* from zobrist */
 extern u16 iv_3x3[TOTAL_BOARD_SIZ][TOTAL_BOARD_SIZ][3];
 extern u16 initial_3x3_hash[TOTAL_BOARD_SIZ];
 
-u8 dyn_active_bits[256]; /* number of active bits for every byte combination */
-static bool cfg_inited = false;
 static group * saved_nodes[MAXIMUM_NUM_THREADS];
-
-static u8 count_bits(u8 v)
-{
-    u8 bits = 0;
-    while(v > 0)
-    {
-        if((v & 1) == 1)
-            ++bits;
-        v /= 2;
-    }
-    return bits;
-}
-
-/*
-Initialize the CFG board support. Must be called before most other functions.
-*/
-void cfg_board_init()
-{
-    if(cfg_inited)
-        return;
-
-    zobrist_init();
-
-    /* Adjacent neighbor positions */
-    init_moves_by_distance(neighbors_side, 1, false);
-
-    memset(border_left, false, TOTAL_BOARD_SIZ);
-    memset(border_right, false, TOTAL_BOARD_SIZ);
-    memset(border_top, false, TOTAL_BOARD_SIZ);
-    memset(border_bottom, false, TOTAL_BOARD_SIZ);
-
-    /* Diagonal neighbor positions */
-    for(d8 x = 0; x < BOARD_SIZ; ++x)
-        for(d8 y = 0; y < BOARD_SIZ; ++y)
-        {
-            move a = coord_to_move(x, y);
-            if(x == 0)
-                border_left[a] = true;
-            if(x == BOARD_SIZ - 1)
-                border_right[a] = true;
-            if(y == 0)
-                border_top[a] = true;
-            if(y == BOARD_SIZ - 1)
-                border_bottom[a] = true;
-
-            move c = 0;
-            for(d8 i = 0; i < BOARD_SIZ; ++i)
-                for(d8 j = 0; j < BOARD_SIZ; ++j)
-                    if(abs(x - i) == 1 && abs(y - j) == 1)
-                    {
-                        move b = coord_to_move(i, j);
-                        neighbors_diag[a].coord[c] = b;
-                        ++c;
-                    }
-            neighbors_diag[a].count = c;
-        }
-
-    /* 3x3 positions excluding self */
-    memcpy(neighbors_3x3, neighbors_side, TOTAL_BOARD_SIZ *
-        sizeof(move_seq));
-    for(move m = 0; m < TOTAL_BOARD_SIZ; ++m)
-        copy_moves(&neighbors_3x3[m], &neighbors_diag[m]);
-
-    memset(out_neighbors4, 0, TOTAL_BOARD_SIZ);
-    memset(out_neighbors8, 0, TOTAL_BOARD_SIZ);
-    for(u8 i = 0; i < BOARD_SIZ; ++i)
-    {
-        out_neighbors4[coord_to_move(i, 0)] = out_neighbors4[coord_to_move(0,
-            i)] = out_neighbors4[coord_to_move(BOARD_SIZ - 1, i)] =
-            out_neighbors4[coord_to_move(i, BOARD_SIZ - 1)] = 1;
-        out_neighbors8[coord_to_move(i, 0)] = out_neighbors8[coord_to_move(0,
-            i)] = out_neighbors8[coord_to_move(BOARD_SIZ - 1, i)] =
-            out_neighbors8[coord_to_move(i, BOARD_SIZ - 1)] = 3;
-    }
-    out_neighbors4[coord_to_move(0, 0)] = out_neighbors4[coord_to_move(BOARD_SIZ
-        - 1, 0)] = out_neighbors4[coord_to_move(0, BOARD_SIZ - 1)] =
-        out_neighbors4[coord_to_move(BOARD_SIZ - 1, BOARD_SIZ - 1)] = 2;
-    out_neighbors8[coord_to_move(0, 0)] = out_neighbors8[coord_to_move(BOARD_SIZ
-        - 1, 0)] = out_neighbors8[coord_to_move(0, BOARD_SIZ - 1)] =
-        out_neighbors8[coord_to_move(BOARD_SIZ - 1, BOARD_SIZ - 1)] = 5;
-
-    for(u16 i = 0; i < 256; ++i)
-        dyn_active_bits[i] = count_bits(i);
-
-    cfg_inited = true;
-    flog_info("cfgb", "ready");
-}
 
 static group * alloc_group()
 {
@@ -375,7 +284,7 @@ static void unite_groups(
     for(u8 i = 0; i < LIB_BITMAP_SIZ; ++i)
     {
         to_keep->ls[i] |= to_replace->ls[i];
-        new_lib_count += dyn_active_bits[to_keep->ls[i]];
+        new_lib_count += active_bits_in_byte[to_keep->ls[i]];
     }
     to_keep->liberties = new_lib_count;
 
@@ -1126,7 +1035,7 @@ static void add_group_liberties(
     for(u8 i = 0; i < LIB_BITMAP_SIZ; ++i)
     {
         dst->ls[i] |= src->ls[i];
-        new_lib_count += dyn_active_bits[dst->ls[i]];
+        new_lib_count += active_bits_in_byte[dst->ls[i]];
     }
     dst->liberties = new_lib_count;
 }
@@ -1841,69 +1750,6 @@ bool can_play_ignoring_ko(
     }
 
     return false;
-}
-
-/*
-Returns the first liberty found of the group (in no particular order).
-RETURNS a liberty of the group
-*/
-move get_1st_liberty(
-    const group * g
-){
-    assert(g->liberties > 0);
-
-    for(u8 i = 0; i < LIB_BITMAP_SIZ; ++i)
-        if(g->ls[i])
-        {
-            u8 j;
-            for(j = 0; j < 7; ++j)
-                if(g->ls[i] & (1 << j))
-                    break;
-            return i * 8 + j;
-        }
-
-    flog_crit("cfgb", "CFG group has no liberties");
-    exit(EXIT_FAILURE); /* this is unnecessary but mutes erroneous complaints */
-}
-
-
-/*
-Returns a liberty of the group after the specified point.
-If the group has no more liberties then NONE is returned instead.
-RETURNS a liberty of the group
-*/
-move get_next_liberty(
-    const group * g,
-    move start /* exclusive */
-){
-    ++start;
-    for(move m = start; m < TOTAL_BOARD_SIZ; ++m)
-    {
-        u8 mask = (1 << (m % 8));
-        if(g->ls[m / 8] & mask)
-            return m;
-    }
-
-    return NONE;
-}
-
-
-
-/*
-Get closest group in the 3x3 neighborhood of a point.
-RETURNS group pointer or NULL
-*/
-group * get_closest_group(
-    const cfg_board * cb,
-    move m
-){
-    for(u8 k = 0; k < neighbors_3x3[m].count; ++k)
-    {
-        move n = neighbors_3x3[m].coord[k];
-        if(cb->g[n] != NULL)
-            return cb->g[n];
-    }
-    return NULL;
 }
 
 

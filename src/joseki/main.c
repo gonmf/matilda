@@ -12,13 +12,13 @@ Upon running a DATA/output.joseki file should be written.
 #include <stdio.h>
 #include <string.h>
 
+#include "alloc.h"
 #include "board.h"
+#include "constants.h"
 #include "engine.h"
 #include "file_io.h"
-#include "timem.h"
 #include "stringm.h"
-#include "alloc.h"
-#include "flog.h"
+#include "timem.h"
 
 
 typedef struct __joseki_ {
@@ -188,7 +188,6 @@ int main(
     }
 
     alloc_init();
-    config_logging(DEFAULT_LOG_MODES);
     assert_data_folder_exists();
 
     char * buffer = calloc(MAX_FILE_SIZ, 1);

@@ -7,29 +7,19 @@ maintenance if needed.
 #include "matilda.h"
 
 #include <stdio.h>
-#include <stdlib.h>
-#include <fcntl.h>
-#include <unistd.h>
-#include <errno.h>
 #include <string.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <dirent.h>
+#include <sys/types.h> /* opendir */
+#include <dirent.h> /* opendir */
 
+#include "alloc.h"
 #include "board.h"
 #include "cfg_board.h"
-#include "engine.h"
 #include "flog.h"
-#include "mcts.h"
-#include "timem.h"
-#include "opening_book.h"
-#include "pat3.h"
 #include "game_record.h"
-#include "randg.h"
-#include "scoring.h"
+#include "mcts.h"
+#include "opening_book.h"
 #include "transpositions.h"
 #include "types.h"
-#include "alloc.h"
 
 static bool use_opening_book = true;
 

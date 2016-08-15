@@ -7,12 +7,12 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "types.h"
-#include "randg.h"
-#include "engine.h"
-#include "timem.h"
 #include "alloc.h"
-#include "flog.h"
+#include "constants.h"
+#include "engine.h"
+#include "randg.h"
+#include "timem.h"
+#include "types.h"
 
 static u8 count_bits(
     u64 v
@@ -43,7 +43,6 @@ int main(
         }
 
     alloc_init();
-    config_logging(DEFAULT_LOG_MODES);
     assert_data_folder_exists();
 
     printf("This process aims to reduce the bit distribution variance of the da\

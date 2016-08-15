@@ -11,7 +11,6 @@ and some other fast checks.
 #include "board.h"
 #include "cfg_board.h"
 #include "randg.h"
-#include "state_changes.h"
 #include "tactical.h"
 
 

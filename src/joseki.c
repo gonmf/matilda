@@ -9,20 +9,25 @@ Support for interpreting joseki dictionaries and suggesting joseki plays.
 #include <stdlib.h>
 #include <unistd.h>
 #include <sys/types.h>
+
 #include <sys/stat.h>
 #include <fcntl.h>
+
 
 #include "board.h"
 #include "flog.h"
 #include "crc32.h"
 #include "timem.h"
+
 #include "joseki.h"
 #include "stringm.h"
 #include "file_io.h"
+
 #include "state_changes.h"
 #include "types.h"
 #include "pts_file.h"
 #include "engine.h"
+
 #include "alloc.h"
 
 #define NR_BUCKETS 769

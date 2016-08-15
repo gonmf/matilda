@@ -13,15 +13,15 @@ Play variations are not supported.
 #include <unistd.h>
 #include <assert.h>
 
-#include "types.h"
+#include "alloc.h"
 #include "board.h"
 #include "file_io.h"
-#include "stringm.h"
-#include "state_changes.h"
 #include "flog.h"
 #include "game_record.h"
 #include "scoring.h"
-#include "alloc.h"
+#include "state_changes.h"
+#include "stringm.h"
+#include "types.h"
 
 extern d16 komi;
 

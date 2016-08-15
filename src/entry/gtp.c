@@ -20,37 +20,30 @@ GTP_README.
 
 #include "matilda.h"
 
-#include <sys/select.h>
-#include <sys/time.h>
-#include <sys/types.h>
 #include <stdio.h>
-#include <unistd.h>
 #include <stdlib.h>
 #include <time.h>
 #include <string.h>
-#include <assert.h>
-#include <sys/stat.h>
-#include <fcntl.h>
 
+#include "alloc.h"
 #include "analysis.h"
 #include "board.h"
 #include "engine.h"
 #include "file_io.h"
 #include "flog.h"
-#include "types.h"
 #include "game_record.h"
-#include "pts_file.h"
 #include "opening_book.h"
+#include "pts_file.h"
 #include "randg.h"
+#include "random_play.h"
 #include "scoring.h"
 #include "sgf.h"
 #include "state_changes.h"
 #include "stringm.h"
-#include "timem.h"
 #include "time_ctrl.h"
-#include "random_play.h"
+#include "timem.h"
 #include "transpositions.h"
-#include "alloc.h"
+#include "types.h"
 
 extern d16 komi;
 extern u32 network_roundtrip_delay;
@@ -1412,11 +1405,12 @@ void main_gtp(
     FILE * out_fp;
     int _out_fp = dup(STDOUT_FILENO);
     if(_out_fp == -1)
-        flog_crit("gtp", "file descriptor duplication\n");
+        flog_crit("gtp", "file descriptor duplication failure (1)");
 
     close(STDOUT_FILENO);
     out_fp = fdopen(_out_fp, "w");
-    assert(out_fp != NULL);
+    if(out_fp == NULL)
+        flog_crit("gtp", "file descriptor duplication failure (2)");
 
     clear_out_board(&last_out_board);
     clear_game_record(&current_game);

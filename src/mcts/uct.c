@@ -40,6 +40,7 @@ It can also record the average final score, for the purpose of score estimation.
 #include "timem.h"
 #include "transpositions.h"
 #include "types.h"
+#include "constants.h"
 #include "zobrist.h"
 
 /*
@@ -47,9 +48,10 @@ Public to allow parameter optimization
 */
 double ucb1_c = UCB1_C;
 
+/* from board_constants */
+extern u8 distances_to_border[TOTAL_BOARD_SIZ];
+extern move_seq nei_dst_3[TOTAL_BOARD_SIZ];
 
-u8 distances_to_border[TOTAL_BOARD_SIZ];
-move_seq nei_dst_3[TOTAL_BOARD_SIZ];
 static bool ran_out_of_memory;
 static bool search_stop;
 static u16 max_depths[MAXIMUM_NUM_THREADS];
@@ -77,13 +79,8 @@ static void mcts_init()
     if(uct_inited)
         return;
 
-    for(u8 i = 0; i < BOARD_SIZ; ++i)
-        for(u8 j = 0; j < BOARD_SIZ; ++j)
-            distances_to_border[coord_to_move(i, j)] = DISTANCE_TO_BORDER(i, j);
-
     rand_init();
-    init_moves_by_distance(nei_dst_3, 3, false);
-    cfg_board_init();
+    board_constants_init();
     zobrist_init();
     pat3_init();
     transpositions_table_init();

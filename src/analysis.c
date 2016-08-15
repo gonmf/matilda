@@ -10,13 +10,13 @@ This is very incomplete so far.
 #include <stdlib.h>
 #include <math.h>
 
-#include "transpositions.h"
-#include "zobrist.h"
-#include "types.h"
-#include "mcts.h"
-#include "board.h"
-#include "timem.h"
 #include "alloc.h"
+#include "board.h"
+#include "mcts.h"
+#include "timem.h"
+#include "transpositions.h"
+#include "types.h"
+#include "zobrist.h"
 
 static tt_play * select_best(
     tt_stats * stats

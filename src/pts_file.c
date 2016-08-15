@@ -10,16 +10,15 @@ reading handicap, hoshi and starting plays for MCTS.
 #include <stdlib.h>
 #include <string.h>
 
-#include "types.h"
-#include "move.h"
+#include "alloc.h"
 #include "board.h"
-#include "state_changes.h"
+#include "engine.h"
 #include "file_io.h"
 #include "flog.h"
-#include "engine.h"
-#include "timem.h"
+#include "move.h"
+#include "state_changes.h"
 #include "stringm.h"
-#include "alloc.h"
+#include "types.h"
 
 static bool handicap_points_attempted_load = false;
 static bool hoshi_points_attempted_load = false;

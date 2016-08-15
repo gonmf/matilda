@@ -8,15 +8,14 @@ are in milliseconds.
 #include <time.h>
 #include <unistd.h>
 #include <stdio.h>
-#include <omp.h>
 
 #ifdef __MACH__
 #include <mach/clock.h>
 #include <mach/mach.h>
 #endif
 
-#include "types.h"
 #include "alloc.h"
+#include "types.h"
 
 
 /*

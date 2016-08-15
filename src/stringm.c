@@ -300,7 +300,7 @@ u8 levenshtein_dst(
     if(l2 == 0)
         return l1;
 
-    u8 * v = malloc(l2 + 1);
+    u8 * v = alloc();
     for(u8 i = 0; i <= l2; ++i)
         v[i] = i;
 
@@ -318,6 +318,6 @@ u8 levenshtein_dst(
         }
         v[l2] = ret;
     }
-    free(v);
+    release(v);
     return ret;
 }

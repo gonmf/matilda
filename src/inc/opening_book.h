@@ -20,7 +20,6 @@ typedef struct __ob_entry_ {
 
 
 
-
 /*
 Discover and read opening book files.
 */
@@ -34,6 +33,5 @@ bool opening_book(
     out_board * out_b,
     board * state
 );
-
 
 #endif

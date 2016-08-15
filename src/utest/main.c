@@ -5,21 +5,20 @@
 #include <stdlib.h>
 #include <omp.h>
 
+#include "alloc.h"
 #include "board.h"
 #include "cfg_board.h"
+#include "constants.h"
 #include "engine.h"
 #include "game_record.h"
-#include "zobrist.h"
 #include "pat3.h"
-#include "primes.h"
 #include "randg.h"
+#include "random_play.h"
 #include "state_changes.h"
 #include "tactical.h"
 #include "timem.h"
 #include "types.h"
-#include "flog.h"
-#include "random_play.h"
-#include "alloc.h"
+#include "zobrist.h"
 
 extern u16 iv_3x3[TOTAL_BOARD_SIZ][TOTAL_BOARD_SIZ][3];
 
@@ -659,10 +658,9 @@ int main(
         }
 
     alloc_init();
-    config_logging(LOG_CRITICAL | LOG_WARNING | LOG_INFORMATION);
     assert_data_folder_exists();
     rand_init();
-    cfg_board_init();
+    board_constants_init();
     zobrist_init();
 
 #if 1

@@ -16,8 +16,8 @@ http://www.weddslist.com/kgs/past/superko.html
 
 #include <stdlib.h>
 #include <string.h>
-#include <assert.h>
 
+#include "alloc.h"
 #include "board.h"
 #include "flog.h"
 #include "game_record.h"
@@ -26,7 +26,6 @@ http://www.weddslist.com/kgs/past/superko.html
 #include "state_changes.h"
 #include "stringm.h"
 #include "types.h"
-#include "alloc.h"
 
 static void apply_handicap_stones(
     board * b,

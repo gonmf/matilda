@@ -18,21 +18,18 @@ The life of these patterns is as follow:
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <math.h>
 #include <assert.h>
 
+#include "alloc.h"
 #include "board.h"
+#include "engine.h"
 #include "file_io.h"
-#include "timem.h"
-#include "pat3.h"
-#include "matrix.h"
 #include "flog.h"
 #include "hash_table.h"
-#include "randg.h"
-#include "engine.h"
+#include "matrix.h"
+#include "pat3.h"
 #include "stringm.h"
 #include "types.h"
-#include "alloc.h"
 
 
 #define NUM_OF_BUCKETS 1543 /* prime number */

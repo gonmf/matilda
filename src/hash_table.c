@@ -9,10 +9,10 @@ Implementation of a generic hash table
 #include <stdio.h>
 #include <assert.h>
 
-#include "types.h"
 #include "flog.h"
-#include "primes.h"
 #include "hash_table.h"
+#include "primes.h"
+#include "types.h"
 
 /*
 Creates a hash table for use with types of elem_size comparable by the functions

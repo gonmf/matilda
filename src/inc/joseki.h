@@ -8,7 +8,6 @@ Strategy that makes use of an opening book.
 #include "matilda.h"
 
 #include "types.h"
-#include "board.h"
 #include "move.h"
 
 #define MAX_JOSEKI_SUGGESTIONS 32
@@ -22,9 +21,6 @@ typedef struct __joseki_ {
     move plays[MAX_JOSEKI_SUGGESTIONS];
 	struct __joseki_ * next;
 } joseki;
-
-
-
 
 
 #endif
