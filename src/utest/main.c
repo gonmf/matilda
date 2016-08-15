@@ -19,6 +19,8 @@
 #include "timem.h"
 #include "types.h"
 #include "zobrist.h"
+#include "version.h"
+
 
 extern u16 iv_3x3[TOTAL_BOARD_SIZ][TOTAL_BOARD_SIZ][3];
 
@@ -647,7 +649,7 @@ int main(
 ){
     if(argc == 2 && strcmp(argv[1], "-version") == 0)
     {
-        fprintf(stderr, "matilda %u.%u\n", VERSION_MAJOR, VERSION_MINOR);
+        fprintf(stderr, "matilda %s\n", MATILDA_VERSION);
         return 0;
     }
     else

@@ -124,15 +124,9 @@ EXPECTED: 1000 to 100000
 
 
 
-/*
-There is not set-in-stone criteria for the version numbers, but the major
-version can be changed when a very large rewrite or expansion has happened that
-changed either the strength of the program in a big amount or the external files
-as they are understood. The minor mark can be changed in any non-decreasing way.
-It is reset when the major mark is increased.
-*/
-#define VERSION_MAJOR 1
-#define VERSION_MINOR 16
+
+
+
 
 
 

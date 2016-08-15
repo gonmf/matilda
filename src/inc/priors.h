@@ -47,6 +47,8 @@ Tuned with CLOP in 9x9 with 1k playouts/turn vs GNU Go 3.8 lvl 1, 29179 matches.
 #define PRIOR_LINE2X      4 /* if not empty in a certain distance around it */
 #define PRIOR_LINE3X      3
 #define PRIOR_CORNER     34
+#define PRIOR_BAD_PLAY   96
+#define PRIOR_PASS       87
 #else
 /*
 Tuned based on 13x13 results, using CLOP in 13x13 with 10k playouts/turn vs
@@ -67,6 +69,8 @@ GNU Go 3.8 lvl 1, 720 matches.
 #define PRIOR_LINE2X      5 /* if not empty in a certain distance around it */
 #define PRIOR_LINE3X      6
 #define PRIOR_CORNER     34
+#define PRIOR_BAD_PLAY   96
+#define PRIOR_PASS       87
 #endif
 
 

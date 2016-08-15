@@ -19,6 +19,7 @@ Upon running a DATA/output.joseki file should be written.
 #include "file_io.h"
 #include "stringm.h"
 #include "timem.h"
+#include "version.h"
 
 
 typedef struct __joseki_ {
@@ -177,7 +178,7 @@ int main(
     {
         if(strcmp(argv[i], "-version") == 0)
         {
-            printf("matilda %u.%u\n", VERSION_MAJOR, VERSION_MINOR);
+            printf("matilda %s\n", MATILDA_VERSION);
             exit(EXIT_SUCCESS);
         }
 

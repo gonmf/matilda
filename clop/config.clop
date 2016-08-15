@@ -26,6 +26,8 @@ Script ./goguiscript.py
 #IntegerParameter prior_line2x 0 10
 #IntegerParameter prior_line3x 0 10
 #IntegerParameter prior_corner 16 50
+IntegerParameter prior_bad_play 40 130
+IntegerParameter prior_pass 40 130
 
 #LinearParameter time_allot_factor 1.0 6.0
 

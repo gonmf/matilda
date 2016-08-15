@@ -44,6 +44,7 @@ GTP_README.
 #include "timem.h"
 #include "transpositions.h"
 #include "types.h"
+#include "version.h"
 
 extern d16 komi;
 extern u32 network_roundtrip_delay;
@@ -208,7 +209,7 @@ static void gtp_version(
     int id
 ){
     char * s = alloc();
-    snprintf(s, MAX_PAGE_SIZ, "%u.%u", VERSION_MAJOR, VERSION_MINOR);
+    snprintf(s, MAX_PAGE_SIZ, "%s", MATILDA_VERSION);
     answer_msg(fp, id, s);
     release(s);
 }
@@ -1420,6 +1421,8 @@ void main_gtp(
     bool time_frame_set = false;
 #endif
 
+    fd_set readfs;
+    memset(&readfs, 0, sizeof(fd_set));
     char * in_buf = alloc();
 
     while(1)
@@ -1433,7 +1436,6 @@ void main_gtp(
         {
             if(think_in_opt_turn)
             {
-                fd_set readfs;
                 FD_ZERO(&readfs);
                 FD_SET(STDIN_FILENO, &readfs);
                 struct timeval tm;

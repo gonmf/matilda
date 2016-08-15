@@ -22,6 +22,8 @@ Application for the production of Fuego book from SGF game collections.
 #include "state_changes.h"
 #include "stringm.h"
 #include "timem.h"
+#include "version.h"
+
 
 #define MAX_FILES 500000
 #define TABLE_BUCKETS 4957
@@ -211,7 +213,7 @@ int main(
     {
         if(strcmp(argv[i], "-version") == 0)
         {
-            printf("matilda %u.%u\n", VERSION_MAJOR, VERSION_MINOR);
+            printf("matilda %s\n", MATILDA_VERSION);
             exit(EXIT_SUCCESS);
         }
         if(i < argc - 1 && strcmp(argv[i], "-max_depth") == 0)

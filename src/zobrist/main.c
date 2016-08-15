@@ -13,6 +13,8 @@
 #include "randg.h"
 #include "timem.h"
 #include "types.h"
+#include "version.h"
+
 
 static u8 count_bits(
     u64 v
@@ -32,7 +34,7 @@ int main(
 ){
     if(argc == 2 && strcmp(argv[1], "-version") == 0)
     {
-        printf("matilda %u.%u\n", VERSION_MAJOR, VERSION_MINOR);
+        printf("matilda %s\n", MATILDA_VERSION);
         return 0;
     }
     else
@@ -55,6 +57,8 @@ ta.\nWhen you are satisfied press ENTER\n\n");
     u64 * table = (u64 *)malloc(table_size * sizeof(u64));
     u32 bits[64];
     double best_variance = 999999.0;
+    fd_set readfs;
+    memset(&readfs, 0, sizeof(fd_set));
 
     while(best_variance > 0.0)
     {
@@ -109,7 +113,6 @@ ta.\nWhen you are satisfied press ENTER\n\n");
             }
         }
 
-        fd_set readfs;
         FD_ZERO(&readfs);
         FD_SET(STDIN_FILENO, &readfs);
         struct timeval tm;

@@ -25,6 +25,7 @@ records. The results are printed to data/pat3_weights.
 #include "tactical.h"
 #include "timem.h"
 #include "types.h"
+#include "version.h"
 
 
 #define MAX_FILES 500000
@@ -61,7 +62,7 @@ int main(
 ){
     if(argc == 2 && strcmp(argv[1], "-version") == 0)
     {
-        fprintf(stderr, "matilda %u.%u\n", VERSION_MAJOR, VERSION_MINOR);
+        fprintf(stderr, "matilda %s\n", MATILDA_VERSION);
         return 0;
     }
     else

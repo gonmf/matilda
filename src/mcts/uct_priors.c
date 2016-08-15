@@ -35,6 +35,8 @@ u16 prior_line1x = PRIOR_LINE1X;
 u16 prior_line2x = PRIOR_LINE2X;
 u16 prior_line3x = PRIOR_LINE3X;
 u16 prior_corner = PRIOR_CORNER;
+u16 prior_bad_play = PRIOR_BAD_PLAY;
+u16 prior_pass = PRIOR_PASS;
 
 extern u8 distances_to_border[TOTAL_BOARD_SIZ];
 extern move_seq nei_dst_3[TOTAL_BOARD_SIZ];
@@ -220,19 +222,19 @@ void init_new_state(
         Avoid typically poor plays like eye shape
         */
         if(!play_okay[m])
-            mc_v += TOTAL_BOARD_SIZ; // TODO optimize this parameter
+            mc_v += prior_bad_play;
         else
         {
             /*
             Avoid safe tiger mouths.
             */
             if(safe_tigers_mouth(cb, is_black, m))
-                mc_v += TOTAL_BOARD_SIZ; // TODO optimize this parameter
+                mc_v += prior_bad_play;
         }
 
         if(out_neighbors4[m] == 2 && ((is_black && cb->white_neighbors8[m] == 0)
             || (!is_black && cb->black_neighbors8[m] == 0)))
-            mc_v += TOTAL_BOARD_SIZ; // TODO optimize this parameter
+            mc_v += prior_bad_play;
 
         /*
         Prohibit self-ataris if they don't put the opponent in atari
@@ -353,8 +355,8 @@ void init_new_state(
         /*
         Add pass simulation
         */
-        stats_add_play(stats, PASS, UCT_RESIGN_WINRATE * TOTAL_BOARD_SIZ,
-            TOTAL_BOARD_SIZ); // TODO tune
+        stats_add_play(stats, PASS, UCT_RESIGN_WINRATE * prior_pass,
+            prior_pass);
     }
 }
 

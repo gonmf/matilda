@@ -27,6 +27,7 @@ or pass).
 #include "stringm.h"
 #include "time_ctrl.h"
 #include "timem.h"
+#include "version.h"
 
 extern game_record current_game;
 extern time_system current_clock_black;
@@ -217,10 +218,10 @@ void main_text(bool is_black){
     flog_info("gtp", s);
 
     komi_to_string(s, DEFAULT_KOMI);
-    printf("Matilda %u.%u running in text mode. In this mode the options are li\
+    printf("Matilda %s running in text mode. In this mode the options are li\
 mited and no time limit is enforced. To run using GTP add the flag -gtp. Playin\
 g with Chinese rules with %s komi; game is over after two passes or a resignati\
-on.\n\n", VERSION_MAJOR, VERSION_MINOR, s);
+on.\n\n", MATILDA_VERSION, s);
     release(s);
 
     bool human_player_color = is_black;

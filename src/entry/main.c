@@ -25,6 +25,7 @@ Also deals with updating some internal parameters at startup time.
 #include "time_ctrl.h"
 #include "timem.h"
 #include "zobrist.h"
+#include "version.h"
 
 game_record current_game;
 time_system current_clock_black;
@@ -55,6 +56,8 @@ extern u16 prior_line1x;
 extern u16 prior_line2x;
 extern u16 prior_line3x;
 extern u16 prior_corner;
+extern u16 prior_bad_play;
+extern u16 prior_pass;
 extern double ucb1_c;
 extern double rave_mse_b;
 extern u16 pl_skip_saving;
@@ -85,6 +88,8 @@ const void * tunable[] =
     "i", "prior_line2x", &prior_line2x,
     "i", "prior_line3x", &prior_line3x,
     "i", "prior_corner", &prior_corner,
+    "i", "prior_bad_play", &prior_bad_play,
+    "i", "prior_pass", &prior_pass,
     "f", "ucb1_c", &ucb1_c,
     "f", "rave_mse_b", &rave_mse_b,
     "i", "pl_skip_saving", &pl_skip_saving,
@@ -183,7 +188,7 @@ int main(
     {
         if(strcmp(argv[i], "-v") == 0 || strcmp(argv[i], "--version") == 0)
         {
-            fprintf(stderr, "matilda %u.%u\n", VERSION_MAJOR, VERSION_MINOR);
+            fprintf(stderr, "matilda %s\n", MATILDA_VERSION);
             return EXIT_SUCCESS;
         }
         if(strcmp(argv[i], "-i") == 0 || strcmp(argv[i], "--info") == 0)

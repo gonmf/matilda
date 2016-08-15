@@ -447,8 +447,6 @@ Initiliazes the data pointed to cb, to hold a valid (but empty) board.
 void cfg_init_board(
     cfg_board * cb
 ){
-    assert(cfg_inited);
-
     memset(cb->p, EMPTY, TOTAL_BOARD_SIZ);
     cb->last_played = cb->last_eaten = NONE;
 
@@ -478,8 +476,6 @@ void cfg_from_board(
     cfg_board * restrict dst,
     const board * restrict src
 ){
-    assert(cfg_inited);
-
     memcpy(dst, src, sizeof(board));
     memcpy(dst->hash, initial_3x3_hash, TOTAL_BOARD_SIZ * sizeof(u16));
     memset(dst->black_neighbors4, 0, TOTAL_BOARD_SIZ);
@@ -509,8 +505,6 @@ void cfg_board_clone(
     cfg_board * restrict dst,
     const cfg_board * restrict src
 ){
-    assert(cfg_inited);
-
     /* copy most of the structure */
     memcpy(dst, src, sizeof(cfg_board) - (TOTAL_BOARD_SIZ * sizeof(group
         *)));
