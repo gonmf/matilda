@@ -110,19 +110,6 @@ EXPECTED: 1000 to 100000
 #define DEFAULT_TIME_PER_TURN 1000
 
 
-/*
-Enable Frisbee Go variant. Hurts performance by disabling use of LGRF1. When
-enabled the frisbee accuracy can be overriden via GTP or program arguments.
-Frisbee accuracy is given in integer percentage.
-
-EXPECTED: 0 or 1
-EXPECTED: 1 to 100
-*/
-#define ENABLE_FRISBEE_GO 0
-#define DEFAULT_FRISBEE_ACCURACY 50 /* in 100 */
-
-
-
 /*******************************************************************************
                                     END
 *******************************************************************************/
@@ -137,15 +124,10 @@ EXPECTED: 1 to 100
 
 
 
-/*
-There is not set-in-stone criteria for the version numbers, but the major
-version can be changed when a very large rewrite or expansion has happened that
-changed either the strength of the program in a big amount or the external files
-as they are understood. The minor mark can be changed in any non-decreasing way.
-It is reset when the major mark is increased.
-*/
-#define VERSION_MAJOR 1
-#define VERSION_MINOR 16
+
+
+
+
 
 
 
@@ -229,16 +211,6 @@ This is required for clock_getcpuclockid
 
 #if MAXIMUM_NUM_THREADS < 1
 #error Error: illegal maximum number of threads (< 1).
-#endif
-
-#if ENABLE_FRISBEE_GO
-#if DEFAULT_FRISBEE_ACCURACY < 1
-#error Error: illegal Frisbee go accuracy (< 1%).
-#endif
-
-#if DEFAULT_FRISBEE_ACCURACY > 100
-#error Error: illegal Frisbee go accuracy (> 100%).
-#endif
 #endif
 
 #endif

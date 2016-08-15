@@ -31,7 +31,6 @@ And chooses a play based on (by order of importance):
 #include "state_changes.h"
 #include "tactical.h"
 #include "types.h"
-#include "frisbee.h"
 
 u16 pl_skip_saving = PL_SKIP_SAVING;
 u16 pl_skip_nakade = PL_SKIP_NAKADE;
@@ -45,11 +44,6 @@ For mercy Threshold
 */
 extern d16 komi_offset;
 extern d16 komi;
-
-/*
-Frisbee Go
-*/
-extern float frisbee_prob;
 
 static void invalidate_cache_of_the_past(
     const cfg_board * cb,
@@ -476,21 +470,6 @@ d16 playout_heavy_amaf(
             assert(is_board_move(m));
 
             invalidate_cache_of_the_past(cb, b_cache, w_cache);
-
-#if ENABLE_FRISBEE_GO
-            if(frisbee_prob < 1.0 && rand_float(1.0) > frisbee_prob)
-            {
-                m = random_shift_play(m);
-                if(m == NONE || (is_black && ((b_cache[m] & CACHE_PLAY_LEGAL) ==
-                    0)) || (!is_black && ((w_cache[m] & CACHE_PLAY_LEGAL) ==
-                    0)))
-                {
-                    cb->last_played = cb->last_eaten = NONE;
-                    is_black = !is_black;
-                    continue;
-                }
-            }
-#endif
 
             memset(stones_captured, 0, TOTAL_BOARD_SIZ);
             memset(libs_of_nei_of_captured, 0, LIB_BITMAP_SIZ);

@@ -10,15 +10,13 @@ hashes and position invariant 3x3 hashes.
 #include <stdlib.h>
 #include <string.h>
 
-#include "board.h"
-#include "file_io.h"
-#include "timem.h"
-#include "randg.h"
-#include "flog.h"
-#include "board.h"
-#include "types.h"
-#include "engine.h"
 #include "alloc.h"
+#include "board.h"
+#include "engine.h"
+#include "file_io.h"
+#include "flog.h"
+#include "randg.h"
+#include "types.h"
 
 static bool _zobrist_inited = false;
 

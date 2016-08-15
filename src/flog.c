@@ -13,26 +13,21 @@ crashes, but it is impossible to guarantee this in all cases.
 
 #include <stdio.h>
 #include <string.h>
-#include <stdlib.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <sys/file.h>
-#include <time.h>
-#include <unistd.h>
-#include <fcntl.h>
-#include <errno.h>
+#include <stdlib.h> /* mkstemps */
+#include <time.h> /* localtime */
 
+#include "alloc.h"
 #include "amaf_rave.h"
 #include "engine.h"
 #include "flog.h"
 #include "mcts.h"
 #include "pat3.h"
 #include "playout.h"
-#include "timem.h"
 #include "scoring.h"
 #include "time_ctrl.h"
+#include "timem.h"
 #include "types.h"
-#include "alloc.h"
+#include "version.h"
 
 static int log_file = -1;
 static u16 log_mode = 0;
@@ -45,7 +40,6 @@ static char * _tmp_buffer = NULL;
 For non-default values for build_info
 */
 extern u64 max_size_in_mbs;
-extern float frisbee_prob;
 extern double prior_stone_scale_factor;
 extern u16 prior_even;
 extern u16 prior_nakade;
@@ -246,16 +240,10 @@ void build_info(
     else
         idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx,
             "Compiled for: debugging\n");
-    idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx, "Version: %u.%u\n",
-        VERSION_MAJOR, VERSION_MINOR);
+    idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx, "Version: %s\n",
+        MATILDA_VERSION);
     idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx, "Data folder: %s\n",
         get_data_folder());
-    idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx, "Frisbee Go enabled: %s\n",
-        YN(ENABLE_FRISBEE_GO));
-
-    if(ENABLE_FRISBEE_GO)
-        idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx, "  Accuracy: %.2f\n",
-            frisbee_prob);
 
     idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx, "Board size: %ux%u\n",
         BOARD_SIZ, BOARD_SIZ);

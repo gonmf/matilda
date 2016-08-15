@@ -5,16 +5,14 @@ More board functions related to cleaning and outputing board states.
 #include "matilda.h"
 
 #include <stdio.h>
-#include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
-#include <math.h>
 
+#include "alloc.h"
 #include "board.h"
 #include "pts_file.h"
-#include "stringm.h"
 #include "state_changes.h"
-#include "alloc.h"
+#include "stringm.h"
 
 
 /*

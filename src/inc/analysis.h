@@ -9,8 +9,6 @@ This is very incomplete so far.
 
 #include "matilda.h"
 
-#include <stdio.h>
-
 #include "types.h"
 #include "board.h"
 

@@ -20,42 +20,35 @@ GTP_README.
 
 #include "matilda.h"
 
-#include <sys/select.h>
-#include <sys/time.h>
-#include <sys/types.h>
 #include <stdio.h>
-#include <unistd.h>
 #include <stdlib.h>
 #include <time.h>
 #include <string.h>
-#include <assert.h>
-#include <sys/stat.h>
-#include <fcntl.h>
 
+#include "alloc.h"
 #include "analysis.h"
 #include "board.h"
 #include "engine.h"
 #include "file_io.h"
 #include "flog.h"
-#include "types.h"
 #include "game_record.h"
-#include "pts_file.h"
 #include "opening_book.h"
+#include "pts_file.h"
 #include "randg.h"
 #include "random_play.h"
 #include "scoring.h"
 #include "sgf.h"
 #include "state_changes.h"
 #include "stringm.h"
-#include "timem.h"
 #include "time_ctrl.h"
+#include "timem.h"
 #include "transpositions.h"
-#include "alloc.h"
+#include "types.h"
+#include "version.h"
 
 extern d16 komi;
 extern u32 network_roundtrip_delay;
 extern bool network_round_trip_set;
-extern float frisbee_prob;
 
 const char * supported_commands[] =
 {
@@ -70,12 +63,6 @@ const char * supported_commands[] =
     "exit",
     "final_score",
     "final_status_list",
-#if ENABLE_FRISBEE_GO
-    "frisbee-accuracy",
-    "frisbee-epsilon",
-    "frisbee-play",
-    "frisbee-reg_genmove",
-#endif
     "genmove",
     "gg-undo",
     "gomill-cpu_time",
@@ -222,7 +209,7 @@ static void gtp_version(
     int id
 ){
     char * s = alloc();
-    snprintf(s, MAX_PAGE_SIZ, "%u.%u", VERSION_MAJOR, VERSION_MINOR);
+    snprintf(s, MAX_PAGE_SIZ, "%s", MATILDA_VERSION);
     answer_msg(fp, id, s);
     release(s);
 }
@@ -659,10 +646,6 @@ st on time");
             /* we don't do anything else when timed out */
         }
 #endif
-
-        if(ENABLE_FRISBEE_GO && frisbee_prob < 1.0)
-            flog_crit("gtp", "playing Frisbee Go but play modification has \
-been ignored by invoking genmove");
     }
 
     coord_to_gtp_vertex(buf, m);
@@ -684,54 +667,6 @@ static void gtp_reg_genmove(
     const char * color
 ){
     generic_genmove(fp, id, color, true);
-}
-
-/*
-Plays randomly at non-self-atari positions.
-*/
-static void gtp_kgs_genmove_cleanup(
-    FILE * fp,
-    int id,
-    const char * color
-){
-    bool is_black;
-    if(!parse_color(color, &is_black))
-    {
-        error_msg(fp, id, "syntax error");
-        return;
-    }
-
-    out_board out_b;
-
-    if(is_black)
-        has_genmoved_as_black = true;
-    else
-        has_genmoved_as_white = true;
-
-    board current_state;
-    current_game_state(&current_state, &current_game);
-
-    /*
-    We may be asked to play with the same color two times in a row.
-    This may trigger false ko violations; so we prevent them here.
-    */
-    if(current_game.turns > 0 && current_player_color(&current_game) !=
-        is_black)
-    {
-        current_state.last_played = NONE;
-        current_state.last_eaten = NONE;
-    }
-
-    random_play(&out_b, &current_state, is_black);
-    move m = select_play(&out_b, is_black, &current_game);
-
-    add_play_out_of_order(&current_game, is_black, m);
-    current_game.game_finished = false;
-
-    char * s = alloc();
-    coord_to_gtp_vertex(s, m);
-    answer_msg(fp, id, s);
-    release(s);
 }
 
 static void gtp_echo(
@@ -1194,47 +1129,6 @@ static void gtp_undo(
         error_msg(fp, id, "cannot undo");
 }
 
-static void gtp_frisbee_accuracy(
-    FILE * fp,
-    int id,
-    const char * floatv
-){
-    double v;
-    if(!parse_float(floatv, &v))
-    {
-        error_msg(fp, id, "syntax error");
-        return;
-    }
-
-    if(v < 0.0 || v > 1.0)
-    {
-        error_msg(fp, id, "syntax error");
-        return;
-    }
-
-    if(current_game.turns > 0)
-    {
-        error_msg(fp, id, "unable to change");
-        flog_warn("gtp", "unable to change frisbee accuracy midgame");
-        return;
-    }
-    answer_msg(fp, id, NULL);
-
-    char * buf = alloc();
-    if(v == frisbee_prob)
-        snprintf(buf, MAX_PAGE_SIZ, "frisbee accuracy kept at %.2f",
-            frisbee_prob);
-    else
-    {
-        snprintf(buf, MAX_PAGE_SIZ,
-            "changed frisbee accuracy from %.2f to %.2f", frisbee_prob, v);
-        frisbee_prob = v;
-    }
-
-    flog_info("gtp", buf);
-    release(buf);
-}
-
 static void gtp_undo_multiple(
     FILE * fp,
     int id,
@@ -1352,23 +1246,15 @@ static void gtp_place_free_handicap(
     */
     while(num_stones > 0)
     {
-        u8 x = rand_u16(BOARD_SIZ);
-        u8 y = rand_u16(BOARD_SIZ);
-        if((x == 0 || y == 0 || x == BOARD_SIZ - 1 || y == BOARD_SIZ - 1) &&
-            rand_u16(10) > 0)
-            continue;
-
         current_game_state(&current_state, &current_game);
-        move m = coord_to_move(x, y);
-        if(current_state.p[m] == EMPTY)
-        {
-            if(!add_handicap_stone(&current_game, m))
-                flog_crit("gtp", "add handicap stone failed (2)");
+        move m = random_play2(&current_state, true);
 
-            --num_stones;
-            coord_to_alpha_num(mstr, m);
-            idx += snprintf(buf + idx, MAX_PAGE_SIZ - idx, "%s ", mstr);
-        }
+        if(!add_handicap_stone(&current_game, m))
+            flog_crit("gtp", "add handicap stone failed (2)");
+
+        --num_stones;
+        coord_to_alpha_num(mstr, m);
+        idx += snprintf(buf + idx, MAX_PAGE_SIZ - idx, "%s ", mstr);
     }
 
     answer_msg(fp, id, buf);
@@ -1517,20 +1403,15 @@ void main_gtp(
     flog_info("gtp", s);
     release(s);
 
-    if(ENABLE_FRISBEE_GO && frisbee_prob < 1.0)
-        flog_warn("gtp", "while playing Frisbee Go in GTP mode it is assumed th\
-e plays are modified randomly by the controller or adapter program; prior to pl\
-ay commands and after reg_genmove commands. Do not invoke genmove commands inst\
-ead.");
-
     FILE * out_fp;
     int _out_fp = dup(STDOUT_FILENO);
     if(_out_fp == -1)
-        flog_crit("gtp", "file descriptor duplication\n");
+        flog_crit("gtp", "file descriptor duplication failure (1)");
 
     close(STDOUT_FILENO);
     out_fp = fdopen(_out_fp, "w");
-    assert(out_fp != NULL);
+    if(out_fp == NULL)
+        flog_crit("gtp", "file descriptor duplication failure (2)");
 
     clear_out_board(&last_out_board);
     clear_game_record(&current_game);
@@ -1540,6 +1421,8 @@ ead.");
     bool time_frame_set = false;
 #endif
 
+    fd_set readfs;
+    memset(&readfs, 0, sizeof(fd_set));
     char * in_buf = alloc();
 
     while(1)
@@ -1553,7 +1436,6 @@ ead.");
         {
             if(think_in_opt_turn)
             {
-                fd_set readfs;
                 FD_ZERO(&readfs);
                 FD_SET(STDIN_FILENO, &readfs);
                 struct timeval tm;
@@ -1658,20 +1540,13 @@ cmd_matcher:
             continue;
         }
 
-        if(argc == 2 && (ENABLE_FRISBEE_GO && strcmp(cmd, "frisbee-play") == 0))
-        {
-            gtp_play(out_fp, idn, args[0], args[1], true);
-            continue;
-        }
-
         if(argc == 1 && strcmp(cmd, "genmove") == 0)
         {
             gtp_genmove(out_fp, idn, args[0]);
             continue;
         }
 
-        if(argc == 1 && (strcmp(cmd, "reg_genmove") == 0 || (ENABLE_FRISBEE_GO
-            && strcmp(cmd, "frisbee-reg_genmove") == 0)))
+        if(argc == 1 && strcmp(cmd, "reg_genmove") == 0)
         {
             gtp_reg_genmove(out_fp, idn, args[0]);
             continue;
@@ -1740,7 +1615,7 @@ cmd_matcher:
 
         if(argc == 1 && strcmp(cmd, "kgs-genmove_cleanup") == 0)
         {
-            gtp_kgs_genmove_cleanup(out_fp, idn, args[0]);
+            gtp_genmove(out_fp, idn, args[0]);
             continue;
         }
 
@@ -1863,13 +1738,6 @@ cmd_matcher:
         if(argc == 0 && strcmp(cmd, "clear_cache") == 0)
         {
             gtp_clear_cache(out_fp, idn);
-            continue;
-        }
-
-        if(argc == 1 && ENABLE_FRISBEE_GO && (strcmp(cmd, "frisbee-accuracy") ==
-            0 || strcmp(cmd, "frisbee-epsilon") == 0))
-        {
-            gtp_frisbee_accuracy(out_fp, idn, args[0]);
             continue;
         }
 

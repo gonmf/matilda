@@ -19,13 +19,13 @@ BOARD_SIZ signifies a pass. A "none" play is not represented.
 #include <string.h>
 #include <assert.h>
 
+#include "alloc.h"
 #include "board.h"
+#include "flog.h"
 #include "matrix.h"
 #include "move.h"
-#include "flog.h"
 #include "stringm.h"
 #include "types.h"
-#include "alloc.h"
 
 
 /*

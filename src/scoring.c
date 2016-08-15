@@ -8,12 +8,10 @@ Remember that in Matilda, scores and komi are always doubled to become integer.
 
 #include <string.h>
 #include <stdio.h>
-#include <omp.h>
 
 #include "board.h"
 #include "cfg_board.h"
 #include "mcts.h"
-#include "playout.h"
 #include "scoring.h"
 #include "state_changes.h"
 #include "timem.h"

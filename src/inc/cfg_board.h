@@ -24,9 +24,6 @@ explicitly said so.
 
 #include "matilda.h"
 
-#include <unistd.h>
-#include <stdio.h>
-
 #include "board.h"
 #include "move.h"
 #include "types.h"
@@ -71,14 +68,6 @@ typedef struct __cfg_board_ {
 	move unique_groups[MAX_GROUPS];
 	group * g[TOTAL_BOARD_SIZ]; /* CFG stone groups or NULL if empty */
 } cfg_board;
-
-
-
-/*
-Initialize the CFG board support. Must be called before most other functions.
-*/
-void cfg_board_init();
-
 
 
 /*
@@ -142,7 +131,6 @@ void just_play1(
     d16 * stone_difference
 );
 
-
 /*
 Assume play is legal and update the structure, capturing
 accordingly.
@@ -169,7 +157,6 @@ void just_play3(
     bool stones_removed[TOTAL_BOARD_SIZ],
     u8 rem_nei_libs[LIB_BITMAP_SIZ]
 );
-
 
 /*
 Detects one stone ko rule violations.
@@ -240,37 +227,6 @@ bool can_play_ignoring_ko(
 );
 
 /*
-Returns the first liberty found of the group (in no particular order).
-RETURNS a liberty of the group
-*/
-move get_1st_liberty(
-    const group * g
-);
-
-
-/*
-Returns a liberty of the group after the specified point.
-If the group has no more liberties then NONE is returned instead.
-RETURNS a liberty of the group
-*/
-move get_next_liberty(
-    const group * g,
-    move start
-);
-
-
-
-/*
-Get closest group in the 3x3 neighborhood of a point.
-RETURNS group pointer or NULL
-*/
-group * get_closest_group(
-    const cfg_board * cb,
-    move m
-);
-
-
-/*
 Frees the structure information dynamically allocated (not the actual cfg_board
 structure).
 */
@@ -286,7 +242,6 @@ void fprint_cfg_board(
     const cfg_board * cb
 );
 
-
 /*
 Verify the integrity of a CFG board structure.
 */
@@ -294,4 +249,100 @@ bool verify_cfg_board(
     const cfg_board * cb
 );
 
+/*
+Returns the first liberty found of the group (in no particular order).
+RETURNS a liberty of the group
+*/
+move get_1st_liberty(
+    const group * g
+);
+
+/*
+Returns a liberty of the group after the specified point.
+If the group has no more liberties then NONE is returned instead.
+RETURNS a liberty of the group
+*/
+move get_next_liberty(
+    const group * g,
+    move start /* exclusive */
+);
+
+/*
+Get closest group in the 3x3 neighborhood of a point.
+RETURNS group pointer or NULL
+*/
+group * get_closest_group(
+    const cfg_board * cb,
+    move m
+);
+
+/*
+Return the minimum amount of liberties of groups with stones adjacent to an
+intersection.
+RETURNS minimum number of liberties found, or NONE
+*/
+u16 min_neighbor_libs(
+    const cfg_board * cb,
+    move m,
+    u8 stone
+);
+
+/*
+Return the maximum amount of liberties of groups with stones adjacent to an
+intersection.
+RETURNS maximum number of liberties found, or 0
+*/
+u8 max_neighbor_libs(
+    const cfg_board * cb,
+    move m,
+    u8 stone
+);
+
+/*
+Tests whether a neighbor group of stone type stone has two liberties.
+RETURNS true if neighbor group is put in atari
+*/
+bool puts_neighbor_in_atari(
+    const cfg_board * cb,
+    move m,
+    u8 stone
+);
+
+/*
+Return the maximum number of stones of a group of stones of value stone;
+adjacent to the intersection m.
+RETURNS maximum number of stones of a group, or 0
+*/
+u16 max_neighbor_group_stones(
+    const cfg_board * cb,
+    move m,
+    u8 stone
+);
+
+/*
+Tests whether two groups have exactly the same liberties.
+RETURNS true if the groups have the exact same liberties
+*/
+bool groups_same_liberties(
+    const group * restrict g1,
+    const group * restrict g2
+);
+
+/*
+Tests whether two groups share at least one liberty.
+RETURNS true if the groups share at least one liberty
+*/
+bool groups_share_liberties(
+    const group * restrict g1,
+    const group * restrict g2
+);
+
+/*
+Counts the number of shared liberties between two groups.
+RETURNS number of shared liberties
+*/
+u8 groups_shared_liberties(
+    const group * restrict g1,
+    const group * restrict g2
+);
 #endif

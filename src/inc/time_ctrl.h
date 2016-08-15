@@ -11,7 +11,6 @@ say anything. All times are in milliseconds.
 #include "matilda.h"
 
 #include "types.h"
-#include "board.h"
 
 #define DETECT_NETWORK_LATENCY false
 

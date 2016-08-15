@@ -16,8 +16,8 @@ http://www.weddslist.com/kgs/past/superko.html
 
 #include <stdlib.h>
 #include <string.h>
-#include <assert.h>
 
+#include "alloc.h"
 #include "board.h"
 #include "flog.h"
 #include "game_record.h"
@@ -26,7 +26,6 @@ http://www.weddslist.com/kgs/past/superko.html
 #include "state_changes.h"
 #include "stringm.h"
 #include "types.h"
-#include "alloc.h"
 
 static void apply_handicap_stones(
     board * b,
@@ -213,7 +212,8 @@ bool play_is_legal(
 /*
 Given the current game context select the best play as evaluated without
 violating the superko rule. If several plays have the same quality one of them
-is selected randomly.
+is selected randomly. If passing is of the same quality as the best plays, one
+of the best plays is selected instead of passing.
 RETURNS the move selected, or a pass
 */
 move select_play(

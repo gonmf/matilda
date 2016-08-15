@@ -9,23 +9,23 @@ records. The results are printed to data/pat3_weights.
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <math.h>
 #include <string.h>
 
-#include "types.h"
-#include "randg.h"
+#include "alloc.h"
 #include "board.h"
-#include "state_changes.h"
-#include "timem.h"
+#include "constants.h"
 #include "engine.h"
+#include "file_io.h"
 #include "hash_table.h"
 #include "move.h"
-#include "sgf.h"
 #include "pat3.h"
+#include "randg.h"
+#include "sgf.h"
+#include "state_changes.h"
 #include "tactical.h"
-#include "file_io.h"
-#include "alloc.h"
-#include "flog.h"
+#include "timem.h"
+#include "types.h"
+#include "version.h"
 
 
 #define MAX_FILES 500000
@@ -62,7 +62,7 @@ int main(
 ){
     if(argc == 2 && strcmp(argv[1], "-version") == 0)
     {
-        fprintf(stderr, "matilda %u.%u\n", VERSION_MAJOR, VERSION_MINOR);
+        fprintf(stderr, "matilda %s\n", MATILDA_VERSION);
         return 0;
     }
     else
@@ -73,9 +73,8 @@ int main(
         }
 
     alloc_init();
-    config_logging(DEFAULT_LOG_MODES);
     assert_data_folder_exists();
-    cfg_board_init();
+    board_constants_init();
 
     char * ts = alloc();
 

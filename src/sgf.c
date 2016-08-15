@@ -13,15 +13,16 @@ Play variations are not supported.
 #include <unistd.h>
 #include <assert.h>
 
-#include "types.h"
+#include "alloc.h"
 #include "board.h"
 #include "file_io.h"
-#include "stringm.h"
-#include "state_changes.h"
 #include "flog.h"
 #include "game_record.h"
 #include "scoring.h"
-#include "alloc.h"
+#include "state_changes.h"
+#include "stringm.h"
+#include "types.h"
+#include "version.h"
 
 extern d16 komi;
 
@@ -221,8 +222,8 @@ u32 export_game_as_sgf_to_buffer(
     /* Not standard but as used in KGS; closest would be AGA rules */
     buf += snprintf(buf, size - (buf - buffer), "RU[Chinese]\n");
     buf += snprintf(buf, size - (buf - buffer), "CA[UTF-8]\n");
-    buf += snprintf(buf, size - (buf - buffer), "AP[matilda:%u.%u]\n",
-        VERSION_MAJOR, VERSION_MINOR);
+    buf += snprintf(buf, size - (buf - buffer), "AP[matilda:%s]\n",
+        MATILDA_VERSION);
 
 
     char * mstr = alloc();

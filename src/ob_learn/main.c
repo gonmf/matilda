@@ -12,22 +12,24 @@ a state->play file (.spb), to be used for further play suggestions besides
 #include <stdio.h>
 #include <string.h>
 
+#include "alloc.h"
 #include "board.h"
+#include "constants.h"
 #include "crc32.h"
 #include "engine.h"
 #include "file_io.h"
+#include "hash_table.h"
 #include "mcts.h"
 #include "opening_book.h"
 #include "randg.h"
 #include "sgf.h"
 #include "state_changes.h"
 #include "stringm.h"
-#include "hash_table.h"
 #include "timem.h"
 #include "transpositions.h"
 #include "zobrist.h"
-#include "alloc.h"
-#include "flog.h"
+#include "version.h"
+
 
 #define SECS_PER_TURN 30
 
@@ -69,7 +71,7 @@ static d32 compare_function(
 int main(int argc, char * argv[]){
     for(int i = 1; i < argc; ++i){
         if(strcmp(argv[i], "-version") == 0){
-            printf("matilda %u.%u\n", VERSION_MAJOR, VERSION_MINOR);
+            printf("matilda %s\n", MATILDA_VERSION);
             exit(EXIT_SUCCESS);
         }
         if(i < argc - 1 && strcmp(argv[i], "-max_depth") == 0){
@@ -106,10 +108,9 @@ t: %u)\n", ob_depth);
     }
 
     alloc_init();
-    config_logging(DEFAULT_LOG_MODES);
     rand_init();
     assert_data_folder_exists();
-    cfg_board_init();
+    board_constants_init();
     zobrist_init();
     transpositions_table_init();
 

@@ -7,14 +7,13 @@ say anything. All times are in milliseconds.
 
 #include "matilda.h"
 
-#include <math.h>
-#include <stdlib.h>
 #include <string.h>
 
-#include "types.h"
-#include "time_ctrl.h"
 #include "alloc.h"
+#include "board.h"
 #include "stringm.h"
+#include "time_ctrl.h"
+#include "types.h"
 
 u32 network_roundtrip_delay = LATENCY_COMPENSATION;
 bool network_round_trip_set = false;
@@ -355,7 +354,7 @@ bool str_to_time_system(
     if(len < 7)
         return false;
 
-    char * s = (char *)malloc(len + 1);
+    char * s = alloc();
     if(s == NULL)
         return false;
     char * original_ptr = s;
@@ -365,7 +364,7 @@ bool str_to_time_system(
     len = strlen(s);
     if(len < 9)
     {
-        free(original_ptr);
+        release(original_ptr);
         return false;
     }
 
@@ -375,7 +374,7 @@ bool str_to_time_system(
     char * char_idx = strchr(s, '+');
     if(char_idx == NULL)
     {
-        free(original_ptr);
+        release(original_ptr);
         return false;
     }
     char_idx[0] = 0;
@@ -384,7 +383,7 @@ bool str_to_time_system(
     d32 t = str_to_milliseconds(s);
     if(t < 0)
     {
-        free(original_ptr);
+        release(original_ptr);
         return false;
     }
     u32 absolute_milliseconds = t;
@@ -396,7 +395,7 @@ bool str_to_time_system(
     char_idx = strchr(s, 'x');
     if(char_idx == NULL)
     {
-        free(original_ptr);
+        release(original_ptr);
         return false;
     }
     char_idx[0] = 0;
@@ -404,7 +403,7 @@ bool str_to_time_system(
 
     if(!parse_int(s, &t) || t < 0)
     {
-        free(original_ptr);
+        release(original_ptr);
         return false;
     }
     u32 byoyomi_periods = t;
@@ -416,7 +415,7 @@ bool str_to_time_system(
     char_idx = strchr(s, '/');
     if(char_idx == NULL)
     {
-        free(original_ptr);
+        release(original_ptr);
         return false;
     }
     char_idx[0] = 0;
@@ -425,7 +424,7 @@ bool str_to_time_system(
     t = str_to_milliseconds(s);
     if(t < 0 || (t == 0 && byoyomi_periods > 0))
     {
-        free(original_ptr);
+        release(original_ptr);
         return false;
     }
     u32 byoyomi_milliseconds = t;
@@ -436,14 +435,14 @@ bool str_to_time_system(
     */
     if(!parse_int(s, &t) || (t < 0) || (t == 0 && byoyomi_periods > 0))
     {
-        free(original_ptr);
+        release(original_ptr);
         return false;
     }
     u32 byoyomi_stones = t;
 
     if(absolute_milliseconds == 0 && byoyomi_milliseconds == 0)
     {
-        free(original_ptr);
+        release(original_ptr);
         return false;
     }
 
@@ -452,6 +451,6 @@ bool str_to_time_system(
     dst->byo_yomi_time = byoyomi_milliseconds;
     dst->byo_yomi_periods = byoyomi_periods;
 
-    free(original_ptr);
+    release(original_ptr);
     return true;
 }

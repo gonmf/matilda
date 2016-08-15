@@ -11,10 +11,10 @@ unlikely) for floating point functions.
 #include <stdio.h>
 #include <omp.h>
 
-#include "timem.h"
-#include "flog.h"
-#include "types.h"
 #include "alloc.h"
+#include "flog.h"
+#include "timem.h"
+#include "types.h"
 
 static u32 state[MAXIMUM_NUM_THREADS];
 static bool rand_inited = false;

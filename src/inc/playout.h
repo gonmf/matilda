@@ -21,7 +21,6 @@ And chooses a play based on (by order of importance):
 #include "matilda.h"
 
 #include "types.h"
-#include "board.h"
 #include "cfg_board.h"
 
 

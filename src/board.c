@@ -18,7 +18,6 @@ For a more advanced board representation check the CFG representation
 #include "move.h"
 #include "matrix.h"
 
-d16 komi = DEFAULT_KOMI;
 
 
 

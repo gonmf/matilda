@@ -10,7 +10,6 @@ reading handicap, hoshi and starting plays for MCTS.
 #include "matilda.h"
 
 #include "types.h"
-#include "board.h"
 
 
 /*

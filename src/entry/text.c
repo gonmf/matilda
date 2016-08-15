@@ -14,20 +14,20 @@ or pass).
 #include <string.h>
 #include <stdlib.h>
 
+#include "alloc.h"
+#include "analysis.h"
 #include "board.h"
 #include "engine.h"
 #include "flog.h"
 #include "game_record.h"
+#include "pts_file.h"
 #include "scoring.h"
+#include "sgf.h"
 #include "state_changes.h"
 #include "stringm.h"
-#include "analysis.h"
-#include "frisbee.h"
-#include "sgf.h"
-#include "timem.h"
 #include "time_ctrl.h"
-#include "alloc.h"
-#include "pts_file.h"
+#include "timem.h"
+#include "version.h"
 
 extern game_record current_game;
 extern time_system current_clock_black;
@@ -35,7 +35,6 @@ extern time_system current_clock_white;
 extern bool save_all_games_to_file;
 
 extern bool estimate_score;
-extern float frisbee_prob;
 
 static u8 tips = 3;
 
@@ -89,33 +88,6 @@ static bool text_play(
         return true;
     }
 
-    if(ENABLE_FRISBEE_GO && frisbee_prob < 1.0)
-    {
-        move n = frisbee_divert_play(&current_state, is_black, m, frisbee_prob);
-        if(m != n)
-        {
-            if(superko_violation(&current_game, is_black, n))
-                n = NONE;
-
-            char * mstr = alloc();
-            coord_to_alpha_num(mstr, m);
-            if(n == NONE)
-                printf("Player attempted to play %s but it ended an illegal pla\
-y instead.\n", mstr);
-            else
-            {
-                printf("Player attempted to play %s ", mstr);
-                char * nstr = alloc();
-                coord_to_alpha_num(nstr, n);
-                printf("but it landed on %s instead.\n", nstr);
-                release(nstr);
-            }
-            release(mstr);
-
-            m = n;
-        }
-    }
-
     add_play(&current_game, m);
     opt_turn_maintenance(&current_state, !is_black);
     *passed = false;
@@ -162,33 +134,6 @@ static void text_genmove(
     }
 
     move m = select_play(&out_b, is_black, &current_game);
-
-    if(ENABLE_FRISBEE_GO && frisbee_prob < 1.0)
-    {
-        move n = frisbee_divert_play(&current_state, is_black, m, frisbee_prob);
-        if(m != n)
-        {
-            if(superko_violation(&current_game, is_black, n))
-                n = NONE;
-
-            char * mstr = alloc();
-            coord_to_alpha_num(mstr, m);
-            if(n == NONE)
-                printf("Matilda attempted to play %s but it ended an illegal pl\
-ay instead.\n", mstr);
-            else
-            {
-                printf("Matilda attempted to play %s ", mstr);
-                char * nstr = alloc();
-                coord_to_alpha_num(nstr, n);
-                printf("but it landed on %s instead.\n", nstr);
-                release(nstr);
-            }
-            release(mstr);
-
-            m = n;
-        }
-    }
 
     add_play(&current_game, m);
 
@@ -273,15 +218,11 @@ void main_text(bool is_black){
     flog_info("gtp", s);
 
     komi_to_string(s, DEFAULT_KOMI);
-    printf("Matilda %u.%u running in text mode. In this mode the options are li\
+    printf("Matilda %s running in text mode. In this mode the options are li\
 mited and no time limit is enforced. To run using GTP add the flag -gtp. Playin\
 g with Chinese rules with %s komi; game is over after two passes or a resignati\
-on.\n\n", VERSION_MAJOR, VERSION_MINOR, s);
+on.\n\n", MATILDA_VERSION, s);
     release(s);
-
-    if(ENABLE_FRISBEE_GO && frisbee_prob < 1.0)
-        printf("Frisbee Go variant is active. Each board play has a %u%% chance\
- of missing.\n", (u32)(frisbee_prob * 100.0));
 
     bool human_player_color = is_black;
 

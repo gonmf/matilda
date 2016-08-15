@@ -20,7 +20,6 @@ The life of these patterns is as follow:
 
 #include "types.h"
 #include "board.h"
-#include "cfg_board.h"
 
 #define USE_PATTERN_WEIGHTS true
 

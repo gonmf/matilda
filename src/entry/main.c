@@ -10,21 +10,22 @@ Also deals with updating some internal parameters at startup time.
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include <unistd.h>
 #include <omp.h>
 
+#include "alloc.h"
 #include "board.h"
 #include "cfg_board.h"
+#include "constants.h"
 #include "engine.h"
 #include "flog.h"
 #include "game_record.h"
 #include "opening_book.h"
 #include "randg.h"
 #include "stringm.h"
-#include "timem.h"
 #include "time_ctrl.h"
+#include "timem.h"
 #include "zobrist.h"
-#include "alloc.h"
+#include "version.h"
 
 game_record current_game;
 time_system current_clock_black;
@@ -36,7 +37,6 @@ bool save_all_games_to_file = false; /* save all games as SGF on gameover */
 bool resign_on_timeout = false; /* resign instead of passing if timed out */
 
 extern u64 max_size_in_mbs;
-extern float frisbee_prob;
 
 /*
 For tuning
@@ -56,6 +56,8 @@ extern u16 prior_line1x;
 extern u16 prior_line2x;
 extern u16 prior_line3x;
 extern u16 prior_corner;
+extern u16 prior_bad_play;
+extern u16 prior_pass;
 extern double ucb1_c;
 extern double rave_mse_b;
 extern u16 pl_skip_saving;
@@ -86,6 +88,8 @@ const void * tunable[] =
     "i", "prior_line2x", &prior_line2x,
     "i", "prior_line3x", &prior_line3x,
     "i", "prior_corner", &prior_corner,
+    "i", "prior_bad_play", &prior_bad_play,
+    "i", "prior_pass", &prior_pass,
     "f", "ucb1_c", &ucb1_c,
     "f", "rave_mse_b", &rave_mse_b,
     "i", "pl_skip_saving", &pl_skip_saving,
@@ -184,7 +188,7 @@ int main(
     {
         if(strcmp(argv[i], "-v") == 0 || strcmp(argv[i], "--version") == 0)
         {
-            fprintf(stderr, "matilda %u.%u\n", VERSION_MAJOR, VERSION_MINOR);
+            fprintf(stderr, "matilda %s\n", MATILDA_VERSION);
             return EXIT_SUCCESS;
         }
         if(strcmp(argv[i], "-i") == 0 || strcmp(argv[i], "--info") == 0)
@@ -409,23 +413,6 @@ d", argv[i + 1]);
             ++i;
             continue;
         }
-        if(strcmp(argv[i], "--frisbee_accuracy") == 0 && i < argc - 1)
-        {
-            if(!ENABLE_FRISBEE_GO)
-                flog_crit("entry", "program must be compiled with support for f\
-risbee play");
-
-            double v;
-            if(!parse_float(argv[i + 1], &v))
-                flog_crit("entry", "accuracy argument format error");
-
-            if(v < 0.0 || v > 1.0)
-                flog_crit("entry", "invalid frisbee accuracy");
-
-            frisbee_prob = v;
-            ++i;
-            continue;
-        }
 
         fprintf(stderr, "matilda - Go/Igo/Weiqi/Baduk computer player\n\n");
 
@@ -497,11 +484,6 @@ nspositions table, in MiB.\n        The default is %u MiB\n\n",
         fprintf(stderr, "        \033[1m--save_all\033[0m\n\n");
         fprintf(stderr, "        Save all finished games to the data folder as \
 SGF.\n\n");
-
-        fprintf(stderr,
-            "        \033[1m--frisbee_accuracy <number>\033[0m\n\n");
-        fprintf(stderr, "        Select frisbee accuracy if playing frisbee Go.\
-\n\n");
 
         fprintf(stderr, "        \033[1m--threads <number>\033[0m\n\n");
         fprintf(stderr, "        Override the number of OpenMP threads to use. \
@@ -575,7 +557,7 @@ e");
 
     assert_data_folder_exists();
     rand_init();
-    cfg_board_init();
+    board_constants_init();
     zobrist_init();
 
     u32 automatic_num_threads;

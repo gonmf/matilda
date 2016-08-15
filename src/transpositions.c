@@ -21,16 +21,14 @@ table color.
 #include <assert.h>
 #include <omp.h>
 
-#include "types.h"
+#include "alloc.h"
 #include "board.h"
-#include "transpositions.h"
 #include "cfg_board.h"
-#include "randg.h"
-#include "timem.h"
-#include "zobrist.h"
 #include "flog.h"
 #include "primes.h"
-#include "alloc.h"
+#include "transpositions.h"
+#include "types.h"
+#include "zobrist.h"
 
 u64 max_size_in_mbs = DEFAULT_UCT_MEMORY;
 

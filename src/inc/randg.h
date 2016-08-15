@@ -12,7 +12,6 @@ unlikely) for floating point functions.
 #include "matilda.h"
 
 #include "types.h"
-#include "board.h"
 
 
 /*

@@ -70,27 +70,7 @@ gomill-describe_engine
 
 
 
-2.4 Frisbee Go Commands
-
-frisbee-epsilon -- alias to frisbee-accuracy
-
-
-frisbee-play -- equal to play command but with SKIP vertex format possible, to
-indicate a play that was deviated into an illegal play.
-
-
-frisbee-reg_genmove -- alias to reg_genmove command
-
-
-
-2.5 Matilda Commands
-
-frisbee-accuracy -- changes the current accuracy of the program in Frisbee Go.
-The argument has to be a valid probability (0 to 1) and it cannot be changed
-midgame.
-Arguments: floating point value
-Fails: syntax error; unable to change
-
+2.4 Matilda Commands
 
 mtld-last_evaluation -- returns in multi-line format the last full board
 evaluation. It may not cover all plays if the last strategy ran only evaluated

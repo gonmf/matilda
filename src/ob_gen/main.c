@@ -9,19 +9,21 @@ Application for the production of Fuego book from SGF game collections.
 #include <stdio.h>
 #include <string.h>
 
+#include "alloc.h"
 #include "board.h"
+#include "constants.h"
+#include "crc32.h"
 #include "engine.h"
 #include "file_io.h"
-#include "crc32.h"
-#include "timem.h"
+#include "hash_table.h"
 #include "opening_book.h"
 #include "randg.h"
 #include "sgf.h"
-#include "hash_table.h"
 #include "state_changes.h"
 #include "stringm.h"
-#include "alloc.h"
-#include "flog.h"
+#include "timem.h"
+#include "version.h"
+
 
 #define MAX_FILES 500000
 #define TABLE_BUCKETS 4957
@@ -211,7 +213,7 @@ int main(
     {
         if(strcmp(argv[i], "-version") == 0)
         {
-            printf("matilda %u.%u\n", VERSION_MAJOR, VERSION_MINOR);
+            printf("matilda %s\n", MATILDA_VERSION);
             exit(EXIT_SUCCESS);
         }
         if(i < argc - 1 && strcmp(argv[i], "-max_depth") == 0)
@@ -262,7 +264,6 @@ o be used. (default: %u)\n", minimum_turns);
     }
 
     alloc_init();
-    config_logging(DEFAULT_LOG_MODES);
     assert_data_folder_exists();
 
     char * ts = alloc();

@@ -12,13 +12,14 @@ Upon running a DATA/output.joseki file should be written.
 #include <stdio.h>
 #include <string.h>
 
+#include "alloc.h"
 #include "board.h"
+#include "constants.h"
 #include "engine.h"
 #include "file_io.h"
-#include "timem.h"
 #include "stringm.h"
-#include "alloc.h"
-#include "flog.h"
+#include "timem.h"
+#include "version.h"
 
 
 typedef struct __joseki_ {
@@ -177,7 +178,7 @@ int main(
     {
         if(strcmp(argv[i], "-version") == 0)
         {
-            printf("matilda %u.%u\n", VERSION_MAJOR, VERSION_MINOR);
+            printf("matilda %s\n", MATILDA_VERSION);
             exit(EXIT_SUCCESS);
         }
 
@@ -188,7 +189,6 @@ int main(
     }
 
     alloc_init();
-    config_logging(DEFAULT_LOG_MODES);
     assert_data_folder_exists();
 
     char * buffer = calloc(MAX_FILE_SIZ, 1);

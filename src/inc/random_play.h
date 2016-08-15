@@ -10,23 +10,23 @@ and some other fast checks.
 
 #include "board.h"
 #include "cfg_board.h"
+#include "move.h"
 #include "types.h"
 
 
 /*
-Select random safe play.
+Select random legal play.
 */
-move select_safe_play_random(
+move random_play(
     cfg_board * cb,
     bool is_black
 );
 
 /*
-Randomly select a safe play.
+Select random legal play.
 */
-void random_play(
-    out_board * out_b,
-    const board * b,
+move random_play2(
+    board * b,
     bool is_black
 );
 

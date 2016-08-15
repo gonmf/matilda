@@ -11,21 +11,17 @@ and some other fast checks.
 #include "board.h"
 #include "cfg_board.h"
 #include "randg.h"
-#include "state_changes.h"
 #include "tactical.h"
 
 
 /*
-Select random safe play.
+Select random legal play.
 */
-move select_safe_play_random(
+move random_play(
     cfg_board * cb,
     bool is_black
 ){
     bool _ignored;
-    bool in_seki[TOTAL_BOARD_SIZ];
-    memset(in_seki, false, TOTAL_BOARD_SIZ);
-    mark_pts_in_seki(in_seki, cb);
 
     move playable[TOTAL_BOARD_SIZ];
     u16 playable_count = 0;
@@ -37,12 +33,6 @@ move select_safe_play_random(
         if(!is_eye(cb, m, is_black) && !ko_violation(cb, m) &&
             safe_to_play(cb, m, is_black, &_ignored) > 0)
         {
-            /*
-            Don't play equal point sekis
-            */
-            if(in_seki[m])
-                continue;
-
             playable[playable_count] = m;
             ++playable_count;
         }
@@ -57,28 +47,17 @@ move select_safe_play_random(
     return PASS;
 }
 
-
 /*
-Randomly select a safe play.
+Select random legal play.
 */
-void random_play(
-    out_board * out_b,
-    const board * b,
+move random_play2(
+    board * b,
     bool is_black
 ){
-    rand_init();
-
-    clear_out_board(out_b);
     cfg_board cb;
     cfg_from_board(&cb, b);
-    move m = select_safe_play_random(&cb, is_black);
+    move ret = random_play(&cb, is_black);
     cfg_board_free(&cb);
-    if(m == PASS)
-        out_b->pass = 1.0;
-    else
-    {
-        out_b->tested[m] = 1.0;
-        out_b->value[m] = 1.0;
-    }
+    return ret;
 }
 

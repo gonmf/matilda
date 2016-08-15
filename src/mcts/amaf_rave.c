@@ -76,7 +76,7 @@ void update_amaf_stats(
     double z
 ){
     for(u16 k = 0; k < stats->plays_count; ++k)
-        if(traversed[stats->plays[k].m] != EMPTY &&
+        if(stats->plays[k].m != PASS && traversed[stats->plays[k].m] != EMPTY &&
             (traversed[stats->plays[k].m] == BLACK_STONE) == is_black)
         {
             stats->plays[k].amaf_n++;
@@ -96,7 +96,7 @@ void update_amaf_stats2(
     bool is_black
 ){
     for(u16 k = 0; k < stats->plays_count; ++k)
-        if(traversed[stats->plays[k].m] != EMPTY &&
+        if(stats->plays[k].m != PASS && traversed[stats->plays[k].m] != EMPTY &&
             (traversed[stats->plays[k].m] == BLACK_STONE) == is_black)
         {
             stats->plays[k].amaf_n++;
