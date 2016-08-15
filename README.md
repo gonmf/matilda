@@ -3,8 +3,8 @@
 Matilda - Go/Igo/Wéiqí/Baduk playing software
 ===
 
-Matilda is a computer Go and frisbee Go playing engine and accompanying software. It is mostly a MCTS Mogo-like Go program. It is aimed at 64 bit
-computers in shared memory, playing with Chinese rules via the Go Text Protocol.
+Matilda is a competitive computer Go playing engine and accompanying software.
+Implementation-wise it is a MCTS Mogo-like Go program. It is aimed at 64 bit computers in shared memory, playing with Chinese rules via the Go Text Protocol.
 It is versatile and optimized for speed in a lot of areas, though some changes require a recompilation.
 
 In terms of strength Matilda is pretty strong in small boards, but still needs a lot of work in 19x19.

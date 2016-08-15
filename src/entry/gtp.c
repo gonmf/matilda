@@ -55,7 +55,6 @@ GTP_README.
 extern d16 komi;
 extern u32 network_roundtrip_delay;
 extern bool network_round_trip_set;
-extern float frisbee_prob;
 
 const char * supported_commands[] =
 {
@@ -70,12 +69,6 @@ const char * supported_commands[] =
     "exit",
     "final_score",
     "final_status_list",
-#if ENABLE_FRISBEE_GO
-    "frisbee-accuracy",
-    "frisbee-epsilon",
-    "frisbee-play",
-    "frisbee-reg_genmove",
-#endif
     "genmove",
     "gg-undo",
     "gomill-cpu_time",
@@ -659,10 +652,6 @@ st on time");
             /* we don't do anything else when timed out */
         }
 #endif
-
-        if(ENABLE_FRISBEE_GO && frisbee_prob < 1.0)
-            flog_crit("gtp", "playing Frisbee Go but play modification has \
-been ignored by invoking genmove");
     }
 
     coord_to_gtp_vertex(buf, m);
@@ -1146,47 +1135,6 @@ static void gtp_undo(
         error_msg(fp, id, "cannot undo");
 }
 
-static void gtp_frisbee_accuracy(
-    FILE * fp,
-    int id,
-    const char * floatv
-){
-    double v;
-    if(!parse_float(floatv, &v))
-    {
-        error_msg(fp, id, "syntax error");
-        return;
-    }
-
-    if(v < 0.0 || v > 1.0)
-    {
-        error_msg(fp, id, "syntax error");
-        return;
-    }
-
-    if(current_game.turns > 0)
-    {
-        error_msg(fp, id, "unable to change");
-        flog_warn("gtp", "unable to change frisbee accuracy midgame");
-        return;
-    }
-    answer_msg(fp, id, NULL);
-
-    char * buf = alloc();
-    if(v == frisbee_prob)
-        snprintf(buf, MAX_PAGE_SIZ, "frisbee accuracy kept at %.2f",
-            frisbee_prob);
-    else
-    {
-        snprintf(buf, MAX_PAGE_SIZ,
-            "changed frisbee accuracy from %.2f to %.2f", frisbee_prob, v);
-        frisbee_prob = v;
-    }
-
-    flog_info("gtp", buf);
-    release(buf);
-}
-
 static void gtp_undo_multiple(
     FILE * fp,
     int id,
@@ -1461,12 +1409,6 @@ void main_gtp(
     flog_info("gtp", s);
     release(s);
 
-    if(ENABLE_FRISBEE_GO && frisbee_prob < 1.0)
-        flog_warn("gtp", "while playing Frisbee Go in GTP mode it is assumed th\
-e plays are modified randomly by the controller or adapter program; prior to pl\
-ay commands and after reg_genmove commands. Do not invoke genmove commands inst\
-ead.");
-
     FILE * out_fp;
     int _out_fp = dup(STDOUT_FILENO);
     if(_out_fp == -1)
@@ -1602,20 +1544,13 @@ cmd_matcher:
             continue;
         }
 
-        if(argc == 2 && (ENABLE_FRISBEE_GO && strcmp(cmd, "frisbee-play") == 0))
-        {
-            gtp_play(out_fp, idn, args[0], args[1], true);
-            continue;
-        }
-
         if(argc == 1 && strcmp(cmd, "genmove") == 0)
         {
             gtp_genmove(out_fp, idn, args[0]);
             continue;
         }
 
-        if(argc == 1 && (strcmp(cmd, "reg_genmove") == 0 || (ENABLE_FRISBEE_GO
-            && strcmp(cmd, "frisbee-reg_genmove") == 0)))
+        if(argc == 1 && strcmp(cmd, "reg_genmove") == 0)
         {
             gtp_reg_genmove(out_fp, idn, args[0]);
             continue;
@@ -1807,13 +1742,6 @@ cmd_matcher:
         if(argc == 0 && strcmp(cmd, "clear_cache") == 0)
         {
             gtp_clear_cache(out_fp, idn);
-            continue;
-        }
-
-        if(argc == 1 && ENABLE_FRISBEE_GO && (strcmp(cmd, "frisbee-accuracy") ==
-            0 || strcmp(cmd, "frisbee-epsilon") == 0))
-        {
-            gtp_frisbee_accuracy(out_fp, idn, args[0]);
             continue;
         }
 

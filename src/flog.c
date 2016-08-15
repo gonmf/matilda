@@ -45,7 +45,6 @@ static char * _tmp_buffer = NULL;
 For non-default values for build_info
 */
 extern u64 max_size_in_mbs;
-extern float frisbee_prob;
 extern double prior_stone_scale_factor;
 extern u16 prior_even;
 extern u16 prior_nakade;
@@ -250,12 +249,6 @@ void build_info(
         VERSION_MAJOR, VERSION_MINOR);
     idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx, "Data folder: %s\n",
         get_data_folder());
-    idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx, "Frisbee Go enabled: %s\n",
-        YN(ENABLE_FRISBEE_GO));
-
-    if(ENABLE_FRISBEE_GO)
-        idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx, "  Accuracy: %.2f\n",
-            frisbee_prob);
 
     idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx, "Board size: %ux%u\n",
         BOARD_SIZ, BOARD_SIZ);

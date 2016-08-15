@@ -23,58 +23,33 @@ It can also record the average final score, for the purpose of score estimation.
 #include <assert.h>
 #include <omp.h>
 
+#include "alloc.h"
 #include "amaf_rave.h"
 #include "board.h"
 #include "cfg_board.h"
-#include "dragon.h"
 #include "flog.h"
-#include "frisbee.h"
-#include "pts_file.h"
 #include "mcts.h"
 #include "move.h"
 #include "pat3.h"
 #include "playout.h"
+#include "priors.h"
+#include "pts_file.h"
 #include "randg.h"
 #include "scoring.h"
 #include "state_changes.h"
-#include "tactical.h"
 #include "timem.h"
 #include "transpositions.h"
 #include "types.h"
 #include "zobrist.h"
-#include "alloc.h"
 
 /*
 Public to allow parameter optimization
 */
-double prior_stone_scale_factor = PRIOR_STONE_SCALE_FACTOR;
-u16 prior_even = PRIOR_EVEN;
-u16 prior_nakade = PRIOR_NAKADE;
-u16 prior_self_atari = PRIOR_SELF_ATARI;
-u16 prior_attack = PRIOR_ATTACK;
-u16 prior_defend = PRIOR_DEFEND;
-u16 prior_pat3 = PRIOR_PAT3;
-u16 prior_near_last = PRIOR_NEAR_LAST;
-u16 prior_line2 = PRIOR_LINE2;
-u16 prior_line3 = PRIOR_LINE3;
-u16 prior_empty = PRIOR_EMPTY;
-u16 prior_line1x = PRIOR_LINE1X;
-u16 prior_line2x = PRIOR_LINE2X;
-u16 prior_line3x = PRIOR_LINE3X;
-u16 prior_corner = PRIOR_CORNER;
-
 double ucb1_c = UCB1_C;
 
 
-extern u8 out_neighbors4[TOTAL_BOARD_SIZ];
-
-extern bool border_left[TOTAL_BOARD_SIZ];
-extern bool border_right[TOTAL_BOARD_SIZ];
-extern bool border_top[TOTAL_BOARD_SIZ];
-extern bool border_bottom[TOTAL_BOARD_SIZ];
-
-static u8 distances_to_border[TOTAL_BOARD_SIZ];
-static move_seq nei_dst_3[TOTAL_BOARD_SIZ];
+u8 distances_to_border[TOTAL_BOARD_SIZ];
+move_seq nei_dst_3[TOTAL_BOARD_SIZ];
 static bool ran_out_of_memory;
 static bool search_stop;
 static u16 max_depths[MAXIMUM_NUM_THREADS];
@@ -94,11 +69,6 @@ needs to be reset before testing again if can be run.
 */
 static bool mcts_can_resume = true;
 
-
-/*
-Frisbee Go
-*/
-float frisbee_prob = DEFAULT_FRISBEE_ACCURACY / 100.0;
 
 
 static bool uct_inited = false;
@@ -212,345 +182,15 @@ static void init_branch_limit(
 #endif
 
 
-static u16 stones_in_manhattan_dst3(
-    const cfg_board * cb,
-    move m
-){
-    u16 ret = 0;
-    for(u16 n = 0; n < nei_dst_3[m].count; ++n)
-    {
-        move b = nei_dst_3[m].coord[n];
-        if(cb->p[b] != EMPTY)
-            ++ret;
-    }
-    return ret;
-}
-
-/*
-Priors values with heuristic MC-RAVE
-
-Initiates the MCTS and AMAF statistics with the values from an external
-heuristic.
-Also marks playable positions, excluding playing in own eyes and ko violations,
-with at least one visit.
-*/
-static void init_new_state(
-    cfg_board * cb,
-    tt_stats * stats,
-    bool is_black,
-    const bool branch_limit[TOTAL_BOARD_SIZ]
-){
-    bool near_last_play[TOTAL_BOARD_SIZ];
-    if(is_board_move(cb->last_played))
-        mark_near_pos(near_last_play, cb, cb->last_played);
-    else
-        memset(near_last_play, false, TOTAL_BOARD_SIZ);
-
-    u8 in_nakade[TOTAL_BOARD_SIZ];
-    memset(in_nakade, 0, TOTAL_BOARD_SIZ);
-
-    bool viable[TOTAL_BOARD_SIZ];
-    memcpy(viable, branch_limit, TOTAL_BOARD_SIZ * sizeof(bool));
-    bool play_okay[TOTAL_BOARD_SIZ];
-    memcpy(play_okay, branch_limit, TOTAL_BOARD_SIZ * sizeof(bool));
-
-    estimate_eyes(cb, is_black, viable, play_okay, in_nakade);
-
-    u16 saving_play[TOTAL_BOARD_SIZ];
-    memset(saving_play, 0, TOTAL_BOARD_SIZ * sizeof(u16));
-
-    u16 capturable[TOTAL_BOARD_SIZ];
-    memset(capturable, 0, TOTAL_BOARD_SIZ * sizeof(u16));
-
-    bool self_atari[TOTAL_BOARD_SIZ];
-    memset(self_atari, false, TOTAL_BOARD_SIZ);
-
-    /*
-    Tactical analysis of attack/defense of unsettled groups.
-    */
-    for(u8 i = 0; i < cb->unique_groups_count; ++i)
-    {
-        group * g = cb->g[cb->unique_groups[i]];
-        if(g->eyes < 2)
-        {
-            move candidates[MAX_GROUPS];
-            u16 candidates_count = 0;
-
-            if(g->is_black == is_black)
-            {
-                move candidates2[MAX_GROUPS];
-                u16 candidates_count2 = 0;
-                can_be_killed_all(cb, g, &candidates_count2, candidates2);
-                if(candidates_count2 > 0)
-                {
-                    can_be_saved_all(cb, g, &candidates_count, candidates);
-                    if(candidates_count == 0)
-                    {
-                        for(u16 j = 0; j < candidates_count2; ++j)
-                            self_atari[candidates2[j]] = true;
-                        continue;
-                    }
-                    for(u16 j = 0; j < candidates_count; ++j)
-                        saving_play[candidates[j]] += g->stones.count +
-                    g->liberties;
-                }
-            }
-            else
-            {
-                can_be_killed_all(cb, g, &candidates_count, candidates);
-                if(candidates_count > 0)
-                {
-                    if(can_be_saved(cb, g) != NONE)
-                        for(u16 j = 0; j < candidates_count; ++j)
-                            capturable[candidates[j]] += g->stones.count +
-                                g->liberties;
-                    else
-                        for(u16 j = 0; j < candidates_count; ++j)
-                            capturable[candidates[j]] += (g->stones.count +
-                                g->liberties) / 2;
-                }
-            }
-        }
-    }
-
-
-
-    u16 plays_found = 0;
-    stats->mc_n_total = 0;
-
-    for(move k = 0; k < cb->empty.count; ++k)
-    {
-        move m = cb->empty.coord[k];
-
-        /*
-        Don't play intersections disqualified because of a better, nearby nakade
-        or because they are eyes
-        */
-        if(!viable[m])
-            continue;
-
-        move captures;
-        u8 libs = libs_after_play(cb, m, is_black, &captures);
-
-        /*
-        Don't play suicides
-        */
-        if(libs == 0)
-            continue;
-
-        /*
-        Ko violation
-        */
-        if(captures == 1 && ko_violation(cb, m))
-            continue;
-
-        /*
-        Even game heuristic
-        */
-        u32 mc_w = prior_even / 2;
-        u32 mc_v = prior_even;
-
-        /*
-        Avoid typically poor plays like eye shape
-        */
-        if(!play_okay[m])
-            mc_v += TOTAL_BOARD_SIZ; // TODO optimize this parameter
-        else
-        {
-            /*
-            Avoid safe tiger mouths.
-            */
-            if(safe_tigers_mouth(cb, is_black, m))
-                mc_v += TOTAL_BOARD_SIZ; // TODO optimize this parameter
-        }
-
-        if(out_neighbors4[m] == 2 && ((is_black && cb->white_neighbors8[m] == 0)
-            || (!is_black && cb->black_neighbors8[m] == 0)))
-            mc_v += TOTAL_BOARD_SIZ; // TODO optimize this parameter
-
-        /*
-        Prohibit self-ataris if they don't put the opponent in atari
-        (this definition does not prohibit throw-ins)
-        */
-        if(libs == 1 || self_atari[m])
-            mc_v += prior_self_atari;
-
-        /*
-        Nakade
-        */
-        if(in_nakade[m] > 0)
-        {
-            group * g = get_closest_group(cb, m);
-            if(g->eyes < 2) /* nakade eye shape is already an eye */
-            {
-                u16 b = (u16)powf(in_nakade[m], prior_stone_scale_factor);
-                mc_w += prior_nakade + b;
-                mc_v += prior_nakade + b;
-            }
-        }
-
-        /*
-        Saving plays
-        */
-        if(saving_play[m] > 0)
-        {
-            u16 b = (u16)powf(saving_play[m], prior_stone_scale_factor);
-            mc_w += prior_defend + b;
-            mc_v += prior_defend + b;
-        }
-
-        /*
-        Capturing plays
-        */
-        if(capturable[m] > 0)
-        {
-            u16 b = (u16)powf(capturable[m], prior_stone_scale_factor);
-            mc_w += prior_attack + b;
-            mc_v += prior_attack + b;
-        }
-
-        /*
-        3x3 patterns
-        */
-        if(libs > 1 && pat3_find(cb->hash[m], is_black) != 0)
-        {
-            mc_w += prior_pat3;
-            mc_v += prior_pat3;
-        }
-
-
-        /*
-        Favor plays near to the last and its group liberties
-        */
-        if(near_last_play[m])
-        {
-            mc_w += prior_near_last;
-            mc_v += prior_near_last;
-        }
-
-
-        /*
-        Bonuses based on line and empty parts of the board
-        */
-        if(stones_in_manhattan_dst3(cb, m) == 0)
-        {
-            u8 dst_border = distances_to_border[m];
-            switch(dst_border)
-            {
-                case 0:
-                    continue;
-                case 1:
-                    mc_v += prior_line2;
-                    break;
-                case 2:
-                    mc_w += prior_line3;
-                    mc_v += prior_line3;
-                    break;
-                default:
-                    mc_w += prior_empty;
-                    mc_v += prior_empty;
-            }
-        }
-        else
-        {
-            u8 dst_border = distances_to_border[m];
-            switch(dst_border)
-            {
-                case 0:
-                    mc_v += prior_line1x;
-                    break;
-                case 1:
-                    mc_v += prior_line2x;
-                    break;
-                case 2:
-                    mc_w += prior_line3x;
-                    mc_v += prior_line3x;
-                    break;
-            }
-        }
-
-
-        /*
-        Corner of the board bonus
-        */
-        if(out_neighbors4[m] == 2)
-        {
-            mc_v += prior_corner;
-        }
-
-
-        stats->plays[plays_found].m = m;
-        stats->plays[plays_found].mc_q = ((double)mc_w) / ((double)mc_v);
-        stats->plays[plays_found].mc_n = mc_v;
-
-
-        /*
-        Heuristic-MC
-
-        Copying the MC prior values to AMAF and initializing other fields
-        */
-        stats->mc_n_total += stats->plays[plays_found].mc_n;
-        stats->plays[plays_found].next_stats = NULL;
-        /* AMAF/RAVE */
-        stats->plays[plays_found].amaf_n = stats->plays[plays_found].mc_n;
-        stats->plays[plays_found].amaf_q = stats->plays[plays_found].mc_q;
-#if !ENABLE_FRISBEE_GO
-        /* LGRF */
-        stats->plays[plays_found].lgrf1_reply = NULL;
-#endif
-        /* Criticality */
-        stats->plays[plays_found].owner_winning = 0.5;
-        stats->plays[plays_found].color_owning = 0.5;
-
-
-        ++plays_found;
-    }
-
-    if(plays_found < TOTAL_BOARD_SIZ / 8)
-    {
-        /*
-        Add pass simulation
-        */
-        stats->plays[plays_found].m = PASS;
-        stats->plays[plays_found].mc_q = UCT_RESIGN_WINRATE; // TODO tune
-        stats->plays[plays_found].mc_n = TOTAL_BOARD_SIZ; // TODO tune
-
-
-        /*
-        Heuristic-MC
-
-        Copying the MC prior values to AMAF and initializing other fields
-        */
-        stats->mc_n_total += stats->plays[plays_found].mc_n;
-        stats->plays[plays_found].next_stats = NULL;
-        /* AMAF/RAVE */
-        stats->plays[plays_found].amaf_n = stats->plays[plays_found].mc_n;
-        stats->plays[plays_found].amaf_q = stats->plays[plays_found].mc_q;
-#if !ENABLE_FRISBEE_GO
-        /* LGRF */
-        stats->plays[plays_found].lgrf1_reply = NULL;
-#endif
-        /* Criticality */
-        stats->plays[plays_found].owner_winning = 0.5;
-        stats->plays[plays_found].color_owning = 0.5;
-
-        ++plays_found;
-    }
-
-    stats->plays_count = plays_found;
-}
-
 static void select_play(
     tt_stats * stats,
     tt_play ** play
 ){
-#if !ENABLE_FRISBEE_GO
     if(*play != NULL && (*play)->lgrf1_reply != NULL)
     {
         *play = (*play)->lgrf1_reply;
         return;
     }
-#endif
 
     tt_play * best_plays[TOTAL_BOARD_SIZ];
     double best_q = -1.0;
@@ -618,36 +258,6 @@ static d16 mcts_expansion(
 
     return outcome;
 }
-
-#if ENABLE_FRISBEE_GO
-static bool legal_play_binary_find(
-    const tt_stats * stats,
-    move m,
-    u16 l,
-    u16 r
-){
-    if(r <= l)
-        return false;
-    u16 md = (l + r) / 2;
-    if(stats->plays[md].m == m)
-        return true;
-    if(stats->plays[md].m > m)
-        return legal_play_binary_find(stats, m, l, md);
-    return legal_play_binary_find(stats, m, md + 1, r);
-}
-
-static bool is_legal_play(
-    const tt_stats * stats,
-    move m
-){
-    if(!is_board_move(m))
-        return false;
-    if(stats->p[m] != EMPTY)
-        return false;
-
-    return legal_play_binary_find(stats, m, 0, stats->plays_count);
-}
-#endif
 
 static d16 mcts_selection(
     cfg_board * cb,
@@ -722,75 +332,33 @@ static d16 mcts_selection(
 
         select_play(curr_stats, &play);
 
+        curr_stats->mc_n_total++;
+        play->mc_n++;
+        play->mc_q -= play->mc_q / play->mc_n;
+        omp_unset_lock(&curr_stats->lock);
+
         if(play->m == PASS)
         {
-            curr_stats->mc_n_total++;
-            play->mc_n++;
-            play->mc_q -= play->mc_q / play->mc_n;
-            omp_unset_lock(&curr_stats->lock);
             if(cb->last_played == PASS)
             {
                 outcome = score_stones_and_area(cb->p);
                 break;
             }
-
             just_pass(cb);
-
-            plays[depth] = play;
-            stats[depth] = curr_stats;
-            ++depth;
-            curr_stats = play->next_stats;
         }
         else
         {
-            curr_stats->mc_n_total++;
-            play->mc_n++;
-            play->mc_q -= play->mc_q / play->mc_n;
-            omp_unset_lock(&curr_stats->lock);
-
-#if ENABLE_FRISBEE_GO
-            /*
-                Frisbee Go non-determinism
-            */
-            if(frisbee_prob < 1.0 && rand_float(1.0) > frisbee_prob)
-            {
-                move n = random_shift_play(play->m);
-
-                if(n != NONE && is_legal_play(curr_stats, n))
-                {
-#if USE_UCT_BRANCH_LIMITER
-                    if(enable_branch_limit)
-                        update_branch_limit(branch_limit, n);
-#endif
-                    just_play2(cb, n, is_black, &zobrist_hash);
-                }
-                else
-                    cb->last_played = cb->last_eaten = NONE;
-
-                plays[depth] = play;
-                stats[depth] = curr_stats;
-                ++depth;
-                curr_stats = NULL;
-                play = NULL;
-                is_black = !is_black;
-                continue;
-            }
-#endif
-
-
 #if USE_UCT_BRANCH_LIMITER
             if(enable_branch_limit)
                 update_branch_limit(branch_limit, play->m);
 #endif
-
             just_play2(cb, play->m, is_black, &zobrist_hash);
-
-            plays[depth] = play;
-            stats[depth] = curr_stats;
-            ++depth;
-            curr_stats = play->next_stats;
         }
 
+        plays[depth] = play;
+        stats[depth] = curr_stats;
+        ++depth;
+        curr_stats = play->next_stats;
         is_black = !is_black;
     }
 
@@ -802,10 +370,8 @@ static d16 mcts_selection(
             move m = plays[k]->m;
             omp_set_lock(&stats[k]->lock);
 
-#if !ENABLE_FRISBEE_GO
             /* LGRF */
             plays[k]->lgrf1_reply = NULL;
-#endif
 
             /* AMAF/RAVE */
             if(m != PASS)
@@ -833,13 +399,11 @@ static d16 mcts_selection(
                 traversed[m] = is_black ? BLACK_STONE : WHITE_STONE;
             update_amaf_stats(stats[k], traversed, is_black, z);
 
-#if !ENABLE_FRISBEE_GO
             /* LGRF */
             if(is_black == (outcome > 0))
                 plays[k]->lgrf1_reply = NULL;
             else
                 plays[k]->lgrf1_reply = plays[k + 1];
-#endif
 
             /* Criticality */
             if(m != PASS && cb->p[m] != EMPTY)

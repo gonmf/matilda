@@ -36,7 +36,6 @@ bool save_all_games_to_file = false; /* save all games as SGF on gameover */
 bool resign_on_timeout = false; /* resign instead of passing if timed out */
 
 extern u64 max_size_in_mbs;
-extern float frisbee_prob;
 
 /*
 For tuning
@@ -409,23 +408,6 @@ d", argv[i + 1]);
             ++i;
             continue;
         }
-        if(strcmp(argv[i], "--frisbee_accuracy") == 0 && i < argc - 1)
-        {
-            if(!ENABLE_FRISBEE_GO)
-                flog_crit("entry", "program must be compiled with support for f\
-risbee play");
-
-            double v;
-            if(!parse_float(argv[i + 1], &v))
-                flog_crit("entry", "accuracy argument format error");
-
-            if(v < 0.0 || v > 1.0)
-                flog_crit("entry", "invalid frisbee accuracy");
-
-            frisbee_prob = v;
-            ++i;
-            continue;
-        }
 
         fprintf(stderr, "matilda - Go/Igo/Weiqi/Baduk computer player\n\n");
 
@@ -497,11 +479,6 @@ nspositions table, in MiB.\n        The default is %u MiB\n\n",
         fprintf(stderr, "        \033[1m--save_all\033[0m\n\n");
         fprintf(stderr, "        Save all finished games to the data folder as \
 SGF.\n\n");
-
-        fprintf(stderr,
-            "        \033[1m--frisbee_accuracy <number>\033[0m\n\n");
-        fprintf(stderr, "        Select frisbee accuracy if playing frisbee Go.\
-\n\n");
 
         fprintf(stderr, "        \033[1m--threads <number>\033[0m\n\n");
         fprintf(stderr, "        Override the number of OpenMP threads to use. \
