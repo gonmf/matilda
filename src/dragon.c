@@ -318,28 +318,28 @@ void estimate_eyes(
             {
                 gs[fn] = dragon_head(cb->g[m + LEFT]);
                 if(gs[fn]->eyes == 0)
-                    goto not_sheltered_liberty;
+                    continue;
                 ++fn;
             }
             if(!border_right[m])
             {
                 gs[fn] = dragon_head(cb->g[m + RIGHT]);
                 if(gs[fn]->eyes == 0)
-                    goto not_sheltered_liberty;
+                    continue;
                 ++fn;
             }
             if(!border_top[m])
             {
                 gs[fn] = dragon_head(cb->g[m + TOP]);
                 if(gs[fn]->eyes == 0)
-                    goto not_sheltered_liberty;
+                    continue;
                 ++fn;
             }
             if(!border_bottom[m])
             {
                 gs[fn] = dragon_head(cb->g[m + BOTTOM]);
                 if(gs[fn]->eyes == 0)
-                    goto not_sheltered_liberty;
+                    continue;
                 ++fn;
             }
             /*
@@ -353,11 +353,6 @@ void estimate_eyes(
             play_okay[m] = false;
             continue;
         }
-
-not_sheltered_liberty:
-
-        if(is_relaxed_eye(cb, m, is_black))
-            play_okay[m] = false;
     }
 
     /*

@@ -164,12 +164,6 @@ move heavy_select_play(
                     continue;
                 }
 
-                if(is_relaxed_eye(cb, m, is_black))
-                {
-                    cache[m] = 0;
-                    continue;
-                }
-
                 bool can_have_forcing_move;
                 /*
                 Avoid defending 2-point eye unnecessarily

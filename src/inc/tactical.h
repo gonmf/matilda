@@ -18,26 +18,18 @@ purpose of eye counting.
 #include "types.h"
 
 
-/*
-RETURNS true if move coordinate is that of an eye
-*/
-bool is_eye(
-    const cfg_board * cb,
-    move m,
-    bool is_black
-);
 
 /*
-A relaxed eye is an eye that may eventually become untakeable (without playing
+An eye is a point that may eventually become untakeable (without playing
 at the empty intersection itself). Examples:
 
 .bw   .b.   ---   +--
 b*b   b*b   b*b   |*b
 .bb   .bb   .b.   |b.
 
-RETURNS true if coordinate is that of a relaxed eye
+RETURNS true if coordinate is that of an eye
 */
-bool is_relaxed_eye(
+bool is_eye(
     const cfg_board * cb,
     move m,
     bool is_black

@@ -38,42 +38,16 @@ extern u8 active_bits_in_byte[256];
 
 
 /*
-RETURNS true if move coordinate is that of an eye
-*/
-bool is_eye(
-    const cfg_board * cb,
-    move m,
-    bool is_black
-){
-    if(out_neighbors4[m] == 0)
-    {
-        if(is_black)
-            return (cb->black_neighbors4[m] == 4) && (cb->black_neighbors8[m] >
-                6);
-        else
-            return (cb->white_neighbors4[m] == 4) && (cb->white_neighbors8[m] >
-                6);
-    }
-    else
-    {
-        if(is_black)
-           return (cb->black_neighbors8[m] + out_neighbors8[m]) == 8;
-        else
-            return (cb->white_neighbors8[m] + out_neighbors8[m]) == 8;
-    }
-}
-
-/*
-A relaxed eye is an eye that may eventually become untakeable (without playing
+An eye is a point that may eventually become untakeable (without playing
 at the empty intersection itself). Examples:
 
 .bw   .b.   ---   +--
 b*b   b*b   b*b   |*b
 .bb   .bb   .b.   |b.
 
-RETURNS true if coordinate is that of a relaxed eye
+RETURNS true if coordinate is that of an eye
 */
-bool is_relaxed_eye(
+bool is_eye(
     const cfg_board * cb,
     move m,
     bool is_black
