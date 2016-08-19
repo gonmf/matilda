@@ -63,35 +63,4 @@ d16 score_stones_and_area(
     const u8 p[TOTAL_BOARD_SIZ]
 );
 
-/*
-Scoring by estimating the final status of each intersection by running MCTS.
-This method is more accurate and fit for any part of the game, but much slower.
-Each intersection is awarded the player that has a majority of stones there in
-the end. The simulations ignore superkos. After simulating the final result,
-area scoring is used.
-RETURNS positive score for a black win; negative for a white win; 0 for a draw
-*/
-d16 score_estimate(
-    const board * b,
-    bool is_black
-);
-
-/*
-Estimate the final game position from the current state. Is the most accurate
-the later in the game.
-*/
-void estimate_final_position(
-    u8 dst[TOTAL_BOARD_SIZ],
-    const board * b,
-    bool is_black
-);
-
-/*
-Attempts to identify and remove dead groups.
-*/
-void remove_dead_stones(
-    board * b
-);
-
-
 #endif

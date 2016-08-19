@@ -190,17 +190,14 @@ ile.\n");
 
 }
 
-static void text_print_score(bool is_black)
+static void text_print_score()
 {
     board current_state;
     current_game_state(&current_state, &current_game);
     d16 score;
     if(estimate_score)
     {
-        if(stone_count(current_state.p) > TOTAL_BOARD_SIZ / 2)
-            score = score_estimate(&current_state, is_black);
-        else
-            score = score_stones_and_area(current_state.p);
+        score = score_stones_and_area(current_state.p);
     }else
         score = 0;
 
@@ -368,13 +365,11 @@ core/quit\n\n", mstr);
                 continue;
             }
 
-
-
             if(strcmp(line, "score") == 0)
             {
                 current_game_state(&current_state, &current_game);
-                d16 score = estimate_score ? score_estimate(&current_state,
-                    is_black) : 0;
+                d16 score = estimate_score ?
+                    score_stones_and_area(current_state.p) : 0;
                 char * s = alloc();
                 score_to_string(s, score);
                 printf("Score estimate with %s to play: %s\n\n", is_black ?

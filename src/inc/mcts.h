@@ -57,22 +57,6 @@ Tuned with CLOP in 13x13 with 10k playouts/turn vs GNU Go 3.8 lvl 1. 2151 games.
 #endif
 
 
-
-/*
-Instruct MCTS to take not of final positions, for final score estimation. The
-results are gathered and return when calling disable_estimate_score.
-*/
-void enable_estimate_score();
-
-/*
-Disable score estimation and return the number of times each position belonged
-to each player color.
-*/
-void disable_estimate_score(
-    u32 black_occupied[TOTAL_BOARD_SIZ],
-    u32 white_occupied[TOTAL_BOARD_SIZ]
-);
-
 /*
 Performs a MCTS in at least the available time.
 

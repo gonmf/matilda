@@ -56,14 +56,6 @@ static bool ran_out_of_memory;
 static bool search_stop;
 static u16 max_depths[MAXIMUM_NUM_THREADS];
 
-/*
-Final score gathering for estimation
-*/
-static bool record_final_score = false;
-static u32 final_score_black_occupied[MAXIMUM_NUM_THREADS][BOARD_SIZ *
-    BOARD_SIZ];
-static u32 final_score_white_occupied[MAXIMUM_NUM_THREADS][BOARD_SIZ *
-    BOARD_SIZ];
 
 /*
 Whether a MCTS can be started on background. Is disabled if memory runs out, and
@@ -89,54 +81,6 @@ static void mcts_init()
     uct_inited = true;
 }
 
-
-/*
-Instruct MCTS to take not of final positions, for final score estimation. The
-results are gathered and return when calling disable_estimate_score.
-*/
-void enable_estimate_score()
-{
-    record_final_score = true;
-
-    memset(final_score_black_occupied, 0, MAXIMUM_NUM_THREADS * BOARD_SIZ *
-        BOARD_SIZ * sizeof(u32));
-    memset(final_score_white_occupied, 0, MAXIMUM_NUM_THREADS * BOARD_SIZ *
-        BOARD_SIZ * sizeof(u32));
-}
-
-/*
-Disable score estimation and return the number of times each position belonged
-to each player color.
-*/
-void disable_estimate_score(
-    u32 black_occupied[TOTAL_BOARD_SIZ],
-    u32 white_occupied[TOTAL_BOARD_SIZ]
-){
-    record_final_score = false;
-
-    memset(black_occupied, 0, TOTAL_BOARD_SIZ * sizeof(u32));
-    memset(white_occupied, 0, TOTAL_BOARD_SIZ * sizeof(u32));
-
-    for(u16 k = 0; k < MAXIMUM_NUM_THREADS; ++k)
-        for(move m = 0; m < TOTAL_BOARD_SIZ; ++m)
-        {
-            black_occupied[m] += final_score_black_occupied[k][m];
-            white_occupied[m] += final_score_white_occupied[k][m];
-        }
-}
-
-static void update_estimate_score(
-    const cfg_board * cb
-){
-    for(move m = 0; m < TOTAL_BOARD_SIZ; ++m)
-    {
-        if(cb->p[m] == BLACK_STONE)
-            final_score_black_occupied[omp_get_thread_num()][m]++;
-        else
-            if(cb->p[m] == WHITE_STONE)
-                final_score_white_occupied[omp_get_thread_num()][m]++;
-    }
-}
 
 
 /*
@@ -250,8 +194,6 @@ static d16 mcts_expansion(
         init_new_state(cb, stats, is_black, branch_limit);
     omp_unset_lock(&stats->lock);
     d16 outcome = playout_heavy_amaf(cb, is_black, traversed);
-    if(record_final_score)
-        update_estimate_score(cb);
 
     return outcome;
 }
@@ -296,9 +238,6 @@ static d16 mcts_selection(
                     search_stop = true;
                 }
                 outcome = playout_heavy_amaf(cb, is_black, traversed);
-                if(record_final_score)
-                    update_estimate_score(cb);
-
                 break;
             }
             else

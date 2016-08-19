@@ -11,8 +11,9 @@ boardsize -- the command fails if the board size requested is different than the
 expected value set at compile time.
 
 
-final_status_list -- the protocol is ambiguous on whether the command may fail
-with the option seki; which happens in Matilda.
+final_status_list -- Matilda always prefers playing to passing and as such will
+kill dead groups; when answering this command it will always mark all stones as
+alive, not identifying life in seki.
 
 
 
@@ -75,11 +76,6 @@ gomill-describe_engine
 mtld-last_evaluation -- returns in multi-line format the last full board
 evaluation. It may not cover all plays if the last strategy ran only evaluated
 part of them.
-Arguments: none
-Fails: never
-
-
-mtld-final_position -- returns an estimate of the final game position.
 Arguments: none
 Fails: never
 

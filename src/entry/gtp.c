@@ -75,7 +75,6 @@ const char * supported_commands[] =
     "komi",
     "list_commands",
     "loadsgf",
-    "mtld-final_position",
     "mtld-last_evaluation",
     "mtld-ponder",
     "mtld-review_game",
@@ -1023,53 +1022,33 @@ static void gtp_final_status_list(
     int id,
     const char * status
 ){
-    char * buf = alloc();
-    char * mstr = alloc();
-    d32 idx = 0;
-
-    bool is_black = current_player_color(&current_game);
-    board current_state;
-    current_game_state(&current_state, &current_game);
-
-    u8 e[TOTAL_BOARD_SIZ];
-    estimate_final_position(e, &current_state, is_black);
-
-    if(strcmp(status, "dead") == 0)
+    if(strcmp(status, "alive") == 0)
     {
-        for(move m = 0; m < TOTAL_BOARD_SIZ; ++m)
-            if(current_state.p[m] != EMPTY && e[m] != current_state.p[m])
-            {
-                coord_to_alpha_num(mstr, m);
-                idx += snprintf(buf + idx, MAX_PAGE_SIZ - idx, "%s\n", mstr);
-            }
-        answer_msg(fp, id, buf);
-    }
-    else
-        if(strcmp(status, "alive") == 0)
-        {
-            for(move m = 0; m < TOTAL_BOARD_SIZ; ++m)
-                if(current_state.p[m] != EMPTY && e[m] == current_state.p[m])
-                {
-                    coord_to_alpha_num(mstr, m);
-                    idx += snprintf(buf + idx, MAX_PAGE_SIZ - idx, "%s\n",
-                        mstr);
-                }
-            answer_msg(fp, id, buf);
-        }
-        else
-        {
-            if(strcmp(status, "seki") == 0)
-            {
-                error_msg(fp, id, "seki detection unsupported");
-                flog_warn("gtp", "final_status_list with seki parameter unsuppo\
-rted");
-            }
-            else
-                error_msg(fp, id, "syntax error");
-        }
+        char * buf = alloc();
+        char * mstr = alloc();
+        d32 idx = 0;
 
-    release(mstr);
-    release(buf);
+        board current_state;
+        current_game_state(&current_state, &current_game);
+        for(move m = 0; m < TOTAL_BOARD_SIZ; ++m)
+        {
+            coord_to_alpha_num(mstr, m);
+            idx += snprintf(buf + idx, MAX_PAGE_SIZ - idx, "%s\n",
+                mstr);
+        }
+        answer_msg(fp, id, buf);
+        release(mstr);
+        release(buf);
+        return;
+    }
+
+    if(strcmp(status, "dead") == 0 || strcmp(status, "seki") == 0)
+    {
+        answer_msg(fp, id, NULL);
+        return;
+    }
+
+    error_msg(fp, id, "syntax error");
 }
 
 static void gtp_gomill_describe_engine(
@@ -1160,23 +1139,6 @@ static void gtp_last_evaluation(
     release(s);
 }
 
-static void gtp_final_position(
-    FILE * fp,
-    int id
-){
-    board current_state;
-    current_game_state(&current_state, &current_game);
-    bool is_black = current_player_color(&current_game);
-
-    u8 e[TOTAL_BOARD_SIZ];
-    estimate_final_position(e, &current_state, is_black);
-
-    char * s = alloc();
-    board_to_string(s, e, NONE, NONE);
-    answer_msg(fp, id, s);
-    release(s);
-}
-
 static void gtp_final_score(
     FILE * fp,
     int id
@@ -1186,8 +1148,7 @@ static void gtp_final_score(
     {
         board current_state;
         current_game_state(&current_state, &current_game);
-        bool is_black = current_player_color(&current_game);
-        score = score_estimate(&current_state, is_black);
+        score = score_stones_and_area(current_state.p);
     }else
         score = 0;
 
@@ -1714,12 +1675,6 @@ cmd_matcher:
         if(argc == 0 && strcmp(cmd, "mtld-last_evaluation") == 0)
         {
             gtp_last_evaluation(out_fp, idn);
-            continue;
-        }
-
-        if(argc == 0 && strcmp(cmd, "mtld-final_position") == 0)
-        {
-            gtp_final_position(out_fp, idn);
             continue;
         }
 
