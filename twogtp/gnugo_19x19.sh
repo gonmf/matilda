@@ -1,4 +1,10 @@
 #!/bin/bash
 rm -f output.html output.summary.dat
-gogui-twogtp -white "gnugo --level 0 --mode gtp --chinese-rules --positional-superko --resign-allowed" -black "../src/matilda -m gtp --disable_score_estimation -d ../src/data/ -l" -size 19 -komi 7.5 -auto -sgffile output -games 30000 -alternate
+BLACK="../src/matilda -m gtp -d ../src/data/ -l --disable_score_estimation"
+WHITE="gnugo --level 0 --mode gtp --chinese-rules --positional-superko --resign-allowed"
+REFEREE="gnugo --level 0 --mode gtp --chinese-rules --positional-superko"
+gogui-twogtp -white "$WHITE" -black "$BLACK" -referee "$REFEREE" -auto -sgffile output -games 4000 \
+-size 19 \
+-komi 7.5 \
+-alternate
 exit 0
