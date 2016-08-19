@@ -31,7 +31,6 @@ game_record current_game;
 time_system current_clock_black;
 time_system current_clock_white;
 
-bool estimate_score = true; /* perform slow score estimating */
 bool time_system_overriden = false; /* ignore attempts to change time system */
 bool save_all_games_to_file = false; /* save all games as SGF on gameover */
 bool resign_on_timeout = false; /* resign instead of passing if timed out */
@@ -231,11 +230,6 @@ olor");
 
             ++i;
             color_set = true;
-            continue;
-        }
-        if(strcmp(argv[i], "--disable_score_estimation") == 0)
-        {
-            estimate_score = false;
             continue;
         }
         if(strcmp(argv[i], "--think_in_opt_time") == 0)
@@ -463,9 +457,6 @@ s: ms, s, m, h.\n\n");
 
         fprintf(stderr, "        \033[1m--disable_opening_books\033[0m\n\n");
         fprintf(stderr, "        Disable the use of opening books.\n\n");
-
-        fprintf(stderr, "        \033[1m--disable_score_estimation\033[0m\n\n");
-        fprintf(stderr, "        Disable final scoring estimates.\n\n");
 
         fprintf(stderr, "        \033[1m-l, --log <modes>\033[0m\n\n");
         fprintf(stderr, "        Set the message types to log to file and print\

@@ -94,7 +94,6 @@ const char * supported_commands[] =
     NULL
 };
 
-extern bool estimate_score;
 extern bool time_system_overriden;
 extern bool save_all_games_to_file;
 extern bool resign_on_timeout;
@@ -1143,14 +1142,9 @@ static void gtp_final_score(
     FILE * fp,
     int id
 ){
-    d16 score;
-    if(estimate_score)
-    {
-        board current_state;
-        current_game_state(&current_state, &current_game);
-        score = score_stones_and_area(current_state.p);
-    }else
-        score = 0;
+    board current_state;
+    current_game_state(&current_state, &current_game);
+    d16 score = score_stones_and_area(current_state.p);
 
     current_game.game_finished = true;
     current_game.final_score = score;

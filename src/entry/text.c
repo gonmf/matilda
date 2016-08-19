@@ -34,8 +34,6 @@ extern time_system current_clock_black;
 extern time_system current_clock_white;
 extern bool save_all_games_to_file;
 
-extern bool estimate_score;
-
 static u8 tips = 3;
 
 static void update_names(
@@ -194,12 +192,7 @@ static void text_print_score()
 {
     board current_state;
     current_game_state(&current_state, &current_game);
-    d16 score;
-    if(estimate_score)
-    {
-        score = score_stones_and_area(current_state.p);
-    }else
-        score = 0;
+    d16 score = score_stones_and_area(current_state.p);
 
     char * s = alloc();
     score_to_string(s, score);
@@ -368,8 +361,7 @@ core/quit\n\n", mstr);
             if(strcmp(line, "score") == 0)
             {
                 current_game_state(&current_state, &current_game);
-                d16 score = estimate_score ?
-                    score_stones_and_area(current_state.p) : 0;
+                d16 score = score_stones_and_area(current_state.p);
                 char * s = alloc();
                 score_to_string(s, score);
                 printf("Score estimate with %s to play: %s\n\n", is_black ?
