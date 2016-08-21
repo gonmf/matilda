@@ -30,6 +30,7 @@ table color.
 #include "types.h"
 #include "zobrist.h"
 
+u16 expansion_delay = UCT_EXPANSION_DELAY;
 u64 max_size_in_mbs = DEFAULT_UCT_MEMORY;
 
 static u32 max_allocated_states;
@@ -182,7 +183,7 @@ static tt_stats * create_state(
     ret->zobrist_hash = hash;
     ret->maintenance_mark = maintenance_mark;
     ret->plays_count = 0;
-    ret->expansion_delay = UCT_EXPANSION_DELAY;
+    ret->expansion_delay = expansion_delay;
     return ret;
 }
 

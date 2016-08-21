@@ -99,7 +99,7 @@ program is running out of memory mid-turn consider increasing this value.
 
 EXPECTED: 0 to 10
 */
-#define UCT_EXPANSION_DELAY 0
+#define UCT_EXPANSION_DELAY 4
 
 
 /*

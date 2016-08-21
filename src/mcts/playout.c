@@ -157,12 +157,21 @@ move heavy_select_play(
                 Prohibit self-ataris if they don't put the opponent in atari
                 (this definition covers throw-ins)
                 */
-                if(libs == 1 && !captures && !puts_neighbor_in_atari(cb, m,
-                    opt))
+                if(libs == 1)
                 {
-                    cache[m] = 0;
-                    continue;
+                    if((is_black && cb->black_neighbors4[m] > 0) || (!is_black && cb->white_neighbors4[m] > 0))
+                    {
+                        cache[m] = 0;
+                        continue;
+                    }
+                    else
+                        if(!captures && !puts_neighbor_in_atari(cb, m, opt))
+                        {
+                            cache[m] = 0;
+                            continue;
+                        }
                 }
+
 
                 bool can_have_forcing_move;
                 /*
