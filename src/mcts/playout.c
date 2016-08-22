@@ -131,6 +131,7 @@ static void invalidate_cache_after_play(
     }
 }
 
+
 /*
 Selects the next play of a heavy playout - MoGo style.
 Uses a cache of play statuses that is updated as needed.
@@ -159,7 +160,8 @@ move heavy_select_play(
                 */
                 if(libs == 1)
                 {
-                    if((is_black && cb->black_neighbors4[m] > 0) || (!is_black && cb->white_neighbors4[m] > 0))
+                    if((is_black && cb->black_neighbors4[m] > 0) ||
+                        (!is_black && cb->white_neighbors4[m] > 0))
                     {
                         cache[m] = 0;
                         continue;
@@ -171,7 +173,6 @@ move heavy_select_play(
                             continue;
                         }
                 }
-
 
                 bool can_have_forcing_move;
                 /*
