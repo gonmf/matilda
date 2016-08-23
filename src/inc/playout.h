@@ -62,15 +62,6 @@ Cache state bits (must fit in 1 byte)
 
 
 
-/*
-Selects the next play of a heavy playout - MoGo style.
-Uses a cache of play statuses that is updated as needed.
-*/
-move heavy_select_play(
-    cfg_board * cb,
-    bool is_black,
-    u8 cache[TOTAL_BOARD_SIZ]
-);
 
 /*
 Make a heavy playout and returns whether black wins.
