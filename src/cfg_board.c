@@ -1526,7 +1526,8 @@ RETURNS true if any opponent stone is captured
 */
 bool caps_after_play(
     const cfg_board * cb,
-    move m, bool is_black
+    move m,
+    bool is_black
 ){
     assert(verify_cfg_board(cb));
     assert(cb->p[m] == EMPTY);
