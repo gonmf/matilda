@@ -140,7 +140,7 @@ static void select_play(
     double log_n = log(stats->mc_n_total);
     for(move k = 0; k < stats->plays_count; ++k)
     {
-#if USE_AMAF_RAVE
+#if USE_AMAF_RAVE // TODP
         double play_q = uct1_rave(&stats->plays[k]);
 #else
         double play_q = stats->plays[k].mc_q;
@@ -557,7 +557,7 @@ bool mcts_start(
         else
         {
             out_b->tested[stats->plays[k].m] = true;
-            out_b->value[stats->plays[k].m] = stats->plays[k].mc_q;
+            out_b->value[stats->plays[k].m] = uct1_rave(&stats->plays[k]);
         }
     }
 

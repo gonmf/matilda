@@ -1133,7 +1133,8 @@ static void gtp_last_evaluation(
     int id
 ){
     char * s = alloc();
-    out_board_to_string(s, &last_out_board);
+    s[0] = '\n';
+    out_board_to_string(s + 1, &last_out_board);
     answer_msg(fp, id, s);
     release(s);
 }
