@@ -221,18 +221,35 @@ move select_play(
     bool is_black,
     const game_record * gr
 ){
-    double qualities[TOTAL_BOARD_SIZ];
-    move playable[TOTAL_BOARD_SIZ];
-    u16 playable_count = 0;
     double best_value = evaluation->pass;
-
+    u32 best_play = PASS;
     /*
-    Get legal plays
+    Answer immediately if possible.
     */
     for(move m = 0; m < TOTAL_BOARD_SIZ; ++m)
         if(evaluation->tested[m] && evaluation->value[m] >= best_value)
         {
             best_value = evaluation->value[m];
+            best_play = m;
+        }
+    if(best_play == PASS || gr->turns == 0 ||
+        !superko_violation(gr, is_black, best_play))
+        return best_play;
+
+
+    /*
+    Slow answer
+    */
+    double qualities[TOTAL_BOARD_SIZ];
+    move playable[TOTAL_BOARD_SIZ];
+    u16 playable_count = 0;
+
+    /*
+    Enumerate legal plays
+    */
+    for(move m = 0; m < TOTAL_BOARD_SIZ; ++m)
+        if(evaluation->tested[m] && evaluation->value[m] >= evaluation->pass)
+        {
             playable[playable_count] = m;
             qualities[playable_count] = evaluation->value[m];
             playable_count++;
@@ -280,31 +297,17 @@ RETURNS the move selected, or a pass
 move select_play_fast(
     const out_board * evaluation
 ){
-    move playable[TOTAL_BOARD_SIZ];
-    u16 playable_count = 0;
+    move best_play = PASS;
     double best_value = evaluation->pass;
 
     for(move m = 0; m < TOTAL_BOARD_SIZ; ++m)
-        if(evaluation->tested[m])
+        if(evaluation->tested[m] && evaluation->value[m] >= best_value)
         {
-            if(evaluation->value[m] > best_value)
-            {
-                best_value = evaluation->value[m];
-                playable[0] = m;
-                playable_count = 1;
-            }else
-                if(evaluation->value[m] == best_value)
-                {
-                    playable[playable_count] = m;
-                    ++playable_count;
-                }
+            best_value = evaluation->value[m];
+            best_play = m;
         }
 
-    if(playable_count == 0)
-        return PASS;
-
-    u16 p = rand_u16(playable_count);
-    return playable[p];
+    return best_play;
 }
 
 /*
@@ -397,7 +400,7 @@ RETURNS the first player color
 bool first_player_color(
     const game_record * gr
 ){
-    return (gr->handicap_stones.count == 0) ? true : false;
+    return (gr->handicap_stones.count == 0);
 }
 
 /*
@@ -408,7 +411,7 @@ bool current_player_color(
     const game_record * gr
 ){
     if(gr->handicap_stones.count == 0)
-        return ((gr->turns & 1) == 0) ? true : false;
-    return ((gr->turns & 1) == 1) ? true : false;
+        return ((gr->turns & 1) == 0);
+    return ((gr->turns & 1) == 1);
 }
 
