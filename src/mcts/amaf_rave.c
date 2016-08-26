@@ -15,16 +15,10 @@ visited by black and WHITE_STONE for first visited by white.
 #include "amaf_rave.h"
 #include "types.h"
 
-double rave_mse_b = RAVE_MSE_B;
-static double rave_mse_b_sqrd = RAVE_MSE_B * RAVE_MSE_B * 4.0;
-
 /*
-Optional initiation routine in case rave_mse_b is modified for optimization.
+1/equiv corresponds to the RAVE MSE formula part b * b * 4
 */
-void amaf_rave_init()
-{
-    rave_mse_b_sqrd = rave_mse_b * rave_mse_b * 4.0;
-}
+double rave_equiv = RAVE_MSE_EQUIV;
 
 /*
 Calculation of the RAVE value of a state transition.
@@ -36,8 +30,7 @@ double uct1_rave(
     u32 n_amaf_s_a;
     double q_amaf_s_a;
 
-#if CRITICALITY_THRESHOLD > 0
-    if(play->mc_n >= CRITICALITY_THRESHOLD)
+    if(CRITICALITY_THRESHOLD > 0 && play->mc_n >= CRITICALITY_THRESHOLD)
     {
         double c_pachi = play->owner_winning - (2.0 * play->color_owning *
             play->mc_q - play->color_owning - play->mc_q + 1.0);
@@ -51,16 +44,13 @@ double uct1_rave(
     }
     else
     {
-#endif
         n_amaf_s_a = play->amaf_n;
         q_amaf_s_a = play->amaf_q;
-#if CRITICALITY_THRESHOLD > 0
     }
-#endif
 
     /* RAVE minimum MSE schedule */
-    double b = n_amaf_s_a / (play->mc_n + n_amaf_s_a + play->mc_n *
-        n_amaf_s_a * rave_mse_b_sqrd);
+    double b = n_amaf_s_a / (play->mc_n + n_amaf_s_a + (play->mc_n *
+        n_amaf_s_a) / rave_equiv);
 
     return (1.0 - b) * play->mc_q + b * q_amaf_s_a;
 }

@@ -30,14 +30,11 @@ action estimation in computer Go' by Sylvain Gelly and David Silver
 */
 #if BOARD_SIZ < 12
 /*
-Tuned with CLOP in 9x9 with 1k playouts/turn vs GNU Go 3.8 lvl 1. 4285 games.
+Tuned with CLOP in 9x9 with 1k playouts/turn vs GNU Go 3.8 lvl 1. 22k games.
 */
-#define RAVE_MSE_B 0.397353
+#define RAVE_MSE_EQUIV 198.0
 #else
-/*
-Tuned with CLOP in 13x13 with 10k playouts/turn vs GNU Go 3.8 lvl 1. 2151 games.
-*/
-#define RAVE_MSE_B 0.842882
+#define RAVE_MSE_EQUIV 500.0
 #endif
 
 
@@ -48,11 +45,6 @@ Use 0 to turn off.
 #define CRITICALITY_THRESHOLD 450
 
 
-
-/*
-Optional initiation routine in case rave_mse_b is modified for optimization.
-*/
-void amaf_rave_init();
 
 /*
 Calculation of the RAVE value of a state transition.

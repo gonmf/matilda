@@ -32,7 +32,7 @@ Script ./goguiscript.py
 #LinearParameter time_allot_factor 1.0 6.0
 
 #LinearParameter ucb1_c 0.5 2.5
-#LinearParameter rave_mse_b 0.2 2.0
+LinearParameter rave_equiv 1.0 500.0
 
 # Probabilities of skipping playout checks are 1:128 instead of percentage
 # (1:100)
@@ -41,7 +41,7 @@ Script ./goguiscript.py
 #IntegerParameter pl_skip_pattern 0 128
 #IntegerParameter pl_skip_capture 0 128
 
-IntegerParameter expansion_delay 0 8
+# IntegerParameter expansion_delay 0 8
 
 #IntegerParameter dummy 0 100
 

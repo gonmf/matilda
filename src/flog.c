@@ -53,7 +53,7 @@ extern u16 prior_line3;
 extern u16 prior_empty;
 extern u16 prior_corner;
 extern double ucb1_c;
-extern double rave_mse_b;
+extern double rave_equiv;
 extern u16 pl_skip_saving;
 extern u16 pl_skip_nakade;
 extern u16 pl_skip_pattern;
@@ -294,7 +294,7 @@ void build_info(
     if(USE_AMAF_RAVE)
     {
         idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx,
-            "  MSE b constant: %.2f\n", rave_mse_b);
+            "  MSE equiv: %.2f\n", rave_equiv);
         idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx,
             "  Criticality threshold: %u\n", CRITICALITY_THRESHOLD);
     }

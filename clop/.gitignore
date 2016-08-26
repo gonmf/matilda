@@ -3,3 +3,4 @@ clop-gui
 *.sgf
 *.log
 *.lock
+tmp/
