@@ -2,5 +2,17 @@ This directory contains the files used for parameter optimization using CLOP --
 Confident Local Optimization for Noisy Black-Box parameter tuning, available:
 http://www.remi-coulom.fr/CLOP/
 
-If you want to contribute computation time to Matilda, this is a great way to do
-so.
+If you want to contribute computation time to Matilda, this is a great way to
+do so.
+
+How to optimize with CLOP.
+
+1. Download CLOP from http://www.remi-coulom.fr/CLOP/
+2. Compile the CLI or GUI version of it.
+3. Install python and GNU Go (or other GTP comparison opponent of your choice)
+4. Compile matilda and update the file goguiscript.py with the correct file
+    path.
+5. If your system can't interpret the goguiscript.py autommatically as Python
+    you may need to edit the source code of CLOP to accept several parameters.
+6. Edit the file config.clop with what parameters you want to optimize.
+7. Open CLOP, load config.clop and watch it go.
