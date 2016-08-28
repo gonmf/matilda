@@ -195,8 +195,8 @@ void init_new_state(
         if(!viable[m])
             continue;
 
-        move captures;
-        u8 libs = libs_after_play(cb, m, is_black, &captures);
+        bool captures;
+        u8 libs = safe_to_play(cb, m, is_black, &captures);
 
         /*
         Don't play suicides
@@ -207,7 +207,7 @@ void init_new_state(
         /*
         Ko violation
         */
-        if(captures == 1 && ko_violation(cb, m))
+        if(captures && ko_violation(cb, m))
             continue;
 
         /*
