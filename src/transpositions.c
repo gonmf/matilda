@@ -262,14 +262,13 @@ static void release_states_not_marked()
 static void mark_states_for_keeping(
     tt_stats * s
 ){
-    if(s->maintenance_mark == maintenance_mark)
-        return;
-
     s->maintenance_mark = maintenance_mark;
 
-    for(move i = 0; i < s->plays_count; ++i)
-        if(s->plays[i].next_stats != NULL)
-            mark_states_for_keeping(s->plays[i].next_stats);
+    for(move i = 0; i < s->plays_count; ++i){
+        tt_stats * ns = s->plays[i].next_stats;
+        if(ns != NULL && ns->maintenance_mark != maintenance_mark)
+            mark_states_for_keeping(ns);
+    }
 }
 
 /*
