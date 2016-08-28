@@ -1,7 +1,7 @@
 /*
 Heuristic UCT-RAVE implementation.
 
-With UCB1-TUNED, RAVE and criticality.
+With RAVE and criticality.
 Playout is limited with dynamic offset depending on stone count.
 Cutoff playouts are rated. Playouts are cut short with a mercy threshold (like
 pachi, orego and others).
@@ -42,11 +42,6 @@ It can also record the average final score, for the purpose of score estimation.
 #include "types.h"
 #include "constants.h"
 #include "zobrist.h"
-
-/*
-Public to allow parameter optimization
-*/
-double ucb1_c = UCB1_C;
 
 /* from board_constants */
 extern u8 distances_to_border[TOTAL_BOARD_SIZ];
@@ -136,22 +131,15 @@ static void select_play(
     double best_q = -1.0;
     u16 equal_quality_plays = 0;
 
-    double log_n = log(stats->mc_n_total);
     for(move k = 0; k < stats->plays_count; ++k)
     {
-#if USE_AMAF_RAVE // TODP
+#if USE_AMAF_RAVE
         double play_q = uct1_rave(&stats->plays[k]);
 #else
         double play_q = stats->plays[k].mc_q;
 #endif
 
-        /* UCB1-TUNED biasing */
-        double log_n_jn = log_n / stats->plays[k].mc_n;
-        double ucb_v = play_q - (play_q * play_q) + sqrt(2.0 * log_n_jn);
-        double ucb_bias = sqrt(log_n_jn * MIN(0.25, ucb_v));
-
-        /* UCT */
-        double uct_q = play_q + ucb1_c * ucb_bias;
+        double uct_q = play_q;
         if(uct_q > best_q){
             best_plays[0] = &stats->plays[k];
             equal_quality_plays = 1;
@@ -267,7 +255,6 @@ static d16 mcts_selection(
 
         select_play(curr_stats, &play);
 
-        curr_stats->mc_n_total++;
         play->mc_n++;
         play->mc_q -= play->mc_q / play->mc_n;
         omp_unset_lock(&curr_stats->lock);

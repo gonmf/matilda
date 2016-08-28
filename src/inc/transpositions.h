@@ -66,7 +66,6 @@ typedef struct __tt_stats_ {
 	bool last_passed;
 	u8 maintenance_mark;
 	d8 expansion_delay;
-	u32 mc_n_total;
 	move plays_count;
 	tt_play plays[MAX_PLAYS_COUNT];
 	omp_lock_t lock;

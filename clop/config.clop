@@ -31,8 +31,7 @@ Script ./goguiscript.py
 
 #LinearParameter time_allot_factor 1.0 6.0
 
-#LinearParameter ucb1_c 0.5 2.5
-LinearParameter rave_equiv 1.0 500.0
+LinearParameter rave_equiv 1.0 4000.0
 
 # Probabilities of skipping playout checks are 1:128 instead of percentage
 # (1:100)

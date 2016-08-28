@@ -1,7 +1,7 @@
 /*
 Heuristic UCT-RAVE implementation.
 
-With UCB1-TUNED, RAVE and criticality.
+With RAVE and criticality.
 Playout is limited with dynamic offset depending on stone count.
 Cutoff playouts are rated. Playouts are cut short with a mercy threshold (like
 pachi, orego and others).
@@ -40,21 +40,6 @@ positive.
 
 #define MAX_UCT_DEPTH ((TOTAL_BOARD_SIZ * 2) / 3)
 
-
-/*
-Constant used as coefficient of UCB contribution in UCT formula.
-*/
-#if BOARD_SIZ < 12
-/*
-Tuned with CLOP in 9x9 with 1k playouts/turn vs GNU Go 3.8 lvl 1. 4285 games.
-*/
-#define UCB1_C 0.867924
-#else
-/*
-Tuned with CLOP in 13x13 with 10k playouts/turn vs GNU Go 3.8 lvl 1. 2151 games.
-*/
-#define UCB1_C 0.854524
-#endif
 
 
 /*

@@ -52,7 +52,6 @@ extern u16 prior_line2;
 extern u16 prior_line3;
 extern u16 prior_empty;
 extern u16 prior_corner;
-extern double ucb1_c;
 extern double rave_equiv;
 extern u16 pl_skip_saving;
 extern u16 pl_skip_nakade;
@@ -298,8 +297,6 @@ void build_info(
         idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx,
             "  Criticality threshold: %u\n", CRITICALITY_THRESHOLD);
     }
-    idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx,
-        "UCB1-TUNED coefficient: %.2f\n", ucb1_c);
     idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx,
         "  Stone value scale factor: %.1f\n", prior_stone_scale_factor);
     idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx, "  Even: %u\n",

@@ -57,7 +57,6 @@ extern u16 prior_line3x;
 extern u16 prior_corner;
 extern u16 prior_bad_play;
 extern u16 prior_pass;
-extern double ucb1_c;
 extern double rave_equiv;
 extern u16 pl_skip_saving;
 extern u16 pl_skip_nakade;
@@ -90,7 +89,6 @@ const void * tunable[] =
     "i", "prior_corner", &prior_corner,
     "i", "prior_bad_play", &prior_bad_play,
     "i", "prior_pass", &prior_pass,
-    "f", "ucb1_c", &ucb1_c,
     "f", "rave_equiv", &rave_equiv,
     "i", "pl_skip_saving", &pl_skip_saving,
     "i", "pl_skip_nakade", &pl_skip_nakade,

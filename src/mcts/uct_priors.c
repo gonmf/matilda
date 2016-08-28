@@ -80,7 +80,6 @@ static void stats_add_play(
 
     Copying the MC prior values to AMAF and initializing other fields
     */
-    stats->mc_n_total += mc_v;
     stats->plays[idx].next_stats = NULL;
     /* AMAF/RAVE */
     stats->plays[idx].amaf_n = mc_v;
@@ -184,7 +183,6 @@ void init_new_state(
 
 
     stats->plays_count = 0;
-    stats->mc_n_total = 0;
 
     for(move k = 0; k < cb->empty.count; ++k)
     {

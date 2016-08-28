@@ -1,7 +1,7 @@
 /*
 Heuristic UCT-RAVE implementation.
 
-With UCB1-TUNED, RAVE and criticality.
+With RAVE and criticality.
 Playout is limited with dynamic offset depending on stone count.
 Cutoff playouts are rated. Playouts are cut short with a mercy threshold (like
 pachi, orego and others).
