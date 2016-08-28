@@ -1,1 +1,3 @@
 Benchmark scripts that use twoGTP to play against GNU Go or in self-play.
+
+twoGTP is part of GoGui and can be downloaded from http://gogui.sourceforge.net
