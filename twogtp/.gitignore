@@ -1,4 +1,4 @@
 *.sgf
 output.*
-matilda_*_*.log
+*.log
 
