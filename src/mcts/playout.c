@@ -312,6 +312,7 @@ static move heavy_select_play(
     }
 
 
+#if 0
     /*
     Nakade
     */
@@ -343,6 +344,7 @@ static move heavy_select_play(
             }
         }
     }
+#endif
 
     /*
     Play a capturing move
