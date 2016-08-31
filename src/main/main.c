@@ -124,7 +124,7 @@ static void set_parameter(
             {
                 char * buf = alloc();
                 snprintf(buf, MAX_PAGE_SIZ, "integer format error: %s", value);
-                flog_crit("entry", buf);
+                flog_crit("main", buf);
                 release(buf);
             }
 
@@ -139,7 +139,7 @@ static void set_parameter(
             {
                 char * buf = alloc();
                 snprintf(buf, MAX_PAGE_SIZ, "float format error: %s", value);
-                flog_crit("entry", buf);
+                flog_crit("main", buf);
                 release(buf);
             }
 
@@ -151,13 +151,13 @@ static void set_parameter(
         char * buf = alloc();
         snprintf(buf, MAX_PAGE_SIZ,
             "illegal internal parameter codification: %s", type);
-        flog_crit("entry", buf);
+        flog_crit("main", buf);
         release(buf);
     }
 
     char * buf = alloc();
     snprintf(buf, MAX_PAGE_SIZ, "illegal parameter name: %s", name);
-    flog_crit("entry", buf);
+    flog_crit("main", buf);
     release(buf);
 }
 
@@ -211,7 +211,7 @@ int main(
                 if(strcmp(argv[i + 1], "gtp") == 0)
                     use_gtp = true;
                 else
-                    flog_crit("entry", "illegal format for mode");
+                    flog_crit("main", "illegal format for mode");
 
             ++i;
             continue;
@@ -225,7 +225,7 @@ int main(
                 if(argv[i + 1][0] == 'w' || argv[i + 1][0] == 'W')
                     human_player_color = false;
                 else
-                    flog_crit("entry", "illegal format when specifying player c\
+                    flog_crit("main", "illegal format when specifying player c\
 olor");
 
             ++i;
@@ -288,7 +288,7 @@ olor");
                 char * buf = alloc();
                 snprintf(buf, MAX_PAGE_SIZ, "illegal logging mode: %c", argv[i +
                     1][j]);
-                flog_crit("entry", buf);
+                flog_crit("main", buf);
                 release(buf);
             }
             config_logging(mode);
@@ -299,13 +299,13 @@ olor");
         if(strcmp(argv[i], "-t") == 0 || strcmp(argv[i], "--time") == 0)
         {
             if(LIMIT_BY_PLAYOUTS)
-                flog_crit("entry", "matilda has been compiled to run with a con\
+                flog_crit("main", "matilda has been compiled to run with a con\
 stant number of playouts per turn; --time flag is illegal");
 
             int ftime;
             if(!parse_int(argv[i + 1], &ftime) || ftime <= 0 || ftime >=
                 2147484)
-                flog_crit("entry", "illegal time format");
+                flog_crit("main", "illegal time format");
 
             if(time_system_overriden)
             {
@@ -326,12 +326,12 @@ stant number of playouts per turn; --time flag is illegal");
         if(strcmp(argv[i], "--time_system") == 0)
         {
             if(LIMIT_BY_PLAYOUTS)
-                flog_crit("entry", "matilda has been compiled to run with a con\
+                flog_crit("main", "matilda has been compiled to run with a con\
 stant number of playouts per turn; --time_system flag is illegal");
 
             time_system tmp;
             if(!str_to_time_system(&tmp, argv[i + 1]))
-                flog_crit("entry", "illegal time system string format");
+                flog_crit("main", "illegal time system string format");
 
             set_time_system(&current_clock_black, tmp.main_time,
                 tmp.byo_yomi_time, tmp.byo_yomi_stones, tmp.byo_yomi_periods);
@@ -352,7 +352,7 @@ stant number of playouts per turn; --time_system flag is illegal");
         if(strcmp(argv[i], "--resign_on_timeout") == 0)
         {
             if(LIMIT_BY_PLAYOUTS)
-                flog_crit("entry", "matilda has been compiled to run with a con\
+                flog_crit("main", "matilda has been compiled to run with a con\
 stant number of playouts per turn; --resign_on_timeout flag is illegal");
 
             resign_on_timeout = true;
@@ -362,11 +362,11 @@ stant number of playouts per turn; --resign_on_timeout flag is illegal");
         {
             d32 v;
             if(!parse_int(argv[i + 1], &v))
-                flog_crit("entry", "error: format error in size of transpositio\
+                flog_crit("main", "error: format error in size of transpositio\
 ns table");
 
             if(v < 2)
-                flog_crit("entry", "error: invalid size for transpositions tabl\
+                flog_crit("main", "error: invalid size for transpositions tabl\
 e");
 
             max_size_in_mbs = v;
@@ -387,7 +387,7 @@ e");
                 char * buf = alloc();
                 snprintf(buf, MAX_PAGE_SIZ, "data directory path %s is not vali\
 d", argv[i + 1]);
-                flog_crit("entry", buf);
+                flog_crit("main", buf);
                 release(buf);
             }
 
@@ -398,10 +398,10 @@ d", argv[i + 1]);
         {
             d32 v;
             if(!parse_int(argv[i + 1], &v))
-                flog_crit("entry", "--threads argument format error");
+                flog_crit("main", "--threads argument format error");
 
             if(v < 1 || v > MAXIMUM_NUM_THREADS)
-                flog_crit("entry", "invalid number of threads requested");
+                flog_crit("main", "invalid number of threads requested");
 
             desired_num_threads = v;
             ++i;
@@ -496,7 +496,7 @@ The default is the total\n        number of normal plus hyperthreaded CPU cores\
         fprintf(stderr, "        You can provide feedback at https://github.com\
 /gonmf/matilda\n\n");
 
-        flog_crit("entry", "unknown parameter");
+        flog_crit("main", "unknown parameter");
         return EXIT_FAILURE;
     }
 
@@ -517,16 +517,16 @@ The default is the total\n        number of normal plus hyperthreaded CPU cores\
     if(think_in_opt_turn)
     {
         if(LIMIT_BY_PLAYOUTS)
-            flog_crit("entry", "--think_in_opt_time flag cannot be used with th\
+            flog_crit("main", "--think_in_opt_time flag cannot be used with th\
 e program compiled to use a constant number of playouts per turn");
 
         if(!use_gtp)
-            flog_crit("entry", "--think_in_opt_time flag set outside of GTP mod\
+            flog_crit("main", "--think_in_opt_time flag set outside of GTP mod\
 e");
     }
 
     if(use_gtp && color_set)
-        flog_crit("entry", "--color flag set in GTP mode");
+        flog_crit("main", "--color flag set in GTP mode");
 
     if(!use_gtp)
         fclose(stderr);
@@ -537,11 +537,11 @@ e");
     */
 
 #if !MATILDA_RELEASE_MODE
-    flog_warn("entry", "running on debug mode");
+    flog_warn("main", "running on debug mode");
 #endif
 
 #if LIMIT_BY_PLAYOUTS
-    flog_warn("entry",
+    flog_warn("main",
         "MCTS will use a constant number of simulations per turn");
 #endif
 

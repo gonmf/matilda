@@ -58,7 +58,6 @@ Cache state bits (must fit in 1 byte)
 #define CACHE_PLAY_DIRTY 1 /* play needs to be recalculated */
 #define CACHE_PLAY_LEGAL 2 /* if play is legal for that player */
 #define CACHE_PLAY_OSAFE 4 /* if has 2 or more liberties after playing */
-#define CACHE_PLAY_CAPTS 8 /* if captures anything */
 
 
 

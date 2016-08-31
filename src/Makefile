@@ -33,7 +33,7 @@ PROGRAMS := matilda test gen_opening_book learn_best_plays learn_pat_weights \
 
 all: $(PROGRAMS)
 
-matilda: $(OBJFILES) entry/*.c
+matilda: $(OBJFILES) main/*.c
 	@$(CC) $^ $(CFLAGS) $(LDFLAGS) -o $@
 
 test: $(OBJFILES) utest/*.c

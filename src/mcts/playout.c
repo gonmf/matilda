@@ -141,37 +141,26 @@ static move heavy_select_play(
     bool is_black,
     u8 cache[TOTAL_BOARD_SIZ]
 ){
-    u8 libs;
-    bool captures;
-    u8 opt = is_black ? WHITE_STONE : BLACK_STONE;
 
     for(u16 k = 0; k < cb->empty.count; ++k)
     {
         move m = cb->empty.coord[k];
         if(cache[m] & CACHE_PLAY_DIRTY)
         {
+            u8 libs;
             if(!is_eye(cb, m, is_black) && !ko_violation(cb, m) && (libs =
-                safe_to_play(cb, m, is_black, &captures)) > 0)
+                safe_to_play2(cb, m, is_black)) > 0)
             {
 
                 /*
                 Prohibit self-ataris if they don't put the opponent in atari
                 (this definition covers throw-ins)
                 */
-                if(libs == 1)
+                if(libs == 1 && ((is_black && cb->black_neighbors4[m] > 0) ||
+                   (!is_black && cb->white_neighbors4[m] > 0)))
                 {
-                    if((is_black && cb->black_neighbors4[m] > 0) ||
-                        (!is_black && cb->white_neighbors4[m] > 0))
-                    {
-                        cache[m] = 0;
-                        continue;
-                    }
-                    else
-                        if(!captures && !puts_neighbor_in_atari(cb, m, opt))
-                        {
-                            cache[m] = 0;
-                            continue;
-                        }
+                    cache[m] = 0;
+                    continue;
                 }
 
                 bool can_have_forcing_move;
@@ -234,10 +223,6 @@ static move heavy_select_play(
 
                 if(libs > 1)
                     cache[m] |= CACHE_PLAY_OSAFE;
-
-                if(captures)
-                    cache[m] |= CACHE_PLAY_CAPTS;
-
             }
             else
             {
@@ -253,9 +238,6 @@ static move heavy_select_play(
     move candidate_play[TOTAL_BOARD_SIZ * 2];
     u16 weights[TOTAL_BOARD_SIZ * 2];
     u16 weight_total = 0;
-
-
-
 
     if(rand_u16(128) >= pl_skip_saving && is_board_move(cb->last_played))
     {
@@ -351,19 +333,31 @@ static move heavy_select_play(
     */
     if(rand_u16(128) >= pl_skip_capture)
     {
-        for(u16 k = 0; k < cb->empty.count; ++k)
+        for(u8 i = 0; i < cb->unique_groups_count; ++i)
         {
-            move m = cb->empty.coord[k];
-            if(cache[m] & CACHE_PLAY_CAPTS)
+            group * g = cb->g[cb->unique_groups[i]];
+            if(g->is_black != is_black && g->liberties == 1)
             {
-                candidate_play[candidate_plays] = m;
-                ++candidate_plays;
+                move m = get_1st_liberty(g);
+                if(cache[m] & CACHE_PLAY_LEGAL)
+                {
+                    u16 w = g->stones.count;
+                    weights[candidate_plays] = w;
+                    candidate_play[candidate_plays] = m;
+                    weight_total += w;
+                    ++candidate_plays;
+                }
             }
         }
-        if(candidate_plays > 0)
+        if(weight_total > 0)
         {
-            u16 p = rand_u16(candidate_plays);
-            return candidate_play[p];
+            d32 w = (d32)rand_u16(weight_total);
+            for(u16 i = 0; ; ++i)
+            {
+                w -= weights[i];
+                if(w < 0)
+                    return candidate_play[i];
+            }
         }
     }
 

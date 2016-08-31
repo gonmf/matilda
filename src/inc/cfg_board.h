@@ -200,6 +200,16 @@ u8 safe_to_play(
 );
 
 /*
+Calculates if playing at the designated position is legal and safe.
+RETURNS 0 for illegal, 1 for placed in atari, 2 for safe to play
+*/
+u8 safe_to_play2(
+    cfg_board * cb,
+    move m,
+    bool is_black
+);
+
+/*
 Tests if a play captures any opponent stone.
 RETURNS true if any opponent stone is captured
 */

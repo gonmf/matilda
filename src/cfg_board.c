@@ -1521,6 +1521,187 @@ u8 safe_to_play(
 }
 
 /*
+Calculates if playing at the designated position is legal and safe.
+RETURNS 0 for illegal, 1 for placed in atari, 2 for safe to play
+*/
+u8 safe_to_play2(
+    cfg_board * cb,
+    move m,
+    bool is_black
+){
+    assert(verify_cfg_board(cb));
+    assert(cb->p[m] == EMPTY);
+    assert(cb->g[m] == NULL);
+
+    if(cb->white_neighbors4[m] + cb->black_neighbors4[m] + out_neighbors4[m] <
+        3)
+        return 2;
+
+    group * n;
+    /* warning: some fields are not initialized because they're not used */
+    group g;
+    g.liberties = 0;
+    g.liberties_min_coord = TOTAL_BOARD_SIZ;
+    memset(g.ls, 0, LIB_BITMAP_SIZ);
+    add_liberty_unchecked(&g, m);
+
+    u8 probable_libs = 0;
+    group * opt_neighbors[4];
+    u8 opt_neighbors_n = 0;
+    group * neighbors[4];
+    u8 neighbors_n = 0;
+
+    if(!border_left[m])
+    {
+        n = cb->g[m + LEFT];
+        if(n == NULL)
+            add_liberty_unchecked(&g, m + LEFT);
+        else
+            if(n->is_black == is_black)
+            {
+                neighbors[neighbors_n++] = n;
+                add_group_liberties(&g, n);
+            }
+            else
+                if(n->liberties == 1)
+                {
+                    add_liberty_unchecked(&g, m + LEFT);
+                    if(n->stones.count > 1)
+                        opt_neighbors[opt_neighbors_n++] = n;
+                }
+    }
+
+    if(!border_right[m])
+    {
+        n = cb->g[m + RIGHT];
+        if(n == NULL)
+            add_liberty(&g, m + RIGHT);
+        else
+            if(n->is_black == is_black)
+            {
+                bool found = false;
+                for(u8 k = 0; k < neighbors_n; ++k)
+                    if(neighbors[k] == n)
+                    {
+                        found = true;
+                        break;
+                    }
+                if(!found)
+                {
+                    neighbors[neighbors_n++] = n;
+                    add_group_liberties(&g, n);
+                }
+            }
+            else
+                if(n->liberties == 1)
+                {
+                    add_liberty_unchecked(&g, m + RIGHT);
+                    if(n->stones.count > 1)
+                    {
+                        bool found = false;
+                        for(u8 k = 0; k < opt_neighbors_n; ++k)
+                            if(opt_neighbors[k] == n)
+                            {
+                                found = true;
+                                break;
+                            }
+                        if(!found)
+                            opt_neighbors[opt_neighbors_n++] = n;
+                    }
+                }
+    }
+
+    if(!border_top[m])
+    {
+        n = cb->g[m + TOP];
+        if(n == NULL)
+            add_liberty(&g, m + TOP);
+        else
+            if(n->is_black == is_black)
+            {
+                bool found = false;
+                for(u8 k = 0; k < neighbors_n; ++k)
+                    if(neighbors[k] == n)
+                    {
+                        found = true;
+                        break;
+                    }
+                if(!found)
+                {
+                    neighbors[neighbors_n++] = n;
+                    add_group_liberties(&g, n);
+                }
+            }
+            else
+                if(n->liberties == 1)
+                {
+                    add_liberty_unchecked(&g, m + TOP);
+                    if(n->stones.count > 1)
+                    {
+                        bool found = false;
+                        for(u8 k = 0; k < opt_neighbors_n; ++k)
+                            if(opt_neighbors[k] == n)
+                            {
+                                found = true;
+                                break;
+                            }
+                        if(!found)
+                            opt_neighbors[opt_neighbors_n++] = n;
+                    }
+                }
+    }
+
+    if(!border_bottom[m])
+    {
+        n = cb->g[m + BOTTOM];
+        if(n == NULL)
+            add_liberty(&g, m + BOTTOM);
+        else
+            if(n->is_black == is_black)
+            {
+                bool found = false;
+                for(u8 k = 0; k < neighbors_n; ++k)
+                    if(neighbors[k] == n)
+                    {
+                        found = true;
+                        break;
+                    }
+                if(!found)
+                {
+                    neighbors[neighbors_n++] = n;
+                    add_group_liberties(&g, n);
+                }
+            }else
+                if(n->liberties == 1)
+                {
+                    add_liberty_unchecked(&g, m + BOTTOM);
+                    if(n->stones.count > 1)
+                    {
+                        bool found = false;
+                        for(u8 k = 0; k < opt_neighbors_n; ++k)
+                            if(opt_neighbors[k] == n)
+                            {
+                                found = true;
+                                break;
+                            }
+                        if(!found)
+                            opt_neighbors[opt_neighbors_n++] = n;
+                    }
+                }
+    }
+
+    if(g.liberties > 2)
+        return 2;
+
+    for(u8 i = 0; i < opt_neighbors_n; ++i)
+        if(are_neighbors(cb, opt_neighbors[i], neighbors, neighbors_n))
+            ++probable_libs;
+
+    u8 libs = probable_libs + g.liberties - 1;
+    return libs >= 2 ? 2 : libs;
+}
+
+/*
 Tests if a play captures any opponent stone.
 RETURNS true if any opponent stone is captured
 */
