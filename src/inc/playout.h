@@ -35,20 +35,17 @@ reasons).
 */
 #if BOARD_SIZ < 12
 /*
-Tuned with CLOP in 9x9 with 1k playouts/turn vs GNU Go 3.8 lvl 1, 8995 matches.
+Tuned with CLOP in 9x9 with 1k playouts/turn vs GNU Go 3.8 lvl 1, 18k matches.
 */
-#define PL_SKIP_SAVING  40
-#define PL_SKIP_NAKADE  22
-#define PL_SKIP_PATTERN  8
-#define PL_SKIP_CAPTURE 72
+#define PL_SKIP_SAVING  32
+#define PL_SKIP_CAPTURE 39
+#define PL_SKIP_PATTERN 15
+#define PL_SKIP_NAKADE   0
 #else
-/*
-Tuned with CLOP in 13x13 with 10k playouts/turn vs GNU Go 3.8 lvl 1. 2151 games.
-*/
-#define PL_SKIP_SAVING  22
-#define PL_SKIP_NAKADE  69
-#define PL_SKIP_PATTERN 23
-#define PL_SKIP_CAPTURE 24
+#define PL_SKIP_SAVING  32
+#define PL_SKIP_CAPTURE 39
+#define PL_SKIP_PATTERN 15
+#define PL_SKIP_NAKADE   0
 #endif
 
 

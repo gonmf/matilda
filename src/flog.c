@@ -278,14 +278,18 @@ void build_info(
         idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx,
             "  Playouts per turn: %u\n", PLAYOUTS_PER_TURN);
 
-    idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx,
-        "  Chance of skipping save: 1:%u\n", pl_skip_saving);
-    idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx,
-        "  Chance of skipping capture: 1:%u\n", pl_skip_capture);
-    idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx,
-        "  Chance of skipping pattern: 1:%u\n", pl_skip_pattern);
-    idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx,
-        "  Chance of skipping nakade: 1:%u\n", pl_skip_nakade);
+    if(pl_skip_saving)
+        idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx,
+            "  Chance of skipping save: %u/128\n", pl_skip_saving);
+    if(pl_skip_capture)
+        idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx,
+            "  Chance of skipping capture: %u/128\n", pl_skip_capture);
+    if(pl_skip_pattern)
+        idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx,
+            "  Chance of skipping pattern: %u/128\n", pl_skip_pattern);
+    if(pl_skip_nakade)
+        idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx,
+            "  Chance of skipping nakade: %u/128\n", pl_skip_nakade);
     idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx,
         "  Use pattern weights: %s\n", YN(USE_PATTERN_WEIGHTS));
     idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx,
