@@ -11,23 +11,23 @@ Script ./goguiscript.py
 # For GammaParameter, quadratic regression is performed on log(x)
 # Warning: 123 and not 123.0 should be used for IntegerParameter
 
-#LinearParameter prior_stone_scale_factor 1.1 1.6
-#IntegerParameter prior_even 5 20
-#IntegerParameter prior_nakade 36 108
-#IntegerParameter prior_self_atari 1 32
-#IntegerParameter prior_attack 20 63
-#IntegerParameter prior_defend 5 20
-#IntegerParameter prior_pat3 10 30
-#IntegerParameter prior_near_last 1 15
-#IntegerParameter prior_line2 29 88
-#IntegerParameter prior_line3 30 90
-#IntegerParameter prior_empty 22 57
-#IntegerParameter prior_line1x 0 10
-#IntegerParameter prior_line2x 0 10
-#IntegerParameter prior_line3x 0 10
-#IntegerParameter prior_corner 16 50
-#IntegerParameter prior_bad_play 40 130
-#IntegerParameter prior_pass 40 130
+LinearParameter prior_stone_scale_factor 1.0 1.6
+IntegerParameter prior_even 5 20
+IntegerParameter prior_nakade 36 108
+IntegerParameter prior_self_atari 1 32
+IntegerParameter prior_attack 20 63
+IntegerParameter prior_defend 5 20
+IntegerParameter prior_pat3 10 30
+IntegerParameter prior_near_last 1 15
+IntegerParameter prior_line2 29 88
+IntegerParameter prior_line3 30 90
+IntegerParameter prior_empty 22 57
+IntegerParameter prior_line1x 0 10
+IntegerParameter prior_line2x 0 10
+IntegerParameter prior_line3x 0 10
+IntegerParameter prior_corner 16 50
+IntegerParameter prior_bad_play 40 130
+IntegerParameter prior_pass 40 130
 
 #LinearParameter time_allot_factor 1.0 6.0
 
@@ -35,10 +35,10 @@ Script ./goguiscript.py
 
 # Probabilities of skipping playout checks are 1:128 instead of percentage
 # (1:100)
-IntegerParameter pl_skip_saving 0 128
+#IntegerParameter pl_skip_saving 0 128
 #IntegerParameter pl_skip_nakade 0 128
-IntegerParameter pl_skip_capture 0 128
-IntegerParameter pl_skip_pattern 0 128
+#IntegerParameter pl_skip_capture 0 128
+#IntegerParameter pl_skip_pattern 0 128
 
 #IntegerParameter expansion_delay 0 8
 

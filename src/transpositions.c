@@ -39,12 +39,12 @@ static u32 number_of_buckets;
 static u32 allocated_states = 0;
 static u32 states_in_use = 0;
 
-static omp_lock_t freed_nodes_lock;
-/* locks for every bucket of the hash table */
-static omp_lock_t * b_locks_table = NULL;
-static omp_lock_t * w_locks_table = NULL;
+static omp_lock_t b_table_lock;
+static omp_lock_t w_table_lock;
 static tt_stats ** b_stats_table = NULL;
 static tt_stats ** w_stats_table = NULL;
+
+static omp_lock_t freed_nodes_lock;
 static tt_stats * freed_nodes = NULL;
 
 /* value used to mark items for deletion; will cycle eventually but its not a
@@ -70,26 +70,13 @@ void transpositions_table_init()
         if(b_stats_table == NULL)
             flog_crit("tt", "system out of memory");
 
-        b_locks_table = (omp_lock_t *)malloc(number_of_buckets *
-            sizeof(omp_lock_t));
-        if(b_locks_table == NULL)
-            flog_crit("tt", "system out of memory");
-
         w_stats_table = (tt_stats **)calloc(number_of_buckets,
             sizeof(tt_stats *));
         if(w_stats_table == NULL)
             flog_crit("tt", "system out of memory");
 
-        w_locks_table = (omp_lock_t *)malloc(number_of_buckets *
-            sizeof(omp_lock_t));
-        if(w_locks_table == NULL)
-            flog_crit("tt", "system out of memory");
-
-        for(u32 i = 0; i < number_of_buckets; ++i)
-        {
-            omp_init_lock(&b_locks_table[i]);
-            omp_init_lock(&w_locks_table[i]);
-        }
+        omp_init_lock(&b_table_lock);
+        omp_init_lock(&w_table_lock);
         omp_init_lock(&freed_nodes_lock);
     }
 }
@@ -310,8 +297,7 @@ tt_stats * transpositions_lookup_create(
     u64 hash
 ){
     u32 key = (u32)(hash % ((u64)number_of_buckets));
-    omp_lock_t * bucket_lock = is_black ? &b_locks_table[key] :
-        &w_locks_table[key];
+    omp_lock_t * bucket_lock = is_black ? &b_table_lock : &w_table_lock;
     omp_set_lock(bucket_lock);
 
     tt_stats * ret = find_state(hash, b, is_black);
@@ -372,8 +358,7 @@ tt_stats * transpositions_lookup_null(
     u64 hash
 ){
     u32 key = (u32)(hash % ((u64)number_of_buckets));
-    omp_lock_t * bucket_lock = is_black ? &b_locks_table[key] :
-        &w_locks_table[key];
+    omp_lock_t * bucket_lock = is_black ? &b_table_lock : &w_table_lock;
     omp_set_lock(bucket_lock);
 
     tt_stats * ret = find_state2(hash, cb, is_black);
