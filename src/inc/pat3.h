@@ -40,13 +40,6 @@ reduce bias.
 
 
 
-typedef struct __pat3_{
-	u16 value;
-	u16 weight;
-	struct __pat3_ * next;
-} pat3;
-
-
 
 /*
 Lookup of pattern value for the specified player.

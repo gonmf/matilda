@@ -32,15 +32,19 @@ The life of these patterns is as follow:
 #include "types.h"
 
 
-#define NUM_OF_BUCKETS 1543 /* prime number */
-
-static pat3 * b_pattern_table[NUM_OF_BUCKETS];
-static pat3 * w_pattern_table[NUM_OF_BUCKETS];
+static u16 b_pattern_table[65536];
+static u16 w_pattern_table[65536];
 static bool pat3_table_inited = false;
 
 static hash_table * weights_table = NULL;
 static u32 weights_found = 0;
 static u32 weights_not_found = 0;
+
+
+typedef struct __pat3_{
+    u16 value;
+    u16 weight;
+} pat3;
 
 /*
 Convert some final symbols; non-final symbols are left as-is here
@@ -85,24 +89,10 @@ static void pat3_insert(
     u16 weight
 ){
     /* patterns from blacks perspective */
-    pat3 * sp = (pat3 *)malloc(sizeof(pat3));
-    if(sp == NULL)
-        flog_crit("pat3", "system out of memory");
-
-    sp->value = value;
-    sp->weight = weight;
-    sp->next = b_pattern_table[value % NUM_OF_BUCKETS];
-    b_pattern_table[value % NUM_OF_BUCKETS] = sp;
+    b_pattern_table[value] = weight;
 
     /* patterns from whites perspective */
-    sp = (pat3 *)malloc(sizeof(pat3));
-    if(sp == NULL)
-        flog_crit("pat3", "system out of memory");
-
-    sp->value = value_inv;
-    sp->weight = weight;
-    sp->next = w_pattern_table[value_inv % NUM_OF_BUCKETS];
-    w_pattern_table[value_inv % NUM_OF_BUCKETS] = sp;
+    w_pattern_table[value_inv] = weight;
 }
 
 /*
@@ -113,19 +103,7 @@ u16 pat3_find(
     u16 value,
     bool is_black
 ){
-    pat3 * h;
-    if(is_black)
-        h = b_pattern_table[value % NUM_OF_BUCKETS];
-    else
-        h = w_pattern_table[value % NUM_OF_BUCKETS];
-
-    while(h != NULL)
-    {
-        if(h->value == value)
-            return h->weight;
-        h = h->next;
-    }
-    return 0;
+    return is_black ? b_pattern_table[value] : w_pattern_table[value];
 }
 
 static void flip(
@@ -596,6 +574,7 @@ void pat3_init()
         flog_info("pat3", buf);
 
         hash_table_destroy(weights_table, true);
+        weights_table = NULL;
     }
 
     release(buf);
