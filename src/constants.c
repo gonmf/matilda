@@ -25,6 +25,7 @@ u8 active_bits_in_byte[256];
 
 #include "board.h"
 #include "flog.h"
+#include "pat3.h"
 #include "move.h"
 #include "types.h"
 
@@ -43,6 +44,8 @@ move_seq nei_dst_3[TOTAL_BOARD_SIZ];
 move_seq nei_dst_4[TOTAL_BOARD_SIZ];
 
 u8 active_bits_in_byte[256];
+bool black_eye[65536];
+bool white_eye[65536];
 
 static bool board_constants_inited = false;
 
@@ -56,6 +59,113 @@ static u8 count_bits(u8 v)
         v /= 2;
     }
     return bits;
+}
+
+/*
+An eye is a point that may eventually become untakeable (without playing
+at the empty intersection itself). Examples:
+
+.bw   .b.   ---   +--
+b*b   b*b   b*b   |*b
+.bb   .bb   .b.   |b.
+*/
+static u8 _out_neighbors4(
+    u8 p[3][3]
+){
+    u8 ret = 0;
+    if(p[1][0] == ILLEGAL)
+        ++ret;
+    if(p[2][1] == ILLEGAL)
+        ++ret;
+    if(p[1][2] == ILLEGAL)
+        ++ret;
+    if(p[0][1] == ILLEGAL)
+        ++ret;
+    return ret;
+}
+
+static u8 _black_neighbors4(
+    u8 p[3][3]
+){
+    u8 ret = 0;
+    if(p[1][0] == BLACK_STONE)
+        ++ret;
+    if(p[2][1] == BLACK_STONE)
+        ++ret;
+    if(p[1][2] == BLACK_STONE)
+        ++ret;
+    if(p[0][1] == BLACK_STONE)
+        ++ret;
+    return ret;
+}
+
+static u8 _white_neighbors4(
+    u8 p[3][3]
+){
+    u8 ret = 0;
+    if(p[1][0] == WHITE_STONE)
+        ++ret;
+    if(p[2][1] == WHITE_STONE)
+        ++ret;
+    if(p[1][2] == WHITE_STONE)
+        ++ret;
+    if(p[0][1] == WHITE_STONE)
+        ++ret;
+    return ret;
+}
+
+static u8 _black_neighbors8(
+    u8 p[3][3]
+){
+    u8 ret = _black_neighbors4(p);
+    if(p[0][0] == BLACK_STONE)
+        ++ret;
+    if(p[2][0] == BLACK_STONE)
+        ++ret;
+    if(p[0][2] == BLACK_STONE)
+        ++ret;
+    if(p[2][2] == BLACK_STONE)
+        ++ret;
+    return ret;
+}
+
+static u8 _white_neighbors8(
+    u8 p[3][3]
+){
+    u8 ret = _white_neighbors4(p);
+    if(p[0][0] == WHITE_STONE)
+        ++ret;
+    if(p[2][0] == WHITE_STONE)
+        ++ret;
+    if(p[0][2] == WHITE_STONE)
+        ++ret;
+    if(p[2][2] == WHITE_STONE)
+        ++ret;
+    return ret;
+}
+
+static void init_eye_table()
+{
+    u8 dst[3][3];
+    for(u32 i = 0; i < 65536; ++i)
+    {
+        string_to_pat3(dst, i);
+
+        if(_out_neighbors4(dst) == 0)
+        {
+            black_eye[i] = (_black_neighbors4(dst) == 4) &&
+                (_white_neighbors8(dst) < 2);
+            white_eye[i] = (_white_neighbors4(dst) == 4) &&
+                (_black_neighbors8(dst) < 2);
+        }
+        else
+        {
+            black_eye[i] = (_black_neighbors4(dst) + _out_neighbors4(dst) == 4)
+                && (_white_neighbors8(dst) == 0);
+            white_eye[i] = (_white_neighbors4(dst) + _out_neighbors4(dst) == 4)
+                && (_black_neighbors8(dst) == 0);
+        }
+    }
 }
 
 /*
@@ -136,6 +246,8 @@ void board_constants_init()
 
     init_moves_by_distance(nei_dst_3, 3, false);
     init_moves_by_distance(nei_dst_4, 4, false);
+
+    init_eye_table();
 
     flog_info("const", "board constants calculated");
 }

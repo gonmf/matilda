@@ -36,6 +36,8 @@ extern bool border_bottom[TOTAL_BOARD_SIZ];
 /* number of active bits for every byte combination */
 extern u8 active_bits_in_byte[256];
 
+extern bool black_eye[65536];
+extern bool white_eye[65536];
 
 /*
 An eye is a point that may eventually become untakeable (without playing
@@ -52,6 +54,9 @@ bool is_eye(
     move m,
     bool is_black
 ){
+#if 1
+    return is_black ? black_eye[cb->hash[m]] : white_eye[cb->hash[m]];
+#else
     if(out_neighbors4[m] == 0)
     {
         if(is_black)
@@ -70,6 +75,7 @@ bool is_eye(
             return (cb->white_neighbors4[m] + out_neighbors4[m] == 4) &&
                 (cb->black_neighbors8[m] == 0);
     }
+#endif
 }
 
 /*

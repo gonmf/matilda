@@ -118,11 +118,13 @@ ed4");
                         &stones_captured2);
                     bool stones_captured3;
                     u8 l3 = safe_to_play(&cb, m, is_black, &stones_captured3);
+                    u8 l4 = safe_to_play2(&cb, m, is_black);
                     if(l1 != l2 || (l1 >= 2 && l3 != 2) || (l1 < 2 && l1 != l3))
                     {
-                        printf("tested %s playing (%u), l1=%u l2=%u l3*=%u\n",
-                            is_black ? "black" : "white", m, l1, l2, l3);
-                        fprint_board(stdout, &b);
+                        char s[8];
+                        coord_to_alpha_num(s, m);
+                        printf("tested %s playing (%s), l1=%u l2=%u l3*=%u l4*=\
+%u\n", is_black ? "black" : "white", s, l1, l2, l3, l4);
                         fprint_cfg_board(stdout, &cb);
                         exit(EXIT_FAILURE);
                     }
@@ -132,7 +134,6 @@ ed4");
                     {
                         fprintf(stderr, "stones captured mismatch (1): (%u) %u \
 %u %u\n", m, stones_captured1, stones_captured2, stones_captured3);
-                        fprint_board(stdout, &b);
                         fprint_cfg_board(stdout, &cb);
                         exit(EXIT_FAILURE);
                     }
@@ -151,10 +152,13 @@ ed4");
                         &stones_captured2);
                     bool stones_captured3;
                     u8 l3 = safe_to_play(&cb, m, is_black, &stones_captured3);
+                    u8 l4 = safe_to_play2(&cb, m, is_black);
                     if(l1 != l2 || (l1 >= 2 && l3 != 2) || (l1 < 2 && l1 != l3))
                     {
-                        printf("tested %s playing (%u), l1=%u l2=%u l3*=%u\n",
-                            is_black ? "black" : "white", m, l1, l2, l3);
+                        char s[8];
+                        coord_to_alpha_num(s, m);
+                        printf("tested %s playing (%s), l1=%u l2=%u l3*=%u l4*=\
+%u\n", is_black ? "black" : "white", s, l1, l2, l3, l4);
                         fprint_board(stdout, &b);
                         fprint_cfg_board(stdout, &cb);
                         exit(EXIT_FAILURE);

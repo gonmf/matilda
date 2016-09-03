@@ -1517,7 +1517,7 @@ u8 safe_to_play(
             ++probable_libs;
 
     u8 libs = probable_libs + g.liberties - 1;
-    return libs >= 2 ? 2 : libs;
+    return MIN(libs, 2);
 }
 
 /*
@@ -1698,7 +1698,7 @@ u8 safe_to_play2(
             ++probable_libs;
 
     u8 libs = probable_libs + g.liberties - 1;
-    return libs >= 2 ? 2 : libs;
+    return MIN(libs, 2);
 }
 
 /*
