@@ -16,7 +16,7 @@ Board | ELO | EGF Rank
  9x9  |  | 
 13x13 |  | 
 
-Calculated using [CGOS](http://cgos.boardspace.net/) match settings with the ELO of GNU Go 3.8 as baseline for estimating the ELO. The translation of ELO to Japanese ranks was made with the table from [SL](http://senseis.xmp.net/?GoR). Hardware is the equivalent to an medium range consumer computer from 2014. In terms of strength Matilda is pretty strong in small boards, but still needs a lot of work in 19x19.
+These values are estimates based on the results against a reference opponent, GNU Go 3.8. They used [CGOS](http://cgos.boardspace.net/) match settings and the hardware equivalent of a medium range consumer computer from 2014. The translation of ELO to Japanese ranks is made with the table from [SL](http://senseis.xmp.net/?GoR). In terms of strength Matilda is pretty strong in small boards, but still needs a lot of work in 19x19.
 
 **System Requirements**
 
