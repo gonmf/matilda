@@ -7,9 +7,7 @@ Matilda is a competitive computer Go playing engine and accompanying software.
 Implementation-wise it is a MCTS Mogo-like Go program. It is aimed at 64 bit computers in shared memory, playing with Chinese rules via the Go Text Protocol.
 It is versatile and optimized for speed in a lot of areas, though some changes require a recompilation.
 
-**Playing strength**
-
-*Updated for version 0.18, commit ```8f29a12```*
+**Playing strength (v0.19)**
 
 Board | ELO | EGF Rank
 :---: | :---: | :---:
