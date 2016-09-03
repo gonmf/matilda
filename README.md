@@ -13,7 +13,7 @@ It is versatile and optimized for speed in a lot of areas, though some changes r
 
 Board | ELO | EGF Rank
 :---: | :---: | :---:
- 9x9  |  | 
+ 9x9  | 2242 | 2 dan
 13x13 |  | 
 
 These values are estimates based on the results against a reference opponent, GNU Go 3.8. They used [CGOS](http://cgos.boardspace.net/) match settings and the hardware equivalent of a medium range consumer computer from 2014. The translation of ELO to Japanese ranks is made with the table from [SL](http://senseis.xmp.net/?GoR). In terms of strength Matilda is pretty strong in small boards, but still needs a lot of work in 19x19.
