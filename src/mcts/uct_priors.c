@@ -93,6 +93,22 @@ static void stats_add_play(
     stats->plays[idx].color_owning = 0.5;
 }
 
+static bool lib2_self_atari(
+    cfg_board * cb,
+    bool is_black,
+    move m
+){
+    cfg_board tmp;
+    cfg_board_clone(&tmp, cb);
+    just_play(&tmp, m, is_black);
+
+    bool ret = is_board_move(can_be_killed(&tmp, tmp.g[m]));
+
+    cfg_board_free(&tmp);
+
+    return ret;
+}
+
 /*
 Priors values with heuristic MC-RAVE
 
@@ -129,9 +145,6 @@ void init_new_state(
     u16 capturable[TOTAL_BOARD_SIZ];
     memset(capturable, 0, TOTAL_BOARD_SIZ * sizeof(u16));
 
-    bool self_atari[TOTAL_BOARD_SIZ];
-    memset(self_atari, false, TOTAL_BOARD_SIZ);
-
     /*
     Tactical analysis of attack/defense of unsettled groups.
     */
@@ -145,18 +158,9 @@ void init_new_state(
 
             if(g->is_black == is_black)
             {
-                move candidates2[MAX_GROUPS];
-                u16 candidates_count2 = 0;
-                can_be_killed_all(cb, g, &candidates_count2, candidates2);
-                if(candidates_count2 > 0)
+                if(can_be_killed(cb, g) != NONE)
                 {
                     can_be_saved_all(cb, g, &candidates_count, candidates);
-                    if(candidates_count == 0)
-                    {
-                        for(u16 j = 0; j < candidates_count2; ++j)
-                            self_atari[candidates2[j]] = true;
-                        continue;
-                    }
                     for(u16 j = 0; j < candidates_count; ++j)
                         saving_play[candidates[j]] += g->stones.count +
                     g->liberties;
@@ -238,7 +242,9 @@ void init_new_state(
         Prohibit self-ataris if they don't put the opponent in atari
         (this definition does not prohibit throw-ins)
         */
-        if(libs == 1 || self_atari[m])
+        if(((is_black && cb->black_neighbors4[m] > 0)
+            || (!is_black && cb->white_neighbors4[m] > 0))
+            && (libs == 1 || lib2_self_atari(cb, is_black, m)))
             mc_v += prior_self_atari;
 
         /*

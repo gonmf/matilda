@@ -52,9 +52,10 @@ Tuned with CLOP in 9x9 with 1k playouts/turn vs GNU Go 3.8 lvl 1, 18k matches.
 /*
 Cache state bits (must fit in 1 byte)
 */
-#define CACHE_PLAY_DIRTY 1 /* play needs to be recalculated */
-#define CACHE_PLAY_LEGAL 2 /* if play is legal for that player */
-#define CACHE_PLAY_OSAFE 4 /* if has 2 or more liberties after playing */
+#define CACHE_PLAY_DIRTY      1 /* play needs to be recalculated */
+#define CACHE_PLAY_LEGAL      2 /* if play is legal for that player */
+#define CACHE_PLAY_SAFE       4 /* if has 2 or more liberties after playing */
+#define CACHE_PLAY_SELF_ATARI 8 /* if play is self-atari */
 
 
 

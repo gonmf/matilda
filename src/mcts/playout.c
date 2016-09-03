@@ -222,7 +222,7 @@ static move heavy_select_play(
                 cache[m] = CACHE_PLAY_LEGAL;
 
                 if(libs > 1)
-                    cache[m] |= CACHE_PLAY_OSAFE;
+                    cache[m] |= CACHE_PLAY_SAFE;
             }
             else
             {
@@ -252,7 +252,7 @@ static move heavy_select_play(
             {
                 /* Play at remaining liberty */
                 move m = get_1st_liberty(g);
-                if(cache[m] & CACHE_PLAY_OSAFE)
+                if(cache[m] & CACHE_PLAY_SAFE)
                 {
                     u16 w = g->stones.count + 2;
                     weights[candidate_plays] = w;
@@ -270,7 +270,7 @@ static move heavy_select_play(
                         if(cache[m] & CACHE_PLAY_LEGAL)
                         {
                             u16 w = h->stones.count + 2;
-                            if(cache[m] & CACHE_PLAY_OSAFE)
+                            if(cache[m] & CACHE_PLAY_SAFE)
                                 w *= 2;
                             weights[candidate_plays] = w;
                             candidate_play[candidate_plays] = m;
@@ -303,7 +303,7 @@ static move heavy_select_play(
         for(u16 k = 0; k < cb->empty.count; ++k)
         {
             move m = cb->empty.coord[k];
-            if(cache[m] & CACHE_PLAY_OSAFE)
+            if(cache[m] & CACHE_PLAY_SAFE)
             {
                 u16 w;
                 if((w = is_nakade(cb, m)) > 0)
@@ -370,7 +370,7 @@ static move heavy_select_play(
         for(move k = 0; k < neighbors_3x3[cb->last_played].count; ++k)
         {
             move m = neighbors_3x3[cb->last_played].coord[k];
-            if(cache[m] & CACHE_PLAY_OSAFE)
+            if(cache[m] & CACHE_PLAY_SAFE)
             {
                 u16 w = pat3_find(cb->hash[m], is_black);
                 if(w != 0)
@@ -402,7 +402,7 @@ static move heavy_select_play(
         move m = cb->empty.coord[k];
         if(cache[m] & CACHE_PLAY_LEGAL)
         {
-            u16 w = (cache[m] & CACHE_PLAY_OSAFE)? 2 : 1;
+            u16 w = (cache[m] & CACHE_PLAY_SAFE)? 2 : 1;
             weights[candidate_plays] = w;
             candidate_play[candidate_plays] = m;
             weight_total += w;
