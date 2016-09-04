@@ -163,62 +163,6 @@ static move heavy_select_play(
                     continue;
                 }
 
-                bool can_have_forcing_move;
-                /*
-                Avoid defending 2-point eye unnecessarily
-                */
-                if(is_2pt_eye(cb, m, is_black, &can_have_forcing_move))
-                {
-                    cache[m + RIGHT] = 0;
-                    cache[m + BOTTOM] = 0;
-                    if(!can_have_forcing_move)
-                    {
-                        cache[m] = 0;
-                        continue;
-                    }
-                }
-                else
-                {
-                    /*
-                    Avoid defending 4-point eye unnecessarily
-                    */
-                    if(is_4pt_eye(cb, m, is_black, &can_have_forcing_move))
-                    {
-                        cache[m + RIGHT] = 0;
-                        cache[m + BOTTOM] = 0;
-                        cache[m + RIGHT + BOTTOM] = 0;
-                        if(!can_have_forcing_move)
-                        {
-                            cache[m] = 0;
-                            continue;
-                        }
-                    }
-                    else
-                    {
-                        /*
-                        Reduce area of attack of opponent 4-point eye
-                        */
-                        if(is_4pt_eye(cb, m, !is_black, &can_have_forcing_move))
-                        {
-                            cache[m + RIGHT] = 0;
-                            cache[m + BOTTOM] = 0;
-                            cache[m + RIGHT + BOTTOM] = 0;
-                        }
-                        else
-                        {
-                            /*
-                            Reduce area of attack of opponent 2-point eye
-                            */
-                            if(is_2pt_eye(cb, m, !is_black,
-                                &can_have_forcing_move))
-                            {
-                                cache[m + RIGHT] = 0;
-                                cache[m + BOTTOM] = 0;
-                            }
-                        }
-                    }
-                }
-
                 cache[m] = CACHE_PLAY_LEGAL;
 
                 if(libs > 1)
