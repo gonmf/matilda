@@ -26,7 +26,7 @@ seed = int(sys.argv[2])
 #
 # Create empty directory for this seed, and chdir to it
 #
-path = "tmp"
+path = ".tmp"
 shutil.rmtree(path, ignore_errors = True)
 os.makedirs(path)
 os.chdir(path)

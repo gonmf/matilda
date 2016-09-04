@@ -36,6 +36,7 @@ u16 pl_skip_saving = PL_SKIP_SAVING;
 u16 pl_skip_nakade = PL_SKIP_NAKADE;
 u16 pl_skip_pattern = PL_SKIP_PATTERN;
 u16 pl_skip_capture = PL_SKIP_CAPTURE;
+u16 pl_allow_satari = PL_ALLOW_SATARI;
 
 extern move_seq neighbors_3x3[TOTAL_BOARD_SIZ];
 
@@ -159,7 +160,10 @@ static move heavy_select_play(
                 if(libs == 1 && ((is_black && cb->black_neighbors4[m] > 0) ||
                    (!is_black && cb->white_neighbors4[m] > 0)))
                 {
-                    cache[m] = 0;
+                    if(rand_u16(128) < pl_allow_satari)
+                        cache[m] = 0;
+                    else
+                        cache[m] = CACHE_PLAY_LEGAL;
                     continue;
                 }
 
