@@ -10,7 +10,7 @@ Play variations are not supported.
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include <unistd.h>
+#include <unistd.h> /* mkstemps in macosx */
 #include <assert.h>
 
 #include "alloc.h"

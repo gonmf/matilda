@@ -264,7 +264,7 @@ on.\n\n", MATILDA_VERSION, s);
                 if(last_played_pass)
                 {
                     printf("Computer passes, game is over.\n");
-                    text_print_score(!is_black);
+                    text_print_score();
                     printf("\n");
                     last_played_pass = false;
                     text_newgame(&human_player_color, &is_black);
@@ -389,7 +389,7 @@ core/quit\n\n", mstr);
                 if(last_played_pass)
                 {
                     printf("Two passes in a row, game is over.\n");
-                    text_print_score(!is_black);
+                    text_print_score();
                     printf("\n");
                     text_newgame(&human_player_color, &is_black);
                 }else
