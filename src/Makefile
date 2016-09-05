@@ -5,7 +5,9 @@
 
 # Uncomment this line to compile in Mac OSX, having previously installed
 # clang-omp through brew.
-CC := clang-omp
+# CC := clang-omp
+
+# If your system includes a clang with OpenMP 3.0 support
 # CC := clang
 
 CFLAGS := -Iinc/ -std=c99 -O2 -Wall -Wextra -Wformat=2 -pedantic-errors \
@@ -19,6 +21,8 @@ LDFLAGS += -lm
 
 # GCC > 4.9 only
 # CFLAGS += -fdiagnostics-color=auto
+
+
 
 SRCFILES := $(wildcard *.c mcts/*.c)
 
