@@ -104,7 +104,7 @@ static void stats_add_play(
 
 
 
-
+// TODO move this
 static bool lib2_self_atari(
     cfg_board * cb,
     bool is_black,
@@ -212,7 +212,6 @@ void init_new_state(
 
         move captures;
         u8 libs = libs_after_play(cb, m, is_black, &captures);
-//safe_to_play(cb, m, is_black, &captures);
 
         /*
         Don't play suicides
@@ -251,15 +250,9 @@ void init_new_state(
             mc_v += prior_bad_play;
 
         /*
-        Prohibit self-ataris if they don't put the opponent in atari
-        (this definition does not prohibit throw-ins)
+        Prohibit self-ataris that don't contribute to killing an opponent group
         */
-        // TODO this self atari is wrong; test replacing this test
-#if 1
         if(capturable[0] == 0 && (libs < 3 && lib2_self_atari(cb, is_black, m)))
-#else
-        if(lib2_self_atari(cb, is_black, m))
-#endif
             mc_v += prior_self_atari;
 
         /*
