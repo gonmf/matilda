@@ -36,6 +36,7 @@ u16 pl_skip_saving = PL_SKIP_SAVING;
 u16 pl_skip_nakade = PL_SKIP_NAKADE;
 u16 pl_skip_pattern = PL_SKIP_PATTERN;
 u16 pl_skip_capture = PL_SKIP_CAPTURE;
+u16 pl_allow_satari = PL_ALLOW_SATARI;
 
 extern move_seq neighbors_3x3[TOTAL_BOARD_SIZ];
 
@@ -132,6 +133,39 @@ static void invalidate_cache_after_play(
 }
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+static bool lib2_self_atari(
+    cfg_board * cb,
+    bool is_black,
+    move m
+){
+    cfg_board tmp;
+    cfg_board_clone(&tmp, cb);
+    just_play(&tmp, m, is_black);
+
+    bool ret = is_board_move(can_be_killed(&tmp, tmp.g[m]));
+
+    cfg_board_free(&tmp);
+
+    if(ret && min_neighbor_libs(cb, m, is_black ? WHITE_STONE : BLACK_STONE) < 3)
+        return false;
+
+    return ret;
+}
+
 /*
 Selects the next play of a heavy playout - MoGo style.
 Uses a cache of play statuses that is updated as needed.
@@ -141,6 +175,27 @@ static move heavy_select_play(
     bool is_black,
     u8 cache[TOTAL_BOARD_SIZ]
 ){
+#if 0
+    bool capturable[TOTAL_BOARD_SIZ];
+    memset(capturable, 0, TOTAL_BOARD_SIZ);
+
+    /*
+    Tactical analysis of attack/defense of unsettled groups.
+    */
+    for(u8 i = 0; i < cb->unique_groups_count; ++i)
+    {
+        group * g = cb->g[cb->unique_groups[i]];
+
+        if(g->is_black != is_black)
+        {
+            move candidates[MAX_GROUPS];
+            u16 candidates_count = 0;
+            can_be_killed_all(cb, g, &candidates_count, candidates);
+            for(u16 j = 0; j < candidates_count; ++j)
+                capturable[candidates[j]] = true;
+        }
+    }
+#endif
 
     for(u16 k = 0; k < cb->empty.count; ++k)
     {
@@ -156,10 +211,21 @@ static move heavy_select_play(
                 Prohibit self-ataris if they don't put the opponent in atari
                 (this definition covers throw-ins)
                 */
+#if 1
                 if(libs == 1 && ((is_black && cb->black_neighbors4[m] > 0) ||
-                   (!is_black && cb->white_neighbors4[m] > 0)))
+                    (!is_black && cb->white_neighbors4[m] > 0)))
+#else
+#if 1
+                if(lib2_self_atari(cb, is_black, m) && capturable[0] == 0)
+#else
+                if(lib2_self_atari(cb, is_black, m))
+#endif
+#endif
                 {
-                    cache[m] = 0;
+                    if(rand_u16(128) < pl_allow_satari)
+                        cache[m] = 0;
+                    else
+                        cache[m] = CACHE_PLAY_LEGAL;
                     continue;
                 }
 

@@ -41,11 +41,13 @@ Tuned with CLOP in 9x9 with 1k playouts/turn vs GNU Go 3.8 lvl 1, 18k matches.
 #define PL_SKIP_CAPTURE 39
 #define PL_SKIP_PATTERN 15
 #define PL_SKIP_NAKADE   0
+#define PL_ALLOW_SATARI 43
 #else
 #define PL_SKIP_SAVING  32
 #define PL_SKIP_CAPTURE 39
 #define PL_SKIP_PATTERN 15
 #define PL_SKIP_NAKADE   0
+#define PL_ALLOW_SATARI 43
 #endif
 
 

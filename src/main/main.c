@@ -62,6 +62,7 @@ extern u16 pl_skip_saving;
 extern u16 pl_skip_nakade;
 extern u16 pl_skip_pattern;
 extern u16 pl_skip_capture;
+extern u16 pl_allow_satari;
 extern u16 expansion_delay;
 static u16 _dummy; /* used for testing CLOP */
 
@@ -94,6 +95,7 @@ const void * tunable[] =
     "i", "pl_skip_nakade", &pl_skip_nakade,
     "i", "pl_skip_pattern", &pl_skip_pattern,
     "i", "pl_skip_capture", &pl_skip_capture,
+    "i", "pl_allow_satari", &pl_allow_satari,
     "i", "expansion_delay", &expansion_delay,
     "i", "dummy", &_dummy,
 
