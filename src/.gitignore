@@ -13,8 +13,5 @@ learn_pat_weights
 gen_zobrist_table
 callgrind.out.*
 matilda_*_*.log
-tuning.log
 *.sgf
-.tags
-.tags_sorted_by_file
 output.*
