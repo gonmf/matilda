@@ -51,8 +51,8 @@ RETURNS true if coordinate is that of an eye
 */
 bool is_eye(
     const cfg_board * cb,
-    move m,
-    bool is_black
+    bool is_black,
+    move m
 ){
 #if 1
     return is_black ? black_eye[cb->hash[m]] : white_eye[cb->hash[m]];
@@ -88,8 +88,8 @@ RETURNS true if eye space is a 2-point eye
 */
 bool is_2pt_eye(
     const cfg_board * cb,
-    move m,
     bool is_black,
+    move m,
     bool * can_have_forcing_move
 ){
     assert(is_board_move(m));
@@ -193,8 +193,8 @@ RETURNS true if eye space is a 4-point eye
 */
 bool is_4pt_eye(
     const cfg_board * cb,
-    move m,
     bool is_black,
+    move m,
     bool * can_have_forcing_move
 ){
     assert(is_board_move(m));
@@ -305,8 +305,8 @@ RETURNS true if m is corner liberty
 */
 bool is_corner_liberty(
     const cfg_board * cb,
-    move m,
-    bool is_black
+    bool is_black,
+    move m
 ){
     if(is_black)
     {
@@ -836,185 +836,6 @@ void mark_near_pos(
     }
 }
 
-
-static void move_dir(
-    move * m,
-    d8 dir[2]
-){
-    *m = *m + dir[0] + dir[1] * BOARD_SIZ;
-}
-
-/*
-Tests if the intersection m is the only liberty of a group of color is_black and
-that group qualifies as being a ladder.
-Warning: assumes playing m makes two and only two liberties.
-
-Not all types of ladders are detected.
-
-It applies to simple ladders like (O = part of group in atari that
-can't survive by capturing; X = opponent; 1 is Os liberty)
-. . . . . . . . |
-. . . . O . . . |
-. . . X 1 3 4 . |
-. . . . 2 6 8 9 |
-. . . . . 7 0 2 |
-. . . . . . 1 . |
-. . . . . . . . |
-
-Does not consider ladders like:
-. . . . . .
-. b b b b .
-. b w w b .
-. b w ! . .
-. b b . . .
-. . . . . .
-*/
-bool is_ladder(
-    const cfg_board * cb,
-    move m,
-    bool is_black
-){
-    /* We're to close to the border */
-    if(out_neighbors4[m] > 0)
-        return false;
-
-    /* Group liberty has unexpected number of friendly neighbors */
-    if((is_black && (cb->black_neighbors4[m] != 1)) || (!is_black &&
-        (cb->white_neighbors4[m] != 1)))
-        return false;
-
-    /* Group liberty has too few unfriendly neighbors */
-    if((is_black && (cb->white_neighbors4[m] == 0)) || (!is_black &&
-        (cb->black_neighbors4[m] == 0)))
-        return false;
-
-    /* Discover the closest group of is_black color */
-    group * g;
-    group * n;
-    if(!border_left[m] && (n = cb->g[m + LEFT]) != NULL && n->is_black ==
-        is_black)
-        g = n;
-    else
-        if(!border_right[m] && (n = cb->g[m + RIGHT]) != NULL && n->is_black ==
-            is_black)
-            g = n;
-        else
-            if(!border_top[m] && (n = cb->g[m + TOP]) != NULL && n->is_black ==
-                is_black)
-                g = n;
-            else
-                g = cb->g[m + BOTTOM];
-
-    /* Group not in atari */
-    if(g->liberties != 1)
-        return false;
-
-    /*
-    If group makes libs by capture then we are not a ladder yet
-    Warning: not considering ko
-    */
-    for(u16 k = 0; k < g->neighbors_count; ++k)
-        if(cb->g[g->neighbors[k]]->liberties == 1)
-            return false;
-
-    /* If one of the diagonals of the liberty only has 2 libs, then it can be
-    captured if the ladder is chased */
-    if(!border_left[m])
-    {
-        if(!border_top[m] && (n = cb->g[m + LEFT + TOP]) != NULL && n->is_black
-            != is_black && n->liberties <= 2)
-            return false;
-        if(!border_bottom[m] && (n = cb->g[m + LEFT + BOTTOM]) != NULL &&
-            n->is_black != is_black && n->liberties <= 2)
-            return false;
-    }
-
-    if(!border_right[m])
-    {
-        if(!border_top[m] && (n = cb->g[m + RIGHT + TOP]) != NULL && n->is_black
-            != is_black && n->liberties <= 2)
-            return false;
-        if(!border_bottom[m] && (n = cb->g[m + RIGHT + BOTTOM]) != NULL &&
-            n->is_black != is_black && n->liberties <= 2)
-            return false;
-    }
-
-    d8 dir1[2]; /* direction vector 1 */
-
-    /* direction away from neighbor friendly stone */
-    if(!border_left[m] && cb->g[m + LEFT] == g)
-    {
-        dir1[0] = 1;
-        dir1[1] = 0;
-    }
-    else
-        if(!border_right[m] && cb->g[m + RIGHT] == g)
-        {
-            dir1[0] = -1;
-            dir1[1] = 0;
-        }
-        else
-            if(!border_top[m] && cb->g[m + TOP] == g)
-            {
-                dir1[0] = 0;
-                dir1[1] = 1;
-            }
-            else
-            {
-                dir1[0] = 0;
-                dir1[1] = -1;
-            }
-
-    move_dir(&m, dir1);
-    if((is_black && (cb->black_neighbors4[m] > 1)) || (!is_black &&
-        (cb->white_neighbors4[m] > 1)))
-        return false;
-    if(out_neighbors4[m] > 0)
-        return true;
-
-    d8 dir2[2]; /* direction vector 2 */
-
-    /* direction away from imaginary side stone */
-    dir2[0] = dir1[1];
-    dir2[1] = dir1[0];
-    move m2 = m;
-    move_dir(&m2, dir2);
-    if(cb->p[m2] != EMPTY)
-    {
-        /* we're going the wrong direction */
-        dir2[0] *= -1;
-        dir2[1] *= -1;
-    }
-
-    move_dir(&m, dir2);
-    if((is_black && (cb->black_neighbors8[m] > 1)) || (!is_black &&
-        (cb->white_neighbors8[m] > 1)))
-        return false;
-    if(out_neighbors4[m] > 0)
-        return true;
-
-    while(1)
-    {
-        move_dir(&m, dir1);
-        if((is_black && (cb->black_neighbors8[m] > 0)) || (!is_black &&
-            (cb->white_neighbors8[m] > 0)))
-            return false;
-        if(out_neighbors4[m] > 0)
-            return true;
-        move_dir(&m, dir2);
-        if((is_black && (cb->black_neighbors8[m] > 0)) || (!is_black &&
-            (cb->white_neighbors8[m] > 0)))
-            return false;
-        if(out_neighbors4[m] > 0)
-            return true;
-    }
-
-    assert(0);
-}
-
-
-
-
 static bool can_be_killed2(
     cfg_board * b,
     move om,
@@ -1043,11 +864,11 @@ static bool can_be_killed3(
         return false;
 
     move m = get_1st_liberty(g);
-    if(can_play(cb, m, is_black))
+    if(can_play(cb, is_black, m))
     {
         cfg_board tmp;
         cfg_board_clone(&tmp, cb);
-        just_play(&tmp, m, is_black);
+        just_play(&tmp, is_black, m);
         if(can_be_killed2(&tmp, om, !is_black, depth + 1))
         {
             cfg_board_free(&tmp);
@@ -1057,9 +878,9 @@ static bool can_be_killed3(
     }
 
     m = get_next_liberty(g, m);
-    if(can_play(cb, m, is_black))
+    if(can_play(cb, is_black, m))
     {
-        just_play(cb, m, is_black);
+        just_play(cb, is_black, m);
         if(can_be_killed2(cb, om, !is_black, depth + 1))
             return true;
     }
@@ -1093,10 +914,10 @@ static bool can_be_killed2(
         if(n->liberties == 1 && !groups_share_liberties(g, n))
         {
             move m = get_1st_liberty(n);
-            if(can_play(cb, m, is_black))
+            if(can_play(cb, is_black, m))
             {
                 cfg_board_clone(&tmp, cb);
-                just_play(&tmp, m, is_black);
+                just_play(&tmp, is_black, m);
                 if(!can_be_killed3(&tmp, om, !is_black, depth + 1))
                 {
                     cfg_board_free(&tmp);
@@ -1109,10 +930,10 @@ static bool can_be_killed2(
 
     /* try 1st liberty */
     move m = get_1st_liberty(g);
-    if(can_play(cb, m, is_black))
+    if(can_play(cb, is_black, m))
     {
         cfg_board_clone(&tmp, cb);
-        just_play(&tmp, m, is_black);
+        just_play(&tmp, is_black, m);
         if(!can_be_killed3(&tmp, om, !is_black, depth + 1))
         {
             cfg_board_free(&tmp);
@@ -1124,10 +945,10 @@ static bool can_be_killed2(
     if(g->liberties == 2)
     {
         m = get_next_liberty(g, m);
-        if(can_play(cb, m, is_black))
+        if(can_play(cb, is_black, m))
         {
             cfg_board_clone(&tmp, cb);
-            just_play(&tmp, m, is_black);
+            just_play(&tmp, is_black, m);
             if(!can_be_killed3(&tmp, om, !is_black, depth + 1))
             {
                 cfg_board_free(&tmp);
@@ -1167,10 +988,10 @@ move can_be_killed(
 
     /* attempt attack group */
     move m = get_1st_liberty(g);
-    if(can_play(cb, m, !g->is_black))
+    if(can_play(cb, !g->is_black, m))
     {
         cfg_board_clone(&tmp, cb);
-        just_play(&tmp, m, !g->is_black);
+        just_play(&tmp, !g->is_black, m);
         if(can_be_killed2(&tmp, g->stones.coord[0], g->is_black, 0))
         {
             cfg_board_free(&tmp);
@@ -1180,10 +1001,10 @@ move can_be_killed(
     }
 
     m = get_next_liberty(g, m);
-    if(can_play(cb, m, !g->is_black))
+    if(can_play(cb, !g->is_black, m))
     {
         cfg_board_clone(&tmp, cb);
-        just_play(&tmp, m, !g->is_black);
+        just_play(&tmp, !g->is_black, m);
         if(can_be_killed2(&tmp, g->stones.coord[0], g->is_black, 0))
         {
             cfg_board_free(&tmp);
@@ -1195,10 +1016,10 @@ move can_be_killed(
     if(g->liberties == 3)
     {
         m = get_next_liberty(g, m);
-        if(can_play(cb, m, !g->is_black))
+        if(can_play(cb, !g->is_black, m))
         {
             cfg_board_clone(&tmp, cb);
-            just_play(&tmp, m, !g->is_black);
+            just_play(&tmp, !g->is_black, m);
             if(can_be_killed2(&tmp, g->stones.coord[0], g->is_black, 0))
             {
                 cfg_board_free(&tmp);
@@ -1243,10 +1064,10 @@ void can_be_killed_all(
 
     /* attempt attack group */
     move m = get_1st_liberty(g);
-    if(can_play(cb, m, !g->is_black))
+    if(can_play(cb, !g->is_black, m))
     {
         cfg_board_clone(&tmp, cb);
-        just_play(&tmp, m, !g->is_black);
+        just_play(&tmp, !g->is_black, m);
         if(can_be_killed2(&tmp, g->stones.coord[0], g->is_black, 0))
         {
             plays[*plays_count] = m;
@@ -1256,10 +1077,10 @@ void can_be_killed_all(
     }
 
     m = get_next_liberty(g, m);
-    if(can_play(cb, m, !g->is_black))
+    if(can_play(cb, !g->is_black, m))
     {
         cfg_board_clone(&tmp, cb);
-        just_play(&tmp, m, !g->is_black);
+        just_play(&tmp, !g->is_black, m);
         if(can_be_killed2(&tmp, g->stones.coord[0], g->is_black, 0))
         {
             plays[*plays_count] = m;
@@ -1271,10 +1092,10 @@ void can_be_killed_all(
     if(g->liberties == 3)
     {
         m = get_next_liberty(g, m);
-        if(can_play(cb, m, !g->is_black))
+        if(can_play(cb, !g->is_black, m))
         {
             cfg_board_clone(&tmp, cb);
-            just_play(&tmp, m, !g->is_black);
+            just_play(&tmp, !g->is_black, m);
             if(can_be_killed2(&tmp, g->stones.coord[0], g->is_black, 0))
             {
                 plays[*plays_count] = m;
@@ -1302,10 +1123,10 @@ move can_be_saved(
 
     /* attempt defend group */
     move m = get_1st_liberty(g);
-    if(can_play(cb, m, g->is_black))
+    if(can_play(cb, g->is_black, m))
     {
         cfg_board_clone(&tmp, cb);
-        just_play(&tmp, m, g->is_black);
+        just_play(&tmp, g->is_black, m);
         if(!can_be_killed3(&tmp, g->stones.coord[0], !g->is_black, 0))
         {
             cfg_board_free(&tmp);
@@ -1317,10 +1138,10 @@ move can_be_saved(
     if(g->liberties > 1)
     {
         m = get_next_liberty(g, m);
-        if(can_play(cb, m, g->is_black))
+        if(can_play(cb, g->is_black, m))
         {
             cfg_board_clone(&tmp, cb);
-            just_play(&tmp, m, g->is_black);
+            just_play(&tmp, g->is_black, m);
             if(!can_be_killed3(&tmp, g->stones.coord[0], !g->is_black, 0))
             {
                 cfg_board_free(&tmp);
@@ -1332,10 +1153,10 @@ move can_be_saved(
         if(g->liberties > 2)
         {
             m = get_next_liberty(g, m);
-            if(can_play(cb, m, g->is_black))
+            if(can_play(cb, g->is_black, m))
             {
                 cfg_board_clone(&tmp, cb);
-                just_play(&tmp, m, g->is_black);
+                just_play(&tmp, g->is_black, m);
                 if(!can_be_killed3(&tmp, g->stones.coord[0], !g->is_black, 0))
                 {
                     cfg_board_free(&tmp);
@@ -1352,7 +1173,7 @@ move can_be_saved(
         if(n->liberties == 1)
         {
             m = get_1st_liberty(n);
-            if(can_play(cb, m, g->is_black))
+            if(can_play(cb, g->is_black, m))
                 return m;
         }
     }
@@ -1378,10 +1199,10 @@ void can_be_saved_all(
 
     /* attempt defend group */
     move m = get_1st_liberty(g);
-    if(can_play(cb, m, g->is_black))
+    if(can_play(cb, g->is_black, m))
     {
         cfg_board_clone(&tmp, cb);
-        just_play(&tmp, m, g->is_black);
+        just_play(&tmp, g->is_black, m);
         if(!can_be_killed3(&tmp, g->stones.coord[0], !g->is_black, 0))
         {
             plays[*plays_count] = m;
@@ -1393,10 +1214,10 @@ void can_be_saved_all(
     if(g->liberties > 1)
     {
         m = get_next_liberty(g, m);
-        if(can_play(cb, m, g->is_black))
+        if(can_play(cb, g->is_black, m))
         {
             cfg_board_clone(&tmp, cb);
-            just_play(&tmp, m, g->is_black);
+            just_play(&tmp, g->is_black, m);
             if(!can_be_killed3(&tmp, g->stones.coord[0], !g->is_black, 0))
             {
                 plays[*plays_count] = m;
@@ -1408,10 +1229,10 @@ void can_be_saved_all(
         if(g->liberties > 2)
         {
             m = get_next_liberty(g, m);
-            if(can_play(cb, m, g->is_black))
+            if(can_play(cb, g->is_black, m))
             {
                 cfg_board_clone(&tmp, cb);
-                just_play(&tmp, m, g->is_black);
+                just_play(&tmp, g->is_black, m);
                 if(!can_be_killed3(&tmp, g->stones.coord[0], !g->is_black, 0))
                 {
                     plays[*plays_count] = m;
@@ -1428,7 +1249,7 @@ void can_be_saved_all(
         if(n->liberties == 1)
         {
             m = get_1st_liberty(n);
-            if(can_play(cb, m, g->is_black))
+            if(can_play(cb, g->is_black, m))
             {
                 plays[*plays_count] = m;
                 (*plays_count)++;

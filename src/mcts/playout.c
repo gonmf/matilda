@@ -133,39 +133,6 @@ static void invalidate_cache_after_play(
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-static bool lib2_self_atari(
-    cfg_board * cb,
-    bool is_black,
-    move m
-){
-    cfg_board tmp;
-    cfg_board_clone(&tmp, cb);
-    just_play(&tmp, m, is_black);
-
-    bool ret = is_board_move(can_be_killed(&tmp, tmp.g[m]));
-
-    cfg_board_free(&tmp);
-
-    if(ret && min_neighbor_libs(cb, m, is_black ? WHITE_STONE : BLACK_STONE) < 3)
-        return false;
-
-    return ret;
-}
-
 /*
 Selects the next play of a heavy playout - MoGo style.
 Uses a cache of play statuses that is updated as needed.
@@ -203,24 +170,16 @@ static move heavy_select_play(
         if(cache[m] & CACHE_PLAY_DIRTY)
         {
             u8 libs;
-            if(!is_eye(cb, m, is_black) && !ko_violation(cb, m) && (libs =
-                safe_to_play2(cb, m, is_black)) > 0)
+            if(!is_eye(cb, is_black, m) && !ko_violation(cb, m) &&
+                (libs = safe_to_play(cb, is_black, m)) > 0)
             {
 
                 /*
                 Prohibit self-ataris if they don't put the opponent in atari
                 (this definition covers throw-ins)
                 */
-#if 1
                 if(libs == 1 && ((is_black && cb->black_neighbors4[m] > 0) ||
                     (!is_black && cb->white_neighbors4[m] > 0)))
-#else
-#if 1
-                if(lib2_self_atari(cb, is_black, m) && capturable[0] == 0)
-#else
-                if(lib2_self_atari(cb, is_black, m))
-#endif
-#endif
                 {
                     if(rand_u16(128) < pl_allow_satari)
                         cache[m] = 0;
@@ -484,7 +443,7 @@ d16 playout_heavy_amaf(
             memset(stones_captured, 0, TOTAL_BOARD_SIZ);
             memset(libs_of_nei_of_captured, 0, LIB_BITMAP_SIZ);
 
-            just_play3(cb, m, is_black, &diff, stones_captured,
+            just_play3(cb, is_black, m, &diff, stones_captured,
                 libs_of_nei_of_captured);
 
             assert(verify_cfg_board(cb));

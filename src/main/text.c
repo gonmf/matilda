@@ -80,7 +80,7 @@ static bool text_play(
 
     board current_state;
     current_game_state(&current_state, &current_game);
-    if(!can_play_slow(&current_state, m, is_black))
+    if(!can_play_slow(&current_state, is_black, m))
     {
         printf("Play is illegal.\n");
         return true;

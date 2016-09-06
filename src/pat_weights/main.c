@@ -187,8 +187,8 @@ int main(
 
                             u8 libs;
                             bool captures;
-                            if((libs = safe_to_play(&cb, m, true, &captures)) ==
-                                0)
+                            if((libs = safe_to_play2(&cb, true, m, &captures))
+                                == 0)
                                 continue;
 
                             u8 v[3][3];
@@ -218,7 +218,7 @@ int main(
                     cfg_board_free(&cb);
                 }
 
-                just_play_slow(&b, plays[k], true);
+                just_play_slow(&b, true, plays[k]);
             }
             invert_color(b.p);
         }

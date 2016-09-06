@@ -157,7 +157,7 @@ void interpret_rule_as_pts_list(
             flog_crit("pts", buf);
             release(buf);
         }
-        if(!attempt_play_slow(&b, m, true))
+        if(!attempt_play_slow(&b, true, m))
         {
             char * buf = alloc();
             snprintf(buf, MAX_PAGE_SIZ, "malformed line: %s", src);

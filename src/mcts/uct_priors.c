@@ -93,18 +93,6 @@ static void stats_add_play(
     stats->plays[idx].color_owning = 0.5;
 }
 
-
-
-
-
-
-
-
-
-
-
-
-// TODO move this
 static bool lib2_self_atari(
     cfg_board * cb,
     bool is_black,
@@ -112,7 +100,7 @@ static bool lib2_self_atari(
 ){
     cfg_board tmp;
     cfg_board_clone(&tmp, cb);
-    just_play(&tmp, m, is_black);
+    just_play(&tmp, is_black, m);
 
     bool ret = is_board_move(can_be_killed(&tmp, tmp.g[m]));
     cfg_board_free(&tmp);
@@ -129,8 +117,8 @@ Also marks playable positions, excluding playing in own eyes and ko violations,
 with at least one visit.
 */
 void init_new_state(
-    cfg_board * cb,
     tt_stats * stats,
+    cfg_board * cb,
     bool is_black,
     const bool branch_limit[TOTAL_BOARD_SIZ]
 ){
@@ -211,7 +199,7 @@ void init_new_state(
             continue;
 
         move captures;
-        u8 libs = libs_after_play(cb, m, is_black, &captures);
+        u8 libs = libs_after_play(cb, is_black, m, &captures);
 
         /*
         Don't play suicides

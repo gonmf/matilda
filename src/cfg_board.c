@@ -100,8 +100,8 @@ static void delloc_group(
 
 static void pos_set_occupied(
     cfg_board * cb,
-    move m,
-    bool is_black
+    bool is_black,
+    move m
 ){
     assert(neighbors_side[m].count < 5);
     assert(neighbors_diag[m].count < 5);
@@ -299,8 +299,8 @@ Doesn't capture anything.
 */
 static void add_stone(
     cfg_board * cb,
-    move m,
-    bool is_black
+    bool is_black,
+    move m
 ){
     /* Create new stone group */
     assert(cb->g[m] == NULL);
@@ -319,7 +319,7 @@ static void add_stone(
     cb->unique_groups_count++;
 
     /* Update neighbor stone counts */
-    pos_set_occupied(cb, m, is_black);
+    pos_set_occupied(cb, is_black, m);
 
     if(cb->black_neighbors4[m] + cb->white_neighbors4[m] == 0)
     {
@@ -492,7 +492,7 @@ void cfg_from_board(
             dst->empty.coord[dst->empty.count] = m;
             dst->empty.count++;
         }else
-            add_stone(dst, m, src->p[m] == BLACK_STONE);
+            add_stone(dst, src->p[m] == BLACK_STONE, m);
 
     assert(cfg_board_are_equal(dst, src));
     assert(verify_cfg_board(dst));
@@ -675,93 +675,8 @@ accordingly.
 */
 void just_play(
     cfg_board * cb,
-    move m,
-    bool is_black
-){
-    assert(verify_cfg_board(cb));
-    assert(is_board_move(m));
-    assert(cb->p[m] == EMPTY);
-    assert(cb->g[m] == NULL);
-
-    u8 own = is_black ? BLACK_STONE : WHITE_STONE;
-
-    move captures = 0;
-    move one_stone_captured = NONE;
-    group * n;
-
-    cb->p[m] = own;
-    add_stone(cb, m, is_black);
-
-    u8 n8 = is_black ? cb->white_neighbors4[m] : cb->black_neighbors4[m];
-    if(n8 > 0)
-    {
-        if(!border_left[m])
-        {
-            n = cb->g[m + LEFT];
-            if(n != NULL && n->is_black != is_black && n->liberties == 0)
-            {
-                captures += n->stones.count;
-                cfg_board_kill_group(cb, n, own);
-                one_stone_captured = m + LEFT;
-            }
-        }
-        if(!border_right[m])
-        {
-            n = cb->g[m + RIGHT];
-            if(n != NULL && n->is_black != is_black && n->liberties == 0)
-            {
-                captures += n->stones.count;
-                cfg_board_kill_group(cb, n, own);
-                one_stone_captured = m + RIGHT;
-            }
-        }
-        if(!border_top[m])
-        {
-            n = cb->g[m + TOP];
-            if(n != NULL && n->is_black != is_black && n->liberties == 0)
-            {
-                captures += n->stones.count;
-                cfg_board_kill_group(cb, n, own);
-                one_stone_captured = m + TOP;
-            }
-        }
-        if(!border_bottom[m])
-        {
-            n = cb->g[m + BOTTOM];
-            if(n != NULL && n->is_black != is_black && n->liberties == 0)
-            {
-                captures += n->stones.count;
-                cfg_board_kill_group(cb, n, own);
-                one_stone_captured = m + BOTTOM;
-            }
-        }
-    }
-
-    if(captures == 1)
-        cb->last_eaten = one_stone_captured;
-    else
-        cb->last_eaten = NONE;
-    cb->last_played = m;
-
-    /* Remove position from list of empty intersections */
-    for(move k = 0; k < cb->empty.count; ++k)
-        if(cb->empty.coord[k] == m)
-        {
-            cb->empty.count--;
-            cb->empty.coord[k] = cb->empty.coord[cb->empty.count];
-            break;
-        }
-}
-
-/*
-Assume play is legal and update the structure, capturing accordingly.
-Also updates a stone difference.
-*/
-void just_play1(
-    cfg_board * cb,
-    move m,
     bool is_black,
-    d16 * stone_difference
+    move m
 ){
     assert(verify_cfg_board(cb));
     assert(is_board_move(m));
@@ -775,7 +690,7 @@ void just_play1(
     group * n;
 
     cb->p[m] = own;
-    add_stone(cb, m, is_black);
+    add_stone(cb, is_black, m);
 
     u8 n8 = is_black ? cb->white_neighbors4[m] : cb->black_neighbors4[m];
     if(n8 > 0)
@@ -827,9 +742,6 @@ void just_play1(
     else
         cb->last_eaten = NONE;
     cb->last_played = m;
-
-    d16 stone_diff = 1 + captures;
-    *stone_difference += is_black ? stone_diff : -stone_diff;
 
     /* Remove position from list of empty intersections */
     for(move k = 0; k < cb->empty.count; ++k)
@@ -848,8 +760,8 @@ Also updates a Zobrist hash value.
 */
 void just_play2(
     cfg_board * cb,
-    move m,
     bool is_black,
+    move m,
     u64 * zobrist_hash
 ){
     assert(verify_cfg_board(cb));
@@ -864,7 +776,7 @@ void just_play2(
     group * n;
 
     cb->p[m] = own;
-    add_stone(cb, m, is_black);
+    add_stone(cb, is_black, m);
     zobrist_update_hash(zobrist_hash, m, own);
 
     u8 n8 = is_black ? cb->white_neighbors4[m] : cb->black_neighbors4[m];
@@ -936,8 +848,8 @@ bitmap.
 */
 void just_play3(
     cfg_board * cb,
-    move m,
     bool is_black,
+    move m,
     d16 * stone_difference,
     bool stones_removed[TOTAL_BOARD_SIZ],
     u8 rem_nei_libs[LIB_BITMAP_SIZ]
@@ -954,7 +866,7 @@ void just_play3(
     group * n;
 
     cb->p[m] = own;
-    add_stone(cb, m, is_black);
+    add_stone(cb, is_black, m);
 
     u8 n8 = is_black ? cb->white_neighbors4[m] : cb->black_neighbors4[m];
     if(n8 > 0)
@@ -1112,8 +1024,8 @@ RETURNS number of liberties after play
 */
 u8 libs_after_play(
     cfg_board * cb,
-    move m,
     bool is_black,
+    move m,
     move * caps
 ){
     assert(verify_cfg_board(cb));
@@ -1334,10 +1246,10 @@ Calculates if playing at the designated position is legal and safe.
 Also returns whether it would return in a capture.
 RETURNS 0 for illegal, 1 for placed in atari, 2 for safe to play
 */
-u8 safe_to_play(
+u8 safe_to_play2(
     cfg_board * cb,
-    move m,
     bool is_black,
+    move m,
     bool * caps
 ){
     assert(verify_cfg_board(cb));
@@ -1524,10 +1436,10 @@ u8 safe_to_play(
 Calculates if playing at the designated position is legal and safe.
 RETURNS 0 for illegal, 1 for placed in atari, 2 for safe to play
 */
-u8 safe_to_play2(
+u8 safe_to_play(
     cfg_board * cb,
-    move m,
-    bool is_black
+    bool is_black,
+    move m
 ){
     assert(verify_cfg_board(cb));
     assert(cb->p[m] == EMPTY);
@@ -1707,8 +1619,8 @@ RETURNS true if any opponent stone is captured
 */
 bool caps_after_play(
     const cfg_board * cb,
-    move m,
-    bool is_black
+    bool is_black,
+    move m
 ){
     assert(verify_cfg_board(cb));
     assert(cb->p[m] == EMPTY);
@@ -1744,8 +1656,8 @@ RETURNS true if play is valid (validating ko rule)
 */
 bool can_play(
     const cfg_board * cb,
-    move m,
-    bool is_black
+    bool is_black,
+    move m
 ){
     assert(verify_cfg_board(cb));
     if(cb->p[m] != EMPTY)
@@ -1841,8 +1753,8 @@ RETURNS true if play is valid (ignoring ko rule)
 */
 bool can_play_ignoring_ko(
     const cfg_board * cb,
-    move m,
-    bool is_black
+    bool is_black,
+    move m
 ){
     assert(verify_cfg_board(cb));
     if(cb->p[m] != EMPTY)

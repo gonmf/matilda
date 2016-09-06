@@ -211,5 +211,4 @@ void fprint_board(
     const board * b
 );
 
-
 #endif

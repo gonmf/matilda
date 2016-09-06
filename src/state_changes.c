@@ -109,15 +109,15 @@ RETURNS liberties after playing regardless if play is legal
 */
 u8 libs_after_play_slow(
     const board * b,
-    move m,
     bool is_black,
+    move m,
     u16 * caps
 ){
     assert(b->p[m] == EMPTY);
     /* First play and capture whats needs capturing */
     board tmp;
     memcpy(&tmp, b, sizeof(board));
-    bool cp = attempt_play_slow(&tmp, m, is_black);
+    bool cp = attempt_play_slow(&tmp, is_black, m);
     if(!cp)
     {
         *caps = 0;
@@ -311,8 +311,8 @@ Plays ignoring if it is legal.
 */
 void just_play_slow(
     board * b,
-    move m,
-    bool is_black
+    bool is_black,
+    move m
 ){
     assert(is_board_move(m));
     assert(b->p[m] == EMPTY);
@@ -373,8 +373,8 @@ RETURNS updated Zobrist hash
 */
 u64 just_play_slow_and_get_hash(
     board * b,
-    move m,
     bool is_black,
+    move m,
     u64 zobrist_hash
 ){
     assert(is_board_move(m));
@@ -439,8 +439,8 @@ RETURNS true if play was successful
 */
 bool attempt_play_slow(
     board * b,
-    move m,
-    bool is_black
+    bool is_black,
+    move m
 ){
     assert(is_board_move(m));
     if(b->p[m] != EMPTY)
@@ -512,8 +512,8 @@ RETURNS true if play is apparently legal
 */
 bool can_play_slow(
     board * b,
-    move m,
-    bool is_black
+    bool is_black,
+    move m
 ){
     assert(is_board_move(m));
     if(b->p[m] != EMPTY)

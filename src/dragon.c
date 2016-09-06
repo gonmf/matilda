@@ -109,7 +109,7 @@ void estimate_eyes(
         /*
         Eye shapes
         */
-        if(is_eye(cb, m, is_black))
+        if(is_eye(cb, is_black, m))
         {
             group * g = border_left[m] ? cb->g[m + RIGHT] : cb->g[m + LEFT];
             dragon_head(g)->eyes++;
@@ -118,7 +118,7 @@ void estimate_eyes(
             continue;
         }
 
-        if(is_eye(cb, m, !is_black))
+        if(is_eye(cb, !is_black, m))
         {
             group * g = border_left[m] ? cb->g[m + RIGHT] : cb->g[m + LEFT];
             dragon_head(g)->eyes++;
@@ -128,7 +128,7 @@ void estimate_eyes(
         /*
         2-point eye shapes
         */
-        if(is_2pt_eye(cb, m, is_black, &can_have_forcing_move))
+        if(is_2pt_eye(cb, is_black, m, &can_have_forcing_move))
         {
             group * g = get_closest_group(cb, m);
             dragon_head(g)->eyes++;
@@ -140,7 +140,7 @@ void estimate_eyes(
             continue;
         }
 
-        if(is_2pt_eye(cb, m, !is_black, &can_have_forcing_move))
+        if(is_2pt_eye(cb, !is_black, m, &can_have_forcing_move))
         {
             group * g = get_closest_group(cb, m);
             dragon_head(g)->eyes++;
@@ -154,7 +154,7 @@ void estimate_eyes(
         Don't play in own and opponent big fours
         One of the plays is allowed to be used as a forcing move.
         */
-        if(is_4pt_eye(cb, m, is_black, &can_have_forcing_move))
+        if(is_4pt_eye(cb, is_black, m, &can_have_forcing_move))
         {
             group * gs[4];
             u8 gsc = 0;
@@ -189,7 +189,7 @@ void estimate_eyes(
             }
             continue;
         }
-        if(is_4pt_eye(cb, m, !is_black, &can_have_forcing_move))
+        if(is_4pt_eye(cb, !is_black, m, &can_have_forcing_move))
         {
             group * gs[4];
             u8 gsc = 0;
@@ -253,7 +253,7 @@ void estimate_eyes(
             continue;
         }
 
-        if(is_corner_liberty(cb, m, true) || is_corner_liberty(cb, m, false))
+        if(is_corner_liberty(cb, true, m) || is_corner_liberty(cb, false, m))
             play_okay[m] = false;
 
         /*
@@ -310,7 +310,7 @@ void estimate_eyes(
         if(!viable[m] || !play_okay[m])
             continue;
 
-        if(sheltered_liberty(cb, m) && !is_eye(cb, m, !is_black))
+        if(sheltered_liberty(cb, m) && !is_eye(cb, !is_black, m))
         {
             group * gs[4];
             u8 fn = 0;

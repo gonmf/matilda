@@ -30,8 +30,8 @@ move random_play(
     {
         move m = cb->empty.coord[k];
 
-        if(!is_eye(cb, m, is_black) && !ko_violation(cb, m) &&
-            safe_to_play(cb, m, is_black, &_ignored) > 0)
+        if(!is_eye(cb, is_black, m) && !ko_violation(cb, m) &&
+            safe_to_play2(cb, is_black, m, &_ignored) > 0)
         {
             playable[playable_count] = m;
             ++playable_count;

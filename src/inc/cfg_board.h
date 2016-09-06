@@ -116,19 +116,8 @@ accordingly.
 */
 void just_play(
     cfg_board * cb,
-    move m,
-    bool is_black
-);
-
-/*
-Assume play is legal and update the structure, capturing accordingly.
-Also updates a stone difference.
-*/
-void just_play1(
-    cfg_board * cb,
-    move m,
     bool is_black,
-    d16 * stone_difference
+    move m
 );
 
 /*
@@ -138,8 +127,8 @@ Also updates a Zobrist hash value.
 */
 void just_play2(
     cfg_board * cb,
-    move m,
     bool is_black,
+    move m,
     u64 * zobrist_hash
 );
 
@@ -151,8 +140,8 @@ bitmap.
 */
 void just_play3(
     cfg_board * cb,
-    move m,
     bool is_black,
+    move m,
     d16 * stone_difference,
     bool stones_removed[TOTAL_BOARD_SIZ],
     u8 rem_nei_libs[LIB_BITMAP_SIZ]
@@ -182,9 +171,19 @@ RETURNS number of liberties after play
 */
 u8 libs_after_play(
     cfg_board * cb,
-    move m,
     bool is_black,
+    move m,
     move * caps
+);
+
+/*
+Calculates if playing at the designated position is legal and safe.
+RETURNS 0 for illegal, 1 for placed in atari, 2 for safe to play
+*/
+u8 safe_to_play(
+    cfg_board * cb,
+    bool is_black,
+    move m
 );
 
 /*
@@ -192,21 +191,11 @@ Calculates if playing at the designated position is legal and safe.
 Also returns whether it would return in a capture.
 RETURNS 0 for illegal, 1 for placed in atari, 2 for safe to play
 */
-u8 safe_to_play(
-    cfg_board * cb,
-    move m,
-    bool is_black,
-    bool * caps
-);
-
-/*
-Calculates if playing at the designated position is legal and safe.
-RETURNS 0 for illegal, 1 for placed in atari, 2 for safe to play
-*/
 u8 safe_to_play2(
     cfg_board * cb,
+    bool is_black,
     move m,
-    bool is_black
+    bool * caps
 );
 
 /*
@@ -215,8 +204,8 @@ RETURNS true if any opponent stone is captured
 */
 bool caps_after_play(
     const cfg_board * cb,
-    move m,
-    bool is_black
+    bool is_black,
+    move m
 );
 
 /*
@@ -224,8 +213,8 @@ RETURNS true if play is valid (validating ko rule)
 */
 bool can_play(
     const cfg_board * cb,
-    move m,
-    bool is_black
+    bool is_black,
+    move m
 );
 
 /*
@@ -233,8 +222,8 @@ RETURNS true if play is valid (ignoring ko rule)
 */
 bool can_play_ignoring_ko(
     const cfg_board * cb,
-    move m,
-    bool is_black
+    bool is_black,
+    move m
 );
 
 /*

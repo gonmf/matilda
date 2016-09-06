@@ -64,8 +64,8 @@ static void test_cfg_board()
             cfg_from_board(&sb2, &b);
             cfg_board_clone(&sb3, &sb2);
 
-            bool can_play1 = attempt_play_slow(&b, m, is_black);
-            bool can_play2 = can_play(&cb, m, is_black);
+            bool can_play1 = attempt_play_slow(&b, is_black, m);
+            bool can_play2 = can_play(&cb, is_black, m);
             if(can_play1 != can_play2)
             {
                 fprintf(stderr, "play legality disagreement at %u (s=%u cfg=%u)\
@@ -81,29 +81,18 @@ static void test_cfg_board()
                 continue;
             }
 
-            d16 stone_diff = 0;
-            just_play1(&cb, m, is_black, &stone_diff);
+            just_play(&cb, is_black, m);
             massert(cfg_board_are_equal(&cb, &b), "just_play");
 
-            just_play(&sb2, m, is_black);
-            massert(cfg_board_are_equal(&sb2, &b), "just_play2");
             bool stones_cap[TOTAL_BOARD_SIZ];
             memset(stones_cap, 0, TOTAL_BOARD_SIZ);
             u8 tmp4[LIB_BITMAP_SIZ];
             d16 stone_diff2 = 0;
-            just_play3(&sb3, m, is_black, &stone_diff2, stones_cap, tmp4);
+            just_play3(&sb3, is_black, m, &stone_diff2, stones_cap, tmp4);
             massert(cfg_board_are_equal(&sb3, &b), "just_play3");
 
             cfg_board_free(&sb2);
             cfg_board_free(&sb3);
-
-            u16 stones_captured4 = 0;
-            for(move k = 0; k < TOTAL_BOARD_SIZ; ++k)
-                if(stones_cap[k])
-                    ++stones_captured4;
-            massert(stone_diff == stone_diff2, "stone_diff1/2");
-            massert(abs(stone_diff) - 1 == stones_captured4, "stone_diff/captur\
-ed4");
 
             /*
             Test liberty counts for both players
@@ -111,14 +100,14 @@ ed4");
             for(move m = 0; m < TOTAL_BOARD_SIZ; ++m)
                 if(b.p[m] == EMPTY && m != b.last_eaten){
                     u16 stones_captured1;
-                    u8 l1 = libs_after_play_slow(&b, m, is_black,
+                    u8 l1 = libs_after_play_slow(&b, is_black, m,
                         &stones_captured1);
                     move stones_captured2;
-                    u8 l2 = libs_after_play(&cb, m, is_black,
+                    u8 l2 = libs_after_play(&cb, is_black, m,
                         &stones_captured2);
                     bool stones_captured3;
-                    u8 l3 = safe_to_play(&cb, m, is_black, &stones_captured3);
-                    u8 l4 = safe_to_play2(&cb, m, is_black);
+                    u8 l3 = safe_to_play2(&cb, is_black, m, &stones_captured3);
+                    u8 l4 = safe_to_play(&cb, is_black, m);
                     if(l1 != l2 || (l1 >= 2 && l3 != 2) || (l1 < 2 && l1 != l3))
                     {
                         char s[8];
@@ -145,14 +134,14 @@ ed4");
                 if(b.p[m] == EMPTY && m != b.last_eaten)
                 {
                     u16 stones_captured1;
-                    u8 l1 = libs_after_play_slow(&b, m, is_black,
+                    u8 l1 = libs_after_play_slow(&b, is_black, m,
                         &stones_captured1);
                     move stones_captured2;
-                    u8 l2 = libs_after_play(&cb, m, is_black,
+                    u8 l2 = libs_after_play(&cb, is_black, m,
                         &stones_captured2);
                     bool stones_captured3;
-                    u8 l3 = safe_to_play(&cb, m, is_black, &stones_captured3);
-                    u8 l4 = safe_to_play2(&cb, m, is_black);
+                    u8 l3 = safe_to_play2(&cb, is_black, m, &stones_captured3);
+                    u8 l4 = safe_to_play(&cb, is_black, m);
                     if(l1 != l2 || (l1 >= 2 && l3 != 2) || (l1 < 2 && l1 != l3))
                     {
                         char s[8];
@@ -181,19 +170,19 @@ ed4");
     u16 ignored;
     board l;
     clear_board(&l);
-    attempt_play_slow(&l, coord_to_move(1, 0), true);
-    attempt_play_slow(&l, coord_to_move(1, 1), true);
-    u8 l1 = libs_after_play_slow(&l, coord_to_move(0, 0), false, &ignored);
+    attempt_play_slow(&l, true, coord_to_move(1, 0));
+    attempt_play_slow(&l, true, coord_to_move(1, 1));
+    u8 l1 = libs_after_play_slow(&l, false, coord_to_move(0, 0), &ignored);
     massert(l1 == 1, "libs_after_play_slow error");
 
     move ignored1;
     cfg_board sl;
     cfg_from_board(&sl, &l);
-    l1 = libs_after_play(&sl, coord_to_move(0, 0), false, &ignored1);
+    l1 = libs_after_play(&sl, false, coord_to_move(0, 0), &ignored1);
     massert(l1 == 1, "libs_after_play");
     bool ignored2;
-    l1 = safe_to_play(&sl, coord_to_move(0, 0), false, &ignored2);
-    massert(l1 == 1, "safe_to_play");
+    l1 = safe_to_play2(&sl, false, coord_to_move(0, 0), &ignored2);
+    massert(l1 == 1, "safe_to_play2");
     cfg_board_free(&sl);
 
     fprintf(stderr, " passed\n");
@@ -220,8 +209,8 @@ static void test_pattern(){
         {
             move pl = rand_u16(TOTAL_BOARD_SIZ);
 
-            if(can_play(&cb, pl, is_black))
-                just_play(&cb, pl, is_black);
+            if(can_play(&cb, is_black, pl))
+                just_play(&cb, is_black, pl);
             else
                 just_pass(&cb);
 
@@ -270,7 +259,6 @@ static void test_ladders()
 
     /* This is not a ladder, just a stone in atari */
     cfg_from_board(&cb, &b);
-    massert(!is_ladder(&cb, coord_to_move(1, 2), false), "ladder1");
     massert(can_be_killed(&cb, cb.g[coord_to_move(1, 1)]) ==
         coord_to_move(1, 2), "can_be_killed1");
     massert(can_be_saved(&cb, cb.g[coord_to_move(1, 1)]) == coord_to_move(1, 2),
@@ -281,7 +269,6 @@ static void test_ladders()
 
     /* Now it's a ladder */
     cfg_from_board(&cb, &b);
-    massert(is_ladder(&cb, coord_to_move(1, 2), false), "ladder2");
     massert(can_be_killed(&cb, cb.g[coord_to_move(1, 1)]) ==
         coord_to_move(1, 2), "can_be_killed2");
     massert(can_be_saved(&cb, cb.g[coord_to_move(1, 1)]) == NONE,
@@ -291,7 +278,6 @@ static void test_ladders()
     b.p[coord_to_move(6, 5)] = BLACK_STONE;
     /* Still a ladder */
     cfg_from_board(&cb, &b);
-    massert(is_ladder(&cb, coord_to_move(1, 2), false), "ladder3");
     massert(can_be_killed(&cb, cb.g[coord_to_move(1, 1)]) ==
         coord_to_move(1, 2), "can_be_killed3");
     massert(can_be_saved(&cb, cb.g[coord_to_move(1, 1)]) == NONE,
@@ -301,7 +287,6 @@ static void test_ladders()
     b.p[coord_to_move(6, 5)] = WHITE_STONE;
     /* No longer a ladder because white can connect */
     cfg_from_board(&cb, &b);
-    massert(!is_ladder(&cb, coord_to_move(1, 2), false), "ladder4");
     massert(can_be_killed(&cb, cb.g[coord_to_move(1, 1)]) ==
         coord_to_move(1, 2), "can_be_killed4");
     massert(can_be_saved(&cb, cb.g[coord_to_move(1, 1)]) == coord_to_move(1, 2),
@@ -329,7 +314,6 @@ static void test_ladders()
     b.p[coord_to_move(2, 4)] = BLACK_STONE;
 
     cfg_from_board(&cb, &b);
-    massert(!is_ladder(&cb, coord_to_move(3, 4), false), "ladder5");
     massert(can_be_killed(&cb, cb.g[coord_to_move(3, 3)]) ==
         coord_to_move(3, 4), "can_be_killed5");
     massert(can_be_saved(&cb, cb.g[coord_to_move(3, 3)]) == coord_to_move(3, 4),
@@ -343,7 +327,6 @@ static void test_ladders()
     */
 
     cfg_from_board(&cb, &b);
-    massert(is_ladder(&cb, coord_to_move(3, 4), false), "ladder6");
     massert(can_be_killed(&cb, cb.g[coord_to_move(3, 3)]) ==
         coord_to_move(3, 4), "can_be_killed6");
     massert(can_be_saved(&cb, cb.g[coord_to_move(3, 3)]) == NONE,
@@ -400,7 +383,7 @@ static void test_board()
         bool is_black = true;
         for(u16 i = 0; i <= TOTAL_BOARD_SIZ / 2; ++i){
             move m = rand_u16(TOTAL_BOARD_SIZ);
-            if(attempt_play_slow(&b, m, is_black))
+            if(attempt_play_slow(&b, is_black, m))
                 is_black = !is_black;
         }
 
@@ -425,7 +408,7 @@ static void test_board()
         move m = random_play2(&b, true); /* always as black */
 
         massert(b.p[m] == EMPTY, "busy intersection\n");
-        just_play_slow(&b, m, true);
+        just_play_slow(&b, true, m);
         reduction = reduce_auto(&b, true);
         /* b is now with one more play and reduced again */
 
@@ -433,7 +416,7 @@ static void test_board()
         m = reduce_move(m, reduction);
 
         massert(b2.p[m] == EMPTY, "busy intersection\n");
-        just_play_slow(&b2, m, true);
+        just_play_slow(&b2, true, m);
         massert(board_are_equal(&b, &b2), "play reduction");
     }
     fprintf(stderr, " passed\n");
@@ -586,10 +569,10 @@ static void test_zobrist_hashing()
     zobrist_init();
     board b;
     clear_board(&b);
-    just_play_slow(&b, coord_to_move(1, 2), true);
-    just_play_slow(&b, coord_to_move(2, 2), false);
-    just_play_slow(&b, coord_to_move(2, 3), true);
-    just_play_slow(&b, coord_to_move(2, 4), false);
+    just_play_slow(&b,  true, coord_to_move(1, 2));
+    just_play_slow(&b, false, coord_to_move(2, 2));
+    just_play_slow(&b,  true, coord_to_move(2, 3));
+    just_play_slow(&b, false, coord_to_move(2, 4));
 
     u64 hash1 = zobrist_new_hash(&b);
     u64 hash2 = hash1;
@@ -597,7 +580,7 @@ static void test_zobrist_hashing()
     move m = random_play2(&b, true);
 
     zobrist_update_hash(&hash2, m, BLACK_STONE);
-    hash1 = just_play_slow_and_get_hash(&b, m, true, hash1);
+    hash1 = just_play_slow_and_get_hash(&b, true, m, hash1);
     u64 hash3 = zobrist_new_hash(&b);
 
     massert(hash1 == hash2, "hash mismatch 1");

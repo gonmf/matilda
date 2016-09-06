@@ -20,8 +20,8 @@ RETURNS liberties after playing regardless if play is legal
 */
 u8 libs_after_play_slow(
     const board * b,
-    move m,
     bool is_black,
+    move m,
     u16 * caps
 );
 
@@ -57,8 +57,8 @@ Plays ignoring if it is legal.
 */
 void just_play_slow(
     board * b,
-    move m,
-    bool is_black
+    bool is_black,
+    move m
 );
 
 /*
@@ -68,8 +68,8 @@ RETURNS updated Zobrist hash
 */
 u64 just_play_slow_and_get_hash(
     board * b,
-    move m,
     bool is_black,
+    move m,
     u64 zobrist_hash
 );
 
@@ -80,8 +80,8 @@ RETURNS true if play was successful
 */
 bool attempt_play_slow(
     board * b,
-    move m,
-    bool is_black
+    bool is_black,
+    move m
 );
 
 /*
@@ -91,8 +91,8 @@ RETURNS true if play is apparently legal
 */
 bool can_play_slow(
     board * b,
-    move m,
-    bool is_black
+    bool is_black,
+    move m
 );
 
 

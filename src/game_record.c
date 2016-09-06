@@ -32,7 +32,7 @@ static void apply_handicap_stones(
     const game_record * gr
 ){
     for(u16 i = 0; i < gr->handicap_stones.count; ++i)
-        just_play_slow(b, gr->handicap_stones.coord[i], true);
+        just_play_slow(b, true, gr->handicap_stones.coord[i]);
 }
 
 /*
@@ -165,7 +165,7 @@ bool superko_violation(
     /*
     State after playing
     */
-    just_play_slow(&current_state, m, is_black);
+    just_play_slow(&current_state, is_black, m);
 
     bool is_b = first_player_color(gr);
     for(u16 i = 0; i < gr->turns; ++i)
@@ -174,7 +174,7 @@ bool superko_violation(
             return true;
 
         if(is_board_move(gr->moves[i]))
-            just_play_slow(&tmp, gr->moves[i], is_b);
+            just_play_slow(&tmp, is_b, gr->moves[i]);
         else
             pass(&tmp);
         is_b = !is_b;
@@ -190,8 +190,8 @@ RETURNS true if play is legal
 */
 bool play_is_legal(
     const game_record * gr,
-    move m,
-    bool is_black
+    bool is_black,
+    move m
 ){
     if(m == PASS)
         return true;
@@ -200,7 +200,7 @@ bool play_is_legal(
 
     board tmp;
     current_game_state(&tmp, gr);
-    if(!can_play_slow(&tmp, m, is_black))
+    if(!can_play_slow(&tmp, is_black, m))
         return false;
 
     if(gr->turns > 0 && superko_violation(gr, is_black, m))
@@ -329,7 +329,7 @@ bool undo_last_play(
     for(u16 i = 0; i < gr->turns; ++i)
     {
         if(is_board_move(gr->moves[i]))
-            just_play_slow(&tmp, gr->moves[i], is_black);
+            just_play_slow(&tmp, is_black, gr->moves[i]);
         else
             pass(&tmp);
         is_black = !is_black;
@@ -375,7 +375,7 @@ void current_game_state(
     for(u16 i = 0; i < src->turns; ++i)
     {
         if(is_board_move(src->moves[i]))
-            just_play_slow(dst, src->moves[i], is_black);
+            just_play_slow(dst, is_black, src->moves[i]);
         else
             pass(dst);
         is_black = !is_black;

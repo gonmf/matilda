@@ -171,7 +171,7 @@ d16 sgf_to_boards(
                         u8 i2 = token[3] - 'a';
                         move m = coord_to_move(i1, i2);
                         plays[play] = m;
-                        if(!attempt_play_slow(&b, m, is_black))
+                        if(!attempt_play_slow(&b, is_black, m))
                         {
                             flog_warn("gtp","file contains illegal plays");
                             return -1;

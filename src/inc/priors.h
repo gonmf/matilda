@@ -80,8 +80,8 @@ Initializes a game state structure with prior values and AMAF/LGRF/Criticality
 information.
 */
 void init_new_state(
-    cfg_board * cb,
     tt_stats * stats,
+    cfg_board * cb,
     bool is_black,
     const bool branch_limit[TOTAL_BOARD_SIZ]
 );

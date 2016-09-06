@@ -93,8 +93,8 @@ RETURNS true if play is legal
 */
 bool play_is_legal(
     const game_record * gr,
-    move m,
-    bool is_black
+    bool is_black,
+    move m
 );
 
 /*

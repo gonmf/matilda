@@ -116,34 +116,34 @@ d16 score_stones_and_eyes2(
                 r -= 2;
                 break;
             case EMPTY:
-                if(is_4pt_eye(cb, m, true, &_ignored))
+                if(is_4pt_eye(cb, true, m, &_ignored))
                 {
                     r += 8;
                     ++m;
                     break;
                 }
-                if(is_4pt_eye(cb, m, false, &_ignored))
+                if(is_4pt_eye(cb, false, m, &_ignored))
                 {
                     r -= 8;
                     ++m;
                     break;
                 }
-                if(is_2pt_eye(cb, m, true, &_ignored))
+                if(is_2pt_eye(cb, true, m, &_ignored))
                 {
                     r += 4;
                     break;
                 }
-                if(is_2pt_eye(cb, m, false, &_ignored))
+                if(is_2pt_eye(cb, false, m, &_ignored))
                 {
                     r -= 4;
                     break;
                 }
-                if(is_eye(cb, m, true))
+                if(is_eye(cb, true, m))
                 {
                     r += 2;
                     break;
                 }
-                if(is_eye(cb, m, false))
+                if(is_eye(cb, false, m))
                 {
                     r -= 2;
                     break;

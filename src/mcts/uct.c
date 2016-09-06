@@ -178,7 +178,7 @@ static d16 mcts_expansion(
 ){
     stats->expansion_delay--;
     if(stats->expansion_delay == -1)
-        init_new_state(cb, stats, is_black, branch_limit);
+        init_new_state(stats, cb, is_black, branch_limit);
     omp_unset_lock(&stats->lock);
     d16 outcome = playout_heavy_amaf(cb, is_black, traversed);
 
@@ -274,7 +274,7 @@ static d16 mcts_selection(
             if(enable_branch_limit)
                 update_branch_limit(branch_limit, play->m);
 #endif
-            just_play2(cb, play->m, is_black, &zobrist_hash);
+            just_play2(cb, is_black, play->m, &zobrist_hash);
         }
 
         plays[depth] = play;
@@ -399,7 +399,7 @@ bool mcts_start(
     if(stats->expansion_delay != -1)
     {
         stats->expansion_delay = -1;
-        init_new_state(&initial_cfg_board, stats, is_black, start_branch_limit);
+        init_new_state(stats, &initial_cfg_board, is_black, start_branch_limit);
     }
 
     memset(max_depths, 0, sizeof(u16) * MAXIMUM_NUM_THREADS);

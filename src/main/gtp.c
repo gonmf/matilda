@@ -336,7 +336,7 @@ static void gtp_review_game(
             idx += snprintf(buf + idx, 4 * 1024 - idx, " Best: pass\n");
         release(s);
         opt_turn_maintenance(&b, is_black);
-        just_play_slow(&b, actual, is_black);
+        just_play_slow(&b, is_black, actual);
         is_black = !is_black;
     }
 
@@ -494,7 +494,7 @@ static void gtp_play(
         return;
     }
 
-    if(!play_is_legal(&current_game, m, is_black))
+    if(!play_is_legal(&current_game, is_black, m))
     {
         error_msg(fp, id, "illegal move");
         return;

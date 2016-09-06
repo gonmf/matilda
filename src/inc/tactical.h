@@ -31,8 +31,8 @@ RETURNS true if coordinate is that of an eye
 */
 bool is_eye(
     const cfg_board * cb,
-    move m,
-    bool is_black
+    bool is_black,
+    move m
 );
 
 /*
@@ -45,8 +45,8 @@ RETURNS true if eye space is a 2-point eye
 */
 bool is_2pt_eye(
     const cfg_board * cb,
-    move m,
     bool is_black,
+    move m,
     bool * can_have_forcing_move
 );
 
@@ -60,8 +60,8 @@ RETURNS true if eye space is a 4-point eye
 */
 bool is_4pt_eye(
     const cfg_board * cb,
-    move m,
     bool is_black,
+    move m,
     bool * can_have_forcing_move
 );
 
@@ -85,8 +85,8 @@ RETURNS true if m is corner liberty
 */
 bool is_corner_liberty(
     const cfg_board * cb,
-    move m,
-    bool is_black
+    bool is_black,
+    move m
 );
 
 /*
@@ -182,39 +182,6 @@ void mark_near_pos(
     const cfg_board * cb,
     move m
 );
-
-
-/*
-Tests if the intersection m is the only liberty of a group of color is_black and
-that group qualifies as being a ladder.
-Warning: assumes playing m makes two and only two liberties.
-
-Not all types of ladders are detected.
-
-It applies to simple ladders like (O = part of group in atari that
-can't survive by capturing; X = opponent; 1 is Os liberty)
-. . . . . . . . |
-. . . . O . . . |
-. . . X 1 3 4 . |
-. . . . 2 6 8 9 |
-. . . . . 7 0 2 |
-. . . . . . 1 . |
-. . . . . . . . |
-
-Does not consider ladders like:
-. . . . . .
-. b b b b .
-. b w w b .
-. b w ! . .
-. b b . . .
-. . . . . .
-*/
-bool is_ladder(
-    const cfg_board * cb,
-    move m,
-    bool is_black
-);
-
 
 /*
 Tests whether group g can be attacked and eventually killed by its opponent,

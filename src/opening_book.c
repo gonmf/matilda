@@ -82,7 +82,7 @@ static bool process_opening_book_line(
         move m = coord_parse_alpha_num(tokens[t]);
         if(!is_board_move(m))
             return false;
-        if(!attempt_play_slow(&b, m, is_black))
+        if(!attempt_play_slow(&b, is_black, m))
             return false;
 
         is_black = !is_black;

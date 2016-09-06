@@ -195,7 +195,7 @@ t: %u)\n", ob_depth);
             board b2;
             memcpy(&b2, &b, sizeof(board));
 
-            if(!attempt_play_slow(&b, plays[k], is_black))
+            if(!attempt_play_slow(&b, is_black, plays[k]))
             {
                 fprintf(stderr, "\rerror: file contains illegal plays\n");
                 exit(EXIT_FAILURE);
