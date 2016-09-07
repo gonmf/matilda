@@ -58,6 +58,7 @@ extern u16 pl_skip_saving;
 extern u16 pl_skip_nakade;
 extern u16 pl_skip_pattern;
 extern u16 pl_skip_capture;
+extern u16 pl_ban_self_atari;
 extern d16 komi;
 
 static void open_log_file();
@@ -291,6 +292,9 @@ void build_info(
     if(pl_skip_nakade)
         idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx,
             "  Chance of skipping nakade: %u/128\n", pl_skip_nakade);
+    if(pl_ban_self_atari)
+        idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx,
+            "  Chance of prohibiting self-atari: %u/128\n", pl_ban_self_atari);
     idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx,
         "  Use pattern weights: %s\n", YN(USE_PATTERN_WEIGHTS));
     idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx,

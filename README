@@ -14,7 +14,7 @@ Before using read the INSTALL file carefully, and at least modify the file
 src/inc/matilda.h to your taste.
 
 System Requirements
-   Linux or other BSD and POSIX compliant system, like Mac OSX
+   Linux, BSD, Mac OSX or other POSIX 2004 compliant system
    C99 compiler suite with support for OpenMP 3.0 (GCC preferred)
 
 Matilda uses external files. You can generate them yourself with game records

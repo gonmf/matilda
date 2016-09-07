@@ -113,7 +113,7 @@ static u64 request_received_mark;
 
 static out_board last_out_board;
 
-static clock_t start_cpu_time;
+extern clock_t start_cpu_time;
 
 static void update_player_names()
 {
@@ -1329,8 +1329,6 @@ opponent plays or memory runs out.
 void main_gtp(
     bool think_in_opt_turn
 ){
-    start_cpu_time = clock();
-
     load_hoshi_points();
     transpositions_table_init();
 

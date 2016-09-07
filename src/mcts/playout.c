@@ -36,7 +36,7 @@ u16 pl_skip_saving = PL_SKIP_SAVING;
 u16 pl_skip_nakade = PL_SKIP_NAKADE;
 u16 pl_skip_pattern = PL_SKIP_PATTERN;
 u16 pl_skip_capture = PL_SKIP_CAPTURE;
-u16 pl_allow_satari = PL_ALLOW_SATARI;
+u16 pl_ban_self_atari = PL_BAN_SELF_ATARI;
 
 extern move_seq neighbors_3x3[TOTAL_BOARD_SIZ];
 
@@ -142,28 +142,6 @@ static move heavy_select_play(
     bool is_black,
     u8 cache[TOTAL_BOARD_SIZ]
 ){
-#if 0
-    bool capturable[TOTAL_BOARD_SIZ];
-    memset(capturable, 0, TOTAL_BOARD_SIZ);
-
-    /*
-    Tactical analysis of attack/defense of unsettled groups.
-    */
-    for(u8 i = 0; i < cb->unique_groups_count; ++i)
-    {
-        group * g = cb->g[cb->unique_groups[i]];
-
-        if(g->is_black != is_black)
-        {
-            move candidates[MAX_GROUPS];
-            u16 candidates_count = 0;
-            can_be_killed_all(cb, g, &candidates_count, candidates);
-            for(u16 j = 0; j < candidates_count; ++j)
-                capturable[candidates[j]] = true;
-        }
-    }
-#endif
-
     for(u16 k = 0; k < cb->empty.count; ++k)
     {
         move m = cb->empty.coord[k];
@@ -181,7 +159,7 @@ static move heavy_select_play(
                 if(libs == 1 && ((is_black && cb->black_neighbors4[m] > 0) ||
                     (!is_black && cb->white_neighbors4[m] > 0)))
                 {
-                    if(rand_u16(128) < pl_allow_satari)
+                    if(rand_u16(128) < pl_ban_self_atari)
                         cache[m] = 0;
                     else
                         cache[m] = CACHE_PLAY_LEGAL;

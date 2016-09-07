@@ -10,6 +10,7 @@ Also deals with updating some internal parameters at startup time.
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <time.h>
 #include <omp.h>
 
 #include "alloc.h"
@@ -34,6 +35,7 @@ time_system current_clock_white;
 bool time_system_overriden = false; /* ignore attempts to change time system */
 bool save_all_games_to_file = false; /* save all games as SGF on gameover */
 bool resign_on_timeout = false; /* resign instead of passing if timed out */
+clock_t start_cpu_time;
 
 extern u64 max_size_in_mbs;
 
@@ -62,7 +64,7 @@ extern u16 pl_skip_saving;
 extern u16 pl_skip_nakade;
 extern u16 pl_skip_pattern;
 extern u16 pl_skip_capture;
-extern u16 pl_allow_satari;
+extern u16 pl_ban_self_atari;
 extern u16 expansion_delay;
 static u16 _dummy; /* used for testing CLOP */
 
@@ -95,7 +97,7 @@ const void * tunable[] =
     "i", "pl_skip_nakade", &pl_skip_nakade,
     "i", "pl_skip_pattern", &pl_skip_pattern,
     "i", "pl_skip_capture", &pl_skip_capture,
-    "i", "pl_allow_satari", &pl_allow_satari,
+    "i", "pl_ban_self_atari", &pl_ban_self_atari,
     "i", "expansion_delay", &expansion_delay,
     "i", "dummy", &_dummy,
 
@@ -174,6 +176,8 @@ int main(
     int argc,
     char * argv[]
 ){
+    start_cpu_time = clock();
+
     alloc_init();
     config_logging(DEFAULT_LOG_MODES);
     bool use_gtp = (isatty(STDIN_FILENO) == 0);
@@ -227,8 +231,8 @@ int main(
                 if(argv[i + 1][0] == 'w' || argv[i + 1][0] == 'W')
                     human_player_color = false;
                 else
-                    flog_crit("main", "illegal format when specifying player c\
-olor");
+                    flog_crit("main",
+                        "illegal format when specifying player color");
 
             ++i;
             color_set = true;
