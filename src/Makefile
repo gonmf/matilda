@@ -5,7 +5,7 @@
 
 # Uncomment this line to compile in Mac OSX, having previously installed
 # clang-omp through brew.
-CC := clang-omp
+# CC := clang-omp
 
 # If your system includes a clang with OpenMP 3.0 support
 # CC := clang
