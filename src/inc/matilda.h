@@ -148,20 +148,15 @@ Preprocessor stringification of board size.
 
 /*
 Compliancy with POSIX.1 aka IEEE Std. 1003.1b-1993 is required for the
-functions: clock_gettime, fdopen, strtok_r, rand_r, fsync
+functions: fdopen, strtok_r, rand_r, fsync
 */
 #define _POSIX_C_SOURCE 199309L
+#define _XOPEN_SOURCE 600
 
 /*
 This is required for fsync in glibc versions < 2.8 and for mkstemps
 */
 #define _BSD_SOURCE
-
-/*
-This is required for clock_getcpuclockid
-*/
-#define _XOPEN_SOURCE 600
-
 
 
 #define YN(EXPR) ((EXPR) ? "yes" : "no")
