@@ -56,9 +56,7 @@ const char * supported_commands[] =
     "boardsize",
     "clear_board",
     "clear_cache",
-#if !defined(__MACH__)
     "cputime",
-#endif
     "echo",
     "echo_err",
     "exit",
@@ -115,6 +113,7 @@ static u64 request_received_mark;
 
 static out_board last_out_board;
 
+static clock_t start_cpu_time;
 
 static void update_player_names()
 {
@@ -988,33 +987,12 @@ static void gtp_cputime(
     FILE * fp,
     int id
 ){
-#if defined(__MACH__)
-    error_msg(fp, id, "command unsupported");
-    flog_warn("gtp", "cputime requested in OSX (command unsupported)");
-#else
-    clockid_t clockid;
-    struct timespec ts;
-
-    pid_t pid = getpid();
-
-    if(clock_getcpuclockid(pid, &clockid) != 0)
-    {
-        error_msg(fp, id, "operation failed");
-        return;
-    }
-
-    if(clock_gettime(clockid, &ts) == -1)
-    {
-        error_msg(fp, id, "operation failed");
-        return;
-    }
+    double elapsed = ((double)(clock() - start_cpu_time)) / ((double)CLOCKS_PER_SEC);
 
     char * buf = alloc();
-    snprintf(buf, MAX_PAGE_SIZ, "%u.%03lu", (u32)ts.tv_sec, ((u64)ts.tv_nsec) /
-        1000000);
+    snprintf(buf, MAX_PAGE_SIZ, "%.3f", elapsed);
     answer_msg(fp, id, buf);
     release(buf);
-#endif
 }
 
 static void gtp_final_status_list(
@@ -1351,6 +1329,8 @@ opponent plays or memory runs out.
 void main_gtp(
     bool think_in_opt_turn
 ){
+    start_cpu_time = clock();
+
     load_hoshi_points();
     transpositions_table_init();
 
@@ -1649,8 +1629,7 @@ cmd_matcher:
             continue;
         }
 
-        if(argc == 0 && (strcmp(cmd, "cputime") == 0 || strcmp(cmd,
-            "gomill-cpu_time") == 0))
+        if(argc == 0 && (strcmp(cmd, "cputime") == 0 || strcmp(cmd, "gomill-cpu_time") == 0))
         {
             gtp_cputime(out_fp, idn);
             continue;
