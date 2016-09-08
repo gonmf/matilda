@@ -41,7 +41,7 @@ Reference: https://www.gnu.org/software/gnugo/gnugo_19.html
 clear_cache
 
 
-cputime - but not supported when built for Mac OSX.
+cputime
 
 
 echo
