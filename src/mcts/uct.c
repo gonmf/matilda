@@ -236,8 +236,12 @@ static d16 mcts_selection(
         else
             omp_set_lock(&curr_stats->lock);
 
-        /* Superko detection */
-        if(is_board_move(cb->last_played) && (stats[depth - 4] == curr_stats ||
+        /* Positional superko detection */
+        if(is_board_move(cb->last_played) &&
+            (stats[depth - 2] == curr_stats ||
+            stats[depth - 3] == curr_stats ||
+            stats[depth - 4] == curr_stats ||
+            stats[depth - 5] == curr_stats ||
             stats[depth - 6] == curr_stats))
         {
             omp_unset_lock(&curr_stats->lock);
