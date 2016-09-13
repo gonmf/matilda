@@ -362,7 +362,7 @@ bool str_to_time_system(
     memcpy(s, src, len + 1);
     s = trim(s);
     len = strlen(s);
-    if(len < 9)
+    if(len < 7)
     {
         release(original_ptr);
         return false;
