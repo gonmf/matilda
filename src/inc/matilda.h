@@ -14,7 +14,7 @@ Board/goban size given by the length of one side.
 
 EXPECTED: 5, 7, 9, 11, 13, 15, 17, 19 or 21
 */
-#define BOARD_SIZ 19
+#define BOARD_SIZ 9
 
 /*
 Default komidashi used, multiplied by 2 to give an integer number.
@@ -90,7 +90,7 @@ EXPECTED: 0 or 1
 EXPECTED: 100 to 100000
 */
 #define LIMIT_BY_PLAYOUTS 0
-#define PLAYOUTS_PER_TURN 500
+#define PLAYOUTS_PER_TURN 1000
 
 
 /*
@@ -103,8 +103,10 @@ EXPECTED: 0 to 10
 
 
 /*
-Set the default time in milliseconds to be used to think per turn.
-This is used when no time system is set.
+Set the default time, in milliseconds, to be used to think per turn.
+This is used when no time control system is set.
+If a system is set and it allows infinite time to think, Matilda will think
+until running out of memory.
 EXPECTED: 1000 to 100000
 */
 #define DEFAULT_TIME_PER_TURN 1000

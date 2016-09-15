@@ -30,6 +30,10 @@ u32 calc_time_to_play(
     time_system * ts,
     u16 turns_played
 ){
+    if(ts->byo_yomi_time > 0 && ts->byo_yomi_stones == 0)
+        return UINT32_MAX;
+
+
 #if 0
     /*
 TODO testing for paper
@@ -229,12 +233,19 @@ void reset_clock(
 }
 
 /*
-Convert a time system into a textual description.
+Convert a time system into a textual description. Composite overtime format is
+used, or the word infinite.
 */
 void time_system_to_str(
     char * dst,
     time_system * ts
 ){
+    if(ts->main_time == 0 && ts->byo_yomi_time > 0 && ts->byo_yomi_stones == 0)
+    {
+        snprintf(dst, MAX_PAGE_SIZ, "infinite");
+        return;
+    }
+
     char * a;
     u32 abs_time = ts->main_time;
     if(abs_time == 0)
@@ -339,6 +350,54 @@ static d32 str_to_milliseconds(const char * s){
     return ret * mul;
 }
 
+static bool _process_main_time(
+    time_system * dst,
+    const char * src
+){
+    d32 val = str_to_milliseconds(src);
+    if(val < 0)
+        return false;
+
+    dst->main_time = val;
+    return true;
+}
+
+static bool _process_nr_periods(
+    time_system * dst,
+    const char * src
+){
+    d32 i;
+    if(!parse_int(src, &i) || i <= 0)
+        return false;
+
+    dst->byo_yomi_periods = i;
+    return true;
+}
+
+static bool _process_byo_yomi_time(
+    time_system * dst,
+    const char * src
+){
+    d32 val = str_to_milliseconds(src);
+    if(val <= 0)
+        return false;
+
+    dst->byo_yomi_time = val;
+    return true;
+}
+
+static bool _process_period_stones(
+    time_system * dst,
+    const char * src
+){
+    d32 i;
+    if(!parse_int(src, &i) || i < 0)
+        return false;
+
+    dst->byo_yomi_stones = i;
+    return true;
+}
+
 /*
 Convert a string in the format time+numberxtime/number to a time system struct.
 RETURNS true if successful and value stored in dst
@@ -347,110 +406,110 @@ bool str_to_time_system(
     time_system * dst,
     const char * src
 ){
-    if(src == NULL)
-        return false;
+    dst->main_time = 0;
+    dst->byo_yomi_stones = 1;
+    dst->byo_yomi_time = 0;
+    dst->byo_yomi_periods = 1;
+    dst->can_timeout = true;
 
-    u32 len = strlen(src);
-    if(len < 7)
-        return false;
+    if(strcmp(src, "infinite") == 0)
+    {
+        dst->byo_yomi_stones = 0;
+        dst->byo_yomi_time = 1;
+        dst->can_timeout = false;
+        return true;
+    }
+
 
     char * s = alloc();
-    if(s == NULL)
-        return false;
     char * original_ptr = s;
 
-    memcpy(s, src, len + 1);
+    memcpy(s, src, strlen(src) + 1);
     s = trim(s);
-    len = strlen(s);
-    if(len < 7)
-    {
-        release(original_ptr);
-        return false;
-    }
 
     /*
     time + ...
     */
     char * char_idx = strchr(s, '+');
+    if(char_idx != NULL)
+        char_idx[0] = 0;
+
+    if(!_process_main_time(dst, s))
+    {
+        release(original_ptr);
+        return false;
+    }
+
     if(char_idx == NULL)
     {
         release(original_ptr);
-        return false;
+        return dst->main_time > 0;
     }
-    char_idx[0] = 0;
-    char * rest = char_idx + 1;
 
-    d32 t = str_to_milliseconds(s);
-    if(t < 0)
+    s = char_idx + 1;
+    if(!s[0])
     {
         release(original_ptr);
         return false;
     }
-    u32 absolute_milliseconds = t;
-    s = rest;
 
     /*
     ... + number x ...
     */
     char_idx = strchr(s, 'x');
-    if(char_idx == NULL)
+    if(char_idx != NULL)
     {
-        release(original_ptr);
-        return false;
+        char_idx[0] = 0;
+        if(!_process_nr_periods(dst, s))
+        {
+            release(original_ptr);
+            return false;
+        }
+        s = char_idx + 1;
+        if(!s[0])
+        {
+            release(original_ptr);
+            return false;
+        }
     }
-    char_idx[0] = 0;
-    rest = char_idx + 1;
-
-    if(!parse_int(s, &t) || t < 0)
-    {
-        release(original_ptr);
-        return false;
-    }
-    u32 byoyomi_periods = t;
-    s = rest;
 
     /*
     ... x time / ...
     */
     char_idx = strchr(s, '/');
-    if(char_idx == NULL)
-    {
-        release(original_ptr);
-        return false;
-    }
-    char_idx[0] = 0;
-    rest = char_idx + 1;
+    if(char_idx != NULL)
+        char_idx[0] = 0;
 
-    t = str_to_milliseconds(s);
-    if(t < 0 || (t == 0 && byoyomi_periods > 0))
+    if(!_process_byo_yomi_time(dst, s))
     {
         release(original_ptr);
         return false;
     }
-    u32 byoyomi_milliseconds = t;
-    s = rest;
 
     /*
     ... / number
     */
-    if(!parse_int(s, &t) || (t < 0) || (t == 0 && byoyomi_periods > 0))
+    if(char_idx != NULL)
     {
-        release(original_ptr);
-        return false;
+        s = char_idx + 1;
+        if(!_process_period_stones(dst, s))
+        {
+            release(original_ptr);
+            return false;
+        }
     }
-    u32 byoyomi_stones = t;
-
-    if(absolute_milliseconds == 0 && byoyomi_milliseconds == 0)
-    {
-        release(original_ptr);
-        return false;
-    }
-
-    dst->main_time = absolute_milliseconds;
-    dst->byo_yomi_stones = byoyomi_stones;
-    dst->byo_yomi_time = byoyomi_milliseconds;
-    dst->byo_yomi_periods = byoyomi_periods;
 
     release(original_ptr);
+
+    if(dst->byo_yomi_time == 0)
+        return false;
+    if(dst->byo_yomi_stones == 0){
+        /* infinite time */
+        dst->main_time = 0;
+        dst->byo_yomi_periods = 1;
+        dst->byo_yomi_stones = 0;
+        dst->byo_yomi_time = 1;
+        dst->can_timeout = false;
+    }
     return true;
 }

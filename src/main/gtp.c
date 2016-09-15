@@ -136,7 +136,7 @@ static void update_player_names()
     return;
 }
 
-static void error_msg(
+static void gtp_error(
     FILE * fp,
     int id,
     const char * s
@@ -157,7 +157,7 @@ static void error_msg(
     release(buf);
 }
 
-static void answer_msg(
+static void gtp_answer(
     FILE * fp,
     int id,
     const char * s
@@ -192,14 +192,14 @@ static void gtp_protocol_version(
     FILE * fp,
     int id
 ){
-    answer_msg(fp, id, "2");
+    gtp_answer(fp, id, "2");
 }
 
 static void gtp_name(
     FILE * fp,
     int id
 ){
-    answer_msg(fp, id, "matilda");
+    gtp_answer(fp, id, "matilda");
 }
 
 static void gtp_version(
@@ -208,7 +208,7 @@ static void gtp_version(
 ){
     char * s = alloc();
     snprintf(s, MAX_PAGE_SIZ, "%s", MATILDA_VERSION);
-    answer_msg(fp, id, s);
+    gtp_answer(fp, id, s);
     release(s);
 }
 
@@ -222,12 +222,12 @@ static void gtp_known_command(
     {
         if(strcmp(supported_commands[i], command_name) == 0)
         {
-            answer_msg(fp, id, "true");
+            gtp_answer(fp, id, "true");
             return;
         }
         ++i;
     }
-    answer_msg(fp, id, "false");
+    gtp_answer(fp, id, "false");
 }
 
 static void gtp_list_commands(
@@ -244,7 +244,7 @@ static void gtp_list_commands(
     if(idx > 0)
         buf[idx - 1] = 0;
 
-    answer_msg(fp, id, buf);
+    gtp_answer(fp, id, buf);
     release(buf);
 }
 
@@ -261,7 +261,7 @@ static void gtp_ponder(
     d32 seconds;
     if(!parse_int(timestr, &seconds) || seconds < 1)
     {
-        error_msg(fp, id, "syntax error");
+        gtp_error(fp, id, "syntax error");
         return;
     }
 
@@ -273,7 +273,7 @@ static void gtp_ponder(
 
     request_opinion(buf, &current_state, is_black, seconds * 1000);
 
-    answer_msg(fp, id, buf);
+    gtp_answer(fp, id, buf);
     release(buf);
 }
 
@@ -290,7 +290,7 @@ static void gtp_review_game(
     d32 seconds;
     if(!parse_int(timestr, &seconds) || seconds < 1)
     {
-        error_msg(fp, id, "syntax error");
+        gtp_error(fp, id, "syntax error");
         return;
     }
 
@@ -339,7 +339,7 @@ static void gtp_review_game(
         is_black = !is_black;
     }
 
-    answer_msg(fp, id, buf);
+    gtp_answer(fp, id, buf);
     release(buf);
 }
 
@@ -347,7 +347,7 @@ static void gtp_quit(
     FILE * fp,
     int id
 ){
-    answer_msg(fp, id, NULL);
+    gtp_answer(fp, id, NULL);
     exit(EXIT_SUCCESS);
 }
 
@@ -356,14 +356,14 @@ static void gtp_clear_cache(
     int id
 ){
     new_match_maintenance();
-    answer_msg(fp, id, NULL);
+    gtp_answer(fp, id, NULL);
 }
 
 static void gtp_clear_board(
     FILE * fp,
     int id
 ){
-    answer_msg(fp, id, NULL);
+    gtp_answer(fp, id, NULL);
 
     if(save_all_games_to_file && current_game.turns > 0)
     {
@@ -399,18 +399,18 @@ static void gtp_boardsize(
     d32 ns;
     if(!parse_int(new_size, &ns))
     {
-        error_msg(fp, id, "syntax error");
+        gtp_error(fp, id, "syntax error");
         return;
     }
 
     if(ns != BOARD_SIZ)
     {
-        error_msg(fp, id, "unacceptable size");
+        gtp_error(fp, id, "unacceptable size");
         flog_warn("gtp", "changing the board size requires the program to be re\
 compiled");
     }
     else
-        answer_msg(fp, id, NULL);
+        gtp_answer(fp, id, NULL);
 }
 
 static void gtp_komi(
@@ -421,10 +421,10 @@ static void gtp_komi(
     double komid;
     if(!parse_float(new_komi, &komid))
     {
-        error_msg(fp, id, "syntax error");
+        gtp_error(fp, id, "syntax error");
         return;
     }
-    answer_msg(fp, id, NULL);
+    gtp_answer(fp, id, NULL);
 
     char * kstr = alloc();
     komi_to_string(kstr, komi);
@@ -457,7 +457,7 @@ static void gtp_play(
     bool is_black;
     if(!parse_color(color, &is_black))
     {
-        error_msg(fp, id, "syntax error");
+        gtp_error(fp, id, "syntax error");
         return;
     }
 
@@ -471,7 +471,7 @@ static void gtp_play(
             board current_state;
             current_game_state(&current_state, &current_game);
             opt_turn_maintenance(&current_state, !is_black);
-            answer_msg(fp, id, NULL);
+            gtp_answer(fp, id, NULL);
             return;
         }
     }
@@ -479,7 +479,7 @@ static void gtp_play(
     move m;
     if(!parse_gtp_vertex(vertex, &m))
     {
-        error_msg(fp, id, "syntax error");
+        gtp_error(fp, id, "syntax error");
         return;
     }
 
@@ -489,16 +489,16 @@ static void gtp_play(
         current_game.game_finished = true;
         current_game.resignation = true;
         current_game.final_score = is_black ? -1 : 1;
-        answer_msg(fp, id, NULL);
+        gtp_answer(fp, id, NULL);
         return;
     }
 
     if(!play_is_legal(&current_game, is_black, m))
     {
-        error_msg(fp, id, "illegal move");
+        gtp_error(fp, id, "illegal move");
         return;
     }
-    answer_msg(fp, id, NULL);
+    gtp_answer(fp, id, NULL);
 
     add_play_out_of_order(&current_game, is_black, m);
     current_game.game_finished = false;
@@ -519,7 +519,7 @@ static void generic_genmove(
     bool is_black;
     if(!parse_color(color, &is_black))
     {
-        error_msg(fp, id, "syntax error");
+        gtp_error(fp, id, "syntax error");
         return;
     }
 
@@ -553,9 +553,11 @@ static void generic_genmove(
 
     u16 stones = stone_count(current_state.p);
     time_to_play = calc_time_to_play(curr_clock, stones);
-
-    snprintf(buf, MAX_PAGE_SIZ, "time to play: %u.%03us\n", time_to_play /
-        1000, time_to_play % 1000);
+    if(time_to_play == UINT32_MAX)
+        snprintf(buf, MAX_PAGE_SIZ, "time to play: infinite\n");
+    else
+        snprintf(buf, MAX_PAGE_SIZ, "time to play: %u.%03us\n",
+            time_to_play / 1000, time_to_play % 1000);
     flog_info("gtp", buf);
 #endif
 
@@ -572,7 +574,7 @@ static void generic_genmove(
     if(!has_play)
     {
 #if CAN_RESIGN
-        answer_msg(fp, id, "resign");
+        gtp_answer(fp, id, "resign");
 
         snprintf(buf, MAX_PAGE_SIZ, "matilda playing as %s (%c) resigns\n",
             is_black ? "black" : "white", is_black ? BLACK_STONE_CHAR :
@@ -606,7 +608,7 @@ static void generic_genmove(
         {
             if(resign_on_timeout)
             {
-                answer_msg(fp, id, "resign");
+                gtp_answer(fp, id, "resign");
 
                 snprintf(buf, MAX_PAGE_SIZ, "matilda playing as %s (%c) res\
 igns because of timeout\n", is_black ? "black" : "white", is_black ?
@@ -647,7 +649,7 @@ st on time");
     }
 
     coord_to_gtp_vertex(buf, m);
-    answer_msg(fp, id, buf);
+    gtp_answer(fp, id, buf);
     release(buf);
 }
 
@@ -681,7 +683,7 @@ static void gtp_echo(
 
     for(u16 k = 1; k < argc; ++k)
         idx += snprintf(buf + idx, MAX_PAGE_SIZ - idx, " %s", argv[k]);
-    answer_msg(fp, id, buf);
+    gtp_answer(fp, id, buf);
 
     if(print_to_stderr)
         fprintf(stderr, "%s\n", buf);
@@ -696,17 +698,10 @@ static void gtp_time_settings(
     const char * byo_yomi_time,
     const char * byo_yomi_stones
 ){
-    if(LIMIT_BY_PLAYOUTS)
+    if(time_system_overriden || LIMIT_BY_PLAYOUTS)
     {
-        flog_warn("gtp", "attempted to set time settings when matilda was compi\
-led to use a constant number of simulations per turn in MCTS; request ignored");
-        answer_msg(fp, id, NULL);
-        return;
-    }
-
-    if(time_system_overriden)
-    {
-        answer_msg(fp, id, NULL);
+        flog_warn("gtp", "attempt to set time settings ignored");
+        gtp_answer(fp, id, NULL);
         return;
     }
 
@@ -717,44 +712,34 @@ led to use a constant number of simulations per turn in MCTS; request ignored");
     d32 new_byo_yomi_time;
     d32 new_byo_yomi_stones;
     if(!parse_int(main_time, &new_main_time) || new_main_time < 0 ||
-        new_main_time >= 2147484)
+        new_main_time > ((d32)(UINT32_MAX / 1000)))
     {
-        error_msg(fp, id, "syntax error");
+        gtp_error(fp, id, "syntax error");
         release(previous_ts_as_s);
         return;
     }
     if(!parse_int(byo_yomi_time, &new_byo_yomi_time) || new_byo_yomi_time < 0 ||
-        new_byo_yomi_time >= 2147484)
+        new_byo_yomi_time > ((d32)(UINT32_MAX / 1000)))
     {
-        error_msg(fp, id, "syntax error");
+        gtp_error(fp, id, "syntax error");
         release(previous_ts_as_s);
         return;
     }
     if(!parse_int(byo_yomi_stones, &new_byo_yomi_stones) || new_byo_yomi_stones
         < 0)
     {
-        error_msg(fp, id, "syntax error");
+        gtp_error(fp, id, "syntax error");
         release(previous_ts_as_s);
         return;
     }
 
-    answer_msg(fp, id, NULL);
+    gtp_answer(fp, id, NULL);
 
-    if(new_main_time == 0 && new_byo_yomi_time > 0 && new_byo_yomi_stones == 0)
-    {
-        /* no time limit */
-        set_time_per_turn(&current_clock_black, DEFAULT_TIME_PER_TURN);
-        set_time_per_turn(&current_clock_white, DEFAULT_TIME_PER_TURN);
-        current_clock_black.can_timeout = false;
-        current_clock_white.can_timeout = false;
-    }
-    else
-    {
-        set_time_system(&current_clock_black, new_main_time * 1000,
-            new_byo_yomi_time * 1000, new_byo_yomi_stones, 1);
-        set_time_system(&current_clock_white, new_main_time * 1000,
-            new_byo_yomi_time * 1000, new_byo_yomi_stones, 1);
-    }
+    set_time_system(&current_clock_black, new_main_time * 1000,
+        new_byo_yomi_time * 1000, new_byo_yomi_stones, 1);
+    set_time_system(&current_clock_white, new_main_time * 1000,
+        new_byo_yomi_time * 1000, new_byo_yomi_stones, 1);
+
 
     char * new_ts_as_s = alloc();
     time_system_to_str(new_ts_as_s, &current_clock_black);
@@ -782,23 +767,16 @@ static void gtp_kgs_time_settings(
     const char * byo_yomi_time,
     const char * byo_yomi_stones
 ){
-    if(LIMIT_BY_PLAYOUTS)
+    if(time_system_overriden || LIMIT_BY_PLAYOUTS)
     {
-        flog_warn("gtp", "attempted to set time settings when matilda was compi\
-led to use a constant number of simulations per turn in MCTS; request ignored");
-        answer_msg(fp, id, NULL);
-        return;
-    }
-
-    if(time_system_overriden)
-    {
-        answer_msg(fp, id, NULL);
+        flog_warn("gtp", "attempt to set time settings ignored");
+        gtp_answer(fp, id, NULL);
         return;
     }
 
     if(systemstr == NULL)
     {
-        error_msg(fp, id, "syntax error");
+        gtp_error(fp, id, "syntax error");
         return;
     }
 
@@ -815,9 +793,9 @@ led to use a constant number of simulations per turn in MCTS; request ignored");
         {
             d32 new_main_time;
             if(main_time == NULL || !parse_int(main_time, &new_main_time) ||
-                new_main_time < 0 || new_main_time >= 2147484)
+                new_main_time < 0 || new_main_time > ((d32)(UINT32_MAX / 1000)))
             {
-                error_msg(fp, id, "syntax error");
+                gtp_error(fp, id, "syntax error");
                 release(previous_ts_as_s);
                 return;
             }
@@ -835,24 +813,25 @@ led to use a constant number of simulations per turn in MCTS; request ignored");
                 d32 new_byo_yomi_time;
                 d32 new_byo_yomi_periods;
                 if(main_time == NULL || !parse_int(main_time, &new_main_time) ||
-                    new_main_time < 0 || new_main_time >= 2147484)
+                    new_main_time < 0 ||
+                    new_main_time > ((d32)(UINT32_MAX / 1000)))
                 {
-                    error_msg(fp, id, "syntax error");
+                    gtp_error(fp, id, "syntax error");
                     release(previous_ts_as_s);
                     return;
                 }
                 if(byo_yomi_time == NULL || !parse_int(byo_yomi_time,
                     &new_byo_yomi_time) || new_byo_yomi_time < 0 ||
-                    new_byo_yomi_time >= 2147484)
+                    new_byo_yomi_time > ((d32)(UINT32_MAX / 1000)))
                 {
-                    error_msg(fp, id, "syntax error");
+                    gtp_error(fp, id, "syntax error");
                     release(previous_ts_as_s);
                     return;
                 }
                 if(byo_yomi_periods == NULL || !parse_int(byo_yomi_periods,
                     &new_byo_yomi_periods) || new_byo_yomi_periods < 0)
                 {
-                    error_msg(fp, id, "syntax error");
+                    gtp_error(fp, id, "syntax error");
                     release(previous_ts_as_s);
                     return;
                 }
@@ -868,25 +847,25 @@ led to use a constant number of simulations per turn in MCTS; request ignored");
                     d32 new_byo_yomi_time;
                     d32 new_byo_yomi_stones;
                     if(main_time == NULL || !parse_int(main_time,
-                        &new_main_time) || new_main_time < 0 || new_main_time >=
-                        2147484)
+                        &new_main_time) || new_main_time < 0 ||
+                        new_main_time >= ((d32)(UINT32_MAX / 1000)))
                     {
-                        error_msg(fp, id, "syntax error");
+                        gtp_error(fp, id, "syntax error");
                         release(previous_ts_as_s);
                         return;
                     }
                     if(byo_yomi_time == NULL || !parse_int(byo_yomi_time,
                         &new_byo_yomi_time) || new_byo_yomi_time < 0 ||
-                        new_byo_yomi_time >= 2147484)
+                        new_byo_yomi_time > ((d32)(UINT32_MAX / 1000)))
                     {
-                        error_msg(fp, id, "syntax error");
+                        gtp_error(fp, id, "syntax error");
                         release(previous_ts_as_s);
                         return;
                     }
                     if(byo_yomi_stones == NULL || !parse_int(byo_yomi_stones,
                         &new_byo_yomi_stones) || new_byo_yomi_stones < 0)
                     {
-                        error_msg(fp, id, "syntax error");
+                        gtp_error(fp, id, "syntax error");
                         release(previous_ts_as_s);
                         return;
                     }
@@ -898,12 +877,12 @@ led to use a constant number of simulations per turn in MCTS; request ignored");
                 }
                 else
                 {
-                    error_msg(fp, id, "syntax error");
+                    gtp_error(fp, id, "syntax error");
                     release(previous_ts_as_s);
                     return;
                 }
 
-    answer_msg(fp, id, NULL);
+    gtp_answer(fp, id, NULL);
 
     char * new_ts_as_s = alloc();
     time_system_to_str(new_ts_as_s, &current_clock_black);
@@ -930,41 +909,34 @@ static void gtp_time_left(
     const char * _time,
     const char * stones
 ){
-    if(LIMIT_BY_PLAYOUTS)
+    if(time_system_overriden || LIMIT_BY_PLAYOUTS)
     {
-        flog_warn("gtp", "attempted to set time settings when matilda was compi\
-led to use a constant number of simulations per turn in MCTS; request ignored");
-        answer_msg(fp, id, NULL);
-        return;
-    }
-
-    if(time_system_overriden)
-    {
-        answer_msg(fp, id, NULL);
+        flog_warn("gtp", "attempt to set time settings ignored");
+        gtp_answer(fp, id, NULL);
         return;
     }
 
     bool is_black;
     if(!parse_color(color, &is_black))
     {
-        error_msg(fp, id, "syntax error");
+        gtp_error(fp, id, "syntax error");
         return;
     }
     d32 new_time_remaining;
     d32 new_byo_yomi_stones_remaining;
     if(!parse_int(_time, &new_time_remaining) || new_time_remaining < 0)
     {
-        error_msg(fp, id, "syntax error");
+        gtp_error(fp, id, "syntax error");
         return;
     }
     if(!parse_int(stones, &new_byo_yomi_stones_remaining) ||
         new_byo_yomi_stones_remaining < 0)
     {
-        error_msg(fp, id, "syntax error");
+        gtp_error(fp, id, "syntax error");
         return;
     }
 
-    answer_msg(fp, id, NULL);
+    gtp_answer(fp, id, NULL);
 
 
     time_system * curr_clock = is_black ? &current_clock_black :
@@ -991,7 +963,7 @@ static void gtp_cputime(
 
     char * buf = alloc();
     snprintf(buf, MAX_PAGE_SIZ, "%.3f", elapsed);
-    answer_msg(fp, id, buf);
+    gtp_answer(fp, id, buf);
     release(buf);
 }
 
@@ -1014,7 +986,7 @@ static void gtp_final_status_list(
             idx += snprintf(buf + idx, MAX_PAGE_SIZ - idx, "%s\n",
                 mstr);
         }
-        answer_msg(fp, id, buf);
+        gtp_answer(fp, id, buf);
         release(mstr);
         release(buf);
         return;
@@ -1022,11 +994,11 @@ static void gtp_final_status_list(
 
     if(strcmp(status, "dead") == 0 || strcmp(status, "seki") == 0)
     {
-        answer_msg(fp, id, NULL);
+        gtp_answer(fp, id, NULL);
         return;
     }
 
-    error_msg(fp, id, "syntax error");
+    gtp_error(fp, id, "syntax error");
 }
 
 static void gtp_gomill_describe_engine(
@@ -1035,7 +1007,7 @@ static void gtp_gomill_describe_engine(
 ){
     char * s = alloc();
     build_info(s);
-    answer_msg(fp, id, s);
+    gtp_answer(fp, id, s);
     release(s);
 }
 
@@ -1050,7 +1022,7 @@ static void gtp_showboard(
     board_to_string(str2, b.p, b.last_played, b.last_eaten);
 
     snprintf(str, MAX_PAGE_SIZ, "\n%s", str2);
-    answer_msg(fp, id, str);
+    gtp_answer(fp, id, str);
 
     release(str2);
     release(str);
@@ -1081,9 +1053,9 @@ static void gtp_undo(
     int id
 ){
     if(generic_undo(1))
-        answer_msg(fp, id, NULL);
+        gtp_answer(fp, id, NULL);
     else
-        error_msg(fp, id, "cannot undo");
+        gtp_error(fp, id, "cannot undo");
 }
 
 static void gtp_undo_multiple(
@@ -1097,14 +1069,14 @@ static void gtp_undo_multiple(
     else
         if(!parse_int(number, &moves) || moves < 1)
         {
-            error_msg(fp, id, "syntax error");
+            gtp_error(fp, id, "syntax error");
             return;
         }
 
     if(generic_undo(moves))
-        answer_msg(fp, id, NULL);
+        gtp_answer(fp, id, NULL);
     else
-        error_msg(fp, id, "cannot undo");
+        gtp_error(fp, id, "cannot undo");
 }
 
 static void gtp_last_evaluation(
@@ -1114,7 +1086,7 @@ static void gtp_last_evaluation(
     char * s = alloc();
     s[0] = '\n';
     out_board_to_string(s + 1, &last_out_board);
-    answer_msg(fp, id, s);
+    gtp_answer(fp, id, s);
     release(s);
 }
 
@@ -1131,7 +1103,7 @@ static void gtp_final_score(
 
     char * s = alloc();
     score_to_string(s, score);
-    answer_msg(fp, id, s);
+    gtp_answer(fp, id, s);
     release(s);
 }
 
@@ -1143,19 +1115,19 @@ static void gtp_place_free_handicap(
     d32 num_stones;
     if(!parse_int(nstones, &num_stones) || num_stones < 1)
     {
-        error_msg(fp, id, "syntax error");
+        gtp_error(fp, id, "syntax error");
         return;
     }
     board current_state;
     current_game_state(&current_state, &current_game);
     if(stone_count(current_state.p) > 0)
     {
-        error_msg(fp, id, "board is not empty");
+        gtp_error(fp, id, "board is not empty");
         return;
     }
     if(num_stones < 2 || num_stones > TOTAL_BOARD_SIZ - 1)
     {
-        error_msg(fp, id, "invalid number of stones");
+        gtp_error(fp, id, "invalid number of stones");
         return;
     }
 
@@ -1192,7 +1164,7 @@ static void gtp_place_free_handicap(
         idx += snprintf(buf + idx, MAX_PAGE_SIZ - idx, "%s ", mstr);
     }
 
-    answer_msg(fp, id, buf);
+    gtp_answer(fp, id, buf);
 
     release(mstr);
     release(buf);
@@ -1206,12 +1178,12 @@ static void gtp_set_free_handicap(
 ){
     if(current_game.turns > 0)
     {
-        error_msg(fp, id, "board is not empty");
+        gtp_error(fp, id, "board is not empty");
         return;
     }
     if(num_vertices < 2 || num_vertices > TOTAL_BOARD_SIZ - 1)
     {
-        error_msg(fp, id, "bad vertex list");
+        gtp_error(fp, id, "bad vertex list");
         return;
     }
     for(u16 v = 0; v < num_vertices; ++v)
@@ -1219,17 +1191,17 @@ static void gtp_set_free_handicap(
         move m;
         if(!parse_gtp_vertex(vertices[v], &m) || m == PASS)
         {
-            error_msg(fp, id, "bad vertex list");
+            gtp_error(fp, id, "bad vertex list");
             return;
         }
         if(!add_handicap_stone(&current_game, m))
         {
-            error_msg(fp, id, "bad vertex list");
+            gtp_error(fp, id, "bad vertex list");
             return;
         }
     }
 
-    answer_msg(fp, id, NULL);
+    gtp_answer(fp, id, NULL);
 }
 
 static void gtp_loadsgf(
@@ -1241,7 +1213,7 @@ static void gtp_loadsgf(
     if(!validate_filename(filename))
     {
         fprintf(stderr, "illegal file name\n");
-        error_msg(fp, id, "cannot load file");
+        gtp_error(fp, id, "cannot load file");
         return;
     }
 
@@ -1251,7 +1223,7 @@ static void gtp_loadsgf(
     else
         if(!parse_int(move_number, &move_until) || move_until < 1)
         {
-            error_msg(fp, id, "syntax error");
+            gtp_error(fp, id, "syntax error");
             return;
         }
 
@@ -1263,12 +1235,12 @@ static void gtp_loadsgf(
     bool imported = import_game_from_sgf(&tmp, buf);
     if(!imported)
     {
-        error_msg(fp, id, "cannot load file");
+        gtp_error(fp, id, "cannot load file");
         release(buf);
         return;
     }
 
-    answer_msg(fp, id, NULL);
+    gtp_answer(fp, id, NULL);
 
     tmp.turns = MIN(tmp.turns, move_until - 1);
 
@@ -1289,13 +1261,13 @@ static void gtp_printsgf(
     if(filename == NULL)
     {
         export_game_as_sgf_to_buffer(&current_game, buf, MAX_PAGE_SIZ);
-        answer_msg(fp, id, buf);
+        gtp_answer(fp, id, buf);
     }
     else
     {
         if(!validate_filename(filename))
         {
-            error_msg(fp, id, "cannot save file");
+            gtp_error(fp, id, "cannot save file");
             fprintf(stderr, "illegal file name\n");
             release(buf);
             return;
@@ -1306,12 +1278,12 @@ static void gtp_printsgf(
         bool success = export_game_as_sgf(&current_game, buf);
         if(!success)
         {
-            error_msg(fp, id, "cannot create file");
+            gtp_error(fp, id, "cannot create file");
             fprintf(stderr, "could not create file %s\n", buf);
         }
         else
         {
-            answer_msg(fp, id, NULL);
+            gtp_answer(fp, id, NULL);
             fprintf(stderr, "saved to file %s\n", buf);
         }
     }
@@ -1703,7 +1675,7 @@ cmd_matcher:
         {
             fprintf(stderr, "warning: command '%s' exists but the parameter lis\
 t is wrong; please check the documentation\n", cmd);
-            error_msg(out_fp, idn, "syntax error");
+            gtp_error(out_fp, idn, "syntax error");
         }
         else
         {
@@ -1718,7 +1690,7 @@ you mean '%s'?\n", cmd, best_dst_str);
                 fprintf(stderr, "warning: command '%s' was not understood; run \
 \"help\" for a list of available commands\n", cmd);
 
-            error_msg(out_fp, idn, "unknown command");
+            gtp_error(out_fp, idn, "unknown command");
         }
     }
 }

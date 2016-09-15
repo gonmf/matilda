@@ -106,7 +106,8 @@ void reset_clock(
 );
 
 /*
-Convert a time system into a textual description.
+Convert a time system into a textual description. Composite overtime format is
+used, or the word infinite.
 */
 void time_system_to_str(
     char * dst,

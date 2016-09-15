@@ -103,8 +103,10 @@ EXPECTED: 0 to 10
 
 
 /*
-Set the default time in milliseconds to be used to think per turn.
-This is used when no time system is set.
+Set the default time, in milliseconds, to be used to think per turn.
+This is used when no time control system is set.
+If a system is set and it allows infinite time to think, Matilda will think
+until running out of memory.
 EXPECTED: 1000 to 100000
 */
 #define DEFAULT_TIME_PER_TURN 500

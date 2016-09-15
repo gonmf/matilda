@@ -43,7 +43,7 @@ os.chdir(path)
 #
 
 # program to be optimized
-optimized_program = '/home/user/go/matilda/github/src/matilda -d /home/user/go/matilda/github/src/data/ -m gtp -l --time_system 2m+0x0/0' # --disable_opening_books
+optimized_program = '/home/user/go/matilda/github/src/matilda -d /home/user/go/matilda/github/src/data/ -m gtp -l --time_system 10m+0x0/0' # --disable_opening_books
 
 # (fixed) opponent program
 opponent_program = 'gnugo --mode gtp --chinese-rules --positional-superko --level 0'

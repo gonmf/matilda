@@ -165,7 +165,7 @@ RETURNS true if valid
 */
 bool parse_int(
     const char * s,
-    d32 * i
+    d32 * i // TODO change order of arguments for accordance with rest of src
 ){
     if(s[0] != '-' && (s[0] < '0' || s[0] > '9'))
         return false;

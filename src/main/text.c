@@ -208,10 +208,9 @@ void main_text(bool is_black){
     flog_info("gtp", s);
 
     komi_to_string(s, DEFAULT_KOMI);
-    printf("Matilda %s running in text mode. In this mode the options are li\
-mited and no time limit is enforced. To run using GTP add the flag -gtp. Playin\
-g with Chinese rules with %s komi; game is over after two passes or a resignati\
-on.\n\n", MATILDA_VERSION, s);
+    printf("Running in text mode. In this mode the options are limited and no \
+time limit is enforced. To run using GTP add the flag -gtp. Playing with Chines\
+e rules with %s komi; game is over after two passes or a resignation.\n\n", s);
     release(s);
 
     bool human_player_color = is_black;
