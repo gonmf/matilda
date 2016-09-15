@@ -14,7 +14,7 @@ Board/goban size given by the length of one side.
 
 EXPECTED: 5, 7, 9, 11, 13, 15, 17, 19 or 21
 */
-#define BOARD_SIZ 9
+#define BOARD_SIZ 19
 
 /*
 Default komidashi used, multiplied by 2 to give an integer number.
@@ -32,7 +32,7 @@ Take not that the real total memory used will be a few MiB more.
 
 EXPECTED: 10 to 64000
 */
-#define DEFAULT_UCT_MEMORY 7000
+#define DEFAULT_UCT_MEMORY 2000
 
 
 /*
