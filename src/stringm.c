@@ -164,8 +164,8 @@ Parses a 32-bit signed integer.
 RETURNS true if valid
 */
 bool parse_int(
-    const char * s,
-    d32 * i // TODO change order of arguments for accordance with rest of src
+    d32 * i,
+    const char * s
 ){
     if(s[0] != '-' && (s[0] < '0' || s[0] > '9'))
         return false;
@@ -181,8 +181,8 @@ Parses a floating point value.
 RETURNS true if valid
 */
 bool parse_float(
-    const char * s,
-    double * d
+    double * d,
+    const char * s
 ){
     bool dot_found = false;
     if(s[0] == '.')
@@ -214,8 +214,8 @@ Parses a GTP color token.
 RETURNS true if valid
 */
 bool parse_color(
-    const char * s,
-    bool * is_black
+    bool * is_black,
+    const char * s
 ){
     char buf[8];
     strncpy(buf, s, 7);

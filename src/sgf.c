@@ -290,7 +290,7 @@ bool export_game_as_sgf_auto_named(
     if(fid == -1)
         return false;
 
-    char * buffer = (char *)malloc(4 * 1024);
+    char * buffer = alloc();
     if(buffer == NULL)
     {
         close(fid);
@@ -301,7 +301,7 @@ bool export_game_as_sgf_auto_named(
     write(fid, buffer, chars);
     close(fid);
 
-    free(buffer);
+    release(buffer);
     return true;
 }
 
@@ -325,7 +325,7 @@ bool export_game_as_sgf(
     if(fp == NULL)
         return false;
 
-    char * buffer = (char *)malloc(4 * 1024);
+    char * buffer = alloc();
     if(buffer == NULL)
         return false;
 
@@ -333,7 +333,7 @@ bool export_game_as_sgf(
     fwrite(buffer, sizeof(char), chars, fp);
 
     fclose(fp);
-    free(buffer);
+    release(buffer);
     return true;
 }
 
@@ -446,7 +446,7 @@ bool import_game_from_sgf(
                         }
                         else
                         {
-                            parse_int(result, (d32 *)&gr->final_score);
+                            parse_int((d32 *)&gr->final_score, result);
                             gr->final_score *= 2;
                             if(gr->final_score == 0)
                             {
@@ -479,7 +479,7 @@ bool import_game_from_sgf(
                         else
                         {
                             gr->resignation = false;
-                            parse_int(result, (d32 *)&gr->final_score);
+                            parse_int((d32 *)&gr->final_score, result);
                             gr->final_score *= -2;
                             if(gr->final_score == 0)
                             {

@@ -78,8 +78,8 @@ Parses a 32-bit signed integer.
 RETURNS true if valid
 */
 bool parse_int(
-    const char * s,
-    d32 * i
+    d32 * i,
+    const char * s
 );
 
 /*
@@ -87,8 +87,8 @@ Parses a floating point value.
 RETURNS true if valid
 */
 bool parse_float(
-    const char * s,
-    double * d
+    double * d,
+    const char * s
 );
 
 /*
@@ -96,8 +96,8 @@ Parses a GTP color token.
 RETURNS true if valid
 */
 bool parse_color(
-    const char * s,
-    bool * is_black
+    bool * is_black,
+    const char * s
 );
 
 /*

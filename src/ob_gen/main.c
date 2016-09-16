@@ -219,7 +219,7 @@ int main(
         if(i < argc - 1 && strcmp(argv[i], "-max_depth") == 0)
         {
             d32 a;
-            if(!parse_int(argv[i + 1], &a) || a < 1)
+            if(!parse_int(&a, argv[i + 1]) || a < 1)
                 goto usage;
             ++i;
             ob_depth = a;
@@ -228,7 +228,7 @@ int main(
         if(i < argc - 1 && strcmp(argv[i], "-min_game_turns") == 0)
         {
             d32 a;
-            if(!parse_int(argv[i + 1], &a) || a < 1)
+            if(!parse_int(&a, argv[i + 1]) || a < 1)
                 goto usage;
             ++i;
             minimum_turns = a;
@@ -237,7 +237,7 @@ int main(
         if(i < argc - 1 && strcmp(argv[i], "-min_samples") == 0)
         {
             d32 a;
-            if(!parse_int(argv[i + 1], &a) || a < 1)
+            if(!parse_int(&a, argv[i + 1]) || a < 1)
                 goto usage;
             ++i;
             minimum_samples = a;

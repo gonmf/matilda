@@ -102,7 +102,7 @@ const void * tunable[] =
     "i", "dummy", &_dummy,
 
 
-    "f", "time_allot_factor", &time_allot_factor, // TODO remove
+    "f", "time_allot_factor", &time_allot_factor, // TODO remove after paper
 
 
     NULL
@@ -124,7 +124,7 @@ static void set_parameter(
         if(type[0] == 'i')
         {
             d32 val;
-            if(!parse_int(value, &val) || val < 0)
+            if(!parse_int(&val, value) || val < 0)
             {
                 char * buf = alloc();
                 snprintf(buf, MAX_PAGE_SIZ, "integer format error: %s", value);
@@ -139,7 +139,7 @@ static void set_parameter(
         if(type[0] == 'f')
         {
             double val;
-            if(!parse_float(value, &val))
+            if(!parse_float(&val, value))
             {
                 char * buf = alloc();
                 snprintf(buf, MAX_PAGE_SIZ, "float format error: %s", value);
@@ -455,7 +455,7 @@ int main(
         if(strcmp(argv[i], "--memory") == 0 && i < argc - 1)
         {
             d32 v;
-            if(!parse_int(argv[i + 1], &v))
+            if(!parse_int(&v, argv[i + 1]))
             {
                 fprintf(stderr,
                     "format error in size of transpositions table\n");
@@ -494,7 +494,7 @@ int main(
         if(strcmp(argv[i], "--threads") == 0 && i < argc - 1)
         {
             d32 v;
-            if(!parse_int(argv[i + 1], &v))
+            if(!parse_int(&v, argv[i + 1]))
             {
                 fprintf(stderr, "format error for thread number\n");
                 exit(EXIT_FAILURE);

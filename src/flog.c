@@ -193,8 +193,9 @@ static void open_log_file()
         log_file = mkstemps(log_filename, 4);
         if(log_file == -1)
         {
-            fprintf(stderr, "Failed to open log file '%s'.\n", log_filename);
-            exit(EXIT_FAILURE);
+            fprintf(stderr, "Failed to generate random log file name.\n");
+            snprintf(log_filename, 32, "matilda_%02u%02u%02u.log",
+                tm.tm_year % 100, tm.tm_mon, tm.tm_mday);
         }
 
         char * s = alloc();

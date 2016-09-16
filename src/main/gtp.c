@@ -259,7 +259,7 @@ static void gtp_ponder(
     const char * timestr /* in seconds */
 ){
     d32 seconds;
-    if(!parse_int(timestr, &seconds) || seconds < 1)
+    if(!parse_int(&seconds, timestr) || seconds < 1)
     {
         gtp_error(fp, id, "syntax error");
         return;
@@ -288,7 +288,7 @@ static void gtp_review_game(
     const char * timestr /* in seconds */
 ){
     d32 seconds;
-    if(!parse_int(timestr, &seconds) || seconds < 1)
+    if(!parse_int(&seconds, timestr) || seconds < 1)
     {
         gtp_error(fp, id, "syntax error");
         return;
@@ -397,7 +397,7 @@ static void gtp_boardsize(
     const char * new_size
 ){
     d32 ns;
-    if(!parse_int(new_size, &ns))
+    if(!parse_int(&ns, new_size))
     {
         gtp_error(fp, id, "syntax error");
         return;
@@ -419,7 +419,7 @@ static void gtp_komi(
     const char * new_komi
 ){
     double komid;
-    if(!parse_float(new_komi, &komid))
+    if(!parse_float(&komid, new_komi))
     {
         gtp_error(fp, id, "syntax error");
         return;
@@ -455,7 +455,7 @@ static void gtp_play(
     bool allow_skip
 ){
     bool is_black;
-    if(!parse_color(color, &is_black))
+    if(!parse_color(&is_black, color))
     {
         gtp_error(fp, id, "syntax error");
         return;
@@ -517,7 +517,7 @@ static void generic_genmove(
     bool reg
 ){
     bool is_black;
-    if(!parse_color(color, &is_black))
+    if(!parse_color(&is_black, color))
     {
         gtp_error(fp, id, "syntax error");
         return;
@@ -711,21 +711,21 @@ static void gtp_time_settings(
     d32 new_main_time;
     d32 new_byo_yomi_time;
     d32 new_byo_yomi_stones;
-    if(!parse_int(main_time, &new_main_time) || new_main_time < 0 ||
+    if(!parse_int(&new_main_time, main_time) || new_main_time < 0 ||
         new_main_time > ((d32)(UINT32_MAX / 1000)))
     {
         gtp_error(fp, id, "syntax error");
         release(previous_ts_as_s);
         return;
     }
-    if(!parse_int(byo_yomi_time, &new_byo_yomi_time) || new_byo_yomi_time < 0 ||
+    if(!parse_int(&new_byo_yomi_time, byo_yomi_time) || new_byo_yomi_time < 0 ||
         new_byo_yomi_time > ((d32)(UINT32_MAX / 1000)))
     {
         gtp_error(fp, id, "syntax error");
         release(previous_ts_as_s);
         return;
     }
-    if(!parse_int(byo_yomi_stones, &new_byo_yomi_stones) || new_byo_yomi_stones
+    if(!parse_int(&new_byo_yomi_stones, byo_yomi_stones) || new_byo_yomi_stones
         < 0)
     {
         gtp_error(fp, id, "syntax error");
@@ -792,7 +792,7 @@ static void gtp_kgs_time_settings(
         if(strcmp(systemstr, "absolute") == 0)
         {
             d32 new_main_time;
-            if(main_time == NULL || !parse_int(main_time, &new_main_time) ||
+            if(main_time == NULL || !parse_int(&new_main_time, main_time) ||
                 new_main_time < 0 || new_main_time > ((d32)(UINT32_MAX / 1000)))
             {
                 gtp_error(fp, id, "syntax error");
@@ -812,7 +812,7 @@ static void gtp_kgs_time_settings(
                 d32 new_main_time;
                 d32 new_byo_yomi_time;
                 d32 new_byo_yomi_periods;
-                if(main_time == NULL || !parse_int(main_time, &new_main_time) ||
+                if(main_time == NULL || !parse_int(&new_main_time, main_time) ||
                     new_main_time < 0 ||
                     new_main_time > ((d32)(UINT32_MAX / 1000)))
                 {
@@ -820,16 +820,16 @@ static void gtp_kgs_time_settings(
                     release(previous_ts_as_s);
                     return;
                 }
-                if(byo_yomi_time == NULL || !parse_int(byo_yomi_time,
-                    &new_byo_yomi_time) || new_byo_yomi_time < 0 ||
+                if(byo_yomi_time == NULL || !parse_int(&new_byo_yomi_time,
+                    byo_yomi_time) || new_byo_yomi_time < 0 ||
                     new_byo_yomi_time > ((d32)(UINT32_MAX / 1000)))
                 {
                     gtp_error(fp, id, "syntax error");
                     release(previous_ts_as_s);
                     return;
                 }
-                if(byo_yomi_periods == NULL || !parse_int(byo_yomi_periods,
-                    &new_byo_yomi_periods) || new_byo_yomi_periods < 0)
+                if(byo_yomi_periods == NULL || !parse_int(&new_byo_yomi_periods,
+                    byo_yomi_periods) || new_byo_yomi_periods < 0)
                 {
                     gtp_error(fp, id, "syntax error");
                     release(previous_ts_as_s);
@@ -846,24 +846,25 @@ static void gtp_kgs_time_settings(
                     d32 new_main_time;
                     d32 new_byo_yomi_time;
                     d32 new_byo_yomi_stones;
-                    if(main_time == NULL || !parse_int(main_time,
-                        &new_main_time) || new_main_time < 0 ||
+                    if(main_time == NULL || !parse_int(&new_main_time,
+                        main_time) || new_main_time < 0 ||
                         new_main_time >= ((d32)(UINT32_MAX / 1000)))
                     {
                         gtp_error(fp, id, "syntax error");
                         release(previous_ts_as_s);
                         return;
                     }
-                    if(byo_yomi_time == NULL || !parse_int(byo_yomi_time,
-                        &new_byo_yomi_time) || new_byo_yomi_time < 0 ||
+                    if(byo_yomi_time == NULL || !parse_int(&new_byo_yomi_time,
+                        byo_yomi_time) || new_byo_yomi_time < 0 ||
                         new_byo_yomi_time > ((d32)(UINT32_MAX / 1000)))
                     {
                         gtp_error(fp, id, "syntax error");
                         release(previous_ts_as_s);
                         return;
                     }
-                    if(byo_yomi_stones == NULL || !parse_int(byo_yomi_stones,
-                        &new_byo_yomi_stones) || new_byo_yomi_stones < 0)
+                    if(byo_yomi_stones == NULL ||
+                        !parse_int(&new_byo_yomi_stones, byo_yomi_stones) ||
+                        new_byo_yomi_stones < 0)
                     {
                         gtp_error(fp, id, "syntax error");
                         release(previous_ts_as_s);
@@ -917,19 +918,19 @@ static void gtp_time_left(
     }
 
     bool is_black;
-    if(!parse_color(color, &is_black))
+    if(!parse_color(&is_black, color))
     {
         gtp_error(fp, id, "syntax error");
         return;
     }
     d32 new_time_remaining;
     d32 new_byo_yomi_stones_remaining;
-    if(!parse_int(_time, &new_time_remaining) || new_time_remaining < 0)
+    if(!parse_int(&new_time_remaining, _time) || new_time_remaining < 0)
     {
         gtp_error(fp, id, "syntax error");
         return;
     }
-    if(!parse_int(stones, &new_byo_yomi_stones_remaining) ||
+    if(!parse_int(&new_byo_yomi_stones_remaining, stones) ||
         new_byo_yomi_stones_remaining < 0)
     {
         gtp_error(fp, id, "syntax error");
@@ -1067,7 +1068,7 @@ static void gtp_undo_multiple(
     if(number == NULL)
         moves = 1;
     else
-        if(!parse_int(number, &moves) || moves < 1)
+        if(!parse_int(&moves, number) || moves < 1)
         {
             gtp_error(fp, id, "syntax error");
             return;
@@ -1113,7 +1114,7 @@ static void gtp_place_free_handicap(
     const char * nstones
 ){
     d32 num_stones;
-    if(!parse_int(nstones, &num_stones) || num_stones < 1)
+    if(!parse_int(&num_stones, nstones) || num_stones < 1)
     {
         gtp_error(fp, id, "syntax error");
         return;
@@ -1221,7 +1222,7 @@ static void gtp_loadsgf(
     if(move_number == NULL)
         move_until = MAX_GAME_LENGTH;
     else
-        if(!parse_int(move_number, &move_until) || move_until < 1)
+        if(!parse_int(&move_until, move_number) || move_until < 1)
         {
             gtp_error(fp, id, "syntax error");
             return;
@@ -1412,7 +1413,7 @@ to %u milliseconds", network_roundtrip_delay);
         char * id = strtok_r(line, " |", &save_ptr);
         d32 idn;
         char * cmd;
-        if(parse_int(id, &idn))
+        if(parse_int(&idn, id))
             cmd = strtok_r(NULL, " |", &save_ptr);
         else
         {

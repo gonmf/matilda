@@ -367,7 +367,7 @@ static bool _process_nr_periods(
     const char * src
 ){
     d32 i;
-    if(!parse_int(src, &i) || i <= 0)
+    if(!parse_int(&i, src) || i <= 0)
         return false;
 
     dst->byo_yomi_periods = i;
@@ -391,7 +391,7 @@ static bool _process_period_stones(
     const char * src
 ){
     d32 i;
-    if(!parse_int(src, &i) || i < 0)
+    if(!parse_int(&i, src) || i < 0)
         return false;
 
     dst->byo_yomi_stones = i;
