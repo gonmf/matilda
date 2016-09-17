@@ -284,6 +284,9 @@ void build_info(
     if(UCT_CAN_STOP_EARLY)
         idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx, "  At win rate: %.2f\n",
             UCT_EARLY_WINRATE);
+
+    idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx, "Winrate for passing always: %.2f\n", JUST_PASS_WINRATE);
+
     idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx,
         "Transpositions table memory: %" PRIu64 " MiB\n", max_size_in_mbs);
 

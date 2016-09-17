@@ -35,6 +35,11 @@ positive.
 #define UCT_CAN_STOP_EARLY true
 #define UCT_EARLY_WINRATE 0.95
 
+/*
+How overwhelming a pass quality must be to be played even if not the top ranked.
+*/
+#define JUST_PASS_WINRATE 0.92
+
 
 #define USE_UCT_BRANCH_LIMITER true
 

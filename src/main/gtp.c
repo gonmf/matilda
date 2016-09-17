@@ -516,7 +516,8 @@ static void generic_genmove(
     FILE * fp,
     int id,
     const char * color,
-    bool reg
+    bool reg,
+    bool allow_early_pass
 ){
     bool is_black;
     if(!parse_color(&is_black, color))
@@ -601,7 +602,11 @@ static void generic_genmove(
         clear_out_board(&out_b);
     }
 
-    move m = select_play(&out_b, is_black, &current_game);
+    move m;
+    if(allow_early_pass && out_b.pass >= JUST_PASS_WINRATE)
+        m = PASS;
+    else
+        m = select_play(&out_b, is_black, &current_game);
 
     if(!reg)
     {
@@ -668,7 +673,15 @@ static void gtp_genmove(
     int id,
     const char * color
 ){
-    generic_genmove(fp, id, color, false);
+    generic_genmove(fp, id, color, false, true);
+}
+
+static void gtp_genmove_cleanup(
+    FILE * fp,
+    int id,
+    const char * color
+){
+    generic_genmove(fp, id, color, false, false);
 }
 
 static void gtp_reg_genmove(
@@ -676,7 +689,7 @@ static void gtp_reg_genmove(
     int id,
     const char * color
 ){
-    generic_genmove(fp, id, color, true);
+    generic_genmove(fp, id, color, true, true);
 }
 
 static void gtp_echo(
@@ -1533,7 +1546,7 @@ cmd_matcher:
 
         if(argc == 1 && strcmp(cmd, "kgs-genmove_cleanup") == 0)
         {
-            gtp_genmove(out_fp, idn, args[0]);
+            gtp_genmove_cleanup(out_fp, idn, args[0]);
             continue;
         }
 
