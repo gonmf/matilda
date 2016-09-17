@@ -238,9 +238,8 @@ d in text mode.\n\n");
 
         fprintf(stderr, "        \033[1m--log-dest <mask>\033[0m\n\n");
         fprintf(stderr, "        Set the log destination. The available destina\
-tions are:\n\n          o - Standard output\n          e - Standard error file \
-descriptor\n          f - File (matilda_date.log)\n\n        Default setting: -\
--log ef\n\n");
+tions are:\n\n          o - Standard error file descriptor\n          f - File (matilda_date.log)\n\n        Default setting: -\
+-log of\n\n");
 
         fprintf(stderr, "        \033[1m--memory <number>\033[0m\n\n");
         fprintf(stderr, "        Override the available memory for the MCTS tra\
@@ -340,7 +339,7 @@ int main(
                 {
                     use_gtp = true;
                     if(!flog_dest_set)
-                        flog_config_destinations(LOG_DEST_STDERR |
+                        flog_config_destinations(LOG_DEST_STDF |
                             LOG_DEST_FILE);
                 }
                 else
@@ -437,12 +436,7 @@ int main(
             {
                 if(argv[i + 1][j] == 'o')
                 {
-                    dest |= LOG_DEST_STDOUT;
-                    continue;
-                }
-                if(argv[i + 1][j] == 'e')
-                {
-                    dest |= LOG_DEST_STDERR;
+                    dest |= LOG_DEST_STDF;
                     continue;
                 }
                 if(argv[i + 1][j] == 'f')
@@ -624,10 +618,6 @@ for usage information.\n", argv[i]);
         fprintf(stderr, "--playouts option set as well as time settings\n");
         exit(EXIT_FAILURE);
     }
-
-
-    if(!use_gtp)
-        fclose(stderr);
 
 
     /*

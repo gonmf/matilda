@@ -24,9 +24,8 @@ crashes, but it is impossible to guarantee this in all cases.
 #define LOG_MODE_INFO   8
 #define LOG_MODE_DEBUG 16
 
-#define LOG_DEST_STDOUT 1
-#define LOG_DEST_STDERR 2
-#define LOG_DEST_FILE   4
+#define LOG_DEST_STDF 1
+#define LOG_DEST_FILE 2
 
 #if MATILDA_RELEASE_MODE
 #define DEFAULT_LOG_MODES (LOG_MODE_ERROR | LOG_MODE_WARN)
@@ -34,7 +33,7 @@ crashes, but it is impossible to guarantee this in all cases.
 #define DEFAULT_LOG_MODES (LOG_MODE_ERROR | LOG_MODE_WARN | LOG_MODE_DEBUG)
 #endif
 
-#define DEFAULT_LOG_DESTS (LOG_DEST_STDERR | LOG_DEST_FILE)
+#define DEFAULT_LOG_DESTS (LOG_DEST_STDF | LOG_DEST_FILE)
 
 /*
 Sets the logging messages that are written to file based on a mask of the

@@ -34,21 +34,21 @@ int main(
 ){
     if(argc == 2 && strcmp(argv[1], "-version") == 0)
     {
-        printf("matilda %s\n", MATILDA_VERSION);
+        fprintf(stderr, "matilda %s\n", MATILDA_VERSION);
         return 0;
     }
     else
         if(argc > 1)
         {
-            printf("usage: %s [-version]\n", argv[0]);
+            fprintf(stderr, "usage: %s [-version]\n", argv[0]);
             return 0;
         }
 
     alloc_init();
     assert_data_folder_exists();
 
-    printf("This process aims to reduce the bit distribution variance of the da\
-ta.\nWhen you are satisfied press ENTER\n\n");
+    fprintf(stderr, "This process aims to reduce the bit distribution variance \
+of the data.\nWhen you are satisfied press ENTER\n\n");
 
     u64 iv[TOTAL_BOARD_SIZ][2];
     memset(iv, 0, TOTAL_BOARD_SIZ * sizeof(u64));
@@ -108,8 +108,8 @@ ta.\nWhen you are satisfied press ENTER\n\n");
             {
                 best_variance = variance;
                 memcpy(iv, table, sizeof(u64) * table_size);
-                printf("\rBest variance=%5f ", best_variance);
-                fflush(stdout);
+                fprintf(stderr, "\rBest variance=%5f ", best_variance);
+                fflush(stderr);
             }
         }
 
@@ -126,7 +126,7 @@ ta.\nWhen you are satisfied press ENTER\n\n");
 
     free(table);
 
-    printf("\nSearch stopped.\n");
+    fprintf(stderr, "\nSearch stopped.\n");
 
     char * filename = alloc();
     snprintf(filename, MAX_PAGE_SIZ, "%s%ux%u.zt.bak", get_data_folder(),
@@ -152,7 +152,7 @@ ta.\nWhen you are satisfied press ENTER\n\n");
 
     fclose(h);
 
-    printf("Zobrist table written to %s\n", filename);
+    fprintf(stderr, "Zobrist table written to %s\n", filename);
     release(filename);
     return EXIT_SUCCESS;
 }

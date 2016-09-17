@@ -35,12 +35,6 @@ os.chdir(path)
 #
 # System options
 #
-# This script needs gogui-adapter to set parameters via gtp commands.
-# gogui-adapter version 1.2.1 does not understand "resign".
-# This problem was fixed:
-# http://sf.net/tracker/?func=detail&atid=489964&aid=3016960&group_id=59117
-# If you wish to play games with programs that resign, use a fixed version.
-#
 
 # program to be optimized
 optimized_program = '/home/user/go/matilda/github/src/matilda -d /home/user/go/matilda/github/src/data/ -m gtp -l --time_system 10m+0x0/0'

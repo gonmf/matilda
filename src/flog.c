@@ -38,7 +38,7 @@ changes this by default.
 */
 static u16 log_mode = (LOG_MODE_ERROR | LOG_MODE_WARN | LOG_MODE_PROT |
     LOG_MODE_INFO | LOG_MODE_DEBUG);
-static u16 log_dest = LOG_DEST_STDOUT;
+static u16 log_dest = LOG_DEST_STDF;
 
 /*
 For non-default values for build_info
@@ -177,12 +177,7 @@ static void flog(
             context, msg, ends_in_new_line(msg) ? "" : "\n");
     }
 
-    if(log_dest & LOG_DEST_STDOUT)
-    {
-        fprintf(stdout, "%s", s);
-    }
-
-    if(log_dest & LOG_DEST_STDERR)
+    if(log_dest & LOG_DEST_STDF)
     {
         fprintf(stderr, "%s", s);
     }

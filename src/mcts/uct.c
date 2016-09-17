@@ -412,72 +412,77 @@ bool mcts_start_timed(
     search_stop = false;
     bool stopped_early_by_wr = false;
 
-    do
+    #pragma omp parallel for
+    for(u32 sim = 0; sim < INT32_MAX; ++sim)
     {
-        #pragma omp parallel for
-        for(u32 sim = 0; sim < 960; ++sim)
+        if(search_stop)
         {
-            if(search_stop)
-                continue;
+            /* there is no way to simultaneously cancel all OMP threads */
+            sim = INT32_MAX;
+            continue;
+        }
 
-            bool branch_limit[TOTAL_BOARD_SIZ];
+        bool branch_limit[TOTAL_BOARD_SIZ];
 #if USE_UCT_BRANCH_LIMITER
-            memcpy(branch_limit, start_branch_limit, TOTAL_BOARD_SIZ);
+        memcpy(branch_limit, start_branch_limit, TOTAL_BOARD_SIZ);
 #endif
 
-            cfg_board cb;
-            cfg_board_clone(&cb, &initial_cfg_board);
-            d16 outcome = mcts_selection(&cb, start_zobrist_hash, is_black,
-                branch_limit);
-            cfg_board_free(&cb);
-            if(outcome == 0)
+        cfg_board cb;
+        cfg_board_clone(&cb, &initial_cfg_board);
+        d16 outcome = mcts_selection(&cb, start_zobrist_hash, is_black,
+            branch_limit);
+        cfg_board_free(&cb);
+        if(outcome == 0)
+        {
+            #pragma omp atomic
+            draws++;
+        }
+        else
+        {
+            if((outcome > 0) == is_black)
             {
                 #pragma omp atomic
-                draws++;
+                wins++;
             }
             else
             {
-                if((outcome > 0) == is_black)
-                {
-                    #pragma omp atomic
-                    wins++;
-                }
-                else
-                {
-                    #pragma omp atomic
-                    losses++;
-                }
-            }
-
-            if(omp_get_thread_num() == 0)
-            {
-                u64 curr_time = current_time_in_millis();
-
-#if UCT_CAN_STOP_EARLY
-                if(curr_time >= early_stop_time)
-                {
-                    if(curr_time >= stop_time)
-                        search_stop = true;
-                    else
-                    {
-                        double wr = ((double)wins) / ((double)(wins + losses));
-                        if(wr >= UCT_EARLY_WINRATE)
-                        {
-                            stopped_early_by_wr = true;
-                            search_stop = true;
-                        }
-                    }
-                }
-#else
-                if(curr_time >= stop_time)
-                    search_stop = true;
-#endif
+                #pragma omp atomic
+                losses++;
             }
         }
 
+        if(omp_get_thread_num() == 0)
+        {
+            u64 curr_time = current_time_in_millis();
 
+#if UCT_CAN_STOP_EARLY
+            if(curr_time >= early_stop_time)
+            {
+                if(curr_time >= stop_time)
+                {
+                    search_stop = true;
+                    sim = INT32_MAX;
+                }
+                else
+                {
+                    double wr = ((double)wins) / ((double)(wins + losses));
+                    if(wr >= UCT_EARLY_WINRATE)
+                    {
+                        stopped_early_by_wr = true;
+                        search_stop = true;
+                        sim = INT32_MAX;
+                    }
+                }
+            }
+#else
+            if(curr_time >= stop_time)
+            {
+                search_stop = true;
+                sim = INT32_MAX;
+            }
+#endif
+        }
     }
-    while(!search_stop);
 
     if(ran_out_of_memory)
         flog_warn("uct", "search ran out of memory");
@@ -722,35 +727,26 @@ void mcts_resume(
     cfg_board initial_cfg_board;
     cfg_from_board(&initial_cfg_board, b);
 
-    do
+    #pragma omp parallel for
+    for(u32 sim = 0; sim < INT32_MAX; ++sim)
     {
-
-        #pragma omp parallel for
-        for(u32 sim = 0; sim < 960; ++sim)
-        {
-            if(search_stop)
-                continue;
-
-            bool branch_limit[TOTAL_BOARD_SIZ];
+        bool branch_limit[TOTAL_BOARD_SIZ];
 #if USE_UCT_BRANCH_LIMITER
-            memcpy(branch_limit, start_branch_limit, TOTAL_BOARD_SIZ);
+        memcpy(branch_limit, start_branch_limit, TOTAL_BOARD_SIZ);
 #endif
 
-            cfg_board cb;
-            cfg_board_clone(&cb, &initial_cfg_board);
-            mcts_selection(&cb, start_zobrist_hash, is_black, branch_limit);
-            cfg_board_free(&cb);
+        cfg_board cb;
+        cfg_board_clone(&cb, &initial_cfg_board);
+        mcts_selection(&cb, start_zobrist_hash, is_black, branch_limit);
+        cfg_board_free(&cb);
 
-            if(omp_get_thread_num() == 0)
-            {
-                u64 curr_time = current_time_in_millis();
-                if(curr_time >= stop_time)
-                    search_stop = true;
-            }
+        if(omp_get_thread_num() == 0)
+        {
+            u64 curr_time = current_time_in_millis();
+            if(curr_time >= stop_time)
+                sim = INT32_MAX;
         }
-
     }
-    while(!search_stop);
 
     if(ran_out_of_memory)
         mcts_can_resume = false;

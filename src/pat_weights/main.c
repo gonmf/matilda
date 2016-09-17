@@ -78,21 +78,21 @@ int main(
 
     char * ts = alloc();
 
-    printf("Discovering game states\n");
+    fprintf(stderr, "Discovering game states\n");
 
     u32 filenames_found = recurse_find_files(get_data_folder(), ".sgf",
         filenames, MAX_FILES);
     if(filenames_found == 0)
     {
         timestamp(ts);
-        printf("%s: No SGF files found, exiting.\n", ts);
+        fprintf(stderr, "%s: No SGF files found, exiting.\n", ts);
         release(ts);
         return EXIT_SUCCESS;
     }
-    printf("\nfound %u SGF files\n", filenames_found);
+    fprintf(stderr, "\nfound %u SGF files\n", filenames_found);
 
     timestamp(ts);
-    printf("%s: 2/3 Extracting state plays\n", ts);
+    fprintf(stderr, "%s: 2/3 Extracting state plays\n", ts);
 
     u32 games_skipped = 0;
     u32 games_used = 0;
@@ -108,7 +108,7 @@ int main(
     {
         if((fid % 128) == 0)
         {
-            printf("\r %u%%", ((fid + 1) * 100) / filenames_found);
+            fprintf(stderr, "\r %u%%", ((fid + 1) * 100) / filenames_found);
             fflush(stdout);
         }
 
@@ -224,11 +224,11 @@ int main(
         }
     }
 
-    printf("Games used: %u Skipped: %u\nUnique patterns: %u\n", games_used,
-        games_skipped, unique_patterns);
+    fprintf(stderr, "Games used: %u Skipped: %u\nUnique patterns: %u\n",
+        games_used, games_skipped, unique_patterns);
 
     timestamp(ts);
-    printf("%s: 3/3 Exporting to file\n", ts);
+    fprintf(stderr, "%s: 3/3 Exporting to file\n", ts);
 
     pat3t ** table = (pat3t **)hash_table_export_to_array(feature_table);
 

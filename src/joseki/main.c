@@ -62,7 +62,7 @@ static char * parse(
 
         if(mark == 0)
         {
-            printf("End of file.");
+            fprintf(stderr, "End of file.");
             free(j);
             return buffer;
         }
@@ -178,13 +178,13 @@ int main(
     {
         if(strcmp(argv[i], "-version") == 0)
         {
-            printf("matilda %s\n", MATILDA_VERSION);
+            fprintf(stderr, "matilda %s\n", MATILDA_VERSION);
             exit(EXIT_SUCCESS);
         }
 
-        printf("Usage: %s [options]\n", argv[0]);
-        printf("Options:\n");
-        printf("-version - Print version information and exit.\n");
+        fprintf(stderr, "Usage: %s [options]\n", argv[0]);
+        fprintf(stderr, "Options:\n");
+        fprintf(stderr, "-version - Print version information and exit.\n");
         exit(EXIT_SUCCESS);
     }
 
@@ -203,12 +203,12 @@ int main(
         exit(EXIT_FAILURE);
     }
 
-    printf("Filesize: %u\n", (u32)rd);
+    fprintf(stderr, "Filesize: %u\n", (u32)rd);
 
     snprintf(s, MAX_PAGE_SIZ, "SZ[%u]", BOARD_SIZ);
     if(strstr(buffer, s) == NULL)
     {
-        printf("Error: wrong board size or SGF size property is missing.\n");
+        fprintf(stderr, "Error: wrong board size or SGF size property is missing.\n");
         exit(EXIT_FAILURE);
     }
 
@@ -230,6 +230,6 @@ int main(
 
     fclose(fp);
 
-    printf("Job done.\n");
+    fprintf(stderr, "Job done.\n");
     return EXIT_SUCCESS;
 }

@@ -75,7 +75,7 @@ static bool text_play(
 
     if(m == NONE)
     {
-        printf("Play is malformed.\n");
+        fprintf(stderr, "Play is malformed.\n");
         return true;
     }
 
@@ -83,7 +83,7 @@ static bool text_play(
     current_game_state(&current_state, &current_game);
     if(!can_play_slow(&current_state, is_black, m))
     {
-        printf("Play is illegal.\n");
+        fprintf(stderr, "Play is illegal.\n");
         return true;
     }
 
@@ -152,17 +152,18 @@ static void text_newgame(
     {
         char filename[32];
         if(export_game_as_sgf_auto_named(&current_game, filename))
-            printf("Game record written to %s.\n", filename);
+            fprintf(stderr, "Game record written to %s.\n", filename);
         else
-            printf("Error encountered when attempting to write game record to f\
-ile.\n");
+            fprintf(stderr, "Error encountered when attempting to write game re\
+cord to file.\n");
     }
 
-    printf("Start new game?\nY - Yes\nN - No (quit)\nS - Switch colors\n");
+    fprintf(stderr,
+        "Start new game?\nY - Yes\nN - No (quit)\nS - Switch colors\n");
     while(1)
     {
-        printf(">");
-        fflush(stdout);
+        fprintf(stderr, ">");
+        fflush(stderr);
         char c = getchar();
         if(c == 'y' || c == 'Y')
         {
@@ -202,20 +203,23 @@ static void text_print_score()
 
     char * s = alloc();
     score_to_string(s, score);
-    printf("Game result: %s\n", s);
+    fprintf(stderr, "Game result: %s\n", s);
     release(s);
 }
 
 void main_text(bool is_black){
+    fclose(stdout);
+
     flog_info("gtp", "matilda now running over text interface");
     char * s = alloc();
     build_info(s);
     flog_info("gtp", s);
 
     komi_to_string(s, DEFAULT_KOMI);
-    printf("Running in text mode. In this mode the options are limited and no \
-time limit is enforced. To run using GTP add the flag -gtp. Playing with Chines\
-e rules with %s komi; game is over after two passes or a resignation.\n\n", s);
+    fprintf(stderr, "Running in text mode. In this mode the options are limited\
+ and no time limit is\nenforced. To run using GTP add the flag -gtp. Playing wi\
+th Chinese rules with\n%s komi; game is over after two passes or a resignation.\
+\n\n", s);
     release(s);
 
     bool human_player_color = is_black;
@@ -238,27 +242,28 @@ e rules with %s komi; game is over after two passes or a resignation.\n\n", s);
         passed = false;
         resigned = false;
 
-        printf("\n");
-        fprint_game_record(stdout, &current_game);
-        printf("\n");
+        fprintf(stderr, "\n");
+        fprint_game_record(stderr, &current_game);
+        fprintf(stderr, "\n");
         board current_state;
         current_game_state(&current_state, &current_game);
-        fprint_board(stdout, &current_state);
-        printf("\n");
+        fprint_board(stderr, &current_state);
+        fprintf(stderr, "\n");
 
         /*
         Computer turn
         */
         if(is_black != human_player_color)
         {
-            printf("Computer thinking...\n");
+            fprintf(stderr, "Computer thinking...\n");
             text_genmove(is_black, &passed, &resigned);
-            printf("\n");
+            fprintf(stderr, "\n");
 
             if(resigned)
             {
-                printf("%s (%c) wins by resignation.\n\n", is_black ? "White" :
-                    "Black", is_black ? WHITE_STONE_CHAR : BLACK_STONE_CHAR);
+                fprintf(stderr, "%s (%c) wins by resignation.\n\n", is_black ?
+                    "White" : "Black", is_black ? WHITE_STONE_CHAR :
+                    BLACK_STONE_CHAR);
                 text_newgame(&human_player_color, &is_black);
                 continue;
             }
@@ -267,9 +272,9 @@ e rules with %s komi; game is over after two passes or a resignation.\n\n", s);
             {
                 if(last_played_pass)
                 {
-                    printf("Computer passes, game is over.\n");
+                    fprintf(stderr, "Computer passes, game is over.\n");
                     text_print_score();
-                    printf("\n");
+                    fprintf(stderr, "\n");
                     last_played_pass = false;
                     text_newgame(&human_player_color, &is_black);
                     continue;
@@ -296,15 +301,15 @@ e rules with %s komi; game is over after two passes or a resignation.\n\n", s);
 #else
             coord_to_num_num(mstr, coord_to_move(3, 3));
 #endif
-            printf("(Type the board position, like %s, or undo/pass/resign/tip/\
-score/quit)\n", mstr);
+            fprintf(stderr, "(Type the board position, like %s, or undo/pass/re\
+sign/tip/score/quit)\n", mstr);
             release(mstr);
         }
         while(1)
         {
-            printf("Your turn (%c): ", is_black ? BLACK_STONE_CHAR :
+            fprintf(stderr, "Your turn (%c): ", is_black ? BLACK_STONE_CHAR :
                 WHITE_STONE_CHAR);
-            fflush(stdout);
+            fflush(stderr);
 
             char * line = fgets(buf, MAX_PAGE_SIZ, stdin);
             if(line == NULL)
@@ -323,8 +328,9 @@ score/quit)\n", mstr);
 
             if(strcmp(line, "resign") == 0)
             {
-                printf("%s (%c) wins by resignation.\n\n", is_black ? "White" :
-                    "Black", is_black ? WHITE_STONE_CHAR : BLACK_STONE_CHAR);
+                fprintf(stderr, "%s (%c) wins by resignation.\n\n", is_black ?
+                    "White" : "Black", is_black ? WHITE_STONE_CHAR :
+                    BLACK_STONE_CHAR);
                 text_newgame(&human_player_color, &is_black);
                 break;
             }
@@ -337,8 +343,8 @@ score/quit)\n", mstr);
 #else
                 coord_to_num_num(mstr, coord_to_move(3, 3));
 #endif
-                printf("Type the board position, like %s, or undo/pass/resign/s\
-core/quit\n\n", mstr);
+                fprintf(stderr, "Type the board position, like %s, or undo/pass\
+/resign/score/quit\n\n", mstr);
                 release(mstr);
                 continue;
             }
@@ -350,15 +356,15 @@ core/quit\n\n", mstr);
                     current_game_state(&current_state, &current_game);
                     char * buffer = alloc();
                     request_opinion(buffer, &current_state, is_black, 1000);
-                    printf("%s", buffer);
+                    fprintf(stderr, "%s", buffer);
                     release(buffer);
                     --tips;
                 }
 
                 if(tips == 0)
-                    printf("You have no tips left.\n");
+                    fprintf(stderr, "You have no tips left.\n");
                 else
-                    printf("You now have %u/3 tips left.\n", tips);
+                    fprintf(stderr, "You now have %u/3 tips left.\n", tips);
                 continue;
             }
 
@@ -368,8 +374,8 @@ core/quit\n\n", mstr);
                 d16 score = score_stones_and_area(current_state.p);
                 char * s = alloc();
                 score_to_string(s, score);
-                printf("Score estimate with %s to play: %s\n\n", is_black ?
-                    "black" : "white", s);
+                fprintf(stderr, "Score estimate with %s to play: %s\n\n",
+                    is_black ? "black" : "white", s);
                 release(s);
                 continue;
             }
@@ -392,9 +398,9 @@ core/quit\n\n", mstr);
             {
                 if(last_played_pass)
                 {
-                    printf("Two passes in a row, game is over.\n");
+                    fprintf(stderr, "Two passes in a row, game is over.\n");
                     text_print_score();
-                    printf("\n");
+                    fprintf(stderr, "\n");
                     text_newgame(&human_player_color, &is_black);
                 }else
                     last_played_pass = true;
