@@ -77,7 +77,7 @@ bool sgf_info(
         if(board_size == 0 && !unknown_board_size_cant_guess_warning_given)
         {
             unknown_board_size_cant_guess_warning_given = true;
-            flog_warn("sgf", "board size not specified and could not guess boar\
+            flog_warn("sgff", "board size not specified and could not guess boar\
 d size from play coordinates");
         }
         if(board_size != BOARD_SIZ)
@@ -100,7 +100,7 @@ d size from play coordinates");
         if(!unknown_sgf_ruleset_warning_given)
         {
             unknown_sgf_ruleset_warning_given = true;
-            flog_warn("sgf", "file doesn't specify ruleset; Chinese rules assum\
+            flog_warn("sgff", "file doesn't specify ruleset; Chinese rules assum\
 ed");
         }
     }
@@ -173,7 +173,7 @@ d16 sgf_to_boards(
                         plays[play] = m;
                         if(!attempt_play_slow(&b, is_black, m))
                         {
-                            flog_warn("gtp","file contains illegal plays");
+                            flog_warn("sgff","file contains illegal plays");
                             return -1;
                         }
                     }
@@ -351,7 +351,7 @@ bool import_game_from_sgf(
     d32 chars_read = read_ascii_file(buf, MAX_SGF_FILE_SIZ, filename);
     if(chars_read < 1)
     {
-        flog_warn("gtp", "could not open/read file");
+        flog_warn("sgff", "could not open/read file");
         release(buf);
         return false;
     }
@@ -363,7 +363,7 @@ bool import_game_from_sgf(
         if(!gm_unknown_warning_given)
         {
             gm_unknown_warning_given = true;
-            flog_warn("gtp", "SGF GM[1] annotation not found");
+            flog_warn("sgff", "SGF GM[1] annotation not found");
         }
 
     /*
@@ -377,12 +377,12 @@ bool import_game_from_sgf(
         if(board_size == 0 && !unknown_board_size_cant_guess_warning_given)
         {
             unknown_board_size_cant_guess_warning_given = true;
-            flog_warn("gtp", "board size not specified and could not be guessed\
+            flog_warn("sgff", "board size not specified and could not be guessed\
  from play coordinates");
         }
         if(board_size != BOARD_SIZ)
         {
-            flog_warn("gtp", "wrong board size");
+            flog_warn("sgff", "wrong board size");
             release(buf);
             release(board_size_str);
             return false;
@@ -391,7 +391,7 @@ bool import_game_from_sgf(
     else
         if(strcmp(board_size_str, BOARD_SIZ_AS_STR) != 0)
         {
-            flog_warn("gtp", "illegal board size format");
+            flog_warn("sgff", "illegal board size format");
             release(buf);
             release(board_size_str);
             return false;
@@ -450,7 +450,7 @@ bool import_game_from_sgf(
                             gr->final_score *= 2;
                             if(gr->final_score == 0)
                             {
-                                flog_warn("gtp", "illegal final score");
+                                flog_warn("sgff", "illegal final score");
                                 release(buf);
                                 release(result);
                                 return false;
@@ -483,7 +483,7 @@ bool import_game_from_sgf(
                             gr->final_score *= -2;
                             if(gr->final_score == 0)
                             {
-                                flog_warn("gtp", "illegal final score");
+                                flog_warn("sgff", "illegal final score");
                                 release(buf);
                                 release(result);
                                 return false;
@@ -509,7 +509,7 @@ bool import_game_from_sgf(
                 u8 y = hs[2] - 'a';
                 if(!add_handicap_stone(gr, coord_to_move(x, y)))
                 {
-                    flog_warn("gtp", "handicap placement error");
+                    flog_warn("sgff", "handicap placement error");
                     release(buf);
                     return false;
                 }

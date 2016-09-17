@@ -66,7 +66,7 @@ static group * alloc_group()
     {
         ret = (group *)malloc(sizeof(group));
         if(ret == NULL)
-            flog_crit("cfgb", "system out of memory");
+            flog_crit("cfg", "system out of memory");
     }
     return ret;
 }
@@ -248,7 +248,7 @@ static void rem_neighbor(
             return;
         }
 
-    flog_crit("cfgb", "CFG group neighbor not found");
+    flog_crit("cfg", "CFG group neighbor not found");
 }
 
 static void unite_groups(

@@ -47,7 +47,7 @@ void rand_reinit()
     for(u16 i = 0; i < MAXIMUM_NUM_THREADS; ++i)
         idx += snprintf(buf + idx, MAX_PAGE_SIZ - idx, "%u: %x\n", i, state[i]);
 
-    flog_info("time", buf);
+    flog_info("rand", buf);
     release(buf);
 
     rand_inited = true;

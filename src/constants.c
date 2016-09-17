@@ -249,5 +249,5 @@ void board_constants_init()
 
     init_eye_table();
 
-    flog_info("const", "board constants calculated");
+    flog_info("cons", "board constants calculated");
 }

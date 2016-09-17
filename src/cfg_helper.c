@@ -48,7 +48,7 @@ move get_1st_liberty(
             return i * 8 + j;
         }
 
-    flog_crit("cfgb", "CFG group has no liberties");
+    flog_crit("cfg", "CFG group has no liberties");
     exit(EXIT_FAILURE); /* this is unnecessary but mutes erroneous complaints */
 }
 

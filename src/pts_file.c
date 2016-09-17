@@ -42,7 +42,7 @@ void open_rule_file(
     const char * filename
 ){
     if(buffer != NULL)
-        flog_crit("pts", "error: pts_file: file open");
+        flog_crit("ptsf", "error: pts_file: file open");
 
     char * fn = alloc();
     if(starts_with(filename, get_data_folder()))
@@ -52,12 +52,12 @@ void open_rule_file(
 
     buffer = malloc(MAX_FILE_SIZ);
     if(buffer == NULL)
-        flog_crit("pts", "system out of memory");
+        flog_crit("ptsf", "system out of memory");
 
 
     d32 chars_read = read_ascii_file(buffer, MAX_FILE_SIZ, fn);
     if(chars_read < 0)
-        flog_crit("pts", "couldn't open file for reading");
+        flog_crit("ptsf", "couldn't open file for reading");
 
     release(fn);
     search_started = false;
@@ -70,7 +70,7 @@ void read_next_rule(
     char * dst
 ){
     if(buffer == NULL)
-        flog_crit("pts", "no file open");
+        flog_crit("ptsf", "no file open");
 
     char * line;
     if(search_started)
@@ -139,7 +139,7 @@ void interpret_rule_as_pts_list(
     {
         char * buf = alloc();
         snprintf(buf, MAX_PAGE_SIZ, "malformed line: %s", src);
-        flog_crit("pts", buf);
+        flog_crit("ptsf", buf);
         release(buf);
     }
 
@@ -154,14 +154,14 @@ void interpret_rule_as_pts_list(
         {
             char * buf = alloc();
             snprintf(buf, MAX_PAGE_SIZ, "malformed line: %s", src);
-            flog_crit("pts", buf);
+            flog_crit("ptsf", buf);
             release(buf);
         }
         if(!attempt_play_slow(&b, true, m))
         {
             char * buf = alloc();
             snprintf(buf, MAX_PAGE_SIZ, "malformed line: %s", src);
-            flog_crit("pts", buf);
+            flog_crit("ptsf", buf);
             release(buf);
         }
 
@@ -199,7 +199,7 @@ static void load_points(
         interpret_rule_as_pts_list(dst, s);
 
         snprintf(buf, MAX_PAGE_SIZ, "loaded %u %s points", dst->count, name);
-        flog_info("pts", buf);
+        flog_info("ptsf", buf);
     }
 
     release(buf);

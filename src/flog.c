@@ -107,7 +107,7 @@ void flog_config_modes(
                     idx += snprintf(s + idx, MAX_PAGE_SIZ - idx, "dbug,");
                 s[idx - 1] = 0;
             }
-            flog(NULL, "flog", s);
+            flog(NULL, NULL, s);
             release(s);
             return;
         }
@@ -116,7 +116,7 @@ void flog_config_modes(
     {
         if(log_file != -1)
         {
-            flog(NULL, "flog", "logging disabled");
+            flog(NULL, NULL, "logging disabled");
             close(log_file);
         }
         log_file = -1;
@@ -161,17 +161,20 @@ static void flog(
     char * ts = alloc();
     timestamp(ts);
 
+    if(severity == NULL)
+        severity = "    ";
+    if(context == NULL)
+        context = "    ";
+
     if(multiline(msg))
     {
-        snprintf(s, MAX_PAGE_SIZ, "%22s | %4s | %4s | [\n%s%s]\n", ts,
-            severity == NULL ? "    " : severity, context, msg,
-            ends_in_new_line(msg) ? "" : "\n");
+        snprintf(s, MAX_PAGE_SIZ, "%22s | %4s | %4s | [\n%s%s]\n", ts, severity,
+            context, msg, ends_in_new_line(msg) ? "" : "\n");
     }
     else
     {
-        snprintf(s, MAX_PAGE_SIZ, "%22s | %4s | %4s | %s%s", ts,
-            severity == NULL ? "    " : severity, context, msg,
-            ends_in_new_line(msg) ? "" : "\n");
+        snprintf(s, MAX_PAGE_SIZ, "%22s | %4s | %4s | %s%s", ts, severity,
+            context, msg, ends_in_new_line(msg) ? "" : "\n");
     }
 
     if(log_dest & LOG_DEST_STDOUT)
@@ -233,7 +236,7 @@ static void open_log_file()
             s[idx - 1] = 0;
         }
 
-        flog(NULL, "flog", s);
+        flog(NULL, NULL, s);
         release(s);
     }
 }
@@ -276,10 +279,10 @@ void build_info(
         YN(CAN_RESIGN));
     if(CAN_RESIGN)
     {
-        idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx, "  Bellow win rate: %.2f\n",
-            UCT_RESIGN_WINRATE);
-        idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx, "  Minimum simulations: %u\n",
-            UCT_RESIGN_PLAYOUTS);
+        idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx,
+            "  Bellow win rate: %.2f\n", UCT_RESIGN_WINRATE);
+        idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx,
+            "  Minimum simulations: %u\n", UCT_RESIGN_PLAYOUTS);
     }
     idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx, "Can stop MCTS early: %s\n",
         YN(UCT_CAN_STOP_EARLY));
@@ -388,7 +391,7 @@ void flog_crit(
     if((log_mode & LOG_MODE_ERROR) != 0)
     {
         flog("crit", ctx, msg);
-        flog(NULL, "flog", "execution aborted due to program panic");
+        flog(NULL, NULL, "execution aborted due to program panic");
     }
 
     exit(EXIT_FAILURE);

@@ -55,7 +55,7 @@ d32 read_binary_file(
         char * s = alloc();
         snprintf(s, MAX_PAGE_SIZ, "file %s longer than buffer available for r\
 eading\n", filename);
-        flog_crit("fio", s);
+        flog_crit("file", s);
         release(s);
     }
 
@@ -103,7 +103,7 @@ d32 read_ascii_file(
         char * s = alloc();
         snprintf(s, MAX_PAGE_SIZ, "file %s longer than buffer available for r\
 eading", filename);
-        flog_crit("fio", s);
+        flog_crit("file", s);
         release(s);
     }
 
@@ -147,13 +147,13 @@ static void _recurse_find_files(
             continue;
         u32 strl = strlen(root) + strlen(entry->d_name) + 2;
         if(strl >= MAX_PATH_SIZ)
-            flog_crit("fio", "path too long");
+            flog_crit("file", "path too long");
 
         if(!ends_in(entry->d_name, extension)) /* try following as if folder */
         {
             char * path = (char *)malloc(strl);
             if(path == NULL)
-                flog_crit("fio", "find files: system out of memory");
+                flog_crit("file", "find files: system out of memory");
 
             snprintf(path, strl, "%s%s/", root, entry->d_name);
             _recurse_find_files(path, extension, filenames);
@@ -164,12 +164,12 @@ static void _recurse_find_files(
             allocated += strl;
             filenames[filenames_found] = (char *)malloc(strl);
             if(filenames[filenames_found] == NULL)
-                flog_crit("fio", "find files: system out of memory");
+                flog_crit("file", "find files: system out of memory");
 
             snprintf(filenames[filenames_found], strl, "%s%s", root, entry->d_name);
             filenames_found++;
             if(filenames_found == _max_files)
-                flog_crit("fio", "maximum number of files reached");
+                flog_crit("file", "maximum number of files reached");
         }
     }
     closedir(dir);

@@ -113,7 +113,7 @@ static bool process_opening_book_line(
 
     ob_entry * obe = malloc(sizeof(ob_entry));
     if(obe == NULL)
-        flog_crit("joseki", "system out of memory");
+        flog_crit("jski", "system out of memory");
 
     obe->hash = hash;
     memcpy(obe->p, packed_board, PACKED_BOARD_SIZ);
@@ -168,7 +168,7 @@ static bool process_state_play_line(
 
     ob_entry * obe = malloc(sizeof(ob_entry));
     if(obe == NULL)
-        flog_crit("joseki", "system out of memory");
+        flog_crit("jski", "system out of memory");
 
     obe->hash = hash;
     memcpy(obe->p, packed_board, PACKED_BOARD_SIZ);
@@ -192,7 +192,7 @@ void discover_opening_books()
     */
     joseki_table = (ob_entry **)calloc(NR_BUCKETS, sizeof(ob_entry *));
     if(joseki_table == NULL)
-        flog_crit("joseki", "system out of memory");
+        flog_crit("jski", "system out of memory");
 
     /*
     Discover .ob files
@@ -203,7 +203,7 @@ void discover_opening_books()
 
     char * buf = get_buffer();
     snprintf(buf, MAX_PAGE_SIZ, "found %u opening book files", files_found);
-    flog_info("joseki", buf);
+    flog_info("jski", buf);
 
     for(u32 i = 0; i < files_found; ++i){
         open_rule_file(filenames[i]);
@@ -220,7 +220,7 @@ void discover_opening_books()
         buf = get_buffer();
         snprintf(buf, MAX_PAGE_SIZ, "read %s (%u rules)", filenames[i],
             rules_found);
-        flog_info("joseki", buf);
+        flog_info("jski", buf);
 
         free(filenames[i]);
     }
@@ -233,7 +233,7 @@ void discover_opening_books()
 
     buf = get_buffer();
     snprintf(buf, MAX_PAGE_SIZ, "found %u state,play files", files_found);
-    flog_info("joseki", buf);
+    flog_info("jski", buf);
 
     for(u32 i = 0; i < files_found; ++i)
     {
@@ -250,7 +250,7 @@ void discover_opening_books()
         buf = get_buffer();
         snprintf(buf, MAX_PAGE_SIZ, "read %s (%u rules)", filenames[i],
             rules_found);
-        flog_info("joseki", buf);
+        flog_info("jski", buf);
 
         free(filenames[i]);
     }
@@ -289,7 +289,7 @@ bool opening_book(
     if(test_ko(state, m, BLACK_STONE))
         return false;
 
-    flog_info("joseki", "transition rule found");
+    flog_info("jski", "transition rule found");
 
     out_b->tested[m] = true;
     out_b->value[m] = 1.0;
