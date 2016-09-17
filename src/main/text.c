@@ -201,7 +201,6 @@ static void text_print_score()
 }
 
 void main_text(bool is_black){
-    flog_set_print_to_stderr(false);
     flog_info("gtp", "matilda now running over text interface");
     char * s = alloc();
     build_info(s);

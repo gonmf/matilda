@@ -206,7 +206,14 @@ n");
 lost on time.\n\n");
 
             fprintf(stderr, "        \033[1m-t, --time <value>\033[0m\n\n");
-            fprintf(stderr, "        Override the time system in use. A composite overtime format is used\n        with four components: main time, number of periods, time per period and\n        number of stones per period. Examples: 90m (suddent death), 10m+3x10s\n        (Canadian overtime), 1h+30s/5 (Japanese byo-yomi), 15m+3x30s/10 (mixed).\n        For no time limits use 0 main time and 0 period stones, or the keyword\n        infinite. Example: 0+1m/0, infinite.\n\n        Time units available: ms (milliseconds), s (seconds), m (minutes), h\n        (hours). Main time value 0 does not accept a unit.\n\n");
+            fprintf(stderr, "        Override the time system in use. A composi\
+te overtime format is used\n        with four components: main time, number of \
+periods, time per period and\n        number of stones per period. Examples: 90\
+m (suddent death), 10m+3x10s\n        (Canadian overtime), 1h+30s/5 (Japanese b\
+yo-yomi), 15m+3x30s/10 (mixed).\n        For no time limits use 0 main time and\
+ 0 period stones, or the keyword\n        infinite. Example: 0+1m/0, infinite.\
+ \n\n        Time units available: ms (milliseconds), s (seconds), m (minutes),\
+  h\n        (hours). Main time value 0 does not accept a unit.\n\n");
 
             fprintf(stderr, "        \033[1m--think_in_opt_time\033[0m\n\n");
             fprintf(stderr, "        Continue thinking in the background while \
@@ -224,7 +231,7 @@ in the opponents turn.\n\n");
         fprintf(stderr, "        \033[1m--disable_opening_books\033[0m\n\n");
         fprintf(stderr, "        Disable the use of opening books.\n\n");
 
-        fprintf(stderr, "        \033[1m-l, --log <modes>\033[0m\n\n");
+        fprintf(stderr, "        \033[1m-l, --log <mask>\033[0m\n\n");
         fprintf(stderr, "        Set the message types to log to file and print\
  to the standard error\n        file descriptor. The available modes are:\n\n  \
         e - Error messages\n          w - Warning messages\n          p - Proto\
@@ -232,6 +239,12 @@ col messages\n          i - Informational messages\n          d - Debugging mes\
 sages\n\n        Default setting: --log ew\n        Leave empty for no logging.\
  Notice log printing to the standard error\n        file descriptor may be mute\
 d in text mode.\n\n");
+
+        fprintf(stderr, "        \033[1m--log-dest <mask>\033[0m\n\n");
+        fprintf(stderr, "        Set the log destination. The available destina\
+tions are:\n\n          o - Standard output\n          e - Standard error file \
+descriptor\n          f - File (matilda_date.log)\n\n        Default setting: -\
+-log ef\n\n");
 
         fprintf(stderr, "        \033[1m--memory <number>\033[0m\n\n");
         fprintf(stderr, "        Override the available memory for the MCTS tra\
@@ -276,7 +289,11 @@ int main(
     fprintf(stderr, "matilda - Go/Igo/Weiqi/Baduk computer player\n\n");
 
     alloc_init();
-    config_logging(DEFAULT_LOG_MODES);
+
+    flog_config_modes(DEFAULT_LOG_MODES);
+    flog_config_destinations(LOG_DEST_FILE); // default for text mode
+    bool flog_dest_set = false;
+
     bool use_gtp = (isatty(STDIN_FILENO) == 0);
     bool color_set = false;
     bool human_player_color = true;
@@ -313,10 +330,19 @@ int main(
             < argc - 1)
         {
             if(strcmp(argv[i + 1], "text") == 0)
+            {
                 use_gtp = false;
+                if(!flog_dest_set)
+                    flog_config_destinations(LOG_DEST_FILE);
+            }
             else
                 if(strcmp(argv[i + 1], "gtp") == 0)
+                {
                     use_gtp = true;
+                    if(!flog_dest_set)
+                        flog_config_destinations(LOG_DEST_STDERR |
+                            LOG_DEST_FILE);
+                }
                 else
                 {
                     fprintf(stderr, "illegal format for mode\n");
@@ -353,13 +379,13 @@ int main(
         {
             if(i == argc - 1)
             {
-                config_logging(0);
+                flog_config_modes(0);
                 continue;
             }
 
             if(argv[i + 1][0] == '-')
             {
-                config_logging(0);
+                flog_config_modes(0);
                 continue;
             }
 
@@ -368,34 +394,64 @@ int main(
             {
                 if(argv[i + 1][j] == 'e')
                 {
-                    mode |= LOG_CRITICAL;
+                    mode |= LOG_MODE_ERROR;
                     continue;
                 }
                 if(argv[i + 1][j] == 'w')
                 {
-                    mode |= LOG_WARNING;
+                    mode |= LOG_MODE_WARN;
                     continue;
                 }
                 if(argv[i + 1][j] == 'p')
                 {
-                    mode |= LOG_PROTOCOL;
+                    mode |= LOG_MODE_PROT;
                     continue;
                 }
                 if(argv[i + 1][j] == 'i')
                 {
-                    mode |= LOG_INFORMATION;
+                    mode |= LOG_MODE_INFO;
                     continue;
                 }
                 if(argv[i + 1][j] == 'd')
                 {
-                    mode |= LOG_DEBUG;
+                    mode |= LOG_MODE_DEBUG;
                     continue;
                 }
 
                 fprintf(stderr, "illegal logging mode: %c\n", argv[i + 1][j]);
                 exit(EXIT_FAILURE);
             }
-            config_logging(mode);
+            flog_config_modes(mode);
+
+            ++i;
+            continue;
+        }
+        if(strcmp(argv[i], "--log-dest") == 0 && i < argc - 1)
+        {
+            u16 dest = 0;
+            for(u16 j = 0; argv[i + 1][j]; ++j)
+            {
+                if(argv[i + 1][j] == 'o')
+                {
+                    dest |= LOG_DEST_STDOUT;
+                    continue;
+                }
+                if(argv[i + 1][j] == 'e')
+                {
+                    dest |= LOG_DEST_STDERR;
+                    continue;
+                }
+                if(argv[i + 1][j] == 'f')
+                {
+                    dest |= LOG_DEST_FILE;
+                    continue;
+                }
+
+                fprintf(stderr, "illegal logging destination: %c\n", argv[i + 1][j]);
+                exit(EXIT_FAILURE);
+            }
+            flog_config_destinations(dest);
+            flog_dest_set = true;
 
             ++i;
             continue;
@@ -427,7 +483,8 @@ int main(
                 char * s1 = alloc();
                 char * s2 = alloc();
                 time_system_to_str(s1, &current_clock_black);
-                snprintf(s2, MAX_PAGE_SIZ, "Clock set to %s for both players.\n", s1);
+                snprintf(s2, MAX_PAGE_SIZ,
+                    "Clock set to %s for both players.\n", s1);
                 fprintf(stderr, "%s", s2);
                 release(s2);
                 release(s1);
@@ -478,8 +535,8 @@ int main(
             i += 2;
             continue;
         }
-        if((strcmp(argv[i], "-d") == 0 || strcmp(argv[i], "--data") == 0) && i <
-            argc - 1)
+        if((strcmp(argv[i], "-d") == 0 || strcmp(argv[i], "--data") == 0) &&
+            i < argc - 1)
         {
             if(!set_data_folder(argv[i + 1]))
             {
@@ -511,8 +568,8 @@ int main(
             continue;
         }
 
-        fprintf(stderr, "Unknown argument supplied: %s\nStart with --help \
-flag for usage information.\n", argv[i]);
+        fprintf(stderr, "Unknown argument supplied: %s\nStart with --help flag \
+for usage information.\n", argv[i]);
         return EXIT_FAILURE;
     }
 

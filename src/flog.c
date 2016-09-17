@@ -31,11 +31,14 @@ crashes, but it is impossible to guarantee this in all cases.
 #include "version.h"
 
 static int log_file = -1;
-static u16 log_mode = 0;
 static char log_filename[32];
-static bool print_to_stderr = true;
-static char * _tmp_buffer = NULL;
-
+/*
+By default print everything to standard output. Only the main matilda executable
+changes this by default.
+*/
+static u16 log_mode = (LOG_MODE_ERROR | LOG_MODE_WARN | LOG_MODE_PROT |
+    LOG_MODE_INFO | LOG_MODE_DEBUG);
+static u16 log_dest = LOG_DEST_STDOUT;
 
 /*
 For non-default values for build_info
@@ -73,7 +76,7 @@ static void flog(
 Sets the logging messages that are written to file based on a mask of the
 combination of available message types. See flog.h for more information.
 */
-void config_logging(
+void flog_config_modes(
     u16 new_mode
 ){
     if(new_mode == log_mode)
@@ -92,15 +95,15 @@ void config_logging(
                 snprintf(s + idx, MAX_PAGE_SIZ - idx, "none");
             else
             {
-                if(log_mode & LOG_CRITICAL)
+                if(log_mode & LOG_MODE_ERROR)
                     idx += snprintf(s + idx, MAX_PAGE_SIZ - idx, "crit,");
-                if(log_mode & LOG_WARNING)
+                if(log_mode & LOG_MODE_WARN)
                     idx += snprintf(s + idx, MAX_PAGE_SIZ - idx, "warn,");
-                if(log_mode & LOG_PROTOCOL)
+                if(log_mode & LOG_MODE_PROT)
                     idx += snprintf(s + idx, MAX_PAGE_SIZ - idx, "prot,");
-                if(log_mode & LOG_INFORMATION)
+                if(log_mode & LOG_MODE_INFO)
                     idx += snprintf(s + idx, MAX_PAGE_SIZ - idx, "info,");
-                if(log_mode & LOG_DEBUG)
+                if(log_mode & LOG_MODE_DEBUG)
                     idx += snprintf(s + idx, MAX_PAGE_SIZ - idx, "dbug,");
                 s[idx - 1] = 0;
             }
@@ -123,13 +126,12 @@ void config_logging(
 }
 
 /*
-Set whether to also print messages to the standard error file descriptor.
-(On by default)
+    Define the destinations for logging.
 */
-void flog_set_print_to_stderr(
-    bool print
+void flog_config_destinations(
+    u16 new_dest
 ){
-    print_to_stderr = print;
+    log_dest = new_dest;
 }
 
 static bool ends_in_new_line(
@@ -151,9 +153,11 @@ static void flog(
     const char * context,
     const char * msg
 ){
-    open_log_file();
-    char * s = _tmp_buffer;
+    if(!log_dest)
+        return;
 
+    // Prepare payload
+    char * s = alloc();
     char * ts = alloc();
     timestamp(ts);
 
@@ -170,22 +174,32 @@ static void flog(
             ends_in_new_line(msg) ? "" : "\n");
     }
 
-    if(print_to_stderr)
-        fprintf(stderr, "%s", s);
+    if(log_dest & LOG_DEST_STDOUT)
+    {
+        fprintf(stdout, "%s", s);
+    }
 
-    u32 len = strlen(s);
-    write(log_file, s, len);
-    fsync(log_file);
+    if(log_dest & LOG_DEST_STDERR)
+    {
+        fprintf(stderr, "%s", s);
+    }
+
+    if(log_dest & LOG_DEST_FILE)
+    {
+        open_log_file();
+        u32 len = strlen(s);
+        write(log_file, s, len);
+        fsync(log_file);
+    }
+
     release(ts);
+    release(s);
 }
 
 static void open_log_file()
 {
     if(log_file == -1)
     {
-        if(_tmp_buffer == NULL)
-            _tmp_buffer = malloc(MAX_PAGE_SIZ);
-
         time_t t = time(NULL);
         struct tm tm = *localtime(&t);
         snprintf(log_filename, 32, "matilda_%02u%02u%02u_XXXXXX.log", tm.tm_year
@@ -206,15 +220,15 @@ static void open_log_file()
             snprintf(s + idx, MAX_PAGE_SIZ - idx, "none");
         else
         {
-            if(log_mode & LOG_CRITICAL)
+            if(log_mode & LOG_MODE_ERROR)
                 idx += snprintf(s + idx, MAX_PAGE_SIZ - idx, "crit,");
-            if(log_mode & LOG_WARNING)
+            if(log_mode & LOG_MODE_WARN)
                 idx += snprintf(s + idx, MAX_PAGE_SIZ - idx, "warn,");
-            if(log_mode & LOG_PROTOCOL)
+            if(log_mode & LOG_MODE_PROT)
                 idx += snprintf(s + idx, MAX_PAGE_SIZ - idx, "prot,");
-            if(log_mode & LOG_INFORMATION)
+            if(log_mode & LOG_MODE_INFO)
                 idx += snprintf(s + idx, MAX_PAGE_SIZ - idx, "info,");
-            if(log_mode & LOG_DEBUG)
+            if(log_mode & LOG_MODE_DEBUG)
                 idx += snprintf(s + idx, MAX_PAGE_SIZ - idx, "dbug,");
             s[idx - 1] = 0;
         }
@@ -371,7 +385,7 @@ void flog_crit(
     const char * ctx,
     const char * msg
 ){
-    if((log_mode & LOG_CRITICAL) != 0)
+    if((log_mode & LOG_MODE_ERROR) != 0)
     {
         flog("crit", ctx, msg);
         flog(NULL, "flog", "execution aborted due to program panic");
@@ -388,7 +402,7 @@ void flog_warn(
     const char * ctx,
     const char * msg
 ){
-    if((log_mode & LOG_WARNING) != 0)
+    if((log_mode & LOG_MODE_WARN) != 0)
         flog("warn", ctx, msg);
 }
 
@@ -400,7 +414,7 @@ void flog_prot(
     const char * ctx,
     const char * msg
 ){
-    if((log_mode & LOG_PROTOCOL) != 0)
+    if((log_mode & LOG_MODE_PROT) != 0)
         flog("prot", ctx, msg);
 }
 
@@ -412,7 +426,7 @@ void flog_info(
     const char * ctx,
     const char * msg
 ){
-    if((log_mode & LOG_INFORMATION) != 0)
+    if((log_mode & LOG_MODE_INFO) != 0)
         flog("info", ctx, msg);
 }
 
@@ -424,7 +438,7 @@ void flog_dbug(
     const char * ctx,
     const char * msg
 ){
-    if((log_mode & LOG_DEBUG) != 0)
+    if((log_mode & LOG_MODE_DEBUG) != 0)
         flog("dbug", ctx, msg);
 }
 

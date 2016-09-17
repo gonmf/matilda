@@ -18,33 +18,37 @@ crashes, but it is impossible to guarantee this in all cases.
 
 #include "types.h"
 
-#define LOG_CRITICAL    1
-#define LOG_WARNING     2
-#define LOG_PROTOCOL    4
-#define LOG_INFORMATION 8
-#define LOG_DEBUG       16
+#define LOG_MODE_ERROR  1
+#define LOG_MODE_WARN   2
+#define LOG_MODE_PROT   4
+#define LOG_MODE_INFO   8
+#define LOG_MODE_DEBUG 16
+
+#define LOG_DEST_STDOUT 1
+#define LOG_DEST_STDERR 2
+#define LOG_DEST_FILE   4
 
 #if MATILDA_RELEASE_MODE
-#define DEFAULT_LOG_MODES (LOG_CRITICAL | LOG_WARNING)
+#define DEFAULT_LOG_MODES (LOG_MODE_ERROR | LOG_MODE_WARN)
 #else
-#define DEFAULT_LOG_MODES (LOG_CRITICAL | LOG_WARNING | LOG_DEBUG)
+#define DEFAULT_LOG_MODES (LOG_MODE_ERROR | LOG_MODE_WARN | LOG_MODE_DEBUG)
 #endif
 
+#define DEFAULT_LOG_DESTS (LOG_DEST_STDERR | LOG_DEST_FILE)
 
 /*
 Sets the logging messages that are written to file based on a mask of the
 combination of available message types. See flog.h for more information.
 */
-void config_logging(
+void flog_config_modes(
     u16 new_mode
 );
 
 /*
-Set whether to also print messages to the standard error file descriptor.
-(On by default)
+    Define the destinations for logging.
 */
-void flog_set_print_to_stderr(
-    bool print
+void flog_config_destinations(
+    u16 new_dest
 );
 
 /*
