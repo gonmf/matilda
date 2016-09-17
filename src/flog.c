@@ -291,12 +291,6 @@ void build_info(
             UCT_EARLY_WINRATE);
     idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx,
         "Transpositions table memory: %" PRIu64 " MiB\n", max_size_in_mbs);
-    idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx,
-        "Limit by playouts instead of time: %s\n", YN(LIMIT_BY_PLAYOUTS));
-
-    if(LIMIT_BY_PLAYOUTS)
-        idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx,
-            "  Playouts per turn: %u\n", PLAYOUTS_PER_TURN);
 
     if(pl_skip_saving)
         idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx,

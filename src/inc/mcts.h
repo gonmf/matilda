@@ -50,12 +50,25 @@ case the play selected is a pass. The search is also interrupted if memory runs
 out.
 RETURNS true if a play or pass is suggested instead of resigning
 */
-bool mcts_start(
+bool mcts_start_timed(
     out_board * out_b,
     const board * b,
     bool is_black,
     u64 stop_time,
     u64 early_stop_time
+);
+
+/*
+Performs a MCTS for the selected number of simulations.
+
+The search is interrupted if memory runs out.
+RETURNS true if a play or pass is suggested instead of resigning
+*/
+bool mcts_start_sims(
+    out_board * out_b,
+    const board * b,
+    bool is_black,
+    u32 simulations
 );
 
 /*

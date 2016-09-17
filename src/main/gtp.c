@@ -99,6 +99,7 @@ extern bool resign_on_timeout;
 extern game_record current_game;
 extern time_system current_clock_black;
 extern time_system current_clock_white;
+extern u32 limit_by_playouts;
 
 static bool out_on_time_warning = false;
 
@@ -309,7 +310,8 @@ static void gtp_review_game(
         u64 curr_time = current_time_in_millis();
         u64 stop_time = curr_time + seconds * 1000;
         u64 early_stop_time = curr_time + seconds * 500;
-        evaluate_position(&b, is_black, &out_b, stop_time, early_stop_time);
+        evaluate_position_timed(&b, is_black, &out_b, stop_time,
+            early_stop_time);
 
         move best = select_play_fast(&out_b);
         move actual = current_game.moves[t];
@@ -546,25 +548,32 @@ static void generic_genmove(
     }
 
     u32 time_to_play = 0;
-
-#if !LIMIT_BY_PLAYOUTS
     time_system * curr_clock = is_black ? &current_clock_black :
         &current_clock_white;
 
-    u16 stones = stone_count(current_state.p);
-    time_to_play = calc_time_to_play(curr_clock, stones);
-    if(time_to_play == UINT32_MAX)
-        snprintf(buf, MAX_PAGE_SIZ, "time to play: infinite\n");
+    bool has_play;
+    if(limit_by_playouts > 0)
+    {
+        has_play = evaluate_position_sims(&current_state, is_black, &out_b,
+            limit_by_playouts);
+    }
     else
-        snprintf(buf, MAX_PAGE_SIZ, "time to play: %u.%03us\n",
-            time_to_play / 1000, time_to_play % 1000);
-    flog_info("gtp", buf);
-#endif
+    {
+        u16 stones = stone_count(current_state.p);
+        time_to_play = calc_time_to_play(curr_clock, stones);
+        if(time_to_play == UINT32_MAX)
+            snprintf(buf, MAX_PAGE_SIZ, "time to play: infinite\n");
+        else
+            snprintf(buf, MAX_PAGE_SIZ, "time to play: %u.%03us\n",
+                time_to_play / 1000, time_to_play % 1000);
+        flog_info("gtp", buf);
 
-    u64 stop_time = request_received_mark + time_to_play;
-    u64 early_stop_time = request_received_mark + (time_to_play / 2);
-    bool has_play = evaluate_position(&current_state, is_black, &out_b,
-        stop_time, early_stop_time);
+        u64 stop_time = request_received_mark + time_to_play;
+        u64 early_stop_time = request_received_mark + (time_to_play / 2);
+
+        has_play = evaluate_position_timed(&current_state, is_black, &out_b,
+            stop_time, early_stop_time);
+    }
 
     memcpy(&last_out_board, &out_b, sizeof(out_board));
 
@@ -599,33 +608,34 @@ static void generic_genmove(
         add_play_out_of_order(&current_game, is_black, m);
         current_game.game_finished = false;
 
-#if !LIMIT_BY_PLAYOUTS
-        u32 elapsed = (u32)(current_time_in_millis() -
-            request_received_mark);
-
-        advance_clock(curr_clock, elapsed);
-        if(curr_clock->timed_out)
+        if(limit_by_playouts == 0)
         {
-            if(resign_on_timeout)
+            u32 elapsed = (u32)(current_time_in_millis() -
+                request_received_mark);
+
+            advance_clock(curr_clock, elapsed);
+            if(curr_clock->timed_out)
             {
-                gtp_answer(fp, id, "resign");
+                if(resign_on_timeout)
+                {
+                    gtp_answer(fp, id, "resign");
 
-                snprintf(buf, MAX_PAGE_SIZ, "matilda playing as %s (%c) res\
+                    snprintf(buf, MAX_PAGE_SIZ, "matilda playing as %s (%c) res\
 igns because of timeout\n", is_black ? "black" : "white", is_black ?
-                    BLACK_STONE_CHAR : WHITE_STONE_CHAR);
-                flog_warn("gtp", buf);
+                        BLACK_STONE_CHAR : WHITE_STONE_CHAR);
+                    flog_warn("gtp", buf);
 
-                current_game.game_finished = true;
-                current_game.resignation = true;
-                current_game.final_score = is_black ? -1 : 1;
+                    current_game.game_finished = true;
+                    current_game.resignation = true;
+                    current_game.final_score = is_black ? -1 : 1;
 
 
 
 
 #if 0
 
-                /* TODO just for counting resigns on timeout for paper */
-                flog_dbug("gtp", "TIMEOUT\n");
+                    /* TODO just for counting resigns on timeout for paper */
+                    flog_dbug("gtp", "TIMEOUT\n");
 
 
 #endif
@@ -633,19 +643,19 @@ igns because of timeout\n", is_black ? "black" : "white", is_black ?
 
 
 
-                release(buf);
-                return;
-            }
-            if(!out_on_time_warning)
-            {
-                out_on_time_warning = true;
-                snprintf(buf, MAX_PAGE_SIZ, "matilda is believed to have lo\
+                    release(buf);
+                    return;
+                }
+                if(!out_on_time_warning)
+                {
+                    out_on_time_warning = true;
+                    snprintf(buf, MAX_PAGE_SIZ, "matilda is believed to have lo\
 st on time");
-                flog_warn("gtp", buf);
+                    flog_warn("gtp", buf);
+                }
+                /* we don't do anything else when timed out */
             }
-            /* we don't do anything else when timed out */
         }
-#endif
     }
 
     coord_to_gtp_vertex(buf, m);
@@ -698,7 +708,7 @@ static void gtp_time_settings(
     const char * byo_yomi_time,
     const char * byo_yomi_stones
 ){
-    if(time_system_overriden || LIMIT_BY_PLAYOUTS)
+    if(time_system_overriden || limit_by_playouts > 0)
     {
         flog_warn("gtp", "attempt to set time settings ignored");
         gtp_answer(fp, id, NULL);
@@ -767,7 +777,7 @@ static void gtp_kgs_time_settings(
     const char * byo_yomi_time,
     const char * byo_yomi_stones
 ){
-    if(time_system_overriden || LIMIT_BY_PLAYOUTS)
+    if(time_system_overriden || limit_by_playouts > 0)
     {
         flog_warn("gtp", "attempt to set time settings ignored");
         gtp_answer(fp, id, NULL);
@@ -910,7 +920,7 @@ static void gtp_time_left(
     const char * _time,
     const char * stones
 ){
-    if(time_system_overriden || LIMIT_BY_PLAYOUTS)
+    if(time_system_overriden || limit_by_playouts > 0)
     {
         flog_warn("gtp", "attempt to set time settings ignored");
         gtp_answer(fp, id, NULL);

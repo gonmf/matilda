@@ -363,17 +363,13 @@ case the play selected is a pass. The search is also interrupted if memory runs
 out.
 RETURNS true if a play or pass is suggested instead of resigning
 */
-bool mcts_start(
+bool mcts_start_timed(
     out_board * out_b,
     const board * b,
     bool is_black,
     u64 stop_time,
     u64 early_stop_time
 ){
-    /* really just to mute unused parameter warnings */
-    if(early_stop_time > stop_time)
-        flog_crit("uct", "illegal values for stoppage times");
-
     mcts_init();
 
     bool start_branch_limit[TOTAL_BOARD_SIZ];
@@ -415,43 +411,6 @@ bool mcts_start(
     ran_out_of_memory = false;
     search_stop = false;
     bool stopped_early_by_wr = false;
-
-#if LIMIT_BY_PLAYOUTS
-
-    #pragma omp parallel for
-    for(u32 sim = 0; sim < PLAYOUTS_PER_TURN; ++sim)
-    {
-        bool branch_limit[TOTAL_BOARD_SIZ];
-#if USE_UCT_BRANCH_LIMITER
-        memcpy(branch_limit, start_branch_limit, TOTAL_BOARD_SIZ);
-#endif
-
-        cfg_board cb;
-        cfg_board_clone(&cb, &initial_cfg_board);
-        d16 outcome = mcts_selection(&cb, start_zobrist_hash, is_black,
-            branch_limit);
-        cfg_board_free(&cb);
-        if(outcome == 0)
-        {
-            #pragma omp atomic
-            draws++;
-        }
-        else
-        {
-            if((outcome > 0) == is_black)
-            {
-                #pragma omp atomic
-                wins++;
-            }
-            else
-            {
-                #pragma omp atomic
-                losses++;
-            }
-        }
-    }
-
-#else
 
     do
     {
@@ -498,23 +457,20 @@ bool mcts_start(
                 if(curr_time >= early_stop_time)
                 {
                     if(curr_time >= stop_time)
-                    {
                         search_stop = true;
-                        continue;
-                    }
-                    double wr = ((double)wins) / ((double)(wins + losses));
-                    if(wr >= UCT_EARLY_WINRATE)
+                    else
                     {
-                        stopped_early_by_wr = true;
-                        search_stop = true;
+                        double wr = ((double)wins) / ((double)(wins + losses));
+                        if(wr >= UCT_EARLY_WINRATE)
+                        {
+                            stopped_early_by_wr = true;
+                            search_stop = true;
+                        }
                     }
                 }
 #else
                 if(curr_time >= stop_time)
-                {
                     search_stop = true;
-                    continue;
-                }
 #endif
             }
         }
@@ -522,8 +478,6 @@ bool mcts_start(
 
     }
     while(!search_stop);
-
-#endif
 
     if(ran_out_of_memory)
         flog_warn("uct", "search ran out of memory");
@@ -556,26 +510,168 @@ bool mcts_start(
         if(max_depths[k] > max_depth)
             max_depth = max_depths[k];
 
-    u32 sims = wins + losses;
-    double wr = ((double)wins) / ((double)sims);
+    u32 simulations = wins + losses;
+    double wr = ((double)wins) / ((double)simulations);
 
     if(draws > 0)
     {
-        snprintf(s, MAX_PAGE_SIZ, "search finished (sims=%u, depth=%u, wr\
-=%.2f, draws=%u)\n", sims, max_depth, wr, draws);
+        simulations += draws;
+        snprintf(s, MAX_PAGE_SIZ,
+            "search finished (sims=%u, depth=%u, wr=%.2f, draws=%u)\n",
+            simulations, max_depth, wr, draws);
     }
     else
     {
-        snprintf(s, MAX_PAGE_SIZ, "search finished (sims=%u, depth=%u, wr\
-=%.2f)\n", sims, max_depth, wr);
+        snprintf(s, MAX_PAGE_SIZ,
+            "search finished (sims=%u, depth=%u, wr=%.2f)\n", simulations,
+            max_depth, wr);
     }
     flog_info("uct", s);
 
     release(s);
     cfg_board_free(&initial_cfg_board);
 
-    /* prevent resignation if we have played very few simulations */
-    if(sims >= UCT_RESIGN_PLAYOUTS && wr < UCT_RESIGN_WINRATE)
+    /* prevent resignation unless we have played very few simulations */
+    if(simulations >= UCT_RESIGN_PLAYOUTS && wr < UCT_RESIGN_WINRATE)
+        return false;
+
+    return true;
+}
+
+/*
+Performs a MCTS for the selected number of simulations.
+
+The search is interrupted if memory runs out.
+RETURNS true if a play or pass is suggested instead of resigning
+*/
+bool mcts_start_sims(
+    out_board * out_b,
+    const board * b,
+    bool is_black,
+    u32 simulations
+){
+    mcts_init();
+
+    bool start_branch_limit[TOTAL_BOARD_SIZ];
+#if USE_UCT_BRANCH_LIMITER
+    /* ignore branch limiting if too many stones on the board */
+    u16 stones = stone_count(b->p);
+    if(stones <= TOTAL_BOARD_SIZ / 3)
+    {
+        init_branch_limit(b->p, start_branch_limit);
+        enable_branch_limit = true;
+    }
+    else
+    {
+        memset(start_branch_limit, true, TOTAL_BOARD_SIZ);
+        enable_branch_limit = false;
+    }
+#endif
+
+    u64 start_zobrist_hash = zobrist_new_hash(b);
+    tt_stats * stats = transpositions_lookup_create(b, is_black,
+        start_zobrist_hash);
+    omp_unset_lock(&stats->lock);
+
+    cfg_board initial_cfg_board;
+    cfg_from_board(&initial_cfg_board, b);
+
+    if(stats->expansion_delay != -1)
+    {
+        stats->expansion_delay = -1;
+        init_new_state(stats, &initial_cfg_board, is_black, start_branch_limit);
+    }
+
+    memset(max_depths, 0, sizeof(u16) * MAXIMUM_NUM_THREADS);
+
+    u32 draws = 0;
+    u32 wins = 0;
+    u32 losses = 0;
+
+    ran_out_of_memory = false;
+    search_stop = false;
+
+    #pragma omp parallel for
+    for(u32 sim = 0; sim < simulations; ++sim)
+    {
+        bool branch_limit[TOTAL_BOARD_SIZ];
+#if USE_UCT_BRANCH_LIMITER
+        memcpy(branch_limit, start_branch_limit, TOTAL_BOARD_SIZ);
+#endif
+
+        cfg_board cb;
+        cfg_board_clone(&cb, &initial_cfg_board);
+        d16 outcome = mcts_selection(&cb, start_zobrist_hash, is_black,
+            branch_limit);
+        cfg_board_free(&cb);
+        if(outcome == 0)
+        {
+            #pragma omp atomic
+            draws++;
+        }
+        else
+        {
+            if((outcome > 0) == is_black)
+            {
+                #pragma omp atomic
+                wins++;
+            }
+            else
+            {
+                #pragma omp atomic
+                losses++;
+            }
+        }
+    }
+
+
+    if(ran_out_of_memory)
+        flog_warn("uct", "search ran out of memory");
+
+    char * s = alloc();
+
+    clear_out_board(out_b);
+    out_b->pass = UCT_RESIGN_WINRATE;
+    for(move k = 0; k < stats->plays_count; ++k)
+    {
+        if(stats->plays[k].m == PASS)
+        {
+            out_b->pass = stats->plays[k].mc_q;
+        }
+        else
+        {
+            out_b->tested[stats->plays[k].m] = true;
+            out_b->value[stats->plays[k].m] = uct1_rave(&stats->plays[k]);
+        }
+    }
+
+    u16 max_depth = max_depths[0];
+    for(u16 k = 1; k < MAXIMUM_NUM_THREADS; ++k)
+        if(max_depths[k] > max_depth)
+            max_depth = max_depths[k];
+
+    double wr;
+
+    if(draws > 0)
+    {
+        wr = ((double)wins) / ((double)(wins + losses));
+        snprintf(s, MAX_PAGE_SIZ,
+            "search finished (sims=%u, depth=%u, wr=%.2f, draws=%u)\n",
+            simulations, max_depth, wr, draws);
+    }
+    else
+    {
+        wr = ((double)wins) / ((double)simulations);
+        snprintf(s, MAX_PAGE_SIZ,
+            "search finished (sims=%u, depth=%u, wr=%.2f)\n", simulations,
+            max_depth, wr);
+    }
+    flog_info("uct", s);
+
+    release(s);
+    cfg_board_free(&initial_cfg_board);
+
+    if(wr < UCT_RESIGN_WINRATE)
         return false;
 
     return true;

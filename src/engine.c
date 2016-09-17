@@ -73,7 +73,7 @@ Evaluates the position given the time available to think, by using a number of
 strategies in succession.
 RETURNS true if a play or pass is suggested instead of resigning
 */
-bool evaluate_position(
+bool evaluate_position_timed(
     const board * b,
     bool is_black,
     out_board * out_b,
@@ -92,7 +92,34 @@ bool evaluate_position(
         }
     }
 
-    bool ret = mcts_start(out_b, b, is_black, stop_time, early_stop_time);
+    bool ret = mcts_start_timed(out_b, b, is_black, stop_time, early_stop_time);
+    tt_requires_maintenance = true;
+    return ret;
+}
+
+/*
+Evaluates the position with the number of simulations available.
+RETURNS true if a play or pass is suggested instead of resigning
+*/
+bool evaluate_position_sims(
+    const board * b,
+    bool is_black,
+    out_board * out_b,
+    u32 simulations
+){
+    if(use_opening_book)
+    {
+        board tmp;
+        memcpy(&tmp, b, sizeof(board));
+        d8 reduction = reduce_auto(&tmp, is_black);
+        if(opening_book(out_b, &tmp))
+        {
+            oboard_revert_reduce(out_b, reduction);
+            return true;
+        }
+    }
+
+    bool ret = mcts_start_sims(out_b, b, is_black, simulations);
     tt_requires_maintenance = true;
     return ret;
 }

@@ -33,6 +33,7 @@ extern game_record current_game;
 extern time_system current_clock_black;
 extern time_system current_clock_white;
 extern bool save_all_games_to_file;
+extern u32 limit_by_playouts;
 
 static u8 tips = 3;
 
@@ -116,8 +117,13 @@ static void text_genmove(
     u64 curr_time = current_time_in_millis();
     u64 stop_time = curr_time + milliseconds;
     u64 early_stop_time = curr_time + (milliseconds / 4);
-    bool has_play = evaluate_position(&current_state, is_black, &out_b,
-        stop_time, early_stop_time);
+    bool has_play;
+    if(limit_by_playouts > 0)
+        has_play = evaluate_position_sims(&current_state, is_black, &out_b,
+            limit_by_playouts);
+    else
+        has_play = evaluate_position_timed(&current_state, is_black, &out_b,
+            stop_time, early_stop_time);
 
     if(!has_play)
     {

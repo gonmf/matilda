@@ -35,6 +35,7 @@ time_system current_clock_white;
 bool time_system_overriden = false; /* ignore attempts to change time system */
 bool save_all_games_to_file = false; /* save all games as SGF on gameover */
 bool resign_on_timeout = false; /* resign instead of passing if timed out */
+u32 limit_by_playouts = 0; /* limit MCTS by playouts instead of time */
 clock_t start_cpu_time;
 
 extern u64 max_size_in_mbs;
@@ -198,31 +199,26 @@ the specific mode you want\n        to be used.\n\n");
         fprintf(stderr, "        Select human player color (text mode only).\n\\
 n");
 
+        fprintf(stderr, "        \033[1m--resign_on_timeout\033[0m\n\n");
+        fprintf(stderr, "        Resign if the program believes to have lost on\
+ time.\n\n");
 
-        if(!LIMIT_BY_PLAYOUTS)
-        {
-            fprintf(stderr, "        \033[1m--resign_on_timeout\033[0m\n\n");
-            fprintf(stderr, "        Resign if the program believes to have \
-lost on time.\n\n");
+        fprintf(stderr, "        \033[1m-t, --time <value>\033[0m\n\n");
+        fprintf(stderr, "        Override the time system in use. A composite o\
+vertime format is used\n        with four components: main time, number of peri\
+ods, time per period and\n        number of stones per period. Examples: 90m (s\
+uddent death), 10m+3x10s\n        (Canadian overtime), 1h+30s/5 (Japanese byo-y\
+omi), 15m+3x30s/10 (mixed).\n        For no time limits use 0 main time and 0 p\
+eriod stones, or the keyword\n        infinite. Example: 0+1m/0, infinite.\n\n \
+       Time units available: ms (milliseconds), s (seconds), m (minutes), h\n  \
+      (hours). Main time value 0 does not accept a unit.\n\n");
 
-            fprintf(stderr, "        \033[1m-t, --time <value>\033[0m\n\n");
-            fprintf(stderr, "        Override the time system in use. A composi\
-te overtime format is used\n        with four components: main time, number of \
-periods, time per period and\n        number of stones per period. Examples: 90\
-m (suddent death), 10m+3x10s\n        (Canadian overtime), 1h+30s/5 (Japanese b\
-yo-yomi), 15m+3x30s/10 (mixed).\n        For no time limits use 0 main time and\
- 0 period stones, or the keyword\n        infinite. Example: 0+1m/0, infinite.\
- \n\n        Time units available: ms (milliseconds), s (seconds), m (minutes),\
-  h\n        (hours). Main time value 0 does not accept a unit.\n\n");
+        fprintf(stderr, "        \033[1m--think_in_opt_time\033[0m\n\n");
+        fprintf(stderr, "        Continue thinking in the background while in t\
+he opponents turn.\n\n");
 
-            fprintf(stderr, "        \033[1m--think_in_opt_time\033[0m\n\n");
-            fprintf(stderr, "        Continue thinking in the background while \
-in the opponents turn.\n\n");
-
-            fprintf(stderr, "        \033[1m--disable_gtp_time_control\033[0m\n\
-\n");
-            fprintf(stderr, "        Disable time control GTP commands.\n\n");
-        }
+        fprintf(stderr, "        \033[1m--disable_gtp_time_control\033[0m\n\n");
+        fprintf(stderr, "        Disable time control GTP commands.\n\n");
 
         fprintf(stderr, "        \033[1m-d, --data <path>\033[0m\n\n");
         fprintf(stderr, "        Override the data folder path. The folder must\
@@ -254,6 +250,9 @@ nspositions table, in MiB.\n        The default is %u MiB\n\n",
         fprintf(stderr, "        \033[1m--save_all\033[0m\n\n");
         fprintf(stderr, "        Save all finished games to the data folder as \
 SGF.\n\n");
+
+        fprintf(stderr, "        \033[1m--playouts <number>\033[0m\n\n");
+        fprintf(stderr, "        Play with a fixed number of simulations per turn instead of limited by\n        time. Cannot be used with time related flags.\n\n");
 
         fprintf(stderr, "        \033[1m--threads <number>\033[0m\n\n");
         fprintf(stderr, "        Override the number of OpenMP threads to use. \
@@ -296,6 +295,7 @@ int main(
 
     bool use_gtp = (isatty(STDIN_FILENO) == 0);
     bool color_set = false;
+    bool time_related_set = false;
     bool human_player_color = true;
     bool think_in_opt_turn = false;
     set_time_per_turn(&current_clock_black, DEFAULT_TIME_PER_TURN);
@@ -326,8 +326,8 @@ int main(
 
     for(int i = 1; i < argc; ++i)
     {
-        if((strcmp(argv[i], "-m") == 0 || strcmp(argv[i], "--mode") == 0) && i
-            < argc - 1)
+        if((strcmp(argv[i], "-m") == 0 || strcmp(argv[i], "--mode") == 0) &&
+            i < argc - 1)
         {
             if(strcmp(argv[i + 1], "text") == 0)
             {
@@ -352,6 +352,7 @@ int main(
             ++i;
             continue;
         }
+
         if((strcmp(argv[i], "-c") == 0 || strcmp(argv[i], "--color") == 0) && i
             < argc - 1)
         {
@@ -370,11 +371,13 @@ int main(
             color_set = true;
             continue;
         }
+
         if(strcmp(argv[i], "--save_all") == 0)
         {
             save_all_games_to_file = true;
             continue;
         }
+
         if((strcmp(argv[i], "-l") == 0 || strcmp(argv[i], "--log") == 0))
         {
             if(i == argc - 1)
@@ -426,6 +429,7 @@ int main(
             ++i;
             continue;
         }
+
         if(strcmp(argv[i], "--log-dest") == 0 && i < argc - 1)
         {
             u16 dest = 0;
@@ -457,51 +461,74 @@ int main(
             continue;
         }
 
-        if(!LIMIT_BY_PLAYOUTS)
+        if(strcmp(argv[i], "--think_in_opt_time") == 0)
         {
-            if(strcmp(argv[i], "--think_in_opt_time") == 0)
-            {
-                think_in_opt_turn = true;
-                continue;
-            }
-            if(strcmp(argv[i], "-t") == 0 || strcmp(argv[i], "--time") == 0)
-            {
-                time_system tmp;
-                if(!str_to_time_system(&tmp, argv[i + 1]))
-                {
-                    fprintf(stderr, "illegal time system format\n");
-                    exit(EXIT_FAILURE);
-                }
+            think_in_opt_turn = true;
+            time_related_set = true;
+            continue;
+        }
 
-                set_time_system(&current_clock_black, tmp.main_time,
-                    tmp.byo_yomi_time, tmp.byo_yomi_stones,
-                    tmp.byo_yomi_periods);
-                set_time_system(&current_clock_white, tmp.main_time,
-                    tmp.byo_yomi_time, tmp.byo_yomi_stones,
-                    tmp.byo_yomi_periods);
-
-                char * s1 = alloc();
-                char * s2 = alloc();
-                time_system_to_str(s1, &current_clock_black);
-                snprintf(s2, MAX_PAGE_SIZ,
-                    "Clock set to %s for both players.\n", s1);
-                fprintf(stderr, "%s", s2);
-                release(s2);
-                release(s1);
-
-                ++i;
-                continue;
-            }
-            if(strcmp(argv[i], "--disable_gtp_time_control") == 0)
+        if(strcmp(argv[i], "-t") == 0 || strcmp(argv[i], "--time") == 0)
+        {
+            time_system tmp;
+            if(!str_to_time_system(&tmp, argv[i + 1]))
             {
-                time_system_overriden = true;
-                continue;
+                fprintf(stderr, "illegal time system format\n");
+                exit(EXIT_FAILURE);
             }
-            if(strcmp(argv[i], "--resign_on_timeout") == 0)
+
+            set_time_system(&current_clock_black, tmp.main_time,
+                tmp.byo_yomi_time, tmp.byo_yomi_stones,
+                tmp.byo_yomi_periods);
+            set_time_system(&current_clock_white, tmp.main_time,
+                tmp.byo_yomi_time, tmp.byo_yomi_stones,
+                tmp.byo_yomi_periods);
+
+            char * s1 = alloc();
+            char * s2 = alloc();
+            time_system_to_str(s1, &current_clock_black);
+            snprintf(s2, MAX_PAGE_SIZ,
+                "Clock set to %s for both players.\n", s1);
+            fprintf(stderr, "%s", s2);
+            release(s2);
+            release(s1);
+
+            ++i;
+            time_related_set = true;
+            continue;
+        }
+
+        if(strcmp(argv[i], "--disable_gtp_time_control") == 0)
+        {
+            time_system_overriden = true;
+            continue;
+        }
+
+        if(strcmp(argv[i], "--resign_on_timeout") == 0)
+        {
+            resign_on_timeout = true;
+            time_related_set = true;
+            continue;
+        }
+
+        if(strcmp(argv[i], "--playouts") == 0 && i < argc - 1)
+        {
+            d32 v;
+            if(!parse_int(&v, argv[i + 1]))
             {
-                resign_on_timeout = true;
-                continue;
+                fprintf(stderr, "format error in number of playouts\n");
+                exit(EXIT_FAILURE);
             }
+
+            if(v < 1)
+            {
+                fprintf(stderr, "invalid number of playouts\n");
+                exit(EXIT_FAILURE);
+            }
+
+            limit_by_playouts = v;
+            ++i;
+            continue;
         }
 
         if(strcmp(argv[i], "--disable_opening_books") == 0)
@@ -509,6 +536,7 @@ int main(
             set_use_of_opening_book(false);
             continue;
         }
+
         if(strcmp(argv[i], "--memory") == 0 && i < argc - 1)
         {
             d32 v;
@@ -529,12 +557,14 @@ int main(
             ++i;
             continue;
         }
+
         if(strcmp(argv[i], "--set") == 0 && i < argc - 2)
         {
             set_parameter(argv[i + 1], argv[i + 2]);
             i += 2;
             continue;
         }
+
         if((strcmp(argv[i], "-d") == 0 || strcmp(argv[i], "--data") == 0) &&
             i < argc - 1)
         {
@@ -548,6 +578,7 @@ int main(
             ++i;
             continue;
         }
+
         if(strcmp(argv[i], "--threads") == 0 && i < argc - 1)
         {
             d32 v;
@@ -584,9 +615,16 @@ for usage information.\n", argv[i]);
 
     if(use_gtp && color_set)
     {
-        fprintf(stderr, "--color flag set outside of text mode\n");
+        fprintf(stderr, "--color option set outside of text mode\n");
         exit(EXIT_FAILURE);
     }
+
+    if(time_related_set && limit_by_playouts > 0)
+    {
+        fprintf(stderr, "--playouts option set as well as time settings\n");
+        exit(EXIT_FAILURE);
+    }
+
 
     if(!use_gtp)
         fclose(stderr);
@@ -600,10 +638,9 @@ for usage information.\n", argv[i]);
     flog_warn("init", "running on debug mode");
 #endif
 
-#if LIMIT_BY_PLAYOUTS
-    flog_warn("init", "MCTS using a constant number of simulations per turn");
-#endif
-
+    if(limit_by_playouts)
+        flog_warn("init",
+            "MCTS using a constant number of simulations per turn");
 
     assert_data_folder_exists();
     rand_init();

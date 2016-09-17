@@ -285,7 +285,7 @@ t: %u)\n", ob_depth);
 
             u64 curr_time = current_time_in_millis();
             u64 stop_time = curr_time + SECS_PER_TURN * 1000;
-            mcts_start(&out_b, &b, true, stop_time, stop_time);
+            mcts_start_timed(&out_b, &b, true, stop_time, stop_time);
 
             move best = select_play_fast(&out_b);
             tt_clean_all();

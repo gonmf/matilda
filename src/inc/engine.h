@@ -40,14 +40,25 @@ void set_use_of_opening_book(
 /*
 Evaluates the position given the time available to think, by using a number of
 strategies in succession.
-RETURNS false if the player can resign
+RETURNS true if a play or pass is suggested instead of resigning
 */
-bool evaluate_position(
+bool evaluate_position_timed(
     const board * b,
     bool is_black,
     out_board * out_b,
     u64 stop_time,
     u64 early_stop_time
+);
+
+/*
+Evaluates the position with the number of simulations available.
+RETURNS true if a play or pass is suggested instead of resigning
+*/
+bool evaluate_position_sims(
+    const board * b,
+    bool is_black,
+    out_board * out_b,
+    u32 simulations
 );
 
 /*

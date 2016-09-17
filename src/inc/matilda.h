@@ -14,7 +14,7 @@ Board/goban size given by the length of one side.
 
 EXPECTED: 5, 7, 9, 11, 13, 15, 17, 19 or 21
 */
-#define BOARD_SIZ 19
+#define BOARD_SIZ 9
 
 /*
 Default komidashi used, multiplied by 2 to give an integer number.
@@ -28,7 +28,7 @@ EXPECTED: 0 to 15
 
 /*
 Default memory available for use by transposition tables, in MiB.
-Take not that the real total memory used will be a few MiB more.
+Take note that the real total memory used will be a few MiB more.
 
 EXPECTED: 10 to 64000
 */
@@ -79,18 +79,6 @@ Set whether the program should resign or pass, when losing hard.
 EXPECTED: 0 or 1
 */
 #define CAN_RESIGN 1
-
-
-/*
-Change these two lines to ignore time control systems and use a fixed number of
-playouts per turn in the MCTS-UCT RAVE algorithm.
-MCTS early stopping is also deactivated, even if memory runs out.
-
-EXPECTED: 0 or 1
-EXPECTED: 100 to 100000
-*/
-#define LIMIT_BY_PLAYOUTS 0
-#define PLAYOUTS_PER_TURN 1000
 
 
 /*
@@ -196,14 +184,6 @@ This is required for fsync in glibc versions < 2.8 and for mkstemps
 
 #if UCT_EXPANSION_DELAY < 0
 #error Error: illegal UCT expansion delay value.
-#endif
-
-#if LIMIT_BY_PLAYOUTS != 0 && PLAYOUTS_PER_TURN < 1
-#error Error: illegal number of playouts per turn (< 1).
-#endif
-
-#if LIMIT_BY_PLAYOUTS == 0 && DEFAULT_TIME_PER_TURN < 10
-#error Error: illegal time available per turn (< 10ms).
 #endif
 
 #if MAXIMUM_NUM_THREADS < 1
