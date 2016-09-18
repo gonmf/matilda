@@ -168,18 +168,13 @@ static void flog(
 
     if(multiline(msg))
     {
-        snprintf(s, MAX_PAGE_SIZ, "%22s | %4s | %4s | [\n%s%s]\n", ts, severity,
+        snprintf(s, MAX_PAGE_SIZ, "%s | %4s | %4s | [\n%s%s]\n", ts, severity,
             context, msg, ends_in_new_line(msg) ? "" : "\n");
     }
     else
     {
-        snprintf(s, MAX_PAGE_SIZ, "%22s | %4s | %4s | %s%s", ts, severity,
+        snprintf(s, MAX_PAGE_SIZ, "%s | %4s | %4s | %s%s", ts, severity,
             context, msg, ends_in_new_line(msg) ? "" : "\n");
-    }
-
-    if(log_dest & LOG_DEST_STDF)
-    {
-        fprintf(stderr, "%s", s);
     }
 
     if(log_dest & LOG_DEST_FILE)
@@ -188,6 +183,11 @@ static void flog(
         u32 len = strlen(s);
         write(log_file, s, len);
         fsync(log_file);
+    }
+
+    if(log_dest & LOG_DEST_STDF)
+    {
+        fprintf(stderr, "%s", s);
     }
 
     release(ts);
@@ -211,6 +211,7 @@ static void open_log_file()
         }
 
         char * s = alloc();
+
         u32 idx = 0;
         idx += snprintf(s + idx, MAX_PAGE_SIZ - idx,
             "logging enabled with mask: ");

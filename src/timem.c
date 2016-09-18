@@ -99,9 +99,7 @@ void timestamp(
 ){
     time_t t = time(NULL);
     struct tm tm = *localtime(&t);
-    u64 millis = current_time_in_millis();
 
-    snprintf(buffer, MAX_PAGE_SIZ, "%02u-%02u-%02u %02u:%02u:%02u.%04u",
-        tm.tm_year % 100, tm.tm_mon, tm.tm_mday, tm.tm_hour, tm.tm_min,
-        tm.tm_sec, (u32)(millis % 1000));
+    snprintf(buffer, MAX_PAGE_SIZ, "%02u:%02u:%02u", tm.tm_hour, tm.tm_min,
+        tm.tm_sec);
 }
