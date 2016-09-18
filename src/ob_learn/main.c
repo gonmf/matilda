@@ -31,7 +31,7 @@ a state->play file (.spb), to be used for further play suggestions besides
 #include "version.h"
 
 
-#define SECS_PER_TURN 30
+#define SECS_PER_TURN 60
 
 #define MAX_FILES 500000
 #define TABLE_BUCKETS 4957
@@ -40,7 +40,7 @@ static char * filenames[MAX_FILES];
 
 static bool relax_komi = true;
 static d32 ob_depth = TOTAL_BOARD_SIZ / 2;
-static d32 minimum_samples = 32;
+static d32 minimum_samples = 20;
 
 
 typedef struct __simple_state_transition_ {
