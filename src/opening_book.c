@@ -213,6 +213,7 @@ void discover_opening_books()
                 ++rules_found;
         }
         close_rule_file();
+        ob_rules += rules_found;
 
         snprintf(s, MAX_PAGE_SIZ, "read %s (%u rules)\n", filenames[i],
             rules_found);

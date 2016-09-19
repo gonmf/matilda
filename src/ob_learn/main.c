@@ -9,6 +9,7 @@ a state->play file (.spb), to be used for further play suggestions besides
 
 #include <unistd.h>
 #include <stdlib.h>
+#include <time.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -41,7 +42,6 @@ static char * filenames[MAX_FILES];
 static bool relax_komi = true;
 static d32 ob_depth = TOTAL_BOARD_SIZ / 2;
 static d32 minimum_samples = 20;
-
 
 typedef struct __simple_state_transition_ {
     u8 p[PACKED_BOARD_SIZ];
@@ -248,17 +248,20 @@ t: %u)\n", ob_depth);
 
     printf("\nEvaluating game states and saving best play\n");
 
-    snprintf(buf, MAX_PAGE_SIZ, "%soutput.spb", get_data_folder());
-    timestamp(ts);
-    printf("%s: Created output file %s\n\n\n", ts, buf);
-    FILE * fp = fopen(buf, "w");
+    char * log_filename = alloc();
+    time_t t = time(NULL);
+    struct tm tm = *localtime(&t);
+    snprintf(log_filename, MAX_PAGE_SIZ, "%smatilda_%02u%02u%02u_XXXXXX.spb",
+        get_data_folder(), tm.tm_year % 100, tm.tm_mon, tm.tm_mday);
+    int fd = mkstemps(log_filename, 4);
 
-    release(buf);
+    timestamp(ts);
+    printf("%s: Created output file %s\n\n\n", ts, log_filename);
+    release(log_filename);
 
     board b;
     clear_board(&b);
     out_board out_b;
-    opening_book(&out_b, &b);
 
     u32 evaluated = 0;
 
@@ -285,7 +288,8 @@ t: %u)\n", ob_depth);
 
             u64 curr_time = current_time_in_millis();
             u64 stop_time = curr_time + SECS_PER_TURN * 1000;
-            mcts_start_timed(&out_b, &b, true, stop_time, stop_time);
+            u64 early_stop_time = curr_time + SECS_PER_TURN * 500;
+            mcts_start_timed(&out_b, &b, true, stop_time, early_stop_time);
 
             move best = select_play_fast(&out_b);
             tt_clean_all();
@@ -318,15 +322,15 @@ t: %u)\n", ob_depth);
             snprintf(str + idx, MAX_PAGE_SIZ - idx, " %s\n", beststr);
 
             fprintf(stderr, "%s", str);
-            size_t w = fwrite(str, strlen(str), 1, fp);
+            ssize_t w = write(fd, str, strlen(str));
             release(str);
-            if(w != 1)
+            if(w == -1)
             {
                 fprintf(stderr, "error: write failed\n");
                 release(beststr);
                 exit(EXIT_FAILURE);
             }
-            fflush(fp);
+            sync();
 
             char * playstr = alloc();
             coord_to_alpha_num(playstr, sst->play);
@@ -341,7 +345,7 @@ t: %u)\n", ob_depth);
             release(beststr);
         }
     }
-    fclose(fp);
+    close(fd);
     printf("Evaluated %u unique states with enough samples.\n", evaluated);
 
     hash_table_destroy(table, true);

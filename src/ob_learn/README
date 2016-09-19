@@ -10,3 +10,6 @@ or from handicap games).
 States after the capture of single stones are ignored, so ko doesn't have to be
 tested. This should seldom have any impact.
 
+The program reads SGF files and goes through the most common game states. For
+each it calculates the optimal play and stores it in output.spb, unless the
+state is already found in previous .ob or .spb files of the data directory.
