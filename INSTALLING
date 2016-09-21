@@ -1,5 +1,5 @@
 Matilda is presently run as standalone executables, with no installation
-required or supported. It is currently aimed at Linux, BSD and Mac OS X systems.
+required or supported. It is currently aimed at Linux, BSD and macOS systems.
 If you have difficulties compiling Matilda for these systems please open an
 issue at GitHub.
 
@@ -8,7 +8,7 @@ PREPARATION
 It is tested using GCC and Clang. Please try to use modern versions of these
 compilers. They need to be recent enough to support OpenMP 3.0.
 
-On Mac OS X do not use the default Xcode clang, that does not support OpenMP.
+On macOS do not use the default Xcode clang, that does not support OpenMP.
 Instead install through brew clang-omp, and override the compiler to be used
 in src/Makefile.
 

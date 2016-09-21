@@ -13,7 +13,7 @@ crashes, but it is impossible to guarantee this in all cases.
 
 #include <stdio.h>
 #include <string.h>
-#include <unistd.h> /* mkstemps in macosx */
+#include <unistd.h> /* mkstemps in macOS */
 #include <stdlib.h> /* mkstemps */
 #include <time.h> /* localtime */
 

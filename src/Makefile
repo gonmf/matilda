@@ -3,7 +3,7 @@
 #
 
 
-# Uncomment this line to compile in Mac OSX, having previously installed
+# Uncomment this line to compile in macOS, having previously installed
 # clang-omp through brew.
 # CC := clang-omp
 

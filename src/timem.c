@@ -29,7 +29,7 @@ u64 current_time_in_millis()
 
 #ifdef __MACH__
     /*
-    Mac OSX
+    macOS
     */
     clock_serv_t cclock;
     mach_timespec_t mts;
@@ -66,7 +66,7 @@ u64 current_nanoseconds()
 
 #ifdef __MACH__
     /*
-    Mac OSX
+    macOS
     */
     clock_serv_t cclock;
     mach_timespec_t mts;

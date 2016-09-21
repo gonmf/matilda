@@ -18,7 +18,7 @@ These values are estimates based on the results against a reference opponent, GN
 
 **System Requirements**
 
-  - Linux, BSD, Mac OSX or other POSIX 2004 compliant system
+  - Linux, BSD, macOS or other POSIX 2004 compliant system
   - C99 compiler suite with support for OpenMP 3.0 (GCC preferred)
 
 Before using read the INSTALL file carefully, and at least modify the file src/inc/matilda.h to your taste.

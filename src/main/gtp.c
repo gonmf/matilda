@@ -24,7 +24,7 @@ GTP_README.
 #include <stdlib.h>
 #include <time.h>
 #include <string.h>
-#include <sys/select.h> /* fd_set in macosx */
+#include <sys/select.h> /* fd_set in macOS */
 
 #include "alloc.h"
 #include "analysis.h"
