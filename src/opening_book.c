@@ -44,6 +44,59 @@ static move ob_get_play(
     return NONE;
 }
 
+/*
+Formats a board position to a Fuego-style opening book rule, for example:
+13 K4 C3 | F11
+With no line break. Does not ascertain the validity of the rule, i.e. do not
+invoke after a capture or pass has occurred.
+*/
+void board_to_ob_rule(
+    char * dst,
+    u8 p[TOTAL_BOARD_SIZ],
+    move play
+){
+    u32 idx = snprintf(dst, MAX_PAGE_SIZ, "%u ", BOARD_SIZ);
+    move m1 = 0;
+    move m2 = 0;
+    bool is_black = true;
+    char * mstr = alloc();
+
+    bool found;
+    do
+    {
+        found = false;
+        if(is_black)
+        {
+            for(; m1 < TOTAL_BOARD_SIZ; ++m1)
+                if(p[m1] == BLACK_STONE)
+                {
+                    coord_to_alpha_num(mstr, m1);
+                    idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx, "%s ", mstr);
+                    found = true;
+                    ++m1;
+                    break;
+                }
+        }
+        else
+        {
+            for(; m2 < TOTAL_BOARD_SIZ; ++m2)
+                if(p[m2] == WHITE_STONE)
+                {
+                    coord_to_alpha_num(mstr, m2);
+                    idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx, "%s ", mstr);
+                    found = true;
+                    ++m2;
+                    break;
+                }
+        }
+        is_black = !is_black;
+    }while(found);
+
+    coord_to_alpha_num(mstr, play);
+    snprintf(dst + idx, MAX_PAGE_SIZ - idx, "| %s\n", mstr);
+    release(mstr);
+}
+
 static void ob_simple_insert(
     ob_entry * e
 ){
@@ -88,11 +141,13 @@ static bool process_opening_book_line(
         is_black = !is_black;
     }
 
+    b.last_played = b.last_eaten = NONE;
+
     move m = coord_parse_alpha_num(tokens[t + 1]);
     if(!is_board_move(m))
         return false;
 
-    d8 reduction = reduce_auto(&b, is_black);
+    d8 reduction = reduce_auto(&b, true);
     m = reduce_move(m, reduction);
 
     u8 packed_board[PACKED_BOARD_SIZ];
@@ -114,61 +169,6 @@ static bool process_opening_book_line(
     return true;
 }
 
-static bool process_state_play_line(
-    char * s
-){
-    char * save_ptr = NULL;
-    char * word = strtok_r(s, " ", &save_ptr);
-    if(word == NULL)
-        return false;
-
-    board b;
-    for(move m = 0; m < TOTAL_BOARD_SIZ; ++m)
-    {
-        if(word[m] == EMPTY_STONE_CHAR)
-            b.p[m] = EMPTY;
-        else
-            if(word[m] == BLACK_STONE_CHAR)
-                b.p[m] = BLACK_STONE;
-            else
-                if(word[m] == WHITE_STONE_CHAR)
-                    b.p[m] = WHITE_STONE;
-                else
-                    return false;
-    }
-    b.last_played = b.last_eaten = NONE;
-
-    word = strtok_r(NULL, " ", &save_ptr);
-    if(word == NULL)
-        return false;
-
-    move play = coord_parse_alpha_num(word);
-
-    d8 reduction = reduce_auto(&b, true);
-    play = reduce_move(play, reduction);
-
-    if(!is_board_move(play))
-        return false;
-
-    u8 packed_board[PACKED_BOARD_SIZ];
-    pack_matrix(packed_board, b.p);
-    u32 hash = crc32(packed_board, PACKED_BOARD_SIZ);
-
-    move mt = ob_get_play(hash, packed_board);
-    if(mt != NONE)
-        return false;
-
-    ob_entry * obe = malloc(sizeof(ob_entry));
-    if(obe == NULL)
-        flog_crit("ob", "system out of memory");
-
-    obe->hash = hash;
-    memcpy(obe->p, packed_board, PACKED_BOARD_SIZ);
-    obe->play = play;
-    ob_simple_insert(obe);
-    return true;
-}
-
 /*
 Discover and read opening book files.
 */
@@ -178,6 +178,7 @@ void discover_opening_books()
         return;
 
     attempted_discover_ob = true;
+    ob_rules = 0;
 
     /*
     Allocate O.B. hash table
@@ -190,37 +191,6 @@ void discover_opening_books()
 
     char * s = alloc();
     char * l = alloc();
-
-
-    /*
-    Discover .spb files
-    */
-    files_found = recurse_find_files(get_data_folder(), ".spb", filenames, 32);
-
-    snprintf(s, MAX_PAGE_SIZ, "found %u state,play files\n", files_found);
-    flog_info("spb", s);
-
-    for(u32 i = 0; i < files_found; ++i)
-    {
-        open_rule_file(filenames[i]);
-        u32 rules_found = 0;
-        while(1){
-            read_next_rule(l);
-            if(l[0] == 0)
-                break;
-
-            if(process_state_play_line(l))
-                ++rules_found;
-        }
-        close_rule_file();
-        ob_rules += rules_found;
-
-        snprintf(s, MAX_PAGE_SIZ, "read %s (%u rules)\n", filenames[i],
-            rules_found);
-        flog_info("spb", s);
-
-        free(filenames[i]);
-    }
 
     /*
     Discover .ob files
@@ -236,7 +206,6 @@ void discover_opening_books()
             read_next_rule(l);
             if(l[0] == 0)
                 break;
-
             if(process_opening_book_line(l))
                 ++rules_found;
         }
@@ -268,7 +237,6 @@ bool opening_book(
 
     if(ob_rules == 0)
         return false;
-
     if(state->last_eaten != NONE)
         return false;
 
@@ -284,7 +252,8 @@ bool opening_book(
     Since the O.B. do not include last eaten information, they may
     suggest a play that is illegal by ko. Prevent this.
     */
-    if(test_ko(state, m, BLACK_STONE))
+    if(is_board_move(state->last_played) &&
+        test_ko(state, m, state->p[state->last_played]))
         return false;
 
     flog_info("ob", "transition rule found");

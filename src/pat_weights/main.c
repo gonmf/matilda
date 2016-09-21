@@ -45,9 +45,9 @@ static u32 pat3t_hash_function(void * a)
     return b->value;
 }
 
-static d32 pat3t_compare_function(
-    void * a,
-    void * b
+static int pat3t_compare_function(
+    const void * a,
+    const void * b
 ){
     pat3t * f1 = (pat3t *)a;
     pat3t * f2 = (pat3t *)b;

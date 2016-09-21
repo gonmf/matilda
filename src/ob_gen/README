@@ -2,7 +2,8 @@ Application for the compilation of an openings book
 
 
 This application reads a collection of SGF files and generates a
-text/Fuego-style opening book file (.ob).
+text/Fuego-style opening book file (.ob). The rules made from the positions that
+appear most commonly and their responses.
 
 Please avoid feeding SGF files of the wrong board size, ruleset, etc since the
 application might not be able to catch all possible exceptions. SGF files in

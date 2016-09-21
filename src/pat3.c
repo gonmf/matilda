@@ -448,9 +448,9 @@ static u32 pat3_hash_function(
     return b->value;
 }
 
-static d32 pat3_compare_function(
-    void * a,
-    void * b
+static int pat3_compare_function(
+    const void * a,
+    const void * b
 ){
     pat3 * f1 = (pat3 *)a;
     pat3 * f2 = (pat3 *)b;

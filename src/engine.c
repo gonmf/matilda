@@ -84,7 +84,7 @@ bool evaluate_position_timed(
     {
         board tmp;
         memcpy(&tmp, b, sizeof(board));
-        d8 reduction = reduce_auto(&tmp, is_black);
+        d8 reduction = reduce_auto(&tmp, true);
         if(opening_book(out_b, &tmp))
         {
             oboard_revert_reduce(out_b, reduction);

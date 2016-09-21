@@ -49,9 +49,9 @@ static u32 hash_function(
     return s->hash;
 }
 
-static d32 compare_function(
-    void * o1,
-    void * o2
+static int compare_function(
+    const void * o1,
+    const void * o2
 ){
     simple_state_transition * s1 = (simple_state_transition *)o1;
     simple_state_transition * s2 = (simple_state_transition *)o2;
@@ -91,7 +91,6 @@ static void export_table_as_ob(
 
     u32 skipped = 0;
     u32 exported = 0;
-    u32 idx;
 
     for(u32 ti = 0; ti < TABLE_BUCKETS; ++ti)
     {
@@ -134,48 +133,7 @@ static void export_table_as_ob(
             u8 p[TOTAL_BOARD_SIZ];
             unpack_matrix(p, h->p);
 
-            move m1 = 0;
-            move m2 = 0;
-            bool is_black = true;
-
-
-            idx = snprintf(str, MAX_PAGE_SIZ, "%u ", BOARD_SIZ);
-
-            char * mstr = alloc();
-            while(1)
-            {
-                bool found = false;
-                if(is_black)
-                {
-                    for(; m1 < TOTAL_BOARD_SIZ; ++m1)
-                        if(p[m1] == BLACK_STONE)
-                        {
-                            coord_to_alpha_num(mstr, m1);
-                            idx += snprintf(str + idx, MAX_PAGE_SIZ - idx,
-                                "%s ", mstr);
-                            found = true;
-                            ++m1;
-                            break;
-                        }
-                }else
-                    for(; m2 < TOTAL_BOARD_SIZ; ++m2)
-                        if(p[m2] == WHITE_STONE)
-                        {
-                            coord_to_alpha_num(mstr, m2);
-                            idx += snprintf(str + idx, MAX_PAGE_SIZ - idx,
-                                "%s ", mstr);
-                            found = true;
-                            ++m2;
-                            break;
-                        }
-                if(!found)
-                    break;
-            }
-
-            coord_to_alpha_num(mstr, best);
-            snprintf(str + idx, MAX_PAGE_SIZ - idx, "| %s # %u/%u\n", mstr,
-                best_count, total_count);
-            release(mstr);
+            board_to_ob_rule(str, p, best);
 
             size_t w = fwrite(str, strlen(str), 1, fp);
             if(w != 1)
@@ -367,14 +325,16 @@ o be used. (default: %u)\n", minimum_turns);
             board b2;
             memcpy(&b2, &b, sizeof(board));
 
+            u16 caps;
+            u8 libs = libs_after_play_slow(&b, is_black, plays[k], &caps);
+            if(libs < 1 || caps > 0)
+                break;
+
             if(!attempt_play_slow(&b, is_black, plays[k]))
             {
                 fprintf(stderr, "\rerror: file contains illegal plays\n");
                 exit(EXIT_FAILURE);
             }
-
-            if(b.last_eaten != NONE)
-                break;
 
             d8 reduction = reduce_auto(&b2, is_black);
             plays[k] = reduce_move(plays[k], reduction);
