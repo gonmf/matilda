@@ -90,6 +90,12 @@ void mcts_resume(
     bool is_black
 );
 
+/*
+Execute a 1 second MCTS and return the number of simulations ran.
+RETURNS simulations number
+*/
+u32 mcts_benchmark();
+
 #endif
 
 

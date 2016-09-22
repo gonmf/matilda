@@ -121,7 +121,7 @@ static bool process_opening_book_line(
         strncpy(tokens[tokens_read++], word, 4);
 
     if(tokens_read < 2 || tokens_read == TOTAL_BOARD_SIZ)
-        return false;
+        flog_crit("ob", "illegal opening book rule");
 
     board b;
     clear_board(&b);
@@ -134,9 +134,10 @@ static bool process_opening_book_line(
             break;
         move m = coord_parse_alpha_num(tokens[t]);
         if(!is_board_move(m))
-            return false;
+            flog_crit("ob", "illegal opening book rule");
+
         if(!attempt_play_slow(&b, is_black, m))
-            return false;
+            flog_crit("ob", "illegal opening book rule");
 
         is_black = !is_black;
     }
@@ -145,7 +146,7 @@ static bool process_opening_book_line(
 
     move m = coord_parse_alpha_num(tokens[t + 1]);
     if(!is_board_move(m))
-        return false;
+        flog_crit("ob", "illegal opening book rule");
 
     d8 reduction = reduce_auto(&b, true);
     m = reduce_move(m, reduction);
@@ -201,19 +202,21 @@ void discover_opening_books()
 
     for(u32 i = 0; i < files_found; ++i){
         open_rule_file(filenames[i]);
+        u32 rules_saved = 0;
         u32 rules_found = 0;
         while(1){
             read_next_rule(l);
             if(l[0] == 0)
                 break;
             if(process_opening_book_line(l))
-                ++rules_found;
+                ++rules_saved;
+            ++rules_found;
         }
         close_rule_file();
-        ob_rules += rules_found;
+        ob_rules += rules_saved;
 
-        snprintf(s, MAX_PAGE_SIZ, "read %s (%u rules)\n", filenames[i],
-            rules_found);
+        snprintf(s, MAX_PAGE_SIZ, "read %s (%u/%u rules)\n", filenames[i],
+            rules_saved, rules_found);
         flog_info("ob", s);
 
         free(filenames[i]);

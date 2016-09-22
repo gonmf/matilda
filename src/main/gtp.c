@@ -208,7 +208,7 @@ static void gtp_version(
     int id
 ){
     char * s = alloc();
-    snprintf(s, MAX_PAGE_SIZ, "%s", MATILDA_VERSION);
+    version_string(s);
     gtp_answer(fp, id, s);
     release(s);
 }

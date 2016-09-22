@@ -13,6 +13,15 @@ maintenance if needed.
 #include "board.h"
 
 
+#define BENCHMARK_TIME 60 /* seconds */
+
+
+/*
+Produce a short version string. Does not include program name.
+*/
+void version_string(
+    char * dst
+);
 
 /*
 Obtains the current data folder path. It may be absolute or relative and ends

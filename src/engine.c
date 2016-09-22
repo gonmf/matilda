@@ -20,6 +20,7 @@ maintenance if needed.
 #include "opening_book.h"
 #include "transpositions.h"
 #include "types.h"
+#include "version.h"
 
 static bool use_opening_book = true;
 
@@ -29,6 +30,15 @@ bool tt_requires_maintenance = false; /* set after MCTS start/resume call */
 
 
 static char _data_folder[MAX_PATH_SIZ] = DEFAULT_DATA_PATH;
+
+/*
+Produce a short version string. Does not include program name.
+*/
+void version_string(
+    char * dst
+){
+    snprintf(dst, MAX_PAGE_SIZ, "%s (%ux%u)", MATILDA_VERSION, BOARD_SIZ, BOARD_SIZ);
+}
 
 /*
 Obtains the current data folder path. It may be absolute or relative and ends

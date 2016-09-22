@@ -20,13 +20,15 @@ Also deals with updating some internal parameters at startup time.
 #include "engine.h"
 #include "flog.h"
 #include "game_record.h"
+#include "mcts.h"
 #include "opening_book.h"
 #include "randg.h"
+#include "transpositions.h"
 #include "stringm.h"
 #include "time_ctrl.h"
 #include "timem.h"
-#include "zobrist.h"
 #include "version.h"
+#include "zobrist.h"
 
 game_record current_game;
 time_system current_clock_black;
@@ -258,6 +260,10 @@ SGF.\n\n");
 The default is the total\n        number of normal plus hyperthreaded CPU cores\
 .\n\n");
 
+        fprintf(stderr, "        \033[1m--benchmark\033[0m\n\n");
+        fprintf(stderr, "        Run a %u second benchmark of the system, retur\
+ning a linear measure of\n        MCTS performance.\n\n", BENCHMARK_TIME);
+
         fprintf(stderr, "        \033[1m--set <name> <value>\033[0m\n\n");
         fprintf(stderr, "        For optimization. Set the value of an internal\
  parameter.\n\n");
@@ -284,8 +290,6 @@ int main(
 ){
     start_cpu_time = clock();
 
-    fprintf(stderr, "matilda - Go/Igo/Weiqi/Baduk computer player\n\n");
-
     alloc_init();
 
     flog_config_modes(DEFAULT_LOG_MODES);
@@ -305,23 +309,45 @@ int main(
     {
         if(strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "--help") == 0)
         {
+            fprintf(stderr, "matilda - Go/Igo/Weiqi/Baduk computer player\n\n");
             usage();
             return EXIT_SUCCESS;
         }
+
         if(strcmp(argv[i], "-v") == 0 || strcmp(argv[i], "--version") == 0)
         {
-            fprintf(stderr, "matilda %s\n", MATILDA_VERSION);
+            char * s = alloc();
+            version_string(s);
+            fprintf(stderr, "matilda %s\n", s);
+            release(s);
             return EXIT_SUCCESS;
         }
+
         if(strcmp(argv[i], "-i") == 0 || strcmp(argv[i], "--info") == 0)
         {
+            fprintf(stderr, "matilda - Go/Igo/Weiqi/Baduk computer player\n\n");
             char * s = alloc();
             build_info(s);
             fprintf(stderr, "\n%s\n", s);
             release(s);
             return EXIT_SUCCESS;
         }
+
+        if(strcmp(argv[i], "--benchmark") == 0)
+        {
+            u32 sims = mcts_benchmark();
+            for(u8 i = 1; i < BENCHMARK_TIME; ++i)
+            {
+                tt_clean_all() ;
+                sims += mcts_benchmark();
+            }
+            fprintf(stderr, "%u.%2u\n", sims / BENCHMARK_TIME,
+                sims % BENCHMARK_TIME);
+            return EXIT_SUCCESS;
+        }
     }
+
+    fprintf(stderr, "matilda - Go/Igo/Weiqi/Baduk computer player\n\n");
 
     for(int i = 1; i < argc; ++i)
     {

@@ -754,4 +754,82 @@ void mcts_resume(
     cfg_board_free(&initial_cfg_board);
 }
 
+/*
+Execute a 1 second MCTS and return the number of simulations ran.
+RETURNS simulations number
+*/
+u32 mcts_benchmark()
+{
+    mcts_init();
+    board b;
+    clear_board(&b);
+
+    u64 curr_time = current_time_in_millis();
+    u64 stop_time = curr_time + 1000;
+
+    bool start_branch_limit[TOTAL_BOARD_SIZ];
+#if USE_UCT_BRANCH_LIMITER
+    /* ignore branch limiting if too many stones on the board */
+    init_branch_limit(b.p, start_branch_limit);
+    enable_branch_limit = true;
+#endif
+
+    u64 start_zobrist_hash = zobrist_new_hash(&b);
+    tt_stats * stats = transpositions_lookup_create(&b, true,
+        start_zobrist_hash);
+    omp_unset_lock(&stats->lock);
+
+    cfg_board initial_cfg_board;
+    cfg_from_board(&initial_cfg_board, &b);
+
+    if(stats->expansion_delay != -1)
+    {
+        stats->expansion_delay = -1;
+        init_new_state(stats, &initial_cfg_board, true, start_branch_limit);
+    }
+
+    memset(max_depths, 0, sizeof(u16) * MAXIMUM_NUM_THREADS);
+
+    bool search_stop = false;
+    u32 simulations = 0;
+
+    #pragma omp parallel for
+    for(u32 sim = 0; sim < INT32_MAX; ++sim)
+    {
+        if(search_stop)
+        {
+            /* there is no way to simultaneously cancel all OMP threads */
+            sim = INT32_MAX;
+            continue;
+        }
+
+        bool branch_limit[TOTAL_BOARD_SIZ];
+#if USE_UCT_BRANCH_LIMITER
+        memcpy(branch_limit, start_branch_limit, TOTAL_BOARD_SIZ);
+#endif
+
+        cfg_board cb;
+        cfg_board_clone(&cb, &initial_cfg_board);
+        mcts_selection(&cb, start_zobrist_hash, true, branch_limit);
+        cfg_board_free(&cb);
+
+        #pragma omp atomic
+        simulations++;
+
+        if(omp_get_thread_num() == 0)
+        {
+            u64 curr_time = current_time_in_millis();
+
+            if(curr_time >= stop_time)
+            {
+                search_stop = true;
+                sim = INT32_MAX;
+            }
+        }
+    }
+
+    cfg_board_free(&initial_cfg_board);
+
+    return simulations;
+}
 
