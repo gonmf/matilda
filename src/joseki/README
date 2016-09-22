@@ -1,4 +1,7 @@
+UNFINISHED AND INCOMPLETE RIGHT NOW
+
+
 Application for the transformation of joseki compilations in SGF format (as
 variations). Tested with Kogo's Joseki Dictionary.
 
-Upon running a DATA/output.joseki file should be written.
+Upon running a data/output.joseki file should be written.
