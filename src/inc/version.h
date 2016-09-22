@@ -1,5 +1,5 @@
 #ifndef MATILDA_VERSION
 
-#define MATILDA_VERSION "1.19"
+#define MATILDA_VERSION "1.20"
 
 #endif
