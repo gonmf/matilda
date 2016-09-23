@@ -159,7 +159,7 @@ cord to file.\n");
     }
 
     fprintf(stderr,
-        "Start new game?\nY - Yes\nN - No (quit)\nS - Switch colors\n");
+        "Start new game?\nY - Yes\nN - No (quit)\nS - Yes but switch colors\n");
     while(1)
     {
         fprintf(stderr, ">");
@@ -242,11 +242,17 @@ th Chinese rules with\n%s komi; game is over after two passes or a resignation.\
         passed = false;
         resigned = false;
 
+        board current_state;
+        current_game_state(&current_state, &current_game);
+
+        if(current_state.last_played == NONE)
+        {
+            fprintf(stderr, "\n\"Have a good game.\"\n");
+        }
+
         fprintf(stderr, "\n");
         fprint_game_record(stderr, &current_game);
         fprintf(stderr, "\n");
-        board current_state;
-        current_game_state(&current_state, &current_game);
         fprint_board(stderr, &current_state);
         fprintf(stderr, "\n");
 
@@ -261,6 +267,8 @@ th Chinese rules with\n%s komi; game is over after two passes or a resignation.\
 
             if(resigned)
             {
+                fprintf(stderr, "\n\"I resign. Thank you for the game.\"\n\n");
+
                 fprintf(stderr, "%s (%c) wins by resignation.\n\n", is_black ?
                     "White" : "Black", is_black ? WHITE_STONE_CHAR :
                     BLACK_STONE_CHAR);

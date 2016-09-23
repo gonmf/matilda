@@ -1,6 +1,11 @@
 # This book consists in the Fuego large book with corrections from Pachi
 
 
+# 19x19 basic etiquette
+19 | Q16
+19 Q16 | D16
+
+
 # Extra rules from Pachi
 # They appear above because repeated rules are only considered in their
 # first appearance.

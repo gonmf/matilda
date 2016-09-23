@@ -55,6 +55,8 @@ static void print_sequence(
     tt_play * p
 ){
     tt_stats * stats = (tt_stats *)p->next_stats;
+    if(stats == NULL)
+        return; /* may be null if play is a pass */
     tt_play * best_play = select_best(stats);
 
     char * tmp = alloc();
