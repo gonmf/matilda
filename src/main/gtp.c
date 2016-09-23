@@ -1149,7 +1149,7 @@ static void gtp_place_free_handicap(
         gtp_error(fp, id, "board is not empty");
         return;
     }
-    if(num_stones < 2 || num_stones > TOTAL_BOARD_SIZ - 1)
+    if(num_stones < 2 || num_stones > TOTAL_BOARD_SIZ - 2)
     {
         gtp_error(fp, id, "invalid number of stones");
         return;
@@ -1181,7 +1181,14 @@ static void gtp_place_free_handicap(
         move m = random_play2(&current_state, true);
 
         if(!add_handicap_stone(&current_game, m))
+        {
+            fprint_board(stderr, &current_state);
+            char * s = alloc();
+            coord_to_alpha_num(s, m);
+            fprintf(stderr, "%s\n", s);
+            release(s);
             flog_crit("gtp", "add handicap stone failed (2)");
+        }
 
         --num_stones;
         coord_to_alpha_num(mstr, m);
