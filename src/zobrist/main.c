@@ -1,3 +1,11 @@
+/*
+Generate a Zobrist initial table file.
+
+These files, expected to be named NxN.zt, are used by matilda for initialization
+of the vectors of a Zobrist hashing scheme. They are required by Matilda for the
+board size in use and are expected to be found in the data/ directory from the
+working directory.
+*/
 #include "matilda.h"
 
 #include <sys/select.h>
@@ -10,10 +18,10 @@
 #include "alloc.h"
 #include "constants.h"
 #include "engine.h"
+#include "flog.h"
 #include "randg.h"
 #include "timem.h"
 #include "types.h"
-#include "version.h"
 
 
 static u8 count_bits(
@@ -28,24 +36,15 @@ static u8 count_bits(
     return ret;
 }
 
-int main(
-    int argc,
-    char * argv[]
-){
-    if(argc == 2 && strcmp(argv[1], "-version") == 0)
-    {
-        fprintf(stderr, "matilda %s\n", MATILDA_VERSION);
-        return 0;
-    }
-    else
-        if(argc > 1)
-        {
-            fprintf(stderr, "usage: %s [-version]\n", argv[0]);
-            return 0;
-        }
-
+int main()
+{
     alloc_init();
+
+    flog_config_modes(LOG_MODE_ERROR | LOG_MODE_WARN);
+    flog_config_destinations(LOG_DEST_STDF);
+
     assert_data_folder_exists();
+
 
     fprintf(stderr, "This process aims to reduce the bit distribution variance \
 of the data.\nWhen you are satisfied press ENTER\n\n");
@@ -129,7 +128,7 @@ of the data.\nWhen you are satisfied press ENTER\n\n");
     fprintf(stderr, "\nSearch stopped.\n");
 
     char * filename = alloc();
-    snprintf(filename, MAX_PAGE_SIZ, "%s%ux%u.zt.bak", get_data_folder(),
+    snprintf(filename, MAX_PAGE_SIZ, "%s%ux%u.zt.new", get_data_folder(),
         BOARD_SIZ, BOARD_SIZ);
 
 

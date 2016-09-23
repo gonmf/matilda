@@ -1,6 +1,6 @@
 Generate a Zobrist initial table file.
 
-These files, named NxN.zt, are used by matilda for initialization of the vectors
-of a Zobrist hashing scheme. They are required by Matilda for the board size
-used and are expected to be found in the data/ directory from the working
-directory.
+These files, expected to be named NxN.zt, are used by matilda for initialization
+of the vectors of a Zobrist hashing scheme. They are required by Matilda for the
+board size in use and are expected to be found in the data/ directory from the
+working directory.

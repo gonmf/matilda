@@ -33,17 +33,17 @@ same directory.
 #include "stringm.h"
 #include "timem.h"
 #include "transpositions.h"
-#include "version.h"
 #include "zobrist.h"
 
 
-#define SECS_PER_TURN 60
 
 #define MAX_FILES 500000
 #define TABLE_BUCKETS 4957
 
+
 static char * filenames[MAX_FILES];
 
+static u32 secs_per_turn = 60;
 static d32 ob_depth = TOTAL_BOARD_SIZ / 2;
 
 typedef struct __simple_state_transition_ {
@@ -81,10 +81,13 @@ static int sort_cmp_function(
 
 int main(int argc, char * argv[]){
     for(int i = 1; i < argc; ++i){
-        if(strcmp(argv[i], "-v") == 0 || strcmp(argv[i], "--version") == 0)
-        {
-            printf("matilda %s\n", MATILDA_VERSION);
-            exit(EXIT_SUCCESS);
+        if(i < argc - 1 && strcmp(argv[i], "--time") == 0){
+            d32 a;
+            if(!parse_int(&a, argv[i + 1]) || a < 1)
+                goto usage;
+            ++i;
+            secs_per_turn = a;
+            continue;
         }
         if(i < argc - 1 && strcmp(argv[i], "--max_depth") == 0){
             d32 a;
@@ -98,19 +101,23 @@ int main(int argc, char * argv[]){
 usage:
         printf("Usage: %s [options]\n", argv[0]);
         printf("Options:\n");
-        printf("--max_depth number - Maximum turn depth of the openings. (defaul\
-t: %u)\n", ob_depth);
-        printf("-v, -version - Print version information and exit.\n");
+        printf("--max_depth number - Maximum turn depth of the openings. (defau\
+lt: %u)\n", ob_depth);
+        printf("--time number - Time spent per rule, in seconds. (default: %u)\\
+n", secs_per_turn);
         exit(EXIT_SUCCESS);
     }
 
     alloc_init();
+
+    flog_config_modes(LOG_MODE_ERROR | LOG_MODE_WARN);
+    flog_config_destinations(LOG_DEST_STDF);
+
     rand_init();
     assert_data_folder_exists();
     board_constants_init();
     zobrist_init();
     transpositions_table_init();
-    flog_config_modes(0);
 
     char * str = alloc();
     char * ts = alloc();
@@ -287,7 +294,7 @@ t: %u)\n", ob_depth);
         }
 
         u64 curr_time = current_time_in_millis();
-        u32 given = SECS_PER_TURN * 1000;
+        u32 given = secs_per_turn * 1000;
         u64 stop_time = curr_time + given;
         u64 early_stop_time = curr_time + given / 2;
         mcts_start_timed(&out_b, &b, true, stop_time, early_stop_time);

@@ -141,7 +141,7 @@ static void _recurse_find_files(
     struct dirent * entry;
     if(!(dir = opendir(root)))
         return;
-    while(filenames_found < _max_files && (entry = readdir(dir)) != NULL)
+    while(filenames_found <= _max_files && (entry = readdir(dir)) != NULL)
     {
         if(entry->d_name[0] == '.') /* ignore special and hidden files */
             continue;
@@ -166,10 +166,17 @@ static void _recurse_find_files(
             if(filenames[filenames_found] == NULL)
                 flog_crit("file", "find files: system out of memory");
 
-            snprintf(filenames[filenames_found], strl, "%s%s", root, entry->d_name);
+            snprintf(filenames[filenames_found], strl, "%s%s", root,
+                entry->d_name);
             filenames_found++;
-            if(filenames_found == _max_files)
-                flog_crit("file", "maximum number of files reached");
+            if(filenames_found > _max_files)
+            {
+                char * s = alloc();
+                snprintf(s, MAX_PAGE_SIZ,
+                    "maximum number of files (%u) reached", _max_files);
+                flog_crit("file", s);
+                release(s);
+            }
         }
     }
     closedir(dir);
