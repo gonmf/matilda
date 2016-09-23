@@ -1,8 +1,11 @@
 /*
+UNFINISHED AND INCOMPLETE RIGHT NOW
+
+
 Application for the transformation of joseki compilations in SGF format (as
 variations). Tested with Kogo's Joseki Dictionary.
 
-Upon running a DATA/output.joseki file should be written.
+Upon running a data/output.joseki file should be written.
 */
 
 #include "matilda.h"
@@ -17,9 +20,9 @@ Upon running a DATA/output.joseki file should be written.
 #include "constants.h"
 #include "engine.h"
 #include "file_io.h"
+#include "flog.h"
 #include "stringm.h"
 #include "timem.h"
-#include "version.h"
 
 
 typedef struct __joseki_ {
@@ -170,25 +173,13 @@ static char * parse(
     }
 }
 
-int main(
-    int argc,
-    char * argv[]
-){
-    for(int i = 1; i < argc; ++i)
-    {
-        if(strcmp(argv[i], "-version") == 0)
-        {
-            fprintf(stderr, "matilda %s\n", MATILDA_VERSION);
-            exit(EXIT_SUCCESS);
-        }
-
-        fprintf(stderr, "Usage: %s [options]\n", argv[0]);
-        fprintf(stderr, "Options:\n");
-        fprintf(stderr, "-version - Print version information and exit.\n");
-        exit(EXIT_SUCCESS);
-    }
-
+int main()
+{
     alloc_init();
+
+    flog_config_modes(LOG_MODE_ERROR | LOG_MODE_WARN);
+    flog_config_destinations(LOG_DEST_STDF);
+
     assert_data_folder_exists();
 
     char * buffer = calloc(MAX_FILE_SIZ, 1);

@@ -15,6 +15,7 @@ Application for the production of Fuego book from SGF game collections.
 #include "crc32.h"
 #include "engine.h"
 #include "file_io.h"
+#include "flog.h"
 #include "hash_table.h"
 #include "opening_book.h"
 #include "randg.h"
@@ -22,7 +23,6 @@ Application for the production of Fuego book from SGF game collections.
 #include "state_changes.h"
 #include "stringm.h"
 #include "timem.h"
-#include "version.h"
 
 
 #define MAX_FILES 500000
@@ -169,12 +169,7 @@ int main(
 ){
     for(int i = 1; i < argc; ++i)
     {
-        if(strcmp(argv[i], "-version") == 0)
-        {
-            printf("matilda %s\n", MATILDA_VERSION);
-            exit(EXIT_SUCCESS);
-        }
-        if(i < argc - 1 && strcmp(argv[i], "-max_depth") == 0)
+        if(i < argc - 1 && strcmp(argv[i], "--max_depth") == 0)
         {
             d32 a;
             if(!parse_int(&a, argv[i + 1]) || a < 1)
@@ -183,7 +178,7 @@ int main(
             ob_depth = a;
             continue;
         }
-        if(i < argc - 1 && strcmp(argv[i], "-min_game_turns") == 0)
+        if(i < argc - 1 && strcmp(argv[i], "--min_game_turns") == 0)
         {
             d32 a;
             if(!parse_int(&a, argv[i + 1]) || a < 1)
@@ -192,7 +187,7 @@ int main(
             minimum_turns = a;
             continue;
         }
-        if(i < argc - 1 && strcmp(argv[i], "-min_samples") == 0)
+        if(i < argc - 1 && strcmp(argv[i], "--min_samples") == 0)
         {
             d32 a;
             if(!parse_int(&a, argv[i + 1]) || a < 1)
@@ -201,7 +196,7 @@ int main(
             minimum_samples = a;
             continue;
         }
-        if(strcmp(argv[i], "-relax_komi") == 0)
+        if(strcmp(argv[i], "--relax_komi") == 0)
         {
             relax_komi = true;
             continue;
@@ -210,18 +205,21 @@ int main(
 usage:
         printf("Usage: %s [options]\n", argv[0]);
         printf("Options:\n");
-        printf("-max_depth number - Maximum turn depth of the openings. (defaul\
-t: %u)\n", ob_depth);
-        printf("-min_game_turns number - Minimum number of turns for the game t\
-o be used. (default: %u)\n", minimum_turns);
-        printf("-min_samples - Minimum number of samples for a rule to be saved\
-. (default: %u)\n", minimum_samples);
-        printf("-relax_komi - Allow games with uncommon komi values.\n");
-        printf("-version - Print version information and exit.\n");
+        printf("--max_depth number - Maximum turn depth of the openings. (defau\
+lt: %u)\n", ob_depth);
+        printf("--min_game_turns number - Minimum number of turns for the game \
+to be used. (default: %u)\n", minimum_turns);
+        printf("--min_samples - Minimum number of samples for a rule to be save\
+d. (default: %u)\n", minimum_samples);
+        printf("--relax_komi - Allow games with uncommon komi values.\n");
         exit(EXIT_SUCCESS);
     }
 
     alloc_init();
+
+    flog_config_modes(LOG_MODE_ERROR | LOG_MODE_WARN);
+    flog_config_destinations(LOG_DEST_STDF);
+
     assert_data_folder_exists();
 
     char * ts = alloc();

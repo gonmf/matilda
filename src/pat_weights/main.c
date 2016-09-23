@@ -16,6 +16,7 @@ records. The results are printed to data/pat3_weights.
 #include "constants.h"
 #include "engine.h"
 #include "file_io.h"
+#include "flog.h"
 #include "hash_table.h"
 #include "move.h"
 #include "pat3.h"
@@ -25,7 +26,6 @@ records. The results are printed to data/pat3_weights.
 #include "tactical.h"
 #include "timem.h"
 #include "types.h"
-#include "version.h"
 
 
 #define MAX_FILES 500000
@@ -56,23 +56,13 @@ static int pat3t_compare_function(
 
 static char * filenames[MAX_FILES];
 
-int main(
-    int argc,
-    char * argv[]
-){
-    if(argc == 2 && strcmp(argv[1], "-version") == 0)
-    {
-        fprintf(stderr, "matilda %s\n", MATILDA_VERSION);
-        return 0;
-    }
-    else
-        if(argc > 1)
-        {
-            fprintf(stderr, "usage: %s [-version]\n", argv[0]);
-            return 0;
-        }
-
+int main()
+{
     alloc_init();
+
+    flog_config_modes(LOG_MODE_ERROR | LOG_MODE_WARN);
+    flog_config_destinations(LOG_DEST_STDF);
+
     assert_data_folder_exists();
     board_constants_init();
 
@@ -232,8 +222,8 @@ int main(
 
     pat3t ** table = (pat3t **)hash_table_export_to_array(feature_table);
 
-    snprintf(buf, MAX_PAGE_SIZ, "%s%ux%u.weights", get_data_folder(), BOARD_SIZ,
-        BOARD_SIZ);
+    snprintf(buf, MAX_PAGE_SIZ, "%s%ux%u.weights.new", get_data_folder(),
+        BOARD_SIZ, BOARD_SIZ);
     FILE * fp = fopen(buf, "w");
     release(buf);
     if(fp == NULL)
