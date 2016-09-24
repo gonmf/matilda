@@ -341,8 +341,7 @@ int main(
                 tt_clean_all() ;
                 sims += mcts_benchmark();
             }
-            fprintf(stderr, "%u.%2u\n", sims / BENCHMARK_TIME,
-                sims % BENCHMARK_TIME);
+            fprintf(stderr, "%u\n", sims / BENCHMARK_TIME);
             return EXIT_SUCCESS;
         }
     }
