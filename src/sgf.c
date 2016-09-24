@@ -384,7 +384,7 @@ bool import_game_from_sgf(
         {
             unknown_board_size_cant_guess_warning_given = true;
             flog_warn("sgff", "board size not specified and could not be guesse\
-dfrom play coordinates");
+d from play coordinates");
         }
         if(board_size != BOARD_SIZ)
         {
