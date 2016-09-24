@@ -50,7 +50,7 @@ A debug build suffers a heavy performance penalty.
 
 EXPECTED: 0 or 1
 */
-#define MATILDA_RELEASE_MODE 1
+#define MATILDA_RELEASE_MODE 0
 
 
 /*
