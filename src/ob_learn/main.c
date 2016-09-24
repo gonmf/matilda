@@ -139,7 +139,7 @@ n", secs_per_turn);
     else
         printf("Found %u SGF files.\n", filenames_found);
 
-    char * buf = alloc();
+    char * buf = malloc(MAX_FILE_SIZ);
 
     timestamp(ts);
     printf("%s: Loading game states\n", ts);
@@ -152,10 +152,11 @@ n", secs_per_turn);
             fflush(stdout);
         }
 
-        d32 r = read_ascii_file(buf, MAX_PAGE_SIZ, filenames[fid]);
-        if(r <= 0 || r >= MAX_PAGE_SIZ)
+        d32 r = read_ascii_file(buf, MAX_FILE_SIZ, filenames[fid]);
+        if(r <= 0 || r >= MAX_FILE_SIZ)
         {
-            fprintf(stderr, "\rerror: unexpected file size or read error\n");
+            fprintf(stderr, "\rerror: unexpected file size or read error: %s\n",
+                filenames[fid]);
             exit(EXIT_FAILURE);
         }
         buf[r] = 0;
@@ -242,7 +243,6 @@ n", secs_per_turn);
     if(unique_states == 0)
     {
         release(ts);
-        release(buf);
         return EXIT_SUCCESS;
     }
 

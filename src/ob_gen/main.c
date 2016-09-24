@@ -252,7 +252,7 @@ d. (default: %u)\n", minimum_samples);
     timestamp(ts);
     printf("%s: 1/2 Thinking\n", ts);
 
-    char * buf = alloc();
+    char * buf = malloc(MAX_FILE_SIZ);
     u32 fid;
     for(fid = 0; fid < filenames_found; ++fid)
     {
@@ -262,10 +262,11 @@ d. (default: %u)\n", minimum_samples);
             fflush(stdout);
         }
 
-        d32 r = read_ascii_file(buf, MAX_PAGE_SIZ, filenames[fid]);
-        if(r <= 0 || r >= MAX_PAGE_SIZ)
+        d32 r = read_ascii_file(buf, MAX_FILE_SIZ, filenames[fid]);
+        if(r <= 0 || r >= MAX_FILE_SIZ)
         {
-            fprintf(stderr, "\rerror: unexpected file size or read error\n");
+            fprintf(stderr, "\rerror: unexpected file size or read error: %s\n",
+                filenames[fid]);
             exit(EXIT_FAILURE);
         }
         buf[r] = 0;
@@ -366,7 +367,6 @@ d. (default: %u)\n", minimum_samples);
                 entry->count[plays[k]]++;
         }
     }
-    release(buf);
 
     printf("\n\n");
 

@@ -30,9 +30,6 @@ static bool unknown_sgf_ruleset_warning_given = false;
 static bool unknown_board_size_cant_guess_warning_given = false;
 static bool gm_unknown_warning_given = false;
 
-#define MAX_SGF_FILE_SIZ (8 * 1024)
-
-
 
 static u8 guess_board_size(
     const char * sgf
@@ -169,6 +166,10 @@ d16 sgf_to_boards(
                     {
                         u8 i1 = token[2] - 'a';
                         u8 i2 = token[3] - 'a';
+                        if(i1 >= BOARD_SIZ || i2 >= BOARD_SIZ)
+                            break; /* some game record use illegal plays to
+                                      signify a resignation */
+
                         move m = coord_to_move(i1, i2);
                         plays[play] = m;
                         if(!attempt_play_slow(&b, is_black, m))
@@ -346,13 +347,18 @@ bool import_game_from_sgf(
 ){
     clear_game_record(gr);
 
-    char * buf = alloc();
+    char * buf = malloc(MAX_FILE_SIZ);
+    if(buf == NULL)
+    {
+        flog_crit("sgff", "out of memory");
+        return false;
+    }
 
-    d32 chars_read = read_ascii_file(buf, MAX_SGF_FILE_SIZ, filename);
+    d32 chars_read = read_ascii_file(buf, MAX_FILE_SIZ, filename);
     if(chars_read < 1)
     {
         flog_warn("sgff", "could not open/read file");
-        release(buf);
+        free(buf);
         return false;
     }
 
@@ -377,13 +383,13 @@ bool import_game_from_sgf(
         if(board_size == 0 && !unknown_board_size_cant_guess_warning_given)
         {
             unknown_board_size_cant_guess_warning_given = true;
-            flog_warn("sgff", "board size not specified and could not be guessed\
- from play coordinates");
+            flog_warn("sgff", "board size not specified and could not be guesse\
+dfrom play coordinates");
         }
         if(board_size != BOARD_SIZ)
         {
             flog_warn("sgff", "wrong board size");
-            release(buf);
+            free(buf);
             release(board_size_str);
             return false;
         }
@@ -392,7 +398,7 @@ bool import_game_from_sgf(
         if(strcmp(board_size_str, BOARD_SIZ_AS_STR) != 0)
         {
             flog_warn("sgff", "illegal board size format");
-            release(buf);
+            free(buf);
             release(board_size_str);
             return false;
         }
@@ -451,7 +457,7 @@ bool import_game_from_sgf(
                             if(gr->final_score == 0)
                             {
                                 flog_warn("sgff", "illegal final score");
-                                release(buf);
+                                free(buf);
                                 release(result);
                                 return false;
                             }
@@ -484,7 +490,7 @@ bool import_game_from_sgf(
                             if(gr->final_score == 0)
                             {
                                 flog_warn("sgff", "illegal final score");
-                                release(buf);
+                                free(buf);
                                 release(result);
                                 return false;
                             }
@@ -507,10 +513,16 @@ bool import_game_from_sgf(
             {
                 u8 x = hs[1] - 'a';
                 u8 y = hs[2] - 'a';
+                if(x >= BOARD_SIZ || y >= BOARD_SIZ)
+                {
+                    flog_warn("sgff", "handicap placement error (1)");
+                    free(buf);
+                    return false;
+                }
                 if(!add_handicap_stone(gr, coord_to_move(x, y)))
                 {
-                    flog_warn("sgff", "handicap placement error");
-                    release(buf);
+                    flog_warn("sgff", "handicap placement error (2)");
+                    free(buf);
                     return false;
                 }
                 hs += 4;
@@ -542,12 +554,18 @@ bool import_game_from_sgf(
                 {
                     u8 x = token[2] - 'a';
                     u8 y = token[3] - 'a';
+                    if(x >= BOARD_SIZ || y >= BOARD_SIZ)
+                    {
+                        flog_warn("sgff", "play coordinate illegal");
+                        free(buf);
+                        return false;
+                    }
                     add_play_out_of_order(gr, is_black, coord_to_move(x, y));
                 }
         }
     }
 
-    release(buf);
+    free(buf);
     return true;
 }
 

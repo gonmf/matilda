@@ -91,7 +91,7 @@ int main()
     hash_table * feature_table = hash_table_create(1543, sizeof(pat3t),
         pat3t_hash_function, pat3t_compare_function);
 
-    char  * buf = alloc();
+    char  * buf = malloc(MAX_FILE_SIZ);
 
     u32 fid;
     for(fid = 0; fid < filenames_found; ++fid)
@@ -225,7 +225,6 @@ int main()
     snprintf(buf, MAX_PAGE_SIZ, "%s%ux%u.weights.new", get_data_folder(),
         BOARD_SIZ, BOARD_SIZ);
     FILE * fp = fopen(buf, "w");
-    release(buf);
     if(fp == NULL)
     {
         fprintf(stderr, "error: couldn't open file for writing\n");
