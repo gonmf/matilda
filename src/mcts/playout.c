@@ -43,7 +43,6 @@ extern move_seq neighbors_3x3[TOTAL_BOARD_SIZ];
 /*
 For mercy Threshold
 */
-extern d16 komi_offset;
 extern d16 komi;
 
 static void invalidate_cache_of_the_past(
@@ -390,7 +389,7 @@ d16 playout_heavy_amaf(
     u16 depth_max = MAX_PLAYOUT_DEPTH_OVER_EMPTY + cb->empty.count +
     rand_u16(2);
     /* stones are counted as 2 units in matilda */
-    d16 diff = stone_diff(cb->p) - (komi_offset + komi) / 2;
+    d16 diff = stone_diff(cb->p) - komi / 2;
 
     u8 b_cache[TOTAL_BOARD_SIZ];
     u8 w_cache[TOTAL_BOARD_SIZ];

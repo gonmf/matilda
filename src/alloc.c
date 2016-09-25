@@ -1,12 +1,15 @@
 /*
-Guard functions over standard malloc.
+Guard functions over standard malloc. They are used for quickly and
+inexpensively allocate a small buffer, with safety measures.
+
+It is thread-safe, fast, and canary values are used (in debug mode) to ensure
+memory is correctly freed and written to.
 */
 
 #include "matilda.h"
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <assert.h>
 #include <omp.h>
 
 #include "flog.h"

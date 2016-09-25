@@ -19,7 +19,6 @@ Remember that in Matilda, scores and komi are always doubled to become integer.
 #include "alloc.h"
 
 
-d16 komi_offset = 0;
 extern d16 komi;
 
 /*
@@ -93,7 +92,7 @@ d16 score_stones_only(
                 break;
         }
 
-    return r - komi - komi_offset;
+    return r - komi;
 }
 
 
@@ -150,7 +149,7 @@ d16 score_stones_and_eyes2(
                 }
         }
 
-    return r - komi - komi_offset;
+    return r - komi;
 }
 
 /*
@@ -319,7 +318,7 @@ d16 score_stones_and_area(
             if(bak[m] == WHITE_STONE)
                 r -= 2;
 
-    return r - komi - komi_offset;
+    return r - komi;
 }
 
 
