@@ -221,8 +221,6 @@ void reset_warning_messages()
     illegal_stone_placement_warned = false;
 }
 
-extern u32 alloced;
-
 /*
 RETURNS true if the game has been found and read correctly
 */

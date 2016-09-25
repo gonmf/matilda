@@ -24,7 +24,6 @@ typedef struct __mem_link_ {
 static mem_link * queue = NULL;
 static omp_lock_t queue_lock;
 static bool queue_inited = false;
-u32 alloced = 0;
 
 /*
 Initiate the safe allocation.
@@ -52,8 +51,7 @@ void * alloc()
     {
         ret = queue;
         queue = queue->next;
-    }else
-        ++alloced;
+    }
     omp_unset_lock(&queue_lock);
 
     if(ret == NULL){

@@ -92,59 +92,55 @@ static void export_table_as_ob(
     u32 skipped = 0;
     u32 exported = 0;
 
-    for(u32 ti = 0; ti < TABLE_BUCKETS; ++ti)
+    simple_state_transition ** ssts =
+        (simple_state_transition **)hash_table_export_to_array(table);
+
+    for(u32 idx = 0; ssts[idx]; ++idx)
     {
-        ht_node * node = table->table[ti];
-        while(node != NULL && node->data != NULL)
+        simple_state_transition * h = ssts[idx];
+
+        u32 total_count = get_total_count(h);
+        if(total_count < min_samples)
         {
-            simple_state_transition * h = (simple_state_transition *)node->data;
-
-            u32 total_count = get_total_count(h);
-            if(total_count < min_samples)
-            {
-                ++skipped;
-                node = node->next;
-                continue;
-            }
-
-            u32 best_count = 0;
-            move best = NONE;
-            for(move i = 0; i < TOTAL_BOARD_SIZ; ++i)
-                if(h->count[i] > best_count)
-                {
-                    best_count = h->count[i];
-                    best = i;
-                }
-
-            if(best == NONE)
-            {
-                fprintf(stderr, "error: unexpected absence of samples\n");
-                release(str);
-                exit(EXIT_FAILURE);
-            }
-
-            if(best_count <= total_count / 2)
-            {
-                ++skipped;
-                node = node->next;
-                continue;
-            }
-
-            u8 p[TOTAL_BOARD_SIZ];
-            unpack_matrix(p, h->p);
-
-            board_to_ob_rule(str, p, best);
-            size_t w = fwrite(str, strlen(str), 1, fp);
-            if(w != 1)
-            {
-                fprintf(stderr, "error: write failed\n");
-                release(str);
-                exit(EXIT_FAILURE);
-            }
-
-            ++exported;
-            node = node->next;
+            ++skipped;
+            continue;
         }
+
+        u32 best_count = 0;
+        move best = NONE;
+        for(move i = 0; i < TOTAL_BOARD_SIZ; ++i)
+            if(h->count[i] > best_count)
+            {
+                best_count = h->count[i];
+                best = i;
+            }
+
+        if(best == NONE)
+        {
+            fprintf(stderr, "error: unexpected absence of samples\n");
+            release(str);
+            exit(EXIT_FAILURE);
+        }
+
+        if(best_count <= total_count / 2)
+        {
+            ++skipped;
+            continue;
+        }
+
+        u8 p[TOTAL_BOARD_SIZ];
+        unpack_matrix(p, h->p);
+
+        board_to_ob_rule(str, p, best);
+        size_t w = fwrite(str, strlen(str), 1, fp);
+        if(w != 1)
+        {
+            fprintf(stderr, "error: write failed\n");
+            release(str);
+            exit(EXIT_FAILURE);
+        }
+
+        ++exported;
     }
 
     size_t w = fwrite(str, strlen(str), 1, fp);
