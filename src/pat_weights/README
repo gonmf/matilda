@@ -1,8 +1,10 @@
 Simple application for grading 3x3 patterns by frequency of selection in SGF
-records. The results are printed to data/NxN.weights.
+records. The results are written to data/NxN.weights.new.
 
-The purpose of these weights is probability selection over a 3x3 neighborhood
-around the last play; not over the whole board.
+The number of appearances is not normalized. If a pattern appears multiple times
+it will be selected as winner or loser multiple times. In contrast with
+considering only unique patterns per state, this does not privilege patterns
+that are more common.
 
 The weights are 16-bit values that are later scaled by a factor of 1/9 so their
-maximum total fits 16 bits.
+maximum total on a 3x3 neighborship fits 16 bits.
