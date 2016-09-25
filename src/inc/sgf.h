@@ -73,40 +73,4 @@ bool import_game_from_sgf2(
     char * buffer
 );
 
-
-
-
-
-
-
-
-
-
-
-
-
-/*
-TODO DEPRECATED TODO
-*/
-/*
-Reads the header information of an SGF file.
-RETURNS true if possibly valid
-*/
-bool sgf_info(
-    const char * sgf_buf,
-    bool * black_won
-);
-
-/*
-Reads the sequence of plays from SGF text.
-If plays happen out of order they count as a pass by the other player.
-RETURNS number of plays found or -1 on format error
-*/
-d16 sgf_to_boards(
-    char * sgf_buf,
-    move * plays,
-    bool * irregular_play_order
-);
-
-
 #endif
