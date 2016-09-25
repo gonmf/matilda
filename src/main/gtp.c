@@ -1258,16 +1258,16 @@ static void gtp_loadsgf(
             return;
         }
 
-    char * buf = alloc();
-    snprintf(buf, MAX_PAGE_SIZ, "%s%s", get_data_folder(), filename);
+    char * filepath = alloc();
+    snprintf(filepath, MAX_PAGE_SIZ, "%s%s", get_data_folder(), filename);
 
     game_record tmp;
-
-    bool imported = import_game_from_sgf(&tmp, buf);
+    reset_warning_messages();
+    bool imported = import_game_from_sgf(&tmp, filepath);
     if(!imported)
     {
         gtp_error(fp, id, "cannot load file");
-        release(buf);
+        release(filepath);
         return;
     }
 
@@ -1277,7 +1277,7 @@ static void gtp_loadsgf(
 
     memcpy(&current_game, &tmp, sizeof(game_record));
 
-    release(buf);
+    release(filepath);
 }
 
 static void gtp_printsgf(

@@ -30,7 +30,6 @@ Application for the production of Fuego book from SGF game collections.
 
 static char * filenames[MAX_FILES];
 
-static bool relax_komi = true;
 static d32 ob_depth = BOARD_SIZ;
 static d32 minimum_turns = (BOARD_SIZ + 1);
 static d32 minimum_samples = (BOARD_SIZ / 2);
@@ -196,11 +195,6 @@ int main(
             minimum_samples = a;
             continue;
         }
-        if(strcmp(argv[i], "--relax_komi") == 0)
-        {
-            relax_komi = true;
-            continue;
-        }
 
 usage:
         printf("Usage: %s [options]\n", argv[0]);
@@ -211,7 +205,6 @@ lt: %u)\n", ob_depth);
 to be used. (default: %u)\n", minimum_turns);
         printf("--min_samples - Minimum number of samples for a rule to be save\
 d. (default: %u)\n", minimum_samples);
-        printf("--relax_komi - Allow games with uncommon komi values.\n");
         exit(EXIT_SUCCESS);
     }
 
@@ -272,17 +265,9 @@ d. (default: %u)\n", minimum_samples);
         buf[r] = 0;
 
         move plays[MAX_GAME_LENGTH];
-
         bool black_won;
-        bool _ignored;
-        bool normal_komi;
 
-        if(!sgf_info(buf, &black_won, &_ignored, &_ignored, &normal_komi))
-        {
-            ++games_skipped;
-            continue;
-        }
-        if(!relax_komi && !normal_komi)
+        if(!sgf_info(buf, &black_won))
         {
             ++games_skipped;
             continue;

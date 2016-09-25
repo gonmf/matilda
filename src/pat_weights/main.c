@@ -111,13 +111,9 @@ int main()
         buf[r] = 0;
 
         move plays[MAX_GAME_LENGTH];
-
         bool black_won;
-        bool chinese_rules;
-        bool japanese_rules;
-        bool normal_komi;
-        if(!sgf_info(buf, &black_won, &chinese_rules, &japanese_rules,
-            &normal_komi))
+
+        if(!sgf_info(buf, &black_won))
         {
             ++games_skipped;
             continue;

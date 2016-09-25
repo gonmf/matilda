@@ -80,6 +80,8 @@ static int sort_cmp_function(
 
 
 int main(int argc, char * argv[]){
+    bool no_print = false;
+
     for(int i = 1; i < argc; ++i){
         if(i < argc - 1 && strcmp(argv[i], "--time") == 0){
             d32 a;
@@ -87,6 +89,10 @@ int main(int argc, char * argv[]){
                 goto usage;
             ++i;
             secs_per_turn = a;
+            continue;
+        }
+        if(strcmp(argv[i], "--no_print") == 0){
+            no_print = true;
             continue;
         }
         if(i < argc - 1 && strcmp(argv[i], "--max_depth") == 0){
@@ -103,6 +109,7 @@ usage:
         printf("Options:\n");
         printf("--max_depth number - Maximum turn depth of the openings. (defau\
 lt: %u)\n", ob_depth);
+        printf("--no_print - Do not print SGF filenames.\n");
         printf("--time number - Time spent per rule, in seconds. (default: %u)\\
 n", secs_per_turn);
         exit(EXIT_SUCCESS);
@@ -140,74 +147,64 @@ n", secs_per_turn);
         printf("Found %u SGF files.\n", filenames_found);
 
     char * buf = malloc(MAX_FILE_SIZ);
+    game_record * gr = malloc(sizeof(game_record));
 
     timestamp(ts);
     printf("%s: Loading game states\n", ts);
     u32 fid;
     for(fid = 0; fid < filenames_found; ++fid)
     {
-        if((fid % 512) == 0)
+        if(!no_print)
+            printf("%u/%u: %s", fid + 1, filenames_found, filenames[fid]);
+
+        if(!import_game_from_sgf2(gr, filenames[fid], buf))
         {
-            printf("\r%u%%", ((fid + 1) * 100) / filenames_found);
-            fflush(stdout);
-        }
-
-        d32 r = read_ascii_file(buf, MAX_FILE_SIZ, filenames[fid]);
-        if(r <= 0 || r >= MAX_FILE_SIZ)
-        {
-            fprintf(stderr, "\rerror: unexpected file size or read error: %s\n",
-                filenames[fid]);
-            exit(EXIT_FAILURE);
-        }
-        buf[r] = 0;
-
-        move plays[MAX_GAME_LENGTH];
-
-        bool black_won;
-        bool _ignored;
-        bool normal_komi;
-
-        if(!sgf_info(buf, &black_won, &_ignored, &_ignored, &normal_komi))
+            if(!no_print)
+                printf(" skipped\n");
             continue;
+        }
 
-        bool irregular_play_order;
-
-        d16 plays_count = sgf_to_boards(buf, plays, &irregular_play_order);
-        ++games_used;
+        /* Ignore handicap matches */
+        if(gr->handicap_stones.count > 0)
+        {
+            if(!no_print)
+                printf(" skipped\n");
+            continue;
+        }
 
         board b;
         clear_board(&b);
+        bool is_black = true;
+
+        ++games_used;
+        if(!no_print)
+            printf(" (%u)\n", gr->turns);
 
         d16 k;
-        for(k = 0; k < MIN(ob_depth, plays_count); ++k)
+        for(k = 0; k < MIN(ob_depth, gr->turns); ++k)
         {
-            if(!is_board_move(plays[k]))
+            move m = gr->moves[k];
+
+            /* Stop at the first play that is either a capture or pass */
+            if(!is_board_move(m))
                 break;
-
-            if(b.p[plays[k]] != EMPTY)
-            {
-                fprintf(stderr, "\rerror: file contains plays over stones\n");
-                exit(EXIT_FAILURE);
-            }
-
-            bool is_black = (k & 1) == 0;
 
             board b2;
             memcpy(&b2, &b, sizeof(board));
 
             u16 caps;
-            u8 libs = libs_after_play_slow(&b, is_black, plays[k], &caps);
+            u8 libs = libs_after_play_slow(&b, is_black, m, &caps);
             if(libs < 1 || caps > 0)
                 break;
 
-            if(!attempt_play_slow(&b, is_black, plays[k]))
+            if(!attempt_play_slow(&b, is_black, m))
             {
                 fprintf(stderr, "\rerror: file contains illegal plays\n");
                 exit(EXIT_FAILURE);
             }
 
             d8 reduction = reduce_auto(&b2, true);
-            plays[k] = reduce_move(plays[k], reduction);
+            m = reduce_move(m, reduction);
 
             simple_state_transition stmp;
             memset(&stmp, 0, sizeof(simple_state_transition));
@@ -234,6 +231,8 @@ n", secs_per_turn);
             }
             else
                 entry->popularity++;
+
+            is_black = !is_black;
         }
     }
 
