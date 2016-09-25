@@ -146,13 +146,13 @@ n", secs_per_turn);
     else
         printf("Found %u SGF files.\n", filenames_found);
 
+    timestamp(ts);
+    printf("%s: Loading game states\n", ts);
+
     char * buf = malloc(MAX_FILE_SIZ);
     game_record * gr = malloc(sizeof(game_record));
 
-    timestamp(ts);
-    printf("%s: Loading game states\n", ts);
-    u32 fid;
-    for(fid = 0; fid < filenames_found; ++fid)
+    for(u32 fid = 0; fid < filenames_found; ++fid)
     {
         if(!no_print)
             printf("%u/%u: %s", fid + 1, filenames_found, filenames[fid]);
@@ -189,13 +189,13 @@ n", secs_per_turn);
             if(!is_board_move(m))
                 break;
 
-            board b2;
-            memcpy(&b2, &b, sizeof(board));
-
             u16 caps;
             u8 libs = libs_after_play_slow(&b, is_black, m, &caps);
             if(libs < 1 || caps > 0)
                 break;
+
+            board b2;
+            memcpy(&b2, &b, sizeof(board));
 
             if(!attempt_play_slow(&b, is_black, m))
             {

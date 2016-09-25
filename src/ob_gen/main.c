@@ -77,7 +77,8 @@ static void export_table_as_ob(
 ){
     char * str = alloc();
 
-    snprintf(str, MAX_PAGE_SIZ, "%soutput.ob", get_data_folder());
+    snprintf(str, MAX_PAGE_SIZ, "%s%ux%u.ob.new", get_data_folder(),
+        BOARD_SIZ, BOARD_SIZ);
 
     FILE * fp = fopen(str, "w");
     if(fp == NULL)
@@ -133,7 +134,6 @@ static void export_table_as_ob(
             unpack_matrix(p, h->p);
 
             board_to_ob_rule(str, p, best);
-
             size_t w = fwrite(str, strlen(str), 1, fp);
             if(w != 1)
             {
@@ -147,8 +147,6 @@ static void export_table_as_ob(
         }
     }
 
-    snprintf(str, MAX_PAGE_SIZ, "# exported %u unique rules; %u were disqualifi\
-ed for not enough samples or majority representative\n",exported, skipped);
     size_t w = fwrite(str, strlen(str), 1, fp);
     release(str);
     if(w != 1)
@@ -158,7 +156,7 @@ ed for not enough samples or majority representative\n",exported, skipped);
     }
     fclose(fp);
 
-    printf("exported %u unique rules; %u were disqualified for not enough sampl\
+    printf("Exported %u unique rules; %u were disqualified for not enough sampl\
 es or majority representative\n", exported, skipped);
 }
 
@@ -166,6 +164,8 @@ int main(
     int argc,
     char * argv[]
 ){
+    bool no_print = false;
+
     for(int i = 1; i < argc; ++i)
     {
         if(i < argc - 1 && strcmp(argv[i], "--max_depth") == 0)
@@ -195,6 +195,10 @@ int main(
             minimum_samples = a;
             continue;
         }
+        if(strcmp(argv[i], "--no_print") == 0){
+            no_print = true;
+            continue;
+        }
 
 usage:
         printf("Usage: %s [options]\n", argv[0]);
@@ -205,6 +209,7 @@ lt: %u)\n", ob_depth);
 to be used. (default: %u)\n", minimum_turns);
         printf("--min_samples - Minimum number of samples for a rule to be save\
 d. (default: %u)\n", minimum_samples);
+        printf("--no_print - Do not print SGF filenames.\n");
         exit(EXIT_SUCCESS);
     }
 
@@ -226,9 +231,7 @@ d. (default: %u)\n", minimum_samples);
 
 
     u32 games_used = 0;
-    u32 games_skipped = 0;
     u32 plays_used = 0;
-    u32 passes = 0;
     u32 ob_rules = 0;
 
     timestamp(ts);
@@ -246,82 +249,68 @@ d. (default: %u)\n", minimum_samples);
     printf("%s: 1/2 Thinking\n", ts);
 
     char * buf = malloc(MAX_FILE_SIZ);
-    u32 fid;
-    for(fid = 0; fid < filenames_found; ++fid)
+    game_record * gr = malloc(sizeof(game_record));
+
+    for(u32 fid = 0; fid < filenames_found; ++fid)
     {
-        if((fid % 2048) == 0)
-        {
-            printf("\r%u%%", ((fid + 1) * 100) / filenames_found);
-            fflush(stdout);
-        }
+        if(!no_print)
+            printf("%u/%u: %s", fid + 1, filenames_found, filenames[fid]);
 
-        d32 r = read_ascii_file(buf, MAX_FILE_SIZ, filenames[fid]);
-        if(r <= 0 || r >= MAX_FILE_SIZ)
+        if(!import_game_from_sgf2(gr, filenames[fid], buf))
         {
-            fprintf(stderr, "\rerror: unexpected file size or read error: %s\n",
-                filenames[fid]);
-            exit(EXIT_FAILURE);
-        }
-        buf[r] = 0;
-
-        move plays[MAX_GAME_LENGTH];
-        bool black_won;
-
-        if(!sgf_info(buf, &black_won))
-        {
-            ++games_skipped;
+            if(!no_print)
+                printf(" skipped\n");
             continue;
         }
-        bool irregular_play_order;
 
-        d16 plays_count = sgf_to_boards(buf, plays, &irregular_play_order);
-        if(plays_count == -1 || plays_count < minimum_turns)
-        {
-            ++games_skipped;
+        if(gr->turns < minimum_turns){
+            if(!no_print)
+                printf(" skipped\n");
             continue;
         }
-        if(irregular_play_order)
+
+        /* Ignore handicap matches */
+        if(gr->handicap_stones.count > 0)
         {
-            ++games_skipped;
+            if(!no_print)
+                printf(" skipped\n");
             continue;
         }
-        ++games_used;
 
         board b;
         clear_board(&b);
 
-        d16 k;
-        for(k = 0; k < MIN(ob_depth, plays_count); ++k)
+        ++games_used;
+        if(!no_print)
+            printf(" (%u)\n", gr->turns);
+
+        bool is_black = true;
+        for(d16 k = 0; k < MIN(ob_depth, gr->turns); ++k)
         {
-            if(plays[k] == PASS)
+            move m = gr->moves[k];
+
+            /* Stop at the first play that is a pass */
+            if(!is_board_move(m))
+                break;
+
+            u16 caps;
+            u8 libs = libs_after_play_slow(&b, is_black, m, &caps);
+            if(libs < 1 || caps > 0)
                 break;
 
             ++plays_used;
 
-            if(b.p[plays[k]] != EMPTY)
-            {
-                fprintf(stderr, "\rerror: file contains plays over stones\n");
-                exit(EXIT_FAILURE);
-            }
-
-            bool is_black = (k & 1) == 0;
-
             board b2;
             memcpy(&b2, &b, sizeof(board));
 
-            u16 caps;
-            u8 libs = libs_after_play_slow(&b, is_black, plays[k], &caps);
-            if(libs < 1 || caps > 0)
-                break;
-
-            if(!attempt_play_slow(&b, is_black, plays[k]))
+            if(!attempt_play_slow(&b, is_black, m))
             {
                 fprintf(stderr, "\rerror: file contains illegal plays\n");
                 exit(EXIT_FAILURE);
             }
 
             d8 reduction = reduce_auto(&b2, is_black);
-            plays[k] = reduce_move(plays[k], reduction);
+            m = reduce_move(m, reduction);
 
             simple_state_transition stmp;
             memset(&stmp, 0, sizeof(simple_state_transition));
@@ -343,13 +332,15 @@ d. (default: %u)\n", minimum_samples);
                 memset(entry, 0, sizeof(simple_state_transition));
                 memcpy(entry->p, stmp.p, PACKED_BOARD_SIZ);
                 entry->hash = stmp.hash;
-                entry->count[plays[k]] = 1;
+                entry->count[m] = 1;
 
                 hash_table_insert(table, entry);
                 ++ob_rules;
             }
             else /* reusing state */
-                entry->count[plays[k]]++;
+                entry->count[m]++;
+
+            is_black = !is_black;
         }
     }
 
@@ -361,11 +352,6 @@ d. (default: %u)\n", minimum_samples);
         return EXIT_SUCCESS;
     }
 
-    printf("matches found=%u used=%u skipped=%u\nconsidered plays=%u and passes\
-=%u\nunique ob rules=%u (from first %u turns)\n", games_used + games_skipped,
-        games_used, games_skipped, plays_used, passes, ob_rules, ob_depth);
-
-    printf("\n");
     timestamp(ts);
     printf("%s: 2/2 Exporting as opening book...\n", ts);
 

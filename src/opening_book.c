@@ -49,6 +49,7 @@ Formats a board position to a Fuego-style opening book rule, for example:
 13 K4 C3 | F11
 With no line break. Does not ascertain the validity of the rule, i.e. do not
 invoke after a capture or pass has occurred.
+// TODO add assertions that format is well understood
 */
 void board_to_ob_rule(
     char * dst,

@@ -292,7 +292,6 @@ tes");
             release(tmp);
             return false;
         }
-    release(tmp);
 
     /*
     Player names
