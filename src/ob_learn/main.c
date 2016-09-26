@@ -203,9 +203,6 @@ n", secs_per_turn);
                 exit(EXIT_FAILURE);
             }
 
-            d8 reduction = reduce_auto(&b2, true);
-            m = reduce_move(m, reduction);
-
             simple_state_transition stmp;
             memset(&stmp, 0, sizeof(simple_state_transition));
             pack_matrix(stmp.p, b2.p);

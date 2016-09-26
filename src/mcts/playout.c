@@ -227,7 +227,7 @@ static move heavy_select_play(
                 }
             }
         }
-        if(weight_total > 0)
+        if(candidate_plays > 0)
         {
             d32 w = (d32)rand_u16(weight_total);
             for(u16 i = 0; ; ++i)
@@ -261,7 +261,7 @@ static move heavy_select_play(
                 }
             }
         }
-        if(weight_total > 0)
+        if(candidate_plays > 0)
         {
             d32 w = (d32)rand_u16(weight_total);
             for(u16 i = 0; ; ++i)
@@ -295,7 +295,7 @@ static move heavy_select_play(
                 }
             }
         }
-        if(weight_total > 0)
+        if(candidate_plays > 0)
         {
             d32 w = (d32)rand_u16(weight_total);
             for(u16 i = 0; ; ++i)
@@ -328,7 +328,7 @@ static move heavy_select_play(
                 }
             }
         }
-        if(weight_total > 0)
+        if(candidate_plays > 0)
         {
             d32 w = (d32)rand_u16(weight_total);
             for(u16 i = 0; ; ++i)
@@ -355,7 +355,7 @@ static move heavy_select_play(
             ++candidate_plays;
         }
     }
-    if(weight_total > 0)
+    if(candidate_plays > 0)
     {
         d32 w = (d32)rand_u16(weight_total);
         for(u16 i = 0; ; ++i)

@@ -386,6 +386,8 @@ void flog_crit(
         flog("crit", ctx, msg);
         flog(NULL, NULL, "execution aborted due to program panic");
     }
+    else
+        fprintf(stderr, "execution aborted due to program panic");
 
     exit(EXIT_FAILURE);
 }
