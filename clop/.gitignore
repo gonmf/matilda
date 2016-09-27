@@ -1,4 +1,5 @@
 clop-gui
+clop-console
 *.dat
 *.sgf
 *.log
