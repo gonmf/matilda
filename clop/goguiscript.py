@@ -37,7 +37,7 @@ os.chdir(path)
 #
 
 # program to be optimized
-optimized_program = '/home/user/go/matilda/github/src/matilda -d /home/user/go/matilda/github/src/data/ -m gtp -l --disable_opening_books --playouts 500'
+optimized_program = '/home/user/go/matilda/github/src/matilda -d /home/user/go/matilda/github/src/data/ -m gtp -l --disable_opening_books --playouts 400'
 # --disable_opening_books
 # --playouts 1000
 
