@@ -31,6 +31,7 @@ Tuned with CLOP in 9x9 with 3s/game vs GNU Go 3.8 lvl 1. 7907 games.
 #else
 /*
 Tuned with CLOP in 19x19 with 10m/game vs GNU Go 3.8 lvl 1, 283 games.
+And against GNU GO lvl 1, 9x9, 2s/game, 12k games.
 */
 #define TIME_ALLOT_FACTOR 2.6
 #endif
