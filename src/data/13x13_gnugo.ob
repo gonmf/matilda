@@ -1,3 +1,6 @@
+# This opening book was created by seeing the most common plays in GNU Go 3.8
+# self-play. It is probably very poor.
+
 13 E11 K11 C10 E4 G4 E3 | C7 # 14/14
 13 C4 | D11 # 84/112
 13 L6 C5 L4 J3 K3 | E4 # 7/10
