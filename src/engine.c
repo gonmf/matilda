@@ -24,8 +24,6 @@ maintenance if needed.
 
 static bool use_opening_book = true;
 
-extern d16 komi_offset; /* only reset between matches */
-
 bool tt_requires_maintenance = false; /* set after MCTS start/resume call */
 
 
@@ -154,7 +152,6 @@ void new_match_maintenance()
 {
     u32 freed = tt_clean_all();
     tt_requires_maintenance = false;
-    komi_offset = 0;
 
     if(freed > 0)
     {

@@ -136,9 +136,8 @@ void str_between(
         return;
     }
 
-    u32 len = MIN(1023, t2 - t);
-
-    strncpy(dst, t, len);
+    d32 len = (d32)(t2 - t);
+    memcpy(dst, t, len);
     dst[len] = 0;
 }
 

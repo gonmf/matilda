@@ -1,6 +1,14 @@
 /*
 Simple application for grading 3x3 patterns by frequency of selection in SGF
-records. The results are printed to data/pat3_weights.
+records. The results are written to data/NxN.weights.new.
+
+The number of appearances is not normalized. If a pattern appears multiple times
+it will be selected as winner or loser multiple times. In contrast with
+considering only unique patterns per state, this does not privilege patterns
+that are more common.
+
+The weights are 16-bit values that are later scaled by a factor of 1/9 so their
+maximum total on a 3x3 neighborship fits 16 bits.
 */
 
 
@@ -16,6 +24,7 @@ records. The results are printed to data/pat3_weights.
 #include "constants.h"
 #include "engine.h"
 #include "file_io.h"
+#include "flog.h"
 #include "hash_table.h"
 #include "move.h"
 #include "pat3.h"
@@ -25,7 +34,6 @@ records. The results are printed to data/pat3_weights.
 #include "tactical.h"
 #include "timem.h"
 #include "types.h"
-#include "version.h"
 
 
 #define MAX_FILES 500000
@@ -56,23 +64,40 @@ static int pat3t_compare_function(
 
 static char * filenames[MAX_FILES];
 
+static u16 get_pattern(
+    cfg_board * cb,
+    move m
+){
+    u8 v[3][3];
+    pat3_transpose(v, cb->p, m);
+    pat3_reduce_auto(v);
+    return pat3_to_string((const u8 (*)[3])v);
+}
+
 int main(
     int argc,
     char * argv[]
 ){
-    if(argc == 2 && strcmp(argv[1], "-version") == 0)
+    bool no_print = false;
+
+    for(int i = 1; i < argc; ++i)
     {
-        fprintf(stderr, "matilda %s\n", MATILDA_VERSION);
-        return 0;
-    }
-    else
-        if(argc > 1)
-        {
-            fprintf(stderr, "usage: %s [-version]\n", argv[0]);
-            return 0;
+        if(strcmp(argv[i], "--no_print") == 0){
+            no_print = true;
+            continue;
         }
 
+        printf("Usage: %s [options]\n", argv[0]);
+        printf("Options:\n");
+        printf("--no_print - Do not print SGF filenames.\n");
+        exit(EXIT_SUCCESS);
+    }
+
     alloc_init();
+
+    flog_config_modes(LOG_MODE_ERROR | LOG_MODE_WARN);
+    flog_config_destinations(LOG_DEST_STDF);
+
     assert_data_folder_exists();
     board_constants_init();
 
@@ -101,125 +126,85 @@ int main(
     hash_table * feature_table = hash_table_create(1543, sizeof(pat3t),
         pat3t_hash_function, pat3t_compare_function);
 
-    char  * buf = alloc();
+    char  * buf = malloc(MAX_FILE_SIZ);
+    game_record * gr = malloc(sizeof(game_record));
 
-    u32 fid;
-    for(fid = 0; fid < filenames_found; ++fid)
+    for(u32 fid = 0; fid < filenames_found; ++fid)
     {
-        if((fid % 128) == 0)
-        {
-            fprintf(stderr, "\r %u%%", ((fid + 1) * 100) / filenames_found);
-            fflush(stdout);
-        }
+        if(!no_print)
+            printf("%u/%u: %s", fid + 1, filenames_found, filenames[fid]);
 
-        d32 r = read_ascii_file(buf, MAX_PAGE_SIZ, filenames[fid]);
-        if(r <= 0 || r >= MAX_PAGE_SIZ)
+        if(!import_game_from_sgf2(gr, filenames[fid], buf))
         {
-            fprintf(stderr, "error: unexpected file size\n");
-            exit(EXIT_FAILURE);
-        }
-        buf[r] = 0;
-
-        move plays[MAX_GAME_LENGTH];
-
-        bool black_won;
-        bool chinese_rules;
-        bool japanese_rules;
-        bool normal_komi;
-        if(!sgf_info(buf, &black_won, &chinese_rules, &japanese_rules,
-            &normal_komi))
-        {
-            ++games_skipped;
+            if(!no_print)
+                printf(" skipped\n");
             continue;
         }
 
-        bool irregular_play_order;
-
-        d16 plays_count = sgf_to_boards(buf, plays, &irregular_play_order);
-        if(plays_count == -1)
+        /* Ignore handicap matches */
+        if(gr->handicap_stones.count > 0)
         {
-            ++games_skipped;
+            if(!no_print)
+                printf(" skipped\n");
             continue;
         }
-        if(irregular_play_order)
-            fprintf(stderr, "warning: SGF file contains play out of order\n");
-
-        ++games_used;
 
         board b;
         clear_board(&b);
 
-        for(u16 k = 0; k < plays_count; ++k)
+        ++games_used;
+        if(!no_print)
+            printf(" (%u)\n", gr->turns);
+
+        for(d16 k = 0; k < gr->turns; ++k)
         {
-            if(plays[k] == PASS)
+            move m = gr->moves[k];
+
+            if(m == PASS)
                 pass(&b);
             else
             {
-                if(is_board_move(b.last_played))
+                cfg_board cb;
+                cfg_from_board(&cb, &b);
+
+                u16 winner_pattern = get_pattern(&cb, m);
+
+                for(move n = 0; n < TOTAL_BOARD_SIZ; ++n)
                 {
-                    cfg_board cb;
-                    cfg_from_board(&cb, &b);
+                    if(cb.p[n] != EMPTY)
+                        continue;
 
-                    bool valid[TOTAL_BOARD_SIZ];
-                    memset(valid, true, TOTAL_BOARD_SIZ);
+                    if(ko_violation(&cb, n))
+                        continue;
 
-                    u8 x;
-                    u8 y;
-                    move_to_coord(b.last_played, &x, &y);
+                    u8 libs;
+                    bool captures;
+                    if((libs = safe_to_play2(&cb, true, n, &captures))
+                        == 0)
+                        continue;
 
-                    for(d8 i = x - 1; i <= x + 1; ++i)
-                        for(d8 j = y - 1; j <= y + 1; ++j)
-                        {
-                            if(i < 0 || i >= BOARD_SIZ || j < 0 || j >=
-                                BOARD_SIZ)
-                                continue;
+                    u16 pattern = get_pattern(&cb, n);
 
-                            move m = coord_to_move(i, j);
-                            if(b.last_played == m)
-                                continue;
+                    pat3t * found = hash_table_find(feature_table, &pattern);
+                    if(found == NULL)
+                    {
+                        found = malloc(sizeof(pat3t));
+                        found->value = pattern;
+                        found->wins = 0;
+                        found->appearances = 0;
+                        hash_table_insert_unique(feature_table, found);
+                        ++unique_patterns;
+                    }
 
-
-                            if(cb.p[m] != EMPTY)
-                                continue;
-
-                            if(ko_violation(&cb, m))
-                                continue;
-
-                            u8 libs;
-                            bool captures;
-                            if((libs = safe_to_play2(&cb, true, m, &captures))
-                                == 0)
-                                continue;
-
-                            u8 v[3][3];
-                            pat3_transpose(v, cb.p, m);
-
-                            pat3_reduce_auto(v);
-                            u16 pattern = pat3_to_string((const u8 (*)[3])v);
-
-                            pat3t * found = hash_table_find(feature_table,
-                                &pattern);
-                            if(found == NULL)
-                            {
-                                pat3t * f = malloc(sizeof(pat3t));
-                                f->value = pattern;
-                                f->wins = (m == plays[k]) ? 1 : 0;
-                                f->appearances = 1;
-                                hash_table_insert_unique(feature_table, f);
-                                ++unique_patterns;
-                            }
-                            else
-                            {
-                                found->wins += (m == plays[k]) ? 1 : 0;;
-                                found->appearances++;
-                            }
-                        }
-
-                    cfg_board_free(&cb);
+                    found->wins += (pattern == winner_pattern) ? 1 : 0;
+                    found->appearances++;
                 }
 
-                just_play_slow(&b, true, plays[k]);
+                cfg_board_free(&cb);
+
+                just_play_slow(&b, true, m);
             }
+
             invert_color(b.p);
         }
     }
@@ -232,10 +217,9 @@ int main(
 
     pat3t ** table = (pat3t **)hash_table_export_to_array(feature_table);
 
-    snprintf(buf, MAX_PAGE_SIZ, "%s%ux%u.weights", get_data_folder(), BOARD_SIZ,
-        BOARD_SIZ);
+    snprintf(buf, MAX_PAGE_SIZ, "%s%ux%u.weights.new", get_data_folder(),
+        BOARD_SIZ, BOARD_SIZ);
     FILE * fp = fopen(buf, "w");
-    release(buf);
     if(fp == NULL)
     {
         fprintf(stderr, "error: couldn't open file for writing\n");

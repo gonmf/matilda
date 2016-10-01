@@ -49,6 +49,7 @@ Formats a board position to a Fuego-style opening book rule, for example:
 13 K4 C3 | F11
 With no line break. Does not ascertain the validity of the rule, i.e. do not
 invoke after a capture or pass has occurred.
+// TODO add assertions that format is well understood
 */
 void board_to_ob_rule(
     char * dst,
@@ -107,18 +108,25 @@ static void ob_simple_insert(
 static bool process_opening_book_line(
     char * s
 ){
-    char * save_ptr = NULL;
+    char * saveptr = NULL;
     char * word;
+
+    if((word = strtok_r(s, " ", &saveptr)) == NULL)
+        return false;
+
+    if(strcmp(word, BOARD_SIZ_AS_STR) != 0)
+        return false;
 
     u16 tokens_read = 0;
     char tokens[TOTAL_BOARD_SIZ][4];
 
-    if((word = strtok_r(s, " ", &save_ptr)) != NULL)
-        strncpy(tokens[tokens_read++], word, 4);
-
     while(tokens_read < TOTAL_BOARD_SIZ && (word = strtok_r(NULL, " ",
-        &save_ptr)) != NULL)
+        &saveptr)) != NULL)
+    {
+        if(word[0] == '#')
+            break;
         strncpy(tokens[tokens_read++], word, 4);
+    }
 
     if(tokens_read < 2 || tokens_read == TOTAL_BOARD_SIZ)
         flog_crit("ob", "illegal opening book rule");
@@ -191,7 +199,6 @@ void discover_opening_books()
     u32 files_found;
 
     char * s = alloc();
-    char * l = alloc();
 
     /*
     Discover .ob files
@@ -200,19 +207,33 @@ void discover_opening_books()
     snprintf(s, MAX_PAGE_SIZ, "found %u opening book files\n", files_found);
     flog_info("ob", s);
 
+    if(files_found == 0)
+        goto func_end;
+
+    char * buffer = malloc(MAX_FILE_SIZ);
+    if(buffer == NULL)
+        flog_crit("ob", "system out of memory");
+
+
     for(u32 i = 0; i < files_found; ++i){
-        open_rule_file(filenames[i]);
+        d32 chars_read = read_ascii_file(buffer, MAX_FILE_SIZ, filenames[i]);
+        if(chars_read < 0)
+            flog_crit("ob", "couldn't open file for reading");
+
         u32 rules_saved = 0;
         u32 rules_found = 0;
-        while(1){
-            read_next_rule(l);
-            if(l[0] == 0)
-                break;
-            if(process_opening_book_line(l))
+        char * saveptr = NULL;
+        char * tmp = buffer;
+        char * line;
+        while((line = strtok_r(tmp, "\r\n", &saveptr)) != NULL)
+        {
+            tmp = NULL;
+
+            if(process_opening_book_line(line))
                 ++rules_saved;
             ++rules_found;
         }
-        close_rule_file();
+
         ob_rules += rules_saved;
 
         snprintf(s, MAX_PAGE_SIZ, "read %s (%u/%u rules)\n", filenames[i],
@@ -222,7 +243,9 @@ void discover_opening_books()
         free(filenames[i]);
     }
 
-    release(l);
+    free(buffer);
+
+func_end:
     release(s);
 }
 

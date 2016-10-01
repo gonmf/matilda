@@ -2,7 +2,7 @@
 Functions related to reading and writing SGF FF[4] files.
 http://www.red-bean.com/sgf/
 
-Play variations are not supported.
+Play variations and annotations/commentary are ignored.
 */
 
 #ifndef MATILDA_SGF_H
@@ -15,29 +15,6 @@ Play variations are not supported.
 #include "game_record.h"
 
 
-
-/*
-Reads the header information of an SGF file.
-RETURNS true if possibly valid
-*/
-bool sgf_info(
-    const char * sgf_buf,
-    bool * black_won,
-    bool * chinese_rules,
-    bool * japanese_rules,
-    bool * normal_komi
-);
-
-/*
-Reads the sequence of plays from SGF text.
-If plays happen out of order they count as a pass by the other player.
-RETURNS number of plays found or -1 on format error
-*/
-d16 sgf_to_boards(
-    char * sgf_buf,
-    move * plays,
-    bool * irregular_play_order
-);
 
 /*
 Writes a game record to a buffer of size length, to the best of the available
@@ -72,6 +49,14 @@ bool export_game_as_sgf(
 );
 
 /*
+Reset the printing of warning messages. Since the process of processing SGF
+files can be repetitive a lot of noise could be produced. By default warning
+messages are only shown the first time a particular type of problem is found
+with the files. Use this function to reset the warnings to be shown.
+*/
+void reset_warning_messages();
+
+/*
 RETURNS true if the game has been found and read correctly
 */
 bool import_game_from_sgf(
@@ -79,5 +64,13 @@ bool import_game_from_sgf(
     const char * filename
 );
 
+/*
+RETURNS true if the game has been found and read correctly
+*/
+bool import_game_from_sgf2(
+    game_record * gr,
+    const char * filename,
+    char * buffer
+);
 
 #endif

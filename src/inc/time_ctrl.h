@@ -12,10 +12,11 @@ say anything. All times are in milliseconds.
 
 #include "types.h"
 
+/*
+If disabled then latency compensation falls back to the value set in the
+constant DETECT_NETWORK_LATENCY.
+*/
 #define DETECT_NETWORK_LATENCY false
-
-/* Used if automatic detection (above) is not active or available yet. */
-#define LATENCY_COMPENSATION 110 /* in milliseconds */
 
 
 /*
@@ -31,6 +32,7 @@ Tuned with CLOP in 9x9 with 3s/game vs GNU Go 3.8 lvl 1. 7907 games.
 #else
 /*
 Tuned with CLOP in 19x19 with 10m/game vs GNU Go 3.8 lvl 1, 283 games.
+And against GNU GO lvl 1, 9x9, 2s/game, 12k games.
 */
 #define TIME_ALLOT_FACTOR 2.6
 #endif

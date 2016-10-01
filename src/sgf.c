@@ -2,7 +2,7 @@
 Functions related to reading and writing SGF FF[4] files.
 http://www.red-bean.com/sgf/
 
-Play variations are not supported.
+Play variations and annotations/commentary are ignored.
 */
 
 #include "matilda.h"
@@ -26,13 +26,14 @@ Play variations are not supported.
 
 extern d16 komi;
 
-static bool unknown_sgf_ruleset_warning_given = false;
-static bool unknown_board_size_cant_guess_warning_given = false;
-static bool gm_unknown_warning_given = false;
-
-#define MAX_SGF_FILE_SIZ (8 * 1024)
-
-
+static bool undeclared_game_ruleset_warned = false;
+static bool board_size_cant_be_guessed_warned = false;
+static bool sgf_format_undeclared_warned = false;
+static bool undeclared_board_size_warned = false;
+static bool wrong_board_size_warned = false;
+static bool illegal_final_score_warned = false;
+static bool illegal_handicap_placement_warned = false;
+static bool illegal_stone_placement_warned = false;
 
 static u8 guess_board_size(
     const char * sgf
@@ -48,141 +49,6 @@ static u8 guess_board_size(
             return size;
     }
     return 0;
-}
-
-/*
-Reads the header information of an SGF file.
-RETURNS true if possibly valid
-*/
-bool sgf_info(
-    const char * sgf_buf,
-    bool * black_won,
-    bool * chinese_rules,
-    bool * japanese_rules,
-    bool * normal_komi
-){
-    *chinese_rules = *japanese_rules = *normal_komi = false;
-
-    if(strstr(sgf_buf, "AB[") != NULL)
-        return false;
-    if(strstr(sgf_buf, "AL[") != NULL)
-        return false;
-
-    /*
-    Discover board size
-    */
-    if(strstr(sgf_buf, "SZ[") == NULL)
-    {
-        u8 board_size = guess_board_size(sgf_buf);
-        if(board_size == 0 && !unknown_board_size_cant_guess_warning_given)
-        {
-            unknown_board_size_cant_guess_warning_given = true;
-            flog_warn("sgff", "board size not specified and could not guess boar\
-d size from play coordinates");
-        }
-        if(board_size != BOARD_SIZ)
-            return false;
-    }
-    else
-    {
-        char siz_str[8];
-        snprintf(siz_str, 8, "SZ[%d]", BOARD_SIZ);
-        if(strstr(sgf_buf, siz_str) == NULL)
-            return false;
-    }
-
-    *chinese_rules = strstr(sgf_buf, "RU[Chinese]") != NULL;
-    *japanese_rules = strstr(sgf_buf, "RU[Japanese]") != NULL;
-    if(strstr(sgf_buf, "RU[") == NULL)
-    {
-        *chinese_rules = true;
-        *japanese_rules = false;
-        if(!unknown_sgf_ruleset_warning_given)
-        {
-            unknown_sgf_ruleset_warning_given = true;
-            flog_warn("sgff", "file doesn't specify ruleset; Chinese rules assum\
-ed");
-        }
-    }
-
-    *normal_komi = (strstr(sgf_buf, "KM[5.") != NULL) || (strstr(sgf_buf,
-        "KM[6.") != NULL) || (strstr(sgf_buf, "KM[7.") != NULL);
-
-    if(strstr(sgf_buf, "RE["))
-        *black_won = strstr(sgf_buf, "RE[B") != NULL;
-    else
-        if(strstr(sgf_buf, "Result[Black\\]: "))
-            *black_won = strstr(sgf_buf, "Result[Black\\]: B") != NULL;
-        else
-            return false;
-
-    if(strstr(sgf_buf, ";B[") == NULL)
-        return false;
-    if(strstr(sgf_buf, ";W[") == NULL)
-        return false;
-
-    return true;
-}
-
-/*
-Reads the sequence of plays from SGF text.
-If plays happen out of order they count as a pass by the other player.
-RETURNS number of plays found or -1 on format error
-*/
-d16 sgf_to_boards(
-    char * sgf_buf,
-    move * plays,
-    bool * irregular_play_order
-){
-    *irregular_play_order = false;
-    u16 play = 0;
-    board b;
-    clear_board(&b);
-
-    char * start = sgf_buf;
-    char * token;
-    char * save_ptr;
-    while(play < MAX_GAME_LENGTH - 1 && (token = strtok_r(start, ";)\n\r",
-        &save_ptr)) != NULL)
-    {
-        if(start != NULL)
-            start = NULL;
-        size_t token_len = strlen(token);
-        if((token_len == 3 || token_len == 5) && (token[0] == 'B' || token[0] ==
-            'W') && token[1] == '[')
-        {
-            bool is_black = (token[0] == 'B');
-            if(is_black != ((play & 1) == 0))
-            {
-                plays[play] = PASS;
-                pass(&b);
-                *irregular_play_order = true;
-            }
-            else
-                if(token_len == 3 && token[2] == ']')
-                {
-                    plays[play] = PASS;
-                    pass(&b);
-                }
-                else
-                    if(token_len == 5 && token[4] == ']')
-                    {
-                        u8 i1 = token[2] - 'a';
-                        u8 i2 = token[3] - 'a';
-                        move m = coord_to_move(i1, i2);
-                        plays[play] = m;
-                        if(!attempt_play_slow(&b, is_black, m))
-                        {
-                            flog_warn("sgff","file contains illegal plays");
-                            return -1;
-                        }
-                    }
-
-            ++play;
-        }
-    }
-
-    return play;
 }
 
 /*
@@ -338,21 +204,38 @@ bool export_game_as_sgf(
 }
 
 /*
+Reset the printing of warning messages. Since the process of processing SGF
+files can be repetitive a lot of noise could be produced. By default warning
+messages are only shown the first time a particular type of problem is found
+with the files. Use this function to reset the warnings to be shown.
+*/
+void reset_warning_messages()
+{
+    undeclared_game_ruleset_warned = false;
+    board_size_cant_be_guessed_warned = false;
+    sgf_format_undeclared_warned = false;
+    undeclared_board_size_warned = false;
+    wrong_board_size_warned = false;
+    illegal_final_score_warned = false;
+    illegal_handicap_placement_warned = false;
+    illegal_stone_placement_warned = false;
+}
+
+/*
 RETURNS true if the game has been found and read correctly
 */
-bool import_game_from_sgf(
+bool import_game_from_sgf2(
     game_record * gr,
-    const char * filename
+    const char * filename,
+    char * buf
 ){
     clear_game_record(gr);
 
-    char * buf = alloc();
-
-    d32 chars_read = read_ascii_file(buf, MAX_SGF_FILE_SIZ, filename);
+    d32 chars_read = read_ascii_file(buf, MAX_FILE_SIZ, filename);
     if(chars_read < 1)
     {
         flog_warn("sgff", "could not open/read file");
-        release(buf);
+        free(buf);
         return false;
     }
 
@@ -360,61 +243,70 @@ bool import_game_from_sgf(
     Game
     */
     if(strstr(buf, "GM[1]") == NULL)
-        if(!gm_unknown_warning_given)
+        if(!sgf_format_undeclared_warned)
         {
-            gm_unknown_warning_given = true;
-            flog_warn("sgff", "SGF GM[1] annotation not found");
+            sgf_format_undeclared_warned = true;
+            flog_warn("sgff", "GM[1] annotation not found");
         }
+
+    char * tmp = alloc();
 
     /*
     Board size
     */
-    char * board_size_str = alloc();
-    str_between(board_size_str, buf, "SZ[", "]");
-    if(board_size_str[0] == 0)
+    str_between(tmp, buf, "SZ[", "]");
+    if(tmp[0] == 0)
     {
-        u8 board_size = guess_board_size(buf);
-        if(board_size == 0 && !unknown_board_size_cant_guess_warning_given)
+        if(!undeclared_board_size_warned)
         {
-            unknown_board_size_cant_guess_warning_given = true;
-            flog_warn("sgff", "board size not specified and could not be guessed\
- from play coordinates");
+            undeclared_board_size_warned = true;
+            flog_warn("sgff", "board size not specified");
+        }
+
+        u8 board_size = guess_board_size(buf);
+        if(board_size == 0 && !board_size_cant_be_guessed_warned)
+        {
+            board_size_cant_be_guessed_warned = true;
+            flog_warn("sgff", "board size can not be guessed from play coordina\
+tes");
         }
         if(board_size != BOARD_SIZ)
         {
-            flog_warn("sgff", "wrong board size");
-            release(buf);
-            release(board_size_str);
+            if(!wrong_board_size_warned){
+                wrong_board_size_warned = true;
+                flog_warn("sgff", "wrong board size");
+            }
+            release(tmp);
             return false;
         }
     }
     else
-        if(strcmp(board_size_str, BOARD_SIZ_AS_STR) != 0)
+        if(strcmp(tmp, BOARD_SIZ_AS_STR) != 0)
         {
-            flog_warn("sgff", "illegal board size format");
-            release(buf);
-            release(board_size_str);
+            if(!wrong_board_size_warned){
+                wrong_board_size_warned = true;
+                flog_warn("sgff", "wrong board size");
+            }
+            release(tmp);
             return false;
         }
-    release(board_size_str);
 
     /*
     Player names
     */
-    char * name = alloc();
-    str_between(name, buf, "PB[", "]");
-    if(name[0])
-        strncpy(gr->black_name, name, MAX_PLAYER_NAME_SIZ);
 
-    str_between(name, buf, "PW[", "]");
-    if(name[0])
-        strncpy(gr->white_name, name, MAX_PLAYER_NAME_SIZ);
-    release(name);
+    str_between(tmp, buf, "PB[", "]");
+    if(tmp[0])
+        strncpy(gr->black_name, tmp, MAX_PLAYER_NAME_SIZ);
+
+    str_between(tmp, buf, "PW[", "]");
+    if(tmp[0])
+        strncpy(gr->white_name, tmp, MAX_PLAYER_NAME_SIZ);
 
     /*
     Result
     */
-    char * result = alloc();
+    char * result = tmp;
     str_between(result, buf, "RE[", "]");
 
     if(result[0] == 0 || strcmp(result, "Void") == 0)
@@ -450,13 +342,15 @@ bool import_game_from_sgf(
                             gr->final_score *= 2;
                             if(gr->final_score == 0)
                             {
-                                flog_warn("sgff", "illegal final score");
-                                release(buf);
-                                release(result);
+                                if(!illegal_final_score_warned){
+                                    illegal_final_score_warned = true;
+                                    flog_warn("sgff", "illegal final score: 0");
+                                }
+                                release(tmp);
                                 return false;
-                            }
-                            if(strstr(result, ".") != NULL)
-                                gr->final_score++;
+                            }else
+                                if(strstr(result, ".") != NULL)
+                                    gr->final_score++;
                         }
                 }
             }
@@ -483,17 +377,19 @@ bool import_game_from_sgf(
                             gr->final_score *= -2;
                             if(gr->final_score == 0)
                             {
-                                flog_warn("sgff", "illegal final score");
-                                release(buf);
-                                release(result);
+                                if(!illegal_final_score_warned){
+                                    illegal_final_score_warned = true;
+                                    flog_warn("sgff", "illegal final score: 0");
+                                }
+                                release(tmp);
                                 return false;
-                            }
-                            if(strstr(result, ".") != NULL)
-                                gr->final_score--;
+                            }else
+                                if(strstr(result, ".") != NULL)
+                                    gr->final_score--;
                         }
                 }
             }
-    release(result);
+    release(tmp);
 
     /*
     Handicap stones
@@ -507,10 +403,17 @@ bool import_game_from_sgf(
             {
                 u8 x = hs[1] - 'a';
                 u8 y = hs[2] - 'a';
+                if(x >= BOARD_SIZ || y >= BOARD_SIZ)
+                {
+                    if(!illegal_handicap_placement_warned){
+                        illegal_handicap_placement_warned = true;
+                        flog_warn("sgff", "handicap placement error (1)");
+                    }
+                    return false;
+                }
                 if(!add_handicap_stone(gr, coord_to_move(x, y)))
                 {
-                    flog_warn("sgff", "handicap placement error");
-                    release(buf);
+                    flog_warn("sgff", "handicap placement error (2)");
                     return false;
                 }
                 hs += 4;
@@ -542,12 +445,39 @@ bool import_game_from_sgf(
                 {
                     u8 x = token[2] - 'a';
                     u8 y = token[3] - 'a';
+                    if(x >= BOARD_SIZ || y >= BOARD_SIZ)
+                    {
+                        if(!illegal_stone_placement_warned){
+                            illegal_stone_placement_warned = true;
+                            flog_warn("sgff", "play coordinate illegal");
+                        }
+                        return false;
+                    }
                     add_play_out_of_order(gr, is_black, coord_to_move(x, y));
                 }
         }
     }
 
-    release(buf);
     return true;
+}
+
+/*
+RETURNS true if the game has been found and read correctly
+*/
+bool import_game_from_sgf(
+    game_record * gr,
+    const char * filename
+){
+    char * buf = malloc(MAX_FILE_SIZ);
+    if(buf == NULL)
+    {
+        flog_crit("sgff", "out of memory");
+        return false;
+    }
+
+    bool ret = import_game_from_sgf2(gr, filename, buf);
+    free(buf);
+
+    return ret;
 }
 

@@ -32,7 +32,19 @@ Take note that the real total memory used will be a few MiB more.
 
 EXPECTED: 10 to 64000
 */
-#define DEFAULT_UCT_MEMORY 512
+#define DEFAULT_UCT_MEMORY 4000
+
+
+/*
+When playing online the communication can suffer a small latency, which can
+negatively impact the game time control and cause Matilda to run out of time.
+If this is the case you can set a constant latency compensation so that it
+thinks less per turn, but doesn't timeout.
+The value is in milliseconds.
+
+EXPECTED: 2 to 200
+*/
+#define LATENCY_COMPENSATION 110
 
 
 /*
@@ -50,7 +62,7 @@ A debug build suffers a heavy performance penalty.
 
 EXPECTED: 0 or 1
 */
-#define MATILDA_RELEASE_MODE 1
+#define MATILDA_RELEASE_MODE 0
 
 
 /*
@@ -70,7 +82,7 @@ Just set a very high number.
 
 EXPECTED: 1 to 64
 */
-#define MAXIMUM_NUM_THREADS 4
+#define MAXIMUM_NUM_THREADS 8
 
 
 /*
@@ -87,7 +99,7 @@ program is running out of memory mid-turn consider increasing this value.
 
 EXPECTED: 0 to 10
 */
-#define UCT_EXPANSION_DELAY 0
+#define UCT_EXPANSION_DELAY 4
 
 
 /*
@@ -97,12 +109,16 @@ If a system is set and it allows infinite time to think, Matilda will think
 until running out of memory.
 EXPECTED: 1000 to 100000
 */
-#define DEFAULT_TIME_PER_TURN 500
+#define DEFAULT_TIME_PER_TURN 1000
 
 
 /*******************************************************************************
                                     END
 *******************************************************************************/
+
+
+
+
 
 
 
@@ -137,12 +153,12 @@ Compliancy with POSIX.1 aka IEEE Std. 1003.1b-1993 is required for the
 functions: fdopen, strtok_r, rand_r, fsync
 */
 #define _POSIX_C_SOURCE 199309L
+#define _XOPEN_SOURCE 600
 
 /*
 This is required for fsync in glibc versions < 2.8 and for mkstemps
 */
 #define _BSD_SOURCE
-
 
 
 #define YN(EXPR) ((EXPR) ? "yes" : "no")

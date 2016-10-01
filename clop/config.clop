@@ -39,7 +39,7 @@ LinearParameter time_allot_factor 1.0 6.0
 #IntegerParameter pl_skip_nakade 0 128
 #IntegerParameter pl_skip_capture 0 128
 #IntegerParameter pl_skip_pattern 0 128
-#IntegerParameter pl_allow_satari 0 128
+#IntegerParameter pl_ban_self_atari 0 128
 
 #IntegerParameter expansion_delay 0 8
 

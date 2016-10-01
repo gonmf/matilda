@@ -10,6 +10,7 @@
 #include "cfg_board.h"
 #include "constants.h"
 #include "engine.h"
+#include "flog.h"
 #include "game_record.h"
 #include "pat3.h"
 #include "randg.h"
@@ -19,7 +20,6 @@
 #include "timem.h"
 #include "types.h"
 #include "zobrist.h"
-#include "version.h"
 
 
 extern u16 iv_3x3[TOTAL_BOARD_SIZ][TOTAL_BOARD_SIZ][3];
@@ -630,27 +630,17 @@ static void test_whole_game()
     fprintf(stderr, "%s: test passed\n", _timestamp());
 }
 
-int main(
-    int argc,
-    char * argv[]
-){
-    if(argc == 2 && strcmp(argv[1], "-version") == 0)
-    {
-        fprintf(stderr, "matilda %s\n", MATILDA_VERSION);
-        return 0;
-    }
-    else
-        if(argc > 1)
-        {
-            fprintf(stderr, "usage: %s [-version]\n", argv[0]);
-            return 0;
-        }
-
+int main()
+{
     alloc_init();
+
+    flog_config_destinations(LOG_DEST_STDF);
+
     assert_data_folder_exists();
     rand_init();
     board_constants_init();
     zobrist_init();
+
 
 #if 1
     omp_set_num_threads(1);
@@ -669,5 +659,5 @@ int main(
         while(1)
             test_whole_game();
 
-    return 0;
+    return EXIT_SUCCESS;
 }

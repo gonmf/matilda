@@ -17,8 +17,8 @@ typedef  int16_t d16;
 typedef   int8_t  d8;
 
 /*
-For reading small files like SGF, MAX_PAGE_SIZ is enough.
-For reading .ob, .zt and weights files MAX_FILE_SIZ is recommended.
+For reading files MAX_FILE_SIZ is recommended. Even SGF files can become large
+if with a lot of commentary.
 */
 #define MAX_PATH_SIZ 1024              /* 1 KiB */
 #define MAX_PAGE_SIZ (4 * 1024)        /* 4 KiB */
