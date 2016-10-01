@@ -36,6 +36,18 @@ EXPECTED: 10 to 64000
 
 
 /*
+When playing online the communication can suffer a small latency, which can
+negatively impact the game time control and cause Matilda to run out of time.
+If this is the case you can set a constant latency compensation so that it
+thinks less per turn, but doesn't timeout.
+The value is in milliseconds.
+
+EXPECTED: 2 to 200
+*/
+#define LATENCY_COMPENSATION 110
+
+
+/*
 Data folder. This folder needs to be found and contain at least a Zobrist
 codification table and handicaps for the board size in use.
 This can also be changed at startup with the flag -data.

@@ -12,10 +12,11 @@ say anything. All times are in milliseconds.
 
 #include "types.h"
 
+/*
+If disabled then latency compensation falls back to the value set in the
+constant DETECT_NETWORK_LATENCY.
+*/
 #define DETECT_NETWORK_LATENCY false
-
-/* Used if automatic detection (above) is not active or available yet. */
-#define LATENCY_COMPENSATION 110 /* in milliseconds */
 
 
 /*
