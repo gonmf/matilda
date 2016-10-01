@@ -326,6 +326,6 @@ void rem_move(
             return;
         }
 
-    flog_crit("mseq", "move not found\n");
+    flog_crit("mseq", "move not found");
 }
 

@@ -563,9 +563,9 @@ static void generic_genmove(
         u16 stones = stone_count(current_state.p);
         time_to_play = calc_time_to_play(curr_clock, stones);
         if(time_to_play == UINT32_MAX)
-            snprintf(buf, MAX_PAGE_SIZ, "time to play: infinite\n");
+            snprintf(buf, MAX_PAGE_SIZ, "time to play: infinite");
         else
-            snprintf(buf, MAX_PAGE_SIZ, "time to play: %u.%03us\n",
+            snprintf(buf, MAX_PAGE_SIZ, "time to play: %u.%03us",
                 time_to_play / 1000, time_to_play % 1000);
         flog_info("gtp", buf);
 
@@ -640,7 +640,7 @@ igns because of timeout\n", is_black ? "black" : "white", is_black ?
 #if 0
 
                     /* TODO just for counting resigns on timeout for paper */
-                    flog_dbug("gtp", "TIMEOUT\n");
+                    flog_dbug("gtp", "TIMEOUT");
 
 
 #endif
@@ -1381,7 +1381,7 @@ void main_gtp(
                 tm.tv_usec = 2000;
 
                 int ready = select(STDIN_FILENO + 1, &readfs, NULL, NULL, &tm);
-                if(ready == 0)
+                if(ready == 0) /* nothing to read */
                 {
                     evaluate_in_background(&current_state, is_black);
                     continue;
