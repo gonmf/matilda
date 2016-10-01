@@ -44,7 +44,7 @@ The value is in milliseconds.
 
 EXPECTED: 2 to 200
 */
-#define LATENCY_COMPENSATION 5
+#define LATENCY_COMPENSATION 100
 
 
 /*

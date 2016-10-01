@@ -28,7 +28,7 @@ is the objective.
 /*
 Tuned with CLOP in 9x9 with 3s/game vs GNU Go 3.8 lvl 1. 7907 games.
 */
-#define TIME_ALLOT_FACTOR 3.3
+#define TIME_ALLOT_FACTOR 2.6 // 3.3
 #else
 /*
 Tuned with CLOP in 19x19 with 10m/game vs GNU Go 3.8 lvl 1, 283 games.
