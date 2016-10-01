@@ -28,13 +28,13 @@ is the objective.
 /*
 Tuned with CLOP in 9x9 with 3s/game vs GNU Go 3.8 lvl 1. 7907 games.
 */
-#define TIME_ALLOT_FACTOR 2.6 // 3.3
+#define TIME_ALLOT_FACTOR 1.2 // 3.3 TODO
 #else
 /*
 Tuned with CLOP in 19x19 with 10m/game vs GNU Go 3.8 lvl 1, 283 games.
 And against GNU GO lvl 1, 9x9, 2s/game, 12k games.
 */
-#define TIME_ALLOT_FACTOR 2.6
+#define TIME_ALLOT_FACTOR 2.6 // TODO
 #endif
 
 #define EXPECTED_GAME_LENGTH ((TOTAL_BOARD_SIZ * 2) / 3)

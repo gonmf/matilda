@@ -63,6 +63,16 @@ void just_play_slow(
 
 /*
 Plays ignoring if it is legal.
+*/
+void just_play_slow2(
+    board * b,
+    bool is_black,
+    move m,
+    u16 * captured
+);
+
+/*
+Plays ignoring if it is legal.
 Also updates an associated Zobrist hash of the previous state.
 RETURNS updated Zobrist hash
 */

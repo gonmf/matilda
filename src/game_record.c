@@ -151,7 +151,7 @@ Returns whether a play is a superko violation. Does not test other legality
 restrictions.
 RETURNS true if illegal by positional superko.
 */
-bool superko_violation(
+bool test_superko(
     const game_record * gr,
     bool is_black,
     move m
@@ -167,14 +167,21 @@ bool superko_violation(
     */
     just_play_slow(&current_state, is_black, m);
 
+    bool captured = false;
+
     bool is_b = first_player_color(gr);
     for(u16 i = 0; i < gr->turns; ++i)
     {
-        if(memcmp(tmp.p, current_state.p, TOTAL_BOARD_SIZ) == 0)
-            return true;
-
         if(is_board_move(gr->moves[i]))
-            just_play_slow(&tmp, is_b, gr->moves[i]);
+        {
+            u16 caps;
+            just_play_slow2(&tmp, is_b, gr->moves[i], &caps);
+            if(caps > 0)
+                captured = true;
+
+            if(captured && memcmp(tmp.p, current_state.p, TOTAL_BOARD_SIZ) == 0)
+                return true;
+        }
         else
             pass(&tmp);
         is_b = !is_b;
@@ -203,7 +210,7 @@ bool play_is_legal(
     if(!can_play_slow(&tmp, is_black, m))
         return false;
 
-    if(gr->turns > 0 && superko_violation(gr, is_black, m))
+    if(gr->turns > 0 && test_superko(gr, is_black, m))
         return false;
 
     return true;
@@ -233,7 +240,7 @@ move select_play(
             best_play = m;
         }
     if(best_play == PASS || gr->turns == 0 ||
-        !superko_violation(gr, is_black, best_play))
+        !test_superko(gr, is_black, best_play))
         return best_play;
 
 
@@ -282,7 +289,7 @@ move select_play(
     for(u16 i = 0; i < playable_count; ++i)
     {
         move m = playable[i];
-        if(gr->turns == 0 || !superko_violation(gr, is_black, m))
+        if(gr->turns == 0 || !test_superko(gr, is_black, m))
             return m;
     }
 
