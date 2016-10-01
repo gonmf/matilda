@@ -7,14 +7,9 @@ Matilda is a competitive computer Go playing engine and accompanying software.
 Implementation-wise it is a MCTS Mogo-like Go program. It is aimed at 64 bit computers in shared memory, playing with Chinese rules via the Go Text Protocol.
 It is versatile and optimized for speed in a lot of areas, though some changes require a recompilation.
 
-**Playing strength (v0.19)**
+The relative strength of Matilda can be seen from playing on the [CGOS](http://cgos.boardspace.net/).
 
-Board | ELO | EGF Rank
-:---: | :---: | :---:
- 9x9  | 2242 | 2 dan
-13x13 |  |
-
-These values are estimates based on the results against a reference opponent, GNU Go 3.8. They used [CGOS](http://cgos.boardspace.net/) match settings and the hardware equivalent of a medium range consumer computer from 2014. The translation of ELO to Japanese ranks is made with the table from [SL](http://senseis.xmp.net/?GoR). In terms of strength Matilda is pretty strong in small boards, but still needs a lot of work in 19x19.
+For now only for 9x9: http://www.yss-aya.com/cgos/9x9/standings.html
 
 **System Requirements**
 
