@@ -68,7 +68,7 @@ void hash_table_insert_unique(
 
     ht_node * node = (ht_node *)malloc(sizeof(ht_node));
     if(node == NULL)
-        flog_crit("ht", "could not allocate node memory\n");
+        flog_crit("ht", "could not allocate node memory");
 
     node->data = elem;
     node->next = ht->table[bucket];
@@ -189,7 +189,7 @@ void hash_table_export_to_file(
 
     FILE * fp = fopen(filename, "wb");
     if(fp == NULL)
-        flog_crit("ht", "couldn't open file for writing\n");
+        flog_crit("ht", "couldn't open file for writing");
 
     for(u32 bucket = 0; bucket < ht->number_of_buckets; ++bucket)
     {
@@ -198,7 +198,7 @@ void hash_table_export_to_file(
         {
             size_t w = fwrite(h->data, ht->elem_size, 1, fp);
             if(w != 1)
-                flog_crit("ht", "write failed\n");
+                flog_crit("ht", "write failed");
 
             ++written;
             h = h->next;
@@ -208,7 +208,7 @@ void hash_table_export_to_file(
     fclose(fp);
 
     if(ht->elements != written)
-        flog_crit("ht", "wrong number of hash table elements written\n");
+        flog_crit("ht", "wrong number of hash table elements written");
 
     fprintf(stderr, "ht: wrote %u elements to file %s\n", written, filename);
 }
@@ -275,7 +275,7 @@ void ** hash_table_export_to_array(
     ret[curr_elem] = NULL;
 
     if(curr_elem != ht->elements)
-        flog_crit("ht", "unexpected number of elements exported\n");
+        flog_crit("ht", "unexpected number of elements exported");
 
     return ret;
 }

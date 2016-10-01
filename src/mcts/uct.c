@@ -459,10 +459,7 @@ bool mcts_start_timed(
             if(curr_time >= early_stop_time)
             {
                 if(curr_time >= stop_time)
-                {
                     search_stop = true;
-                    sim = INT32_MAX;
-                }
                 else
                 {
                     double wr = ((double)wins) / ((double)(wins + losses));
@@ -476,10 +473,7 @@ bool mcts_start_timed(
             }
 #else
             if(curr_time >= stop_time)
-            {
                 search_stop = true;
-                sim = INT32_MAX;
-            }
 #endif
         }
     }
@@ -730,6 +724,13 @@ void mcts_resume(
     #pragma omp parallel for
     for(u32 sim = 0; sim < INT32_MAX; ++sim)
     {
+        if(search_stop)
+        {
+            /* there is no way to simultaneously cancel all OMP threads */
+            sim = INT32_MAX;
+            continue;
+        }
+
         bool branch_limit[TOTAL_BOARD_SIZ];
 #if USE_UCT_BRANCH_LIMITER
         memcpy(branch_limit, start_branch_limit, TOTAL_BOARD_SIZ);
@@ -742,9 +743,10 @@ void mcts_resume(
 
         if(omp_get_thread_num() == 0)
         {
+
             u64 curr_time = current_time_in_millis();
             if(curr_time >= stop_time)
-                sim = INT32_MAX;
+                search_stop = true;
         }
     }
 
@@ -821,10 +823,7 @@ u32 mcts_benchmark()
             u64 curr_time = current_time_in_millis();
 
             if(curr_time >= stop_time)
-            {
                 search_stop = true;
-                sim = INT32_MAX;
-            }
         }
     }
 
