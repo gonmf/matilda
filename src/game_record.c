@@ -27,6 +27,9 @@ http://www.weddslist.com/kgs/past/superko.html
 #include "stringm.h"
 #include "types.h"
 
+static board current_game_bak;
+static bool current_game_bak_set = false;
+
 static void apply_handicap_stones(
     board * b,
     const game_record * gr
@@ -46,6 +49,7 @@ void clear_game_record(
     gr->handicap_stones.count = 0;
     gr->turns = 0;
     gr->game_finished = false;
+    current_game_bak_set = false;
 }
 
 /*
@@ -61,6 +65,7 @@ void add_play(
     gr->turns++;
     if(gr->turns == MAX_GAME_LENGTH)
         flog_crit("gr", "the maximum number of plays has been reached");
+    current_game_bak_set = false;
 }
 
 /*
@@ -342,6 +347,7 @@ bool undo_last_play(
         is_black = !is_black;
     }
 
+    current_game_bak_set = false;
     return true;
 }
 
@@ -365,6 +371,7 @@ bool add_handicap_stone(
 
     gr->handicap_stones.coord[gr->handicap_stones.count] = m;
     gr->handicap_stones.count++;
+    current_game_bak_set = false;
     return true;
 }
 
@@ -375,18 +382,24 @@ void current_game_state(
     board * dst,
     const game_record * src
 ){
-    clear_board(dst);
-    apply_handicap_stones(dst, src);
-
-    bool is_black = first_player_color(src);
-    for(u16 i = 0; i < src->turns; ++i)
+    if(!current_game_bak_set)
     {
-        if(is_board_move(src->moves[i]))
-            just_play_slow(dst, is_black, src->moves[i]);
-        else
-            pass(dst);
-        is_black = !is_black;
+        clear_board(&current_game_bak);
+        apply_handicap_stones(&current_game_bak, src);
+
+        bool is_black = first_player_color(src);
+        for(u16 i = 0; i < src->turns; ++i)
+        {
+            if(is_board_move(src->moves[i]))
+                just_play_slow(&current_game_bak, is_black, src->moves[i]);
+            else
+                pass(&current_game_bak);
+            is_black = !is_black;
+        }
+        current_game_bak_set = true;
     }
+
+    memcpy(dst, &current_game_bak, sizeof(board));
 }
 
 /*
