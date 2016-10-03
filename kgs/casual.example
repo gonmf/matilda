@@ -1,0 +1,11 @@
+name=matilda
+password=PASSWORD
+room=Computer Go
+verbose=f
+engine=../src/matilda -m gtp --think_in_opt_time -l ewi -d ../src/data/
+rules=chinese
+rules.boardSize=13
+rules.time=14:00+10/0:30
+mode=custom
+gameNotes=Testing for bot tournament
+reconnect=f
