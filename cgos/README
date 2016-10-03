@@ -1,0 +1,5 @@
+Default configuration and script for having matilda play in the Hiroshi
+Yamashita Computer Go Server instance, http://www.yss-aya.com/cgos.
+
+To play download the adapter program and point it to the correct board size web
+domain and port.
