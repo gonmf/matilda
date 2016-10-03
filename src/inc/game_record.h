@@ -31,6 +31,7 @@ typedef struct __game_record_ {
 	char white_name[MAX_PLAYER_NAME_SIZ];
 	move_seq handicap_stones;
 	move moves[MAX_GAME_LENGTH];
+    u16 hashes[MAX_GAME_LENGTH];
 	u16 turns;
 	bool game_finished;
 	bool resignation;
@@ -80,7 +81,7 @@ Returns whether a play is a superko violation. Does not test other legality
 restrictions.
 RETURNS true if illegal by positional superko.
 */
-bool superko_violation(
+bool test_superko(
     const game_record * gr,
     bool is_black,
     move m

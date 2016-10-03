@@ -42,9 +42,9 @@ If this is the case you can set a constant latency compensation so that it
 thinks less per turn, but doesn't timeout.
 The value is in milliseconds.
 
-EXPECTED: 2 to 200
+EXPECTED: 2 to 400
 */
-#define LATENCY_COMPENSATION 100
+#define LATENCY_COMPENSATION 270 /* Japan is quite far away */
 
 
 /*

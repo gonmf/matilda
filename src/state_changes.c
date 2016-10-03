@@ -309,10 +309,11 @@ static u16 capture_and_update_hash(
 /*
 Plays ignoring if it is legal.
 */
-void just_play_slow(
+void just_play_slow2(
     board * b,
     bool is_black,
-    move m
+    move m,
+    u16 * captured
 ){
     assert(is_board_move(m));
     assert(b->p[m] == EMPTY);
@@ -331,7 +332,7 @@ void just_play_slow(
     b->p[m] = own;
 
     move one_stone_captured = NONE;
-    u16 captured = 0;
+    u16 caps = 0;
     u8 x;
     u8 y;
     move_to_coord(m, &x, &y);
@@ -339,31 +340,45 @@ void just_play_slow(
     /* captured dead opponent groups */
     if(x > 0 && b->p[m + LEFT] == opt && !is_alive(b, m + LEFT))
     {
-        captured += capture(b, m + LEFT);
+        caps += capture(b, m + LEFT);
         one_stone_captured = m + LEFT;
     }
     if(x < BOARD_SIZ - 1 && b->p[m + RIGHT] == opt && !is_alive(b, m + RIGHT))
     {
-        captured += capture(b, m + RIGHT);
+        caps += capture(b, m + RIGHT);
         one_stone_captured = m + RIGHT;
     }
     if(y > 0 && b->p[m + TOP] == opt && !is_alive(b, m + TOP))
     {
-        captured += capture(b, m + TOP);
+        caps += capture(b, m + TOP);
         one_stone_captured = m + TOP;
     }
     if(y < BOARD_SIZ - 1 && b->p[m + BOTTOM] == opt && !is_alive(b, m + BOTTOM))
     {
-        captured += capture(b, m + BOTTOM);
+        caps += capture(b, m + BOTTOM);
         one_stone_captured = m + BOTTOM;
     }
 
-    if(captured == 1)
+    if(caps == 1)
         b->last_eaten = one_stone_captured;
     else
         b->last_eaten = NONE;
 
     b->last_played = m;
+
+    *captured = caps;
+}
+
+/*
+Plays ignoring if it is legal.
+*/
+void just_play_slow(
+    board * b,
+    bool is_black,
+    move m
+){
+    u16 _ignored;
+    just_play_slow2(b, is_black, m, &_ignored);
 }
 
 /*
