@@ -57,7 +57,7 @@ TODO testing for paper
 
 
     double e1 = EXPECTED_GAME_LENGTH - turns_played;
-    double turns_left = MAX(e1, BOARD_SIZ) / 2.0;
+    double turns_left = MAX(e1 / 2.0, (double)BOARD_SIZ);
     double mtt = ts->main_time_remaining / turns_left;
     mtt *= time_allot_factor;
 
