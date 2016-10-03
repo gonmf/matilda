@@ -161,7 +161,7 @@ bool ko_violation(
 If ko is possible, returns the offending play.
 RETURNS position in ko, or NONE
 */
-move ko_get_play(
+move get_ko_play(
     const cfg_board * cb
 );
 

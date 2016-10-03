@@ -184,7 +184,7 @@ void init_new_state(
     }
 
 
-
+    move ko = get_ko_play(cb);
     stats->plays_count = 0;
 
     for(move k = 0; k < cb->empty.count; ++k)
@@ -210,7 +210,7 @@ void init_new_state(
         /*
         Ko violation
         */
-        if(captures && ko_violation(cb, m))
+        if(captures && ko == m)
             continue;
 
         /*

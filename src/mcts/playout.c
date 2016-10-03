@@ -141,13 +141,15 @@ static move heavy_select_play(
     bool is_black,
     u8 cache[TOTAL_BOARD_SIZ]
 ){
+    move ko = get_ko_play(cb);
+
     for(u16 k = 0; k < cb->empty.count; ++k)
     {
         move m = cb->empty.coord[k];
         if(cache[m] & CACHE_PLAY_DIRTY)
         {
             u8 libs;
-            if(!is_eye(cb, is_black, m) && !ko_violation(cb, m) &&
+            if(!is_eye(cb, is_black, m) && ko != m &&
                 (libs = safe_to_play(cb, is_black, m)) > 0)
             {
 
