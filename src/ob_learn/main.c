@@ -299,7 +299,6 @@ n", secs_per_turn);
 
         out_b.pass = -1.0;
         move best = select_play_fast(&out_b);
-        tt_clean_all();
 
         if(!is_board_move(best))
         {
@@ -307,6 +306,7 @@ n", secs_per_turn);
             printf("%s: Best play is a pass.\n", ts);
             continue;
         }
+        tt_clean_all();
 
         board_to_ob_rule(str, b.p, best);
 
