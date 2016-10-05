@@ -238,7 +238,7 @@ sages\n\n        Default setting: --log ew\n        Leave empty for no logging.\
  Notice log printing to the standard error\n        file descriptor may be mute\
 d in text mode.\n\n");
 
-        fprintf(stderr, "        \033[1m--log-dest <mask>\033[0m\n\n");
+        fprintf(stderr, "        \033[1m--log_dest <mask>\033[0m\n\n");
         fprintf(stderr, "        Set the log destination. The available destina\
 tions are:\n\n          o - Standard error file descriptor\n          f - File (matilda_date.log)\n\n        Default setting: -\
 -log of\n\n");
@@ -454,7 +454,7 @@ int main(
             continue;
         }
 
-        if(strcmp(argv[i], "--log-dest") == 0 && i < argc - 1)
+        if(strcmp(argv[i], "--log_dest") == 0 && i < argc - 1)
         {
             u16 dest = 0;
             for(u16 j = 0; argv[i + 1][j]; ++j)
