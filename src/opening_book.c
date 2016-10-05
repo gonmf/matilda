@@ -208,7 +208,10 @@ void discover_opening_books()
     flog_info("ob", s);
 
     if(files_found == 0)
-        goto func_end;
+    {
+        release(s);
+        return;
+    }
 
     char * buffer = malloc(MAX_FILE_SIZ);
     if(buffer == NULL)
@@ -244,8 +247,6 @@ void discover_opening_books()
     }
 
     free(buffer);
-
-func_end:
     release(s);
 }
 

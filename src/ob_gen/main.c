@@ -168,7 +168,7 @@ int main(
         {
             d32 a;
             if(!parse_int(&a, argv[i + 1]) || a < 1)
-                goto usage;
+                goto lbl_usage;
             ++i;
             ob_depth = a;
             continue;
@@ -177,7 +177,7 @@ int main(
         {
             d32 a;
             if(!parse_int(&a, argv[i + 1]) || a < 1)
-                goto usage;
+                goto lbl_usage;
             ++i;
             minimum_turns = a;
             continue;
@@ -186,7 +186,7 @@ int main(
         {
             d32 a;
             if(!parse_int(&a, argv[i + 1]) || a < 1)
-                goto usage;
+                goto lbl_usage;
             ++i;
             minimum_samples = a;
             continue;
@@ -196,7 +196,7 @@ int main(
             continue;
         }
 
-usage:
+lbl_usage:
         printf("Usage: %s [options]\n", argv[0]);
         printf("Options:\n");
         printf("--max_depth number - Maximum turn depth of the openings. (defau\

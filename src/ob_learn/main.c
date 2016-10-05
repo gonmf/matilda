@@ -86,7 +86,7 @@ int main(int argc, char * argv[]){
         if(i < argc - 1 && strcmp(argv[i], "--time") == 0){
             d32 a;
             if(!parse_int(&a, argv[i + 1]) || a < 1)
-                goto usage;
+                goto lbl_usage;
             ++i;
             secs_per_turn = a;
             continue;
@@ -98,13 +98,13 @@ int main(int argc, char * argv[]){
         if(i < argc - 1 && strcmp(argv[i], "--max_depth") == 0){
             d32 a;
             if(!parse_int(&a, argv[i + 1]) || a < 1)
-                goto usage;
+                goto lbl_usage;
             ++i;
             ob_depth = a;
             continue;
         }
 
-usage:
+lbl_usage:
         printf("Usage: %s [options]\n", argv[0]);
         printf("Options:\n");
         printf("--max_depth number - Maximum turn depth of the openings. (defau\

@@ -240,7 +240,8 @@ d in text mode.\n\n");
 
         fprintf(stderr, "        \033[1m--log_dest <mask>\033[0m\n\n");
         fprintf(stderr, "        Set the log destination. The available destina\
-tions are:\n\n          o - Standard error file descriptor\n          f - File (matilda_date.log)\n\n        Default setting: -\
+tions are:\n\n          o - Standard error file descriptor\n          f - File \
+(matilda_date.log)\n\n        Default setting: -\
 -log of\n\n");
 
         fprintf(stderr, "        \033[1m--memory <number>\033[0m\n\n");
@@ -253,7 +254,9 @@ nspositions table, in MiB.\n        The default is %u MiB\n\n",
 SGF.\n\n");
 
         fprintf(stderr, "        \033[1m--playouts <number>\033[0m\n\n");
-        fprintf(stderr, "        Play with a fixed number of simulations per turn instead of limited by\n        time. Cannot be used with time related flags.\n\n");
+        fprintf(stderr, "        Play with a fixed number of simulations per tu\
+rn instead of limited by\n        time. Cannot be used with time related flags.\
+\n\n");
 
         fprintf(stderr, "        \033[1m--threads <number>\033[0m\n\n");
         fprintf(stderr, "        Override the number of OpenMP threads to use. \
@@ -470,7 +473,8 @@ int main(
                     continue;
                 }
 
-                fprintf(stderr, "illegal logging destination: %c\n", argv[i + 1][j]);
+                fprintf(stderr, "illegal logging destination: %c\n", 
+                    argv[i + 1][j]);
                 exit(EXIT_FAILURE);
             }
             flog_config_destinations(dest);
