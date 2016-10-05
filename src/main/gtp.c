@@ -1392,7 +1392,7 @@ void main_gtp(
     flog_info("gtp", "matilda now running over GTP");
     char * s = alloc();
     build_info(s);
-    flog_info("gtp", s);
+    flog_dbug("gtp", s);
     release(s);
 
     FILE * out_fp;

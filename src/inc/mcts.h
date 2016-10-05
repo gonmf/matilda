@@ -47,6 +47,12 @@ How overwhelming a pass quality must be to be played even if not the top ranked.
 
 
 
+
+/*
+Initiate MCTS dependencies.
+*/
+void mcts_init();
+
 /*
 Performs a MCTS in at least the available time.
 

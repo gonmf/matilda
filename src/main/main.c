@@ -662,9 +662,8 @@ for usage information.\n", argv[i]);
             "MCTS using a constant number of simulations per turn");
 
     assert_data_folder_exists();
-    rand_init();
-    board_constants_init();
-    zobrist_init();
+    discover_opening_books();
+    mcts_init();
 
     u32 automatic_num_threads;
     #pragma omp parallel
