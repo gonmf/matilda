@@ -662,7 +662,7 @@ for usage information.\n", argv[i]);
             "MCTS using a constant number of simulations per turn");
 
     assert_data_folder_exists();
-    discover_opening_books();
+    opening_book_init();
     mcts_init();
 
     u32 automatic_num_threads;

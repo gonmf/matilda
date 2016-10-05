@@ -457,7 +457,7 @@ static int pat3_compare_function(
     return ((d32)(f2->value)) - ((d32)(f1->value));
 }
 
-static void read_patern_weights(
+static u32 read_patern_weights(
     char * buffer
 ){
     weights_table = hash_table_create(1543, sizeof(pat3), pat3_hash_function,
@@ -502,6 +502,8 @@ static void read_patern_weights(
         if(!hash_table_exists(weights_table, p))
             hash_table_insert_unique(weights_table, p);
     }
+
+    return weights_table->elements;
 }
 
 /*
@@ -532,14 +534,17 @@ void pat3_init()
         d32 chars_read = read_ascii_file(file_buf, MAX_FILE_SIZ, filename);
         if(chars_read < 0)
         {
-            snprintf(buf, MAX_PAGE_SIZ, "couldn't read pattern weights");
-            flog_info("pat3", buf);
+            char * s = alloc();
+            snprintf(s, MAX_PAGE_SIZ, "could not read %s", filename);
+            flog_warn("pat3", s);
+            release(s);
         }
         else
         {
-            read_patern_weights(file_buf);
+            u32 weights = read_patern_weights(file_buf);
 
-            snprintf(buf, MAX_PAGE_SIZ, "read weights from %s", filename);
+            snprintf(buf, MAX_PAGE_SIZ, "read %s (%u weights)", filename, 
+                weights);
             flog_info("pat3", buf);
         }
         release(filename);
@@ -569,7 +574,7 @@ void pat3_init()
 
     if(USE_PATTERN_WEIGHTS && weights_table != NULL)
     {
-        snprintf(buf, MAX_PAGE_SIZ, "%u/%u patterns weighted", weights_found,
+        snprintf(buf, MAX_PAGE_SIZ, "%u/%u expanded patterns weighted", weights_found,
             weights_found + weights_not_found);
         flog_info("pat3", buf);
 

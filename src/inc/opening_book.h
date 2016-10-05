@@ -35,7 +35,7 @@ void board_to_ob_rule(
 /*
 Discover and read opening book files.
 */
-void discover_opening_books();
+void opening_book_init();
 
 /*
 Match an opening rule and return it encoded in the board.

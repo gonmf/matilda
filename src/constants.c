@@ -248,6 +248,4 @@ void board_constants_init()
     init_moves_by_distance(nei_dst_4, 4, false);
 
     init_eye_table();
-
-    flog_info("cons", "board constants calculated");
 }

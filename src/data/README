@@ -13,8 +13,8 @@ The files recognized by Matilda are:
     that do not specify the board size will have it guessed automatically, which
     can fail, causing the file to not be loaded.
 
-- *.ob - Opening book in text/Fuego-style format. Matilda will read any that it
-    finds. Repeated rules are ignored.
+- NxN.ob - Opening book in text/Fuego-style format. Rules that are read first
+    have precedence over later appearances.
 
 - *.joseki - Joseki dictionary in text format. Matilda will read any that it
     finds. Repeated patterns are ignored.
@@ -29,6 +29,6 @@ The files recognized by Matilda are:
 - *.log - Text file used for event logging. Created by default in the working
     directory.
 
-- .pts - Text file with lists of points used for handicap, hoshi and other stone
-    placement. Similar in format to .ob files.
+- *.pts - Text file with lists of points used for handicap, hoshi and other 
+    stone placement. Similar in format to .ob files.
 
