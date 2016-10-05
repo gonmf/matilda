@@ -20,8 +20,8 @@ typedef   int8_t  d8;
 For reading files MAX_FILE_SIZ is recommended. Even SGF files can become large
 if with a lot of commentary.
 */
-#define MAX_PATH_SIZ 1024              /* 1 KiB */
-#define MAX_PAGE_SIZ (4 * 1024)        /* 4 KiB */
-#define MAX_FILE_SIZ (4 * 1024 * 1024) /* 4 MiB */
+#define MAX_PATH_SIZ (1024 - 16)              /* 1 KiB */
+#define MAX_PAGE_SIZ (4 * 1024 - 32)        /* 4 KiB */
+#define MAX_FILE_SIZ (4 * 1024 * 1024 - 64) /* 4 MiB */
 
 #endif
