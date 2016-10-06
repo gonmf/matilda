@@ -19,16 +19,16 @@ Strategy that makes use of an opening book.
 #include "file_io.h"
 #include "flog.h"
 #include "opening_book.h"
+#include "primes.h"
 #include "pts_file.h"
 #include "state_changes.h"
 #include "stringm.h"
 #include "types.h"
 
-#define NR_BUCKETS 769
-
 static ob_entry ** ob_trans_table;
 static bool attempted_discover_ob = false;
 static u32 ob_rules = 0;
+static u32 nr_buckets = 0;
 
 #define MAX_RULE_TOKENS (TOTAL_BOARD_SIZ + TOTAL_BOARD_SIZ / 2)
 
@@ -36,7 +36,7 @@ static move ob_get_play(
     u32 hash,
     const u8 p[PACKED_BOARD_SIZ]
 ){
-    ob_entry * h = ob_trans_table[hash % NR_BUCKETS];
+    ob_entry * h = ob_trans_table[hash % nr_buckets];
     while(h != NULL)
     {
         if(h->hash == hash && memcmp(&h->p, p, PACKED_BOARD_SIZ) == 0)
@@ -103,8 +103,8 @@ void board_to_ob_rule(
 static void ob_simple_insert(
     ob_entry * e
 ){
-    e->next = ob_trans_table[e->hash % NR_BUCKETS];
-    ob_trans_table[e->hash % NR_BUCKETS] = e;
+    e->next = ob_trans_table[e->hash % nr_buckets];
+    ob_trans_table[e->hash % nr_buckets] = e;
 }
 
 static bool process_opening_book_line(
@@ -192,10 +192,12 @@ void opening_book_init()
 
     attempted_discover_ob = true;
 
+    nr_buckets = get_prime_near(BOARD_SIZ * BOARD_SIZ * BOARD_SIZ * 2);
+
     /*
     Allocate O.B. hash table
     */
-    ob_trans_table = (ob_entry **)calloc(NR_BUCKETS, sizeof(ob_entry *));
+    ob_trans_table = (ob_entry **)calloc(nr_buckets, sizeof(ob_entry *));
     if(ob_trans_table == NULL)
         flog_crit("ob", "system out of memory");
 
