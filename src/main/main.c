@@ -22,11 +22,12 @@ Also deals with updating some internal parameters at startup time.
 #include "game_record.h"
 #include "mcts.h"
 #include "opening_book.h"
+#include "pts_file.h"
 #include "randg.h"
-#include "transpositions.h"
 #include "stringm.h"
 #include "time_ctrl.h"
 #include "timem.h"
+#include "transpositions.h"
 #include "version.h"
 #include "zobrist.h"
 
@@ -304,6 +305,7 @@ int main(
     bool time_related_set = false;
     bool human_player_color = true;
     bool think_in_opt_turn = false;
+    bool opening_books_enabled = true;
     set_time_per_turn(&current_clock_black, DEFAULT_TIME_PER_TURN);
     set_time_per_turn(&current_clock_white, DEFAULT_TIME_PER_TURN);
     d16 desired_num_threads = DEFAULT_NUM_THREADS;
@@ -556,6 +558,7 @@ int main(
 
         if(strcmp(argv[i], "--disable_opening_books") == 0)
         {
+            opening_books_enabled = false;
             set_use_of_opening_book(false);
             continue;
         }
@@ -662,8 +665,12 @@ for usage information.\n", argv[i]);
             "MCTS using a constant number of simulations per turn");
 
     assert_data_folder_exists();
-    opening_book_init();
+    if(opening_books_enabled)
+        opening_book_init();
     mcts_init();
+    load_handicap_points();
+    load_hoshi_points();
+    load_starting_points();
 
     u32 automatic_num_threads;
     #pragma omp parallel
