@@ -86,7 +86,7 @@ int main(int argc, char * argv[]){
         if(i < argc - 1 && strcmp(argv[i], "--time") == 0){
             d32 a;
             if(!parse_int(&a, argv[i + 1]) || a < 1)
-                goto usage;
+                goto lbl_usage;
             ++i;
             secs_per_turn = a;
             continue;
@@ -98,13 +98,13 @@ int main(int argc, char * argv[]){
         if(i < argc - 1 && strcmp(argv[i], "--max_depth") == 0){
             d32 a;
             if(!parse_int(&a, argv[i + 1]) || a < 1)
-                goto usage;
+                goto lbl_usage;
             ++i;
             ob_depth = a;
             continue;
         }
 
-usage:
+lbl_usage:
         printf("Usage: %s [options]\n", argv[0]);
         printf("Options:\n");
         printf("--max_depth number - Maximum turn depth of the openings. (defau\
@@ -299,7 +299,6 @@ n", secs_per_turn);
 
         out_b.pass = -1.0;
         move best = select_play_fast(&out_b);
-        tt_clean_all();
 
         if(!is_board_move(best))
         {
@@ -307,6 +306,7 @@ n", secs_per_turn);
             printf("%s: Best play is a pass.\n", ts);
             continue;
         }
+        tt_clean_all();
 
         board_to_ob_rule(str, b.p, best);
 

@@ -22,11 +22,12 @@ Also deals with updating some internal parameters at startup time.
 #include "game_record.h"
 #include "mcts.h"
 #include "opening_book.h"
+#include "pts_file.h"
 #include "randg.h"
-#include "transpositions.h"
 #include "stringm.h"
 #include "time_ctrl.h"
 #include "timem.h"
+#include "transpositions.h"
 #include "version.h"
 #include "zobrist.h"
 
@@ -238,9 +239,10 @@ sages\n\n        Default setting: --log ew\n        Leave empty for no logging.\
  Notice log printing to the standard error\n        file descriptor may be mute\
 d in text mode.\n\n");
 
-        fprintf(stderr, "        \033[1m--log-dest <mask>\033[0m\n\n");
+        fprintf(stderr, "        \033[1m--log_dest <mask>\033[0m\n\n");
         fprintf(stderr, "        Set the log destination. The available destina\
-tions are:\n\n          o - Standard error file descriptor\n          f - File (matilda_date.log)\n\n        Default setting: -\
+tions are:\n\n          o - Standard error file descriptor\n          f - File \
+(matilda_date.log)\n\n        Default setting: -\
 -log of\n\n");
 
         fprintf(stderr, "        \033[1m--memory <number>\033[0m\n\n");
@@ -253,7 +255,9 @@ nspositions table, in MiB.\n        The default is %u MiB\n\n",
 SGF.\n\n");
 
         fprintf(stderr, "        \033[1m--playouts <number>\033[0m\n\n");
-        fprintf(stderr, "        Play with a fixed number of simulations per turn instead of limited by\n        time. Cannot be used with time related flags.\n\n");
+        fprintf(stderr, "        Play with a fixed number of simulations per tu\
+rn instead of limited by\n        time. Cannot be used with time related flags.\
+\n\n");
 
         fprintf(stderr, "        \033[1m--threads <number>\033[0m\n\n");
         fprintf(stderr, "        Override the number of OpenMP threads to use. \
@@ -301,6 +305,7 @@ int main(
     bool time_related_set = false;
     bool human_player_color = true;
     bool think_in_opt_turn = false;
+    bool opening_books_enabled = true;
     set_time_per_turn(&current_clock_black, DEFAULT_TIME_PER_TURN);
     set_time_per_turn(&current_clock_white, DEFAULT_TIME_PER_TURN);
     d16 desired_num_threads = DEFAULT_NUM_THREADS;
@@ -454,7 +459,7 @@ int main(
             continue;
         }
 
-        if(strcmp(argv[i], "--log-dest") == 0 && i < argc - 1)
+        if(strcmp(argv[i], "--log_dest") == 0 && i < argc - 1)
         {
             u16 dest = 0;
             for(u16 j = 0; argv[i + 1][j]; ++j)
@@ -470,7 +475,8 @@ int main(
                     continue;
                 }
 
-                fprintf(stderr, "illegal logging destination: %c\n", argv[i + 1][j]);
+                fprintf(stderr, "illegal logging destination: %c\n", 
+                    argv[i + 1][j]);
                 exit(EXIT_FAILURE);
             }
             flog_config_destinations(dest);
@@ -552,6 +558,7 @@ int main(
 
         if(strcmp(argv[i], "--disable_opening_books") == 0)
         {
+            opening_books_enabled = false;
             set_use_of_opening_book(false);
             continue;
         }
@@ -658,9 +665,12 @@ for usage information.\n", argv[i]);
             "MCTS using a constant number of simulations per turn");
 
     assert_data_folder_exists();
-    rand_init();
-    board_constants_init();
-    zobrist_init();
+    if(opening_books_enabled)
+        opening_book_init();
+    mcts_init();
+    load_handicap_points();
+    load_hoshi_points();
+    load_starting_points();
 
     u32 automatic_num_threads;
     #pragma omp parallel

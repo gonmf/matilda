@@ -65,10 +65,13 @@ void zobrist_init()
     char * filename = alloc();
     snprintf(filename, MAX_PAGE_SIZ, "%s%ux%u.zt", get_data_folder(), BOARD_SIZ,
         BOARD_SIZ);
-    if(read_binary_file(iv, sizeof(u64) * TOTAL_BOARD_SIZ * 2, filename)
-        == -1)
-        flog_crit("zbst", "zobrist table file not found");
-    release(filename);
+    if(read_binary_file(iv, sizeof(u64) * TOTAL_BOARD_SIZ * 2, filename) == -1)
+    {
+        char * s = alloc();
+        snprintf(s, MAX_PAGE_SIZ, "could not read %s", filename);
+        flog_crit("zbst", s);
+        release(s);
+    }
 
     for(move pos = 0; pos < TOTAL_BOARD_SIZ; ++pos)
     {
@@ -98,7 +101,12 @@ void zobrist_init()
         initial_3x3_hash[m] = get_border_hash_slow(m);
 
     _zobrist_inited = true;
-    flog_info("zbst", "read table file");
+
+    char * s = alloc();
+    snprintf(s, MAX_PAGE_SIZ, "read %s", filename);
+    flog_info("zbst", s);
+    release(s);
+    release(filename);
 }
 
 /*

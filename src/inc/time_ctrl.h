@@ -25,16 +25,9 @@ the match. Values over 1 favor thinking more in the begining of matches, which
 is the objective.
 */
 #if BOARD_SIZ < 12
-/*
-Tuned with CLOP in 9x9 with 3s/game vs GNU Go 3.8 lvl 1. 7907 games.
-*/
-#define TIME_ALLOT_FACTOR 1.2 // 3.3 TODO
+#define TIME_ALLOT_FACTOR 1.25 // TODO
 #else
-/*
-Tuned with CLOP in 19x19 with 10m/game vs GNU Go 3.8 lvl 1, 283 games.
-And against GNU GO lvl 1, 9x9, 2s/game, 12k games.
-*/
-#define TIME_ALLOT_FACTOR 2.6 // TODO
+#define TIME_ALLOT_FACTOR 1.25 // TODO
 #endif
 
 #define EXPECTED_GAME_LENGTH ((TOTAL_BOARD_SIZ * 2) / 3)

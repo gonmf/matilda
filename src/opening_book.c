@@ -19,22 +19,24 @@ Strategy that makes use of an opening book.
 #include "file_io.h"
 #include "flog.h"
 #include "opening_book.h"
+#include "primes.h"
 #include "pts_file.h"
 #include "state_changes.h"
 #include "stringm.h"
 #include "types.h"
 
-#define NR_BUCKETS 769
-
 static ob_entry ** ob_trans_table;
 static bool attempted_discover_ob = false;
 static u32 ob_rules = 0;
+static u32 nr_buckets = 0;
+
+#define MAX_RULE_TOKENS (TOTAL_BOARD_SIZ + TOTAL_BOARD_SIZ / 2)
 
 static move ob_get_play(
     u32 hash,
     const u8 p[PACKED_BOARD_SIZ]
 ){
-    ob_entry * h = ob_trans_table[hash % NR_BUCKETS];
+    ob_entry * h = ob_trans_table[hash % nr_buckets];
     while(h != NULL)
     {
         if(h->hash == hash && memcmp(&h->p, p, PACKED_BOARD_SIZ) == 0)
@@ -101,8 +103,8 @@ void board_to_ob_rule(
 static void ob_simple_insert(
     ob_entry * e
 ){
-    e->next = ob_trans_table[e->hash % NR_BUCKETS];
-    ob_trans_table[e->hash % NR_BUCKETS] = e;
+    e->next = ob_trans_table[e->hash % nr_buckets];
+    ob_trans_table[e->hash % nr_buckets] = e;
 }
 
 static bool process_opening_book_line(
@@ -118,9 +120,9 @@ static bool process_opening_book_line(
         return false;
 
     u16 tokens_read = 0;
-    char tokens[TOTAL_BOARD_SIZ][4];
+    char tokens[MAX_RULE_TOKENS][4];
 
-    while(tokens_read < TOTAL_BOARD_SIZ && (word = strtok_r(NULL, " ",
+    while(tokens_read < MAX_RULE_TOKENS && (word = strtok_r(NULL, " ",
         &saveptr)) != NULL)
     {
         if(word[0] == '#')
@@ -128,8 +130,10 @@ static bool process_opening_book_line(
         strncpy(tokens[tokens_read++], word, 4);
     }
 
-    if(tokens_read < 2 || tokens_read == TOTAL_BOARD_SIZ)
-        flog_crit("ob", "illegal opening book rule");
+    if(tokens_read < 2 || tokens_read == MAX_RULE_TOKENS)
+    {
+        flog_crit("ob", "illegal opening book rule: size");
+    }
 
     board b;
     clear_board(&b);
@@ -142,10 +146,10 @@ static bool process_opening_book_line(
             break;
         move m = coord_parse_alpha_num(tokens[t]);
         if(!is_board_move(m))
-            flog_crit("ob", "illegal opening book rule");
+            flog_crit("ob", "illegal opening book rule: play string format");
 
         if(!attempt_play_slow(&b, is_black, m))
-            flog_crit("ob", "illegal opening book rule");
+            flog_crit("ob", "illegal opening book rule: play sequence");
 
         is_black = !is_black;
     }
@@ -154,7 +158,7 @@ static bool process_opening_book_line(
 
     move m = coord_parse_alpha_num(tokens[t + 1]);
     if(!is_board_move(m))
-        flog_crit("ob", "illegal opening book rule");
+        flog_crit("ob", "illegal opening book rule: response play");
 
     d8 reduction = reduce_auto(&b, true);
     m = reduce_move(m, reduction);
@@ -181,72 +185,66 @@ static bool process_opening_book_line(
 /*
 Discover and read opening book files.
 */
-void discover_opening_books()
+void opening_book_init()
 {
     if(attempted_discover_ob)
         return;
 
     attempted_discover_ob = true;
-    ob_rules = 0;
+
+    nr_buckets = get_prime_near(BOARD_SIZ * BOARD_SIZ * BOARD_SIZ * 2);
 
     /*
     Allocate O.B. hash table
     */
-    ob_trans_table = (ob_entry **)calloc(NR_BUCKETS, sizeof(ob_entry *));
+    ob_trans_table = (ob_entry **)calloc(nr_buckets, sizeof(ob_entry *));
     if(ob_trans_table == NULL)
         flog_crit("ob", "system out of memory");
-    char * filenames[32];
-    u32 files_found;
-
-    char * s = alloc();
 
     /*
-    Discover .ob files
+    Read .ob file
     */
-    files_found = recurse_find_files(get_data_folder(), ".ob", filenames, 32);
-    snprintf(s, MAX_PAGE_SIZ, "found %u opening book files\n", files_found);
-    flog_info("ob", s);
-
-    if(files_found == 0)
-        goto func_end;
+    char * filename = alloc();
+    snprintf(filename, MAX_PAGE_SIZ, "%s%ux%u.ob", get_data_folder(), BOARD_SIZ, 
+        BOARD_SIZ);
 
     char * buffer = malloc(MAX_FILE_SIZ);
     if(buffer == NULL)
         flog_crit("ob", "system out of memory");
 
-
-    for(u32 i = 0; i < files_found; ++i){
-        d32 chars_read = read_ascii_file(buffer, MAX_FILE_SIZ, filenames[i]);
-        if(chars_read < 0)
-            flog_crit("ob", "couldn't open file for reading");
-
-        u32 rules_saved = 0;
-        u32 rules_found = 0;
-        char * saveptr = NULL;
-        char * tmp = buffer;
-        char * line;
-        while((line = strtok_r(tmp, "\r\n", &saveptr)) != NULL)
-        {
-            tmp = NULL;
-
-            if(process_opening_book_line(line))
-                ++rules_saved;
-            ++rules_found;
-        }
-
-        ob_rules += rules_saved;
-
-        snprintf(s, MAX_PAGE_SIZ, "read %s (%u/%u rules)\n", filenames[i],
-            rules_saved, rules_found);
-        flog_info("ob", s);
-
-        free(filenames[i]);
+    d32 chars_read = read_ascii_file(buffer, MAX_FILE_SIZ, filename);
+    if(chars_read < 0)
+    {
+        char * s = alloc();
+        snprintf(s, MAX_PAGE_SIZ, "could not read %s", filename);
+        flog_warn("ob", s);
+        release(s);
+        release(filename);
+        return;
     }
 
-    free(buffer);
+    u32 rules_saved = 0;
+    u32 rules_found = 0;
+    char * saveptr = NULL;
+    char * tmp = buffer;
+    char * line;
+    while((line = strtok_r(tmp, "\r\n", &saveptr)) != NULL)
+    {
+        tmp = NULL;
 
-func_end:
+        if(process_opening_book_line(line))
+            ++rules_saved;
+        ++rules_found;
+    }
+
+    ob_rules = rules_saved;
+
+    char * s = alloc();
+    snprintf(s, MAX_PAGE_SIZ, "read %s (%u/%u rules)", filename, rules_saved, rules_found);
+    flog_info("ob", s);
     release(s);
+    release(filename);
+    free(buffer);
 }
 
 /*
@@ -257,7 +255,7 @@ bool opening_book(
     out_board * out_b,
     board * state
 ){
-    discover_opening_books();
+    opening_book_init();
 
     clear_out_board(out_b);
 

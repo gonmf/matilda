@@ -61,7 +61,10 @@ static bool mcts_can_resume = true;
 
 
 static bool uct_inited = false;
-static void mcts_init()
+/*
+Initiate MCTS dependencies.
+*/
+void mcts_init()
 {
     if(uct_inited)
         return;

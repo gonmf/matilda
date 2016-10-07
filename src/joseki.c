@@ -180,7 +180,7 @@ static bool process_state_play_line(
 /*
 Discover and read opening book files.
 */
-void discover_opening_books()
+void opening_book_init()
 {
     if(attempted_discover_ob)
         return;
@@ -264,7 +264,7 @@ bool opening_book(
     out_board * out_b,
     board * state
 ){
-    discover_opening_books();
+    opening_book_init();
 
     clear_out_board(out_b);
 

@@ -92,6 +92,13 @@ Arguments: time available to think (per turn), in seconds
 Fails: never
 
 
+mtld-time_left -- exactly the same as the standard time_left command, except for
+the time being specified in milliseconds instead of seconds.
+Arguments: player color, number of milliseconds remaining in the current period,
+number of stones for the current period, or 0 if currently in main time
+Fails: syntax error
+
+
 exit -- alias to quit command.
 Arguments: none
 Fails: never

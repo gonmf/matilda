@@ -151,14 +151,14 @@ void request_opinion(
     {
         dst += snprintf(dst, MAX_PAGE_SIZ, "%s is winning the game.\n", is_black
             ? "Black" : "White");
-        goto continue_lbl;
+        goto lbl_finally;
     }
 
     if(best_plays[0]->mc_q > 0.55)
     {
         dst += snprintf(dst, MAX_PAGE_SIZ, "%s is ahead in the game.\n",
             is_black ? "Black" : "White");
-        goto continue_lbl;
+        goto lbl_finally;
     }
 
     if(best_plays[0]->mc_q > 0.5)
@@ -166,34 +166,34 @@ void request_opinion(
         dst += snprintf(dst, MAX_PAGE_SIZ,
             "The players are very close, but %s has the advantage.\n", is_black
             ? "black" : "white");
-        goto continue_lbl;
+        goto lbl_finally;
     }
 
     if(best_plays[0]->mc_q > 0.45)
     {
         dst += snprintf(dst, MAX_PAGE_SIZ, "The players are very close.\n");
-        goto continue_lbl;
+        goto lbl_finally;
     }
 
     if(best_plays[0]->mc_q > 0.4)
     {
         dst += snprintf(dst, MAX_PAGE_SIZ, "%s is ahead in the game.\n",
             !is_black ? "Black" : "White");
-        goto continue_lbl;
+        goto lbl_finally;
     }
 
     if(best_plays[0]->mc_q > 0.3)
     {
         dst += snprintf(dst, MAX_PAGE_SIZ,  "%s is winning the game.\n",
             !is_black ? "Black" : "White");
-        goto continue_lbl;
+        goto lbl_finally;
     }
 
     dst += snprintf(dst, MAX_PAGE_SIZ, "%s has won the game.\n", !is_black ?
         "Black" : "White");
     return;
 
-continue_lbl: ;
+lbl_finally: ;
 
     double q = best_plays[0]->mc_q;
     for(u8 i = 1; i < play_count; ++i)

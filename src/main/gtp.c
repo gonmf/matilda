@@ -77,6 +77,7 @@ const char * supported_commands[] =
     "mtld-last_evaluation",
     "mtld-ponder",
     "mtld-review_game",
+    "mtld-time_left",
     "name",
     "place_free_handicap",
     "play",
@@ -926,11 +927,11 @@ oth players", previous_ts_as_s, new_ts_as_s);
     release(previous_ts_as_s);
 }
 
-static void gtp_time_left(
+static void gtp_time_left_seconds(
     FILE * fp,
     int id,
     const char * color,
-    const char * _time,
+    const char * time_left, /* in seconds */
     const char * stones
 ){
     if(time_system_overriden || limit_by_playouts > 0)
@@ -948,7 +949,7 @@ static void gtp_time_left(
     }
     d32 new_time_remaining;
     d32 new_byo_yomi_stones_remaining;
-    if(!parse_int(&new_time_remaining, _time) || new_time_remaining < 0)
+    if(!parse_int(&new_time_remaining, time_left) || new_time_remaining < 0)
     {
         gtp_error(fp, id, "syntax error");
         return;
@@ -975,6 +976,59 @@ static void gtp_time_left(
     {
         /* Byo-yomi time */
         curr_clock->byo_yomi_time_remaining = new_time_remaining * 1000;
+        curr_clock->byo_yomi_stones_remaining = new_byo_yomi_stones_remaining;
+    }
+}
+
+static void gtp_time_left_millis(
+    FILE * fp,
+    int id,
+    const char * color,
+    const char * time_left, /* in milliseconds */
+    const char * stones
+){
+    if(time_system_overriden || limit_by_playouts > 0)
+    {
+        flog_warn("gtp", "attempt to set time settings ignored");
+        gtp_answer(fp, id, NULL);
+        return;
+    }
+
+    bool is_black;
+    if(!parse_color(&is_black, color))
+    {
+        gtp_error(fp, id, "syntax error");
+        return;
+    }
+    d32 new_time_remaining;
+    d32 new_byo_yomi_stones_remaining;
+    if(!parse_int(&new_time_remaining, time_left) || new_time_remaining < 0)
+    {
+        gtp_error(fp, id, "syntax error");
+        return;
+    }
+    if(!parse_int(&new_byo_yomi_stones_remaining, stones) ||
+        new_byo_yomi_stones_remaining < 0)
+    {
+        gtp_error(fp, id, "syntax error");
+        return;
+    }
+
+    gtp_answer(fp, id, NULL);
+
+
+    time_system * curr_clock = is_black ? &current_clock_black :
+        &current_clock_white;
+
+    if(new_byo_yomi_stones_remaining == 0)
+    {
+        /* Main time is still counting down */
+        curr_clock->main_time_remaining = new_time_remaining;
+    }
+    else
+    {
+        /* Byo-yomi time */
+        curr_clock->byo_yomi_time_remaining = new_time_remaining;
         curr_clock->byo_yomi_stones_remaining = new_byo_yomi_stones_remaining;
     }
 }
@@ -1338,7 +1392,7 @@ void main_gtp(
     flog_info("gtp", "matilda now running over GTP");
     char * s = alloc();
     build_info(s);
-    flog_info("gtp", s);
+    flog_dbug("gtp", s);
     release(s);
 
     FILE * out_fp;
@@ -1470,8 +1524,11 @@ to %u milliseconds", network_roundtrip_delay);
             ++argc;
         }
 
-cmd_matcher:
-
+lbl_parse_command:
+        /*
+        Command commonly used should be parsed first, like the ones usually used
+        every turn.
+        */
         if(argc == 2 && strcmp(cmd, "play") == 0)
         {
             gtp_play(out_fp, idn, args[0], args[1], false);
@@ -1487,6 +1544,30 @@ cmd_matcher:
         if(argc == 1 && strcmp(cmd, "reg_genmove") == 0)
         {
             gtp_reg_genmove(out_fp, idn, args[0]);
+            continue;
+        }
+
+        if(argc == 3 && strcmp(cmd, "time_left") == 0)
+        {
+            gtp_time_left_seconds(out_fp, idn, args[0], args[1], args[2]);
+            continue;
+        }
+
+        if(argc == 3 && strcmp(cmd, "mtld-time_left") == 0)
+        {
+            gtp_time_left_millis(out_fp, idn, args[0], args[1], args[2]);
+            continue;
+        }
+
+        if(argc == 0 && strcmp(cmd, "undo") == 0)
+        {
+            gtp_undo(out_fp, idn);
+            continue;
+        }
+
+        if(argc <= 1 && strcmp(cmd, "gg-undo") == 0)
+        {
+            gtp_undo_multiple(out_fp, idn, args[0]);
             continue;
         }
 
@@ -1569,18 +1650,6 @@ cmd_matcher:
             continue;
         }
 
-        if(argc == 0 && strcmp(cmd, "undo") == 0)
-        {
-            gtp_undo(out_fp, idn);
-            continue;
-        }
-
-        if(argc <= 1 && strcmp(cmd, "gg-undo") == 0)
-        {
-            gtp_undo_multiple(out_fp, idn, args[0]);
-            continue;
-        }
-
         if(argc == 1 && strcmp(cmd, "mtld-ponder") == 0)
         {
             gtp_ponder(out_fp, idn, args[0]);
@@ -1621,12 +1690,6 @@ cmd_matcher:
         {
             gtp_kgs_time_settings(out_fp, idn, args[0], args[1], args[2],
                 args[3]);
-            continue;
-        }
-
-        if(argc == 3 && strcmp(cmd, "time_left") == 0)
-        {
-            gtp_time_left(out_fp, idn, args[0], args[1], args[2]);
             continue;
         }
 
@@ -1712,7 +1775,7 @@ t is wrong; please check the documentation\n", cmd);
         {
             if(best_dst_val < 2){
                 strcpy(cmd, best_dst_str);
-                goto cmd_matcher;
+                goto lbl_parse_command;
             }
             if(best_dst_val < 4)
                 fprintf(stderr, "warning: command '%s' was not understood; did \
