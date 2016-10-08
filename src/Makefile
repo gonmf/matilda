@@ -14,7 +14,7 @@ CFLAGS := -Iinc/ -std=c99 -O2 -Wall -Wextra -Wformat=2 -pedantic-errors \
 	-Wfatal-errors -Wundef -Wno-unused-result -fno-stack-protector \
 	-march=native -MMD -MP -fopenmp
 
-CFLAGS += -lm
+LDFLAGS += -lm
 
 # For debugging add -g to CFLAGS
 # CFLAGS += -g
