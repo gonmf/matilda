@@ -343,9 +343,7 @@ tes");
                             {
                                 if(!illegal_final_score_warned){
                                     illegal_final_score_warned = true;
-                                    snprintf(tmp, MAX_PAGE_SIZ, 
-                                        "illegal final score: %s", result);
-                                    flog_warn("sgff", tmp);
+                                    flog_warn("sgff", "illegal result format");
                                 }
                                 release(tmp);
                                 return false;
@@ -377,9 +375,7 @@ tes");
                             {
                                 if(!illegal_final_score_warned){
                                     illegal_final_score_warned = true;
-                                    snprintf(tmp, MAX_PAGE_SIZ, 
-                                        "illegal final score: %s", result);
-                                    flog_warn("sgff", tmp);
+                                    flog_warn("sgff", "illegal result format");
                                 }
                                 release(tmp);
                                 return false;
