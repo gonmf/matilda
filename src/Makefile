@@ -14,7 +14,7 @@ CFLAGS := -Iinc/ -std=c99 -O2 -Wall -Wextra -Wformat=2 -pedantic-errors \
 	-Wfatal-errors -Wundef -Wno-unused-result -fno-stack-protector \
 	-march=native -MMD -MP -fopenmp
 
-LDFLAGS += -lm
+CFLAGS += -lm
 
 # For debugging add -g to CFLAGS
 # CFLAGS += -g
@@ -22,7 +22,9 @@ LDFLAGS += -lm
 # GCC > 4.9 only
 # CFLAGS += -fdiagnostics-color=auto
 
+COMMIT := $(shell git rev-parse --short HEAD 2> /dev/null)
 
+CFLAGS += -DCOMMITN='"$(COMMIT)"'
 
 SRCFILES := $(wildcard *.c mcts/*.c)
 
