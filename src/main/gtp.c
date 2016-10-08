@@ -590,7 +590,7 @@ static void generic_genmove(
         if(time_to_play == UINT32_MAX)
             snprintf(buf, MAX_PAGE_SIZ, "time to play: infinite");
         else
-            snprintf(buf, MAX_PAGE_SIZ, "time to play: %u.%03us",
+            snprintf(buf, MAX_PAGE_SIZ, "time to play: %u.%03us", 
                 time_to_play / 1000, time_to_play % 1000);
         flog_info("gtp", buf);
 

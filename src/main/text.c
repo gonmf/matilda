@@ -217,9 +217,9 @@ void main_text(bool is_black){
 
     komi_to_string(s, DEFAULT_KOMI);
     fprintf(stderr, "Running in text mode. In this mode the options are limited\
- and no time limit is\nenforced. To run using GTP add the flag -gtp. Playing wi\
-th Chinese rules with\n%s komi; game is over after two passes or a resignation.\
-\n\n", s);
+ and no time limit is\nenforced. To run using GTP add the flag --mode gtp. Play\
+ing with Chinese rules\nwith %s komi; the game is over after two passes or a re\
+signation.\n\n", s);
     release(s);
 
     bool human_player_color = is_black;

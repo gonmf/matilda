@@ -338,19 +338,19 @@ tes");
                         }
                         else
                         {
-                            parse_int((d32 *)&gr->final_score, result);
-                            gr->final_score *= 2;
-                            if(gr->final_score == 0)
+                            double f;
+                            if(!parse_float(&f, result))
                             {
                                 if(!illegal_final_score_warned){
                                     illegal_final_score_warned = true;
-                                    flog_warn("sgff", "illegal final score: 0");
+                                    snprintf(tmp, MAX_PAGE_SIZ, 
+                                        "illegal final score: %s", result);
+                                    flog_warn("sgff", tmp);
                                 }
                                 release(tmp);
                                 return false;
-                            }else
-                                if(strstr(result, ".") != NULL)
-                                    gr->final_score++;
+                            }
+                            gr->final_score = (d32)(f * 2.0);
                         }
                 }
             }
@@ -372,20 +372,19 @@ tes");
                         }
                         else
                         {
-                            gr->resignation = false;
-                            parse_int((d32 *)&gr->final_score, result);
-                            gr->final_score *= -2;
-                            if(gr->final_score == 0)
+                            double f;
+                            if(!parse_float(&f, result))
                             {
                                 if(!illegal_final_score_warned){
                                     illegal_final_score_warned = true;
-                                    flog_warn("sgff", "illegal final score: 0");
+                                    snprintf(tmp, MAX_PAGE_SIZ, 
+                                        "illegal final score: %s", result);
+                                    flog_warn("sgff", tmp);
                                 }
                                 release(tmp);
                                 return false;
-                            }else
-                                if(strstr(result, ".") != NULL)
-                                    gr->final_score--;
+                            }
+                            gr->final_score = (d32)(f * -2.0);
                         }
                 }
             }

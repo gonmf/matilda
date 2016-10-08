@@ -183,7 +183,7 @@ static void usage()
         fprintf(stderr, "        matilda [options]\n\n");
         fprintf(stderr, "\033[1mDESCRIPTION\033[0m\n");
         fprintf(stderr, "        Matilda is a computer program that plays the g\
-ame of Go. It uses Chinese\n        rules without life in seki.\n        Two in\
+ame of Go. It uses\n        Chinese rules without life in seki.\n        Two in\
 terface modes are available: a simple text interface, and the Go\n        Text \
 Protocol through the standard input and output file descriptors.\n        Most \
 more advanced features, like file manipulation and game analysis,\n        are \
@@ -212,10 +212,10 @@ n");
 vertime format is used\n        with four components: main time, number of peri\
 ods, time per period and\n        number of stones per period. Examples: 90m (s\
 uddent death), 10m+3x10s\n        (Canadian overtime), 1h+30s/5 (Japanese byo-y\
-omi), 15m+3x30s/10 (mixed).\n        For no time limits use 0 main time and 0 p\
-eriod stones, or the keyword\n        infinite. Example: 0+1m/0, infinite.\n\n \
-       Time units available: ms (milliseconds), s (seconds), m (minutes), h\n  \
-      (hours). Main time value 0 does not accept a unit.\n\n");
+omi), 15m+3x30s/10\n        (mixed).\n\n        For no time limits use 0 main t\
+ime and 0 period stones, or the keyword\n        infinite. Example: 0+1m/0, inf\
+inite.\n\n        Time units available: ms (milliseconds), s (seconds), m (minu\
+tes), h\n        (hours). Main time value 0 does not accept a unit.\n\n");
 
         fprintf(stderr, "        \033[1m--think_in_opt_time\033[0m\n\n");
         fprintf(stderr, "        Continue thinking in the background while in t\
@@ -248,7 +248,7 @@ tions are:\n\n          o - Standard error file descriptor\n          f - File \
 
         fprintf(stderr, "        \033[1m--memory <number>\033[0m\n\n");
         fprintf(stderr, "        Override the available memory for the MCTS tra\
-nspositions table, in MiB.\n        The default is %u MiB\n\n",
+nspositions table, in\n        MiB. The default is %u MiB.\n\n",
             DEFAULT_UCT_MEMORY);
 
         fprintf(stderr, "        \033[1m--save_all\033[0m\n\n");
@@ -271,7 +271,7 @@ ning a linear measure of\n        MCTS performance.\n\n", BENCHMARK_TIME);
 
         fprintf(stderr, "        \033[1m--sentinel <filename>\033[0m\n\n");
         fprintf(stderr, "        Close the program after a game if the file is \
-found, deleting the\n        file. Use to interrupt online play without annoyin\
+found, deleting the file.\n        Use to interrupt online play without annoyin\
 g human players. Is\n        executed after commands kgs-game_over and final_sc\
 ore, and after a\n        genmove resignation.\n\n");
 
