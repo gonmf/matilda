@@ -39,6 +39,7 @@ bool time_system_overriden = false; /* ignore attempts to change time system */
 bool save_all_games_to_file = false; /* save all games as SGF on gameover */
 bool resign_on_timeout = false; /* resign instead of passing if timed out */
 u32 limit_by_playouts = 0; /* limit MCTS by playouts instead of time */
+char * sentinel_file = NULL;
 clock_t start_cpu_time;
 
 extern u64 max_size_in_mbs;
@@ -267,6 +268,12 @@ The default is the total\n        number of normal plus hyperthreaded CPU cores\
         fprintf(stderr, "        \033[1m--benchmark\033[0m\n\n");
         fprintf(stderr, "        Run a %u second benchmark of the system, retur\
 ning a linear measure of\n        MCTS performance.\n\n", BENCHMARK_TIME);
+
+        fprintf(stderr, "        \033[1m--sentinel <filename>\033[0m\n\n");
+        fprintf(stderr, "        Close the program after a game if the file is \
+found, deleting the\n        file. Use to interrupt online play without annoyin\
+g human players. Is\n        executed after commands kgs-game_over and final_sc\
+ore, and after a\n        genmove resignation.\n\n");
 
         fprintf(stderr, "        \033[1m--set <name> <value>\033[0m\n\n");
         fprintf(stderr, "        For optimization. Set the value of an internal\
@@ -580,6 +587,15 @@ int main(
             }
 
             max_size_in_mbs = v;
+            ++i;
+            continue;
+        }
+
+        if(strcmp(argv[i], "--sentinel") == 0 && i < argc - 1)
+        {
+            u32 len = strlen(argv[i + 1]) + 1;
+            sentinel_file = malloc(len);
+            memcpy(sentinel_file, argv[i + 1], len);
             ++i;
             continue;
         }
