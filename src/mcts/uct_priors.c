@@ -198,19 +198,18 @@ void init_new_state(
         if(!viable[m])
             continue;
 
-        move captures;
-        u8 libs = libs_after_play(cb, is_black, m, &captures);
+        /*
+        Ko violation
+        */
+        if(ko == m)
+            continue;
+
+        u8 libs = safe_to_play(cb, is_black, m);
 
         /*
         Don't play suicides
         */
         if(libs == 0)
-            continue;
-
-        /*
-        Ko violation
-        */
-        if(captures && ko == m)
             continue;
 
         /*
@@ -240,7 +239,7 @@ void init_new_state(
         /*
         Prohibit self-ataris that don't contribute to killing an opponent group
         */
-        if(capturable[0] == 0 && (libs < 3 && lib2_self_atari(cb, is_black, m)))
+        if(capturable[0] == 0 && (libs < 2 && lib2_self_atari(cb, is_black, m)))
             mc_v += prior_self_atari;
 
         /*
@@ -350,7 +349,7 @@ void init_new_state(
         stats_add_play(stats, m, mc_w, mc_v);
     }
 
-    if(stats->plays_count < TOTAL_BOARD_SIZ / 8)
+    if(cb->empty.count < TOTAL_BOARD_SIZ / 2)
     {
         /*
         Add pass simulation

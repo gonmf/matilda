@@ -92,7 +92,9 @@ Project conventions/guidelines
     strongly static typed and array passed as parameters should not be
     referenced.
 20. Don't use volatile keyword, enumerables or unions if avoidable.
-21. Coding style is Allman/BSD with 4-space indentation, lines not exceeding the
+21. Text in the program text interface can be adjusted to a terminal assumed to
+    contain 80 character lines.
+22. Coding style is Allman/BSD with 4-space indentation, lines not exceeding the
     80 characters, and pointers typed appart from symbols. Function declarations
     should have parameter lists NT kernel style, except if they have no
     parameters. No spaces around brackets. If a string literal exceeds the

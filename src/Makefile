@@ -22,7 +22,9 @@ LDFLAGS += -lm
 # GCC > 4.9 only
 # CFLAGS += -fdiagnostics-color=auto
 
+COMMIT := $(shell git rev-parse --short HEAD 2> /dev/null)
 
+CFLAGS += -DCOMMITN='"$(COMMIT)"'
 
 SRCFILES := $(wildcard *.c mcts/*.c)
 

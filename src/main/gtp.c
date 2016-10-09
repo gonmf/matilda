@@ -22,6 +22,7 @@ GTP_README.
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include <time.h>
 #include <string.h>
 #include <sys/select.h> /* fd_set in macOS */
@@ -101,6 +102,7 @@ extern game_record current_game;
 extern time_system current_clock_black;
 extern time_system current_clock_white;
 extern u32 limit_by_playouts;
+extern char * sentinel_file;
 
 static bool out_on_time_warning = false;
 
@@ -362,6 +364,19 @@ static void gtp_clear_cache(
     gtp_answer(fp, id, NULL);
 }
 
+static void close_if_sentinel_found()
+{
+    if(sentinel_file == NULL)
+        return;
+
+    if(access(sentinel_file, F_OK) != 0)
+        return;
+
+    unlink(sentinel_file);
+    flog_warn("gtp", "sentinel file found; closing");
+    exit(EXIT_SUCCESS);
+}
+
 static void gtp_clear_board(
     FILE * fp,
     int id
@@ -392,6 +407,15 @@ static void gtp_clear_board(
     reset_clock(&current_clock_black);
     reset_clock(&current_clock_white);
     out_on_time_warning = false;
+}
+
+static void gtp_kgs_game_over(
+    FILE * fp,
+    int id
+){
+    gtp_clear_board(fp, id);
+
+    close_if_sentinel_found();
 }
 
 static void gtp_boardsize(
@@ -597,6 +621,8 @@ static void generic_genmove(
         current_game.final_score = is_black ? -1 : 1;
 
         release(buf);
+
+        close_if_sentinel_found();
         return;
 #endif
         /* Pass */
@@ -650,6 +676,8 @@ igns because of timeout\n", is_black ? "black" : "white", is_black ?
 
 
                     release(buf);
+
+                    close_if_sentinel_found();
                     return;
                 }
                 if(!out_on_time_warning)
@@ -1183,6 +1211,8 @@ static void gtp_final_score(
     score_to_string(s, score);
     gtp_answer(fp, id, s);
     release(s);
+
+    close_if_sentinel_found();
 }
 
 static void gtp_place_free_handicap(
@@ -1622,7 +1652,7 @@ lbl_parse_command:
 
         if(argc == 0 && strcmp(cmd, "kgs-game_over") == 0)
         {
-            gtp_clear_board(out_fp, idn);
+            gtp_kgs_game_over(out_fp, idn);
             continue;
         }
 

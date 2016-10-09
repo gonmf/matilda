@@ -35,7 +35,14 @@ Produce a short version string. Does not include program name.
 void version_string(
     char * dst
 ){
-    snprintf(dst, MAX_PAGE_SIZ, "%s (%ux%u)", MATILDA_VERSION, BOARD_SIZ, BOARD_SIZ);
+#ifdef COMMITN
+    if(strlen(COMMITN))
+        snprintf(dst, MAX_PAGE_SIZ, "%s (%s)", MATILDA_VERSION, COMMITN);
+    else
+        snprintf(dst, MAX_PAGE_SIZ, "%s", MATILDA_VERSION);
+#else
+    snprintf(dst, MAX_PAGE_SIZ, "%s", MATILDA_VERSION);
+#endif
 }
 
 /*
