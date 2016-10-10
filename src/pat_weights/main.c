@@ -105,7 +105,7 @@ int main(
 
     fprintf(stderr, "Discovering game states\n");
 
-    u32 filenames_found = recurse_find_files(get_data_folder(), ".sgf",
+    u32 filenames_found = recurse_find_files(data_folder(), ".sgf",
         filenames, MAX_FILES);
     if(filenames_found == 0)
     {
@@ -217,7 +217,7 @@ int main(
 
     pat3t ** table = (pat3t **)hash_table_export_to_array(feature_table);
 
-    snprintf(buf, MAX_PAGE_SIZ, "%s%ux%u.weights.new", get_data_folder(),
+    snprintf(buf, MAX_PAGE_SIZ, "%s%ux%u.weights.new", data_folder(),
         BOARD_SIZ, BOARD_SIZ);
     FILE * fp = fopen(buf, "w");
     if(fp == NULL)

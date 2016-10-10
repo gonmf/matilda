@@ -76,16 +76,7 @@ typedef struct __tt_stats_ {
 /*
 Initialize the transpositions table structures.
 */
-void transpositions_table_init();
-
-/*
-Frees states outside of the subtree started at state b. Not thread-safe.
-RETURNS number of states freed.
-*/
-u32 tt_clean_outside_tree(
-    const board * b,
-    bool is_black
-);
+void tt_init();
 
 /*
 Looks up a previously stored state, or generates a new one. No assumptions are
@@ -94,7 +85,7 @@ the memory is full it allocates a new state regardless. If the state is found
 and returned it's OpenMP lock is first set. Thread-safe.
 RETURNS the state information
 */
-tt_stats * transpositions_lookup_create(
+tt_stats * tt_lookup_create(
     const board * b,
     bool is_black,
     u64 hash
@@ -107,10 +98,19 @@ states has been met the function returns NULL. If the state is found and
 returned it's OpenMP lock is first set. Thread-safe.
 RETURNS the state information or NULL
 */
-tt_stats * transpositions_lookup_null(
+tt_stats * tt_lookup_null(
     const cfg_board * cb,
     bool is_black,
     u64 hash
+);
+
+/*
+Frees states outside of the subtree started at state b. Not thread-safe.
+RETURNS number of states freed.
+*/
+u32 tt_clean_unreachable(
+    const board * b,
+    bool is_black
 );
 
 /*
@@ -122,7 +122,7 @@ u32 tt_clean_all();
 Mostly for debugging -- log the current memory status of the transpositions
 table to stderr and log file.
 */
-void transpositions_log_status();
+void tt_log_status();
 
 
 #endif

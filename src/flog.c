@@ -21,6 +21,7 @@ crashes, but it is impossible to guarantee this in all cases.
 #include "amaf_rave.h"
 #include "engine.h"
 #include "flog.h"
+#include "game_record.h"
 #include "mcts.h"
 #include "pat3.h"
 #include "playout.h"
@@ -258,7 +259,7 @@ void build_info(
     idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx, "Version: %s\n",
         MATILDA_VERSION);
     idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx, "Data folder: %s\n",
-        get_data_folder());
+        data_folder());
 
     idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx, "Board size: %ux%u\n",
         BOARD_SIZ, BOARD_SIZ);

@@ -124,7 +124,7 @@ n", secs_per_turn);
     assert_data_folder_exists();
     board_constants_init();
     zobrist_init();
-    transpositions_table_init();
+    tt_init();
 
     char * str = alloc();
     char * ts = alloc();
@@ -138,8 +138,8 @@ n", secs_per_turn);
 
     timestamp(ts);
     printf("%s: Searching game record files (%s*.sgf)...\n", ts,
-        get_data_folder());
-    u32 filenames_found = recurse_find_files(get_data_folder(), ".sgf",
+        data_folder());
+    u32 filenames_found = recurse_find_files(data_folder(), ".sgf",
         filenames, MAX_FILES);
     if(filenames_found == 0)
         printf("No SGF files found.\n");
@@ -259,7 +259,7 @@ n", secs_per_turn);
     time_t t = time(NULL);
     struct tm tm = *localtime(&t);
     snprintf(log_filename, MAX_PAGE_SIZ, "%smatilda_%02u%02u%02u_XXXXXX.ob",
-        get_data_folder(), tm.tm_year % 100, tm.tm_mon, tm.tm_mday);
+        data_folder(), tm.tm_year % 100, tm.tm_mon, tm.tm_mday);
     int fd = mkstemps(log_filename, 3);
 
     timestamp(ts);

@@ -77,7 +77,7 @@ static void export_table_as_ob(
 ){
     char * str = alloc();
 
-    snprintf(str, MAX_PAGE_SIZ, "%s%ux%u.ob.new", get_data_folder(),
+    snprintf(str, MAX_PAGE_SIZ, "%s%ux%u.ob.new", data_folder(),
         BOARD_SIZ, BOARD_SIZ);
 
     FILE * fp = fopen(str, "w");
@@ -232,8 +232,8 @@ d. (default: %u)\n", minimum_samples);
 
     timestamp(ts);
     printf("%s: Searching game record files (%s*.sgf)...\n", ts,
-        get_data_folder());
-    u32 filenames_found = recurse_find_files(get_data_folder(), ".sgf",
+        data_folder());
+    u32 filenames_found = recurse_find_files(data_folder(), ".sgf",
         filenames, MAX_FILES);
 
     if(filenames_found == 0)

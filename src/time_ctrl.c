@@ -33,32 +33,13 @@ u32 calc_time_to_play(
     if(ts->byo_yomi_time > 0 && ts->byo_yomi_stones == 0)
         return UINT32_MAX;
 
-
-#if 0
-    /*
-TODO testing for paper
-    */
-    d32 turns_played2 = turns_played;
-    double e1 = (double)(EXPECTED_GAME_LENGTH - turns_played2);
-    double turns_left = MAX(e1, 4.0);
-    return  ts->main_time_remaining / turns_left;
-
-
-
-
-
-
-
-#else
-
-
-
-
-
-
     double e1 = EXPECTED_GAME_LENGTH - turns_played;
     double turns_left = MAX(e1 / 2.0, (double)BOARD_SIZ);
     double mtt = ts->main_time_remaining / turns_left;
+
+    /*
+    Non-linear factor
+    */
     mtt *= time_allot_factor;
 
     double t_t;
@@ -74,24 +55,16 @@ TODO testing for paper
     }
 
     /*
-    Non-linear factor
-    */
-
-    /*
     Network lag correction
     */
 #if DETECT_NETWORK_LATENCY
     if(network_round_trip_set && t_t > network_roundtrip_delay)
         t_t -= network_roundtrip_delay;
 #else
-    if(t_t > LATENCY_COMPENSATION)
-        t_t -= LATENCY_COMPENSATION;
+    t_t -= LATENCY_COMPENSATION;
 #endif
 
-    return t_t;
-
-
-#endif
+    return (u32)MAX(t_t, 100.0);
 }
 
 /*

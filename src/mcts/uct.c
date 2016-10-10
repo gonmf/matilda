@@ -73,7 +73,7 @@ void mcts_init()
     board_constants_init();
     zobrist_init();
     pat3_init();
-    transpositions_table_init();
+    tt_init();
 
     uct_inited = true;
 }
@@ -218,7 +218,7 @@ static d16 mcts_selection(
 
         if(curr_stats == NULL)
         {
-            curr_stats = transpositions_lookup_null(cb, is_black, zobrist_hash);
+            curr_stats = tt_lookup_null(cb, is_black, zobrist_hash);
 
             if(curr_stats == NULL)
             {
@@ -392,7 +392,7 @@ bool mcts_start_timed(
 #endif
 
     u64 start_zobrist_hash = zobrist_new_hash(b);
-    tt_stats * stats = transpositions_lookup_create(b, is_black,
+    tt_stats * stats = tt_lookup_create(b, is_black,
         start_zobrist_hash);
     omp_unset_lock(&stats->lock);
 
@@ -571,7 +571,7 @@ bool mcts_start_sims(
 #endif
 
     u64 start_zobrist_hash = zobrist_new_hash(b);
-    tt_stats * stats = transpositions_lookup_create(b, is_black,
+    tt_stats * stats = tt_lookup_create(b, is_black,
         start_zobrist_hash);
     omp_unset_lock(&stats->lock);
 
@@ -780,7 +780,7 @@ u32 mcts_benchmark()
 #endif
 
     u64 start_zobrist_hash = zobrist_new_hash(&b);
-    tt_stats * stats = transpositions_lookup_create(&b, true,
+    tt_stats * stats = tt_lookup_create(&b, true,
         start_zobrist_hash);
     omp_unset_lock(&stats->lock);
 

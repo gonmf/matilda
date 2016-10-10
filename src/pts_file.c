@@ -45,10 +45,10 @@ void open_rule_file(
         flog_crit("ptsf", "error: pts_file: file open");
 
     char * fn = alloc();
-    if(starts_with(filename, get_data_folder()))
+    if(starts_with(filename, data_folder()))
         snprintf(fn, MAX_PAGE_SIZ, "%s", filename);
     else
-        snprintf(fn, MAX_PAGE_SIZ, "%s%s", get_data_folder(), filename);
+        snprintf(fn, MAX_PAGE_SIZ, "%s%s", data_folder(), filename);
 
     buffer = malloc(MAX_FILE_SIZ);
     if(buffer == NULL)

@@ -55,7 +55,7 @@ static u8 maintenance_mark = 0;
 /*
 Initialize the transpositions table structures.
 */
-void transpositions_table_init()
+void tt_init()
 {
     if(b_stats_table == NULL)
     {
@@ -262,7 +262,7 @@ static void mark_states_for_keeping(
 Frees states outside of the subtree started at state b. Not thread-safe.
 RETURNS number of states freed.
 */
-u32 tt_clean_outside_tree(
+u32 tt_clean_unreachable(
     const board * b,
     bool is_black
 ){
@@ -291,7 +291,7 @@ the memory is full it allocates a new state regardless. If the state is found
 and returned it's OpenMP lock is first set. Thread-safe.
 RETURNS the state information
 */
-tt_stats * transpositions_lookup_create(
+tt_stats * tt_lookup_create(
     const board * b,
     bool is_black,
     u64 hash
@@ -310,7 +310,7 @@ tt_stats * transpositions_lookup_create(
             where freeing the game tree that is not reachable doesn't free any
             states.
             */
-            transpositions_log_status();
+            tt_log_status();
             char * s = alloc();
             board_to_string(s, b->p, b->last_played, b->last_eaten);
             flog_warn("tt", s);
@@ -352,7 +352,7 @@ states has been met the function returns NULL. If the state is found and
 returned it's OpenMP lock is first set. Thread-safe.
 RETURNS the state information or NULL
 */
-tt_stats * transpositions_lookup_null(
+tt_stats * tt_lookup_null(
     const cfg_board * cb,
     bool is_black,
     u64 hash
@@ -432,7 +432,7 @@ u32 tt_clean_all()
 Mostly for debugging -- log the current memory status of the transpositions
 table to stderr and log file.
 */
-void transpositions_log_status()
+void tt_log_status()
 {
     char * buf = alloc();
     u32 idx = snprintf(buf, MAX_PAGE_SIZ,

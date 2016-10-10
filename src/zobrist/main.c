@@ -128,7 +128,7 @@ of the data.\nWhen you are satisfied press ENTER\n\n");
     fprintf(stderr, "\nSearch stopped.\n");
 
     char * filename = alloc();
-    snprintf(filename, MAX_PAGE_SIZ, "%s%ux%u.zt.new", get_data_folder(),
+    snprintf(filename, MAX_PAGE_SIZ, "%s%ux%u.zt.new", data_folder(),
         BOARD_SIZ, BOARD_SIZ);
 
 

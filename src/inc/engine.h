@@ -28,7 +28,7 @@ Obtains the current data folder path. It may be absolute or relative and ends
 with a path separator.
 RETURNS folder path
 */
-const char * get_data_folder();
+const char * data_folder();
 
 /*
 Sets the new data folder path. If the path is too long, short, or otherwise

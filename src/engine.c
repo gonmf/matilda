@@ -50,7 +50,7 @@ Obtains the current data folder path. It may be absolute or relative and ends
 with a path separator.
 RETURNS folder path
 */
-const char * get_data_folder()
+const char * data_folder()
 {
     return _data_folder;
 }
@@ -182,7 +182,7 @@ void opt_turn_maintenance(
 ){
     if(tt_requires_maintenance)
     {
-        u32 freed = tt_clean_outside_tree(b, is_black);
+        u32 freed = tt_clean_unreachable(b, is_black);
         tt_requires_maintenance = false;
 
         if(freed > 0)
@@ -202,12 +202,12 @@ doesn't.
 */
 void assert_data_folder_exists()
 {
-    DIR * dir = opendir(get_data_folder());
+    DIR * dir = opendir(data_folder());
     if(dir == NULL)
     {
         char * s = alloc();
         snprintf(s, MAX_PAGE_SIZ, "data folder %s does not exist or is unavaila\
-ble\n", get_data_folder());
+ble\n", data_folder());
         flog_crit("data", s);
         release(s);
     }else

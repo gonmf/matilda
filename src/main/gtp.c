@@ -1343,7 +1343,7 @@ static void gtp_loadsgf(
         }
 
     char * filepath = alloc();
-    snprintf(filepath, MAX_PAGE_SIZ, "%s%s", get_data_folder(), filename);
+    snprintf(filepath, MAX_PAGE_SIZ, "%s%s", data_folder(), filename);
 
     game_record tmp;
     reset_warning_messages();
@@ -1388,7 +1388,7 @@ static void gtp_printsgf(
             return;
         }
 
-        snprintf(buf, MAX_PAGE_SIZ, "%s%s", get_data_folder(), filename);
+        snprintf(buf, MAX_PAGE_SIZ, "%s%s", data_folder(), filename);
 
         bool success = export_game_as_sgf(&current_game, buf);
         if(!success)
@@ -1417,7 +1417,7 @@ void main_gtp(
     bool think_in_opt_turn
 ){
     load_hoshi_points();
-    transpositions_table_init();
+    tt_init();
 
     flog_info("gtp", "matilda now running over GTP");
     char * s = alloc();

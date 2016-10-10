@@ -198,7 +198,7 @@ void opening_book_init()
     Discover .ob files
     */
     char * filenames[32];
-    u32 files_found = recurse_find_files(get_data_folder(), ".ob", filenames,
+    u32 files_found = recurse_find_files(data_folder(), ".ob", filenames,
         32);
 
     char * buf = get_buffer();
@@ -229,7 +229,7 @@ void opening_book_init()
     /*
     Discover .joseki files
     */
-    files_found = recurse_find_files(get_data_folder(), ".joseki", filenames, 32);
+    files_found = recurse_find_files(data_folder(), ".joseki", filenames, 32);
 
     buf = get_buffer();
     snprintf(buf, MAX_PAGE_SIZ, "found %u state,play files", files_found);
