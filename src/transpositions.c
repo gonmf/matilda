@@ -98,13 +98,12 @@ static tt_stats * find_state(
     else
         p = w_stats_table[key];
 
-    bool last_passed = (b->last_played == PASS);
+    move last_eaten_passed = (b->last_played == PASS) ? PASS : b->last_eaten;
 
     while(p != NULL)
     {
         if(p->zobrist_hash == hash && memcmp(p->p, b->p, TOTAL_BOARD_SIZ)
-            == 0 && p->last_eaten == b->last_eaten && p->last_passed ==
-            last_passed)
+            == 0 && p->last_eaten_passed == last_eaten_passed)
             return p;
 
         p = p->next;
@@ -126,13 +125,12 @@ static tt_stats * find_state2(
     else
         p = w_stats_table[key];
 
-    bool last_passed = (cb->last_played == PASS);
+    move last_eaten_passed = (cb->last_played == PASS) ? PASS : cb->last_eaten;
 
     while(p != NULL)
     {
         if(p->zobrist_hash == hash && memcmp(p->p, cb->p, TOTAL_BOARD_SIZ)
-            == 0 && p->last_eaten == cb->last_eaten && p->last_passed ==
-            last_passed)
+            == 0 && p->last_eaten_passed == last_eaten_passed)
             return p;
 
         p = p->next;
@@ -320,8 +318,8 @@ tt_stats * tt_lookup_create(
 
         ret = create_state(hash);
         memcpy(ret->p, b->p, TOTAL_BOARD_SIZ);
-        ret->last_eaten = b->last_eaten;
-        ret->last_passed = (b->last_played == PASS);
+        ret->last_eaten_passed =
+            (b->last_played == PASS) ? PASS : b->last_eaten;
         omp_set_lock(&ret->lock);
 
         if(is_black)
@@ -372,8 +370,8 @@ tt_stats * tt_lookup_null(
 
         ret = create_state(hash);
         memcpy(ret->p, cb->p, TOTAL_BOARD_SIZ);
-        ret->last_eaten = cb->last_eaten;
-        ret->last_passed = (cb->last_played == PASS);
+        ret->last_eaten_passed =
+            (cb->last_played == PASS) ? PASS : cb->last_eaten;
         omp_set_lock(&ret->lock);
 
         if(is_black)

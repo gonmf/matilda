@@ -62,8 +62,7 @@ typedef struct __tt_play_ {
 typedef struct __tt_stats_ {
 	u64 zobrist_hash;
 	u8 p[TOTAL_BOARD_SIZ];
-	move last_eaten;
-	bool last_passed;
+    move last_eaten_passed; // position of last single stone eaten or NONE/PASS
 	u8 maintenance_mark;
 	d8 expansion_delay;
 	move plays_count;

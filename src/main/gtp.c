@@ -577,6 +577,28 @@ static void generic_genmove(
     time_system * curr_clock = is_black ? &current_clock_black :
         &current_clock_white;
 
+    if(resign_on_timeout && curr_clock->timed_out)
+    {
+        gtp_answer(fp, id, "resign");
+
+        if(!out_on_time_warning)
+        {
+            out_on_time_warning = true;
+            snprintf(buf, MAX_PAGE_SIZ, "matilda is believed to have lost on time");
+            flog_warn("gtp", buf);
+        }
+
+        current_game.game_finished = true;
+        current_game.resignation = true;
+        current_game.final_score = is_black ? -1 : 1;
+#if 0
+        /* TODO just for counting resigns on timeout for paper */
+        flog_dbug("gtp", "TIMEOUT");
+#endif
+        close_if_sentinel_found();
+        return;
+    }
+
     bool has_play;
     if(limit_by_playouts > 0)
     {
@@ -635,65 +657,28 @@ static void generic_genmove(
     else
         m = select_play(&out_b, is_black, &current_game);
 
+    coord_to_gtp_vertex(buf, m);
+    gtp_answer(fp, id, buf);
+
     if(!reg)
     {
-        add_play_out_of_order(&current_game, is_black, m);
-        current_game.game_finished = false;
-
         if(limit_by_playouts == 0)
         {
             u32 elapsed = (u32)(current_time_in_millis() -
                 request_received_mark);
 
             advance_clock(curr_clock, elapsed);
-            if(curr_clock->timed_out)
-            {
-                if(resign_on_timeout)
-                {
-                    gtp_answer(fp, id, "resign");
-
-                    snprintf(buf, MAX_PAGE_SIZ, "matilda playing as %s (%c) res\
-igns because of timeout\n", is_black ? "black" : "white", is_black ?
-                        BLACK_STONE_CHAR : WHITE_STONE_CHAR);
-                    flog_warn("gtp", buf);
-
-                    current_game.game_finished = true;
-                    current_game.resignation = true;
-                    current_game.final_score = is_black ? -1 : 1;
-
-
-
-
-#if 0
-
-                    /* TODO just for counting resigns on timeout for paper */
-                    flog_dbug("gtp", "TIMEOUT");
-
-
-#endif
-
-
-
-
-                    release(buf);
-
-                    close_if_sentinel_found();
-                    return;
-                }
-                if(!out_on_time_warning)
-                {
-                    out_on_time_warning = true;
-                    snprintf(buf, MAX_PAGE_SIZ, "matilda is believed to have lo\
-st on time");
-                    flog_warn("gtp", buf);
-                }
-                /* we don't do anything else when timed out */
-            }
         }
+
+        /*
+        Transpositions table maintenance
+        */
+        add_play_out_of_order(&current_game, is_black, m);
+        current_game.game_finished = false;
+        current_game_state(&current_state, &current_game);
+        opt_turn_maintenance(&current_state, !is_black);
     }
 
-    coord_to_gtp_vertex(buf, m);
-    gtp_answer(fp, id, buf);
     release(buf);
 }
 
