@@ -349,7 +349,8 @@ void init_new_state(
         stats_add_play(stats, m, mc_w, mc_v);
     }
 
-    if(cb->empty.count < TOTAL_BOARD_SIZ / 2)
+    if(cb->empty.count < TOTAL_BOARD_SIZ / 2 ||
+        stats->plays_count < TOTAL_BOARD_SIZ / 8)
     {
         /*
         Add pass simulation

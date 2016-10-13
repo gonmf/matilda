@@ -28,6 +28,10 @@ static mem_link * queue = NULL;
 static omp_lock_t queue_lock;
 static bool queue_inited = false;
 
+#if !MATILDA_RELEASE_MODE
+static u16 concurrent_allocs = 0;
+#endif
+
 /*
 Initiate the safe allocation.
 */
@@ -50,6 +54,15 @@ void * alloc()
     void * ret = NULL;
 
     omp_set_lock(&queue_lock);
+
+#if !MATILDA_RELEASE_MODE
+    concurrent_allocs++;
+    if(concurrent_allocs > 32)
+    {
+        flog_warn("alloc", "suspicious memory allocation volume");
+    }
+#endif
+
     if(queue != NULL)
     {
         ret = queue;
@@ -124,5 +137,8 @@ s, rolling block releasing or writes past bounds (2)\n");
     mem_link * l = (mem_link *)ptr;
     l->next = queue;
     queue = l;
+#if !MATILDA_RELEASE_MODE
+    --concurrent_allocs;
+#endif
     omp_unset_lock(&queue_lock);
 }
