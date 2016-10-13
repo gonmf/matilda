@@ -1,9 +1,14 @@
 /*
-Guard functions over standard malloc. They are used for quickly and
-inexpensively allocate a small buffer, with safety measures.
+Fast memory allocation layer above standard malloc.
 
-It is thread-safe, fast, and canary values are used (in debug mode) to ensure
+These are meant to inexpensively allocate buffers for string operations.
+
+They are thread-safe, fast, with canary values used (in debug mode) to ensure
 memory is correctly freed and written to.
+
+If you are need to perform recursive operations then use malloc/free. Releasing
+these buffers does not actually free the underlying memory to be used by other
+programs.
 */
 
 #include "matilda.h"
@@ -30,10 +35,12 @@ static bool queue_inited = false;
 
 #if !MATILDA_RELEASE_MODE
 static u16 concurrent_allocs = 0;
+#define WARN_CONCURRENT_ALLOCS 16
 #endif
 
+
 /*
-Initiate the safe allocation.
+Initiate the safe allocation functions.
 */
 void alloc_init()
 {
@@ -45,9 +52,8 @@ void alloc_init()
 }
 
 /*
-Allocate a small block of memory; intended for string formatting and the like.
-
-Canary protection is used in debug mode.
+Allocate a block of exactly MAX_PAGE_SIZ.
+Thread-safe.
 */
 void * alloc()
 {
@@ -57,9 +63,10 @@ void * alloc()
 
 #if !MATILDA_RELEASE_MODE
     concurrent_allocs++;
-    if(concurrent_allocs > 32)
+    if(concurrent_allocs >= WARN_CONCURRENT_ALLOCS)
     {
-        flog_warn("alloc", "suspicious memory allocation volume");
+        fprintf(stderr, "alloc: suspicious memory allocations number (%u)\n",
+            concurrent_allocs);
     }
 #endif
 
@@ -114,9 +121,9 @@ s, rolling block releasing or writes past bounds (1)\n");
 }
 
 /*
-Releases a previously allocated block of memory.
-
-Canary protection is used in debug mode.
+Releases a previously allocated block of memory, to be used again in later
+calls. Does not free the memory.
+Thread-safe.
 */
 void release(void * ptr)
 {
