@@ -119,6 +119,22 @@ void coord_to_gtp_vertex(
 );
 
 /*
+Format a quantity of bytes as string with SI units.
+*/
+void format_mem_size(
+    char * dst,
+    u64 bytes
+);
+
+/*
+Format a quantity of milliseconds as a string with SI units.
+*/
+void format_nr_millis(
+    char * dst,
+    u64 millis
+);
+
+/*
 Damerau-levenshtein edit distance.
 RETURNS the edit distance between two strings
 */

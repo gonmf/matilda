@@ -8,10 +8,10 @@ Miscellanea C string functions.
 #include <string.h>
 #include <stdio.h>
 
-#include "board.h"
-#include "types.h"
 #include "alloc.h"
+#include "board.h"
 #include "move.h"
+#include "types.h"
 
 
 /*
@@ -281,6 +281,68 @@ void coord_to_gtp_vertex(
     }
 
     coord_to_alpha_num(dst, m);
+}
+
+/*
+Format a quantity of bytes as string with SI units.
+*/
+void format_mem_size(
+    char * dst,
+    u64 bytes
+){
+    char * suffix = "bytes";
+    double fbytes = (double)bytes;
+    if(fbytes > 1280.0)
+    {
+        fbytes /= 1024.0;
+        suffix = "KiB";
+        if(fbytes > 1280.0)
+        {
+            fbytes /= 1024.0;
+            suffix = "MiB";
+            if(fbytes > 1280.0)
+            {
+                fbytes /= 1024.0;
+                suffix = "GiB";
+            }
+        }
+    }
+    snprintf(dst, MAX_PAGE_SIZ, "%.1f %s", fbytes, suffix);
+}
+
+/*
+Format a quantity of milliseconds as a string with SI units.
+*/
+void format_nr_millis(
+    char * dst,
+    u64 millis
+){
+    if(millis == 0)
+    {
+        snprintf(dst, MAX_PAGE_SIZ, "0");
+        return;
+    }
+
+    char * suffix = NULL;
+    double fmillis = (double)millis;
+    if(fmillis > 1200.0)
+    {
+        fmillis /= 1000.0;
+        suffix = "s";
+        if(fmillis > 72.0)
+        {
+            fmillis /= 60.0;
+            suffix = "m";
+            if(fmillis > 72.0)
+            {
+                fmillis /= 60.0;
+                suffix = "h";
+            }
+        }
+        snprintf(dst, MAX_PAGE_SIZ, "%.1f%s", fmillis, suffix);
+    }
+    else
+        snprintf(dst, MAX_PAGE_SIZ, "%.0fms", fmillis);
 }
 
 /*

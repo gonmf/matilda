@@ -26,9 +26,9 @@ crashes, but it is impossible to guarantee this in all cases.
 #include "pat3.h"
 #include "playout.h"
 #include "scoring.h"
+#include "stringm.h"
 #include "time_ctrl.h"
 #include "timem.h"
-#include "types.h"
 #include "version.h"
 
 static int log_file = -1;
@@ -289,8 +289,11 @@ void build_info(
 
     idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx, "Winrate for passing always: %.2f\n", JUST_PASS_WINRATE);
 
+    char * s = alloc();
+    format_mem_size(s, max_size_in_mbs * 1048576);
     idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx,
-        "Transpositions table memory: %" PRIu64 " MiB\n", max_size_in_mbs);
+        "Transpositions table memory: %s\n", s);
+    release(s);
 
     if(pl_skip_saving)
         idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx,

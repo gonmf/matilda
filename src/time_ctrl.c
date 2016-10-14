@@ -219,56 +219,17 @@ void time_system_to_str(
         return;
     }
 
-    char * a;
-    u32 abs_time = ts->main_time;
-    if(abs_time == 0)
-        a = "";
-    else
-        a = "ms";
-    if(abs_time >= 1000 && (abs_time % 1000) == 0)
-    {
-        a = "s";
-        abs_time /= 1000;
+    char * abs = alloc();
+    char * byo = alloc();
 
-        if(abs_time >= 60 && (abs_time % 60) == 0)
-        {
-            a = "m";
-            abs_time /= 60;
-        }
+    format_nr_millis(abs, ts->main_time);
+    format_nr_millis(byo, ts->byo_yomi_time);
 
-        if(abs_time >= 60 && (abs_time % 60) == 0)
-        {
-            a = "h";
-            abs_time /= 60;
-        }
-    }
+    snprintf(dst, MAX_PAGE_SIZ, "%s+%ux%s/%u", abs, ts->byo_yomi_periods, byo,
+        ts->byo_yomi_stones);
 
-    char * b;
-    u32 byo_time = ts->byo_yomi_time;
-    if(byo_time == 0)
-        b = "";
-    else
-        b = "ms";
-    if(byo_time >= 1000 && (byo_time % 1000) == 0)
-    {
-        b = "s";
-        byo_time /= 1000;
-
-        if(byo_time >= 60 && (byo_time % 60) == 0)
-        {
-            b = "m";
-            byo_time /= 60;
-        }
-
-        if(byo_time >= 60 && (byo_time % 60) == 0)
-        {
-            b = "h";
-            byo_time /= 60;
-        }
-    }
-
-    snprintf(dst, MAX_PAGE_SIZ, "%u%s+%ux%u%s/%u", abs_time, a,
-        ts->byo_yomi_periods, byo_time, b, ts->byo_yomi_stones);
+    release(byo);
+    release(abs);
 }
 
 static d32 str_to_milliseconds(const char * s){

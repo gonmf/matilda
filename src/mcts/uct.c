@@ -27,6 +27,7 @@ It can also record the average final score, for the purpose of score estimation.
 #include "amaf_rave.h"
 #include "board.h"
 #include "cfg_board.h"
+#include "constants.h"
 #include "flog.h"
 #include "mcts.h"
 #include "move.h"
@@ -37,10 +38,10 @@ It can also record the average final score, for the purpose of score estimation.
 #include "randg.h"
 #include "scoring.h"
 #include "state_changes.h"
+#include "stringm.h"
 #include "timem.h"
 #include "transpositions.h"
 #include "types.h"
-#include "constants.h"
 #include "zobrist.h"
 
 /* from board_constants */
@@ -488,7 +489,10 @@ bool mcts_start_timed(
     if(stopped_early_by_wr)
     {
         d64 diff = stop_time - current_time_in_millis();
-        snprintf(s, MAX_PAGE_SIZ, "search ended %" PRId64 "ms early", diff);
+        char * s2 = alloc();
+        format_nr_millis(s2, diff);
+        snprintf(s, MAX_PAGE_SIZ, "search ended %s early", s2);
+        release(s2);
         flog_info("uct", s);
     }
 

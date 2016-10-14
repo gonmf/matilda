@@ -495,9 +495,6 @@ static void gtp_play(
         {
             add_play_out_of_order(&current_game, is_black, NONE);
             current_game.game_finished = false;
-            board current_state;
-            current_game_state(&current_state, &current_game);
-            opt_turn_maintenance(&current_state, !is_black);
             gtp_answer(fp, id, NULL);
             return;
         }
@@ -529,9 +526,6 @@ static void gtp_play(
 
     add_play_out_of_order(&current_game, is_black, m);
     current_game.game_finished = false;
-    board current_state;
-    current_game_state(&current_state, &current_game);
-    opt_turn_maintenance(&current_state, !is_black);
 }
 
 /*
@@ -612,8 +606,12 @@ static void generic_genmove(
         if(time_to_play == UINT32_MAX)
             snprintf(buf, MAX_PAGE_SIZ, "time to play: infinite");
         else
-            snprintf(buf, MAX_PAGE_SIZ, "time to play: %u.%03us",
-                time_to_play / 1000, time_to_play % 1000);
+        {
+            char * s = alloc();
+            format_nr_millis(s, time_to_play);
+            snprintf(buf, MAX_PAGE_SIZ, "time to play: %s", s);
+            release(s);
+        }
         flog_info("gtp", buf);
 
         u64 stop_time = request_received_mark + time_to_play;
@@ -675,8 +673,6 @@ static void generic_genmove(
         */
         add_play_out_of_order(&current_game, is_black, m);
         current_game.game_finished = false;
-        current_game_state(&current_state, &current_game);
-        opt_turn_maintenance(&current_state, !is_black);
     }
 
     release(buf);
@@ -1439,10 +1435,9 @@ void main_gtp(
         board current_state;
         current_game_state(&current_state, &current_game);
 
-        while(1)
+        if(think_in_opt_turn)
         {
-            if(think_in_opt_turn)
-            {
+            do{
                 FD_ZERO(&readfs);
                 FD_SET(STDIN_FILENO, &readfs);
                 struct timeval tm;
@@ -1451,12 +1446,10 @@ void main_gtp(
 
                 int ready = select(STDIN_FILENO + 1, &readfs, NULL, NULL, &tm);
                 if(ready == 0) /* nothing to read */
-                {
                     evaluate_in_background(&current_state, is_black);
-                    continue;
-                }
-            }
-            break;
+                else
+                    break;
+            }while(1);
         }
 
         opt_turn_maintenance(&current_state, is_black);

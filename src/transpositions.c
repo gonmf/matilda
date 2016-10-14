@@ -435,8 +435,8 @@ void tt_log_status()
     char * buf = alloc();
     u32 idx = snprintf(buf, MAX_PAGE_SIZ,
         "\n*** Transpositions table trace start ***\n\n");
-    idx += snprintf(buf + idx, MAX_PAGE_SIZ - idx, "Max size in MiB: %" PRIu64
-      "\n", max_size_in_mbs);
+    idx += snprintf(buf + idx, MAX_PAGE_SIZ - idx, "Max size in MiB: %lu\n",
+        max_size_in_mbs);
     idx += snprintf(buf + idx, MAX_PAGE_SIZ - idx, "Max allocated states: %u\n",
         max_allocated_states);
     idx += snprintf(buf + idx, MAX_PAGE_SIZ - idx, "Allocated states: %u\n",
