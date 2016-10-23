@@ -35,13 +35,13 @@ reasons).
 */
 #if BOARD_SIZ < 12
 /*
-Tuned with CLOP in 9x9 with 400 playouts/turn vs GNU Go 3.8 lvl 1, 22k matches.
+Tuned with CLOP in 9x9 with 10k playouts/turn in self-play for 34k games.
 */
-#define PL_SKIP_SAVING  22
-#define PL_SKIP_CAPTURE 54
-#define PL_SKIP_PATTERN 14
+#define PL_SKIP_SAVING  43
+#define PL_SKIP_CAPTURE 40
+#define PL_SKIP_PATTERN 16
 #define PL_SKIP_NAKADE   0
-#define PL_BAN_SELF_ATARI 36
+#define PL_BAN_SELF_ATARI 48
 #else
 #define PL_SKIP_SAVING  32
 #define PL_SKIP_CAPTURE 39
