@@ -44,7 +44,7 @@ The value is in milliseconds.
 
 EXPECTED: 2 to 400
 */
-#define LATENCY_COMPENSATION 270 /* Japan is quite far away */
+#define LATENCY_COMPENSATION 250 /* Japan is quite far away */
 
 
 /*
@@ -96,10 +96,11 @@ EXPECTED: 0 or 1
 /*
 Set how many visits are needed before expanding a new state in MCTS. If the
 program is running out of memory mid-turn consider increasing this value.
+Tuned with CLOP in 9x9 with 10k playouts/turn in self-play for 34k games.
 
 EXPECTED: 0 to 10
 */
-#define UCT_EXPANSION_DELAY 4
+#define UCT_EXPANSION_DELAY 5
 
 
 /*

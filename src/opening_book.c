@@ -205,7 +205,7 @@ void opening_book_init()
     Read .ob file
     */
     char * filename = alloc();
-    snprintf(filename, MAX_PAGE_SIZ, "%s%ux%u.ob", get_data_folder(), BOARD_SIZ, 
+    snprintf(filename, MAX_PAGE_SIZ, "%s%ux%u.ob", data_folder(), BOARD_SIZ,
         BOARD_SIZ);
 
     char * buffer = malloc(MAX_FILE_SIZ);

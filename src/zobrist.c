@@ -63,7 +63,7 @@ void zobrist_init()
     rand_init();
 
     char * filename = alloc();
-    snprintf(filename, MAX_PAGE_SIZ, "%s%ux%u.zt", get_data_folder(), BOARD_SIZ,
+    snprintf(filename, MAX_PAGE_SIZ, "%s%ux%u.zt", data_folder(), BOARD_SIZ,
         BOARD_SIZ);
     if(read_binary_file(iv, sizeof(u64) * TOTAL_BOARD_SIZ * 2, filename) == -1)
     {

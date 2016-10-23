@@ -84,7 +84,7 @@ void request_opinion(
     bool is_black,
     u64 milliseconds
 ){
-    transpositions_table_init();
+    tt_init();
 
     u64 zobrist_hash = zobrist_new_hash(b);
     out_board ignored;
@@ -92,7 +92,7 @@ void request_opinion(
     u64 curr_time = current_time_in_millis();
     u64 stop_time = curr_time + milliseconds;
     mcts_start_timed(&ignored, b, is_black, stop_time, stop_time);
-    tt_stats * stats = transpositions_lookup_create(b, is_black, zobrist_hash);
+    tt_stats * stats = tt_lookup_create(b, is_black, zobrist_hash);
     omp_unset_lock(&stats->lock);
     if(stats->expansion_delay != -1)
         return;

@@ -495,9 +495,6 @@ static void gtp_play(
         {
             add_play_out_of_order(&current_game, is_black, NONE);
             current_game.game_finished = false;
-            board current_state;
-            current_game_state(&current_state, &current_game);
-            opt_turn_maintenance(&current_state, !is_black);
             gtp_answer(fp, id, NULL);
             return;
         }
@@ -529,9 +526,6 @@ static void gtp_play(
 
     add_play_out_of_order(&current_game, is_black, m);
     current_game.game_finished = false;
-    board current_state;
-    current_game_state(&current_state, &current_game);
-    opt_turn_maintenance(&current_state, !is_black);
 }
 
 /*
@@ -577,6 +571,28 @@ static void generic_genmove(
     time_system * curr_clock = is_black ? &current_clock_black :
         &current_clock_white;
 
+    if(resign_on_timeout && curr_clock->timed_out)
+    {
+        gtp_answer(fp, id, "resign");
+
+        if(!out_on_time_warning)
+        {
+            out_on_time_warning = true;
+            snprintf(buf, MAX_PAGE_SIZ, "matilda is believed to have lost on time");
+            flog_warn("gtp", buf);
+        }
+
+        current_game.game_finished = true;
+        current_game.resignation = true;
+        current_game.final_score = is_black ? -1 : 1;
+#if 0
+        /* TODO just for counting resigns on timeout for paper */
+        flog_dbug("gtp", "TIMEOUT");
+#endif
+        close_if_sentinel_found();
+        return;
+    }
+
     bool has_play;
     if(limit_by_playouts > 0)
     {
@@ -590,8 +606,12 @@ static void generic_genmove(
         if(time_to_play == UINT32_MAX)
             snprintf(buf, MAX_PAGE_SIZ, "time to play: infinite");
         else
-            snprintf(buf, MAX_PAGE_SIZ, "time to play: %u.%03us",
-                time_to_play / 1000, time_to_play % 1000);
+        {
+            char * s = alloc();
+            format_nr_millis(s, time_to_play);
+            snprintf(buf, MAX_PAGE_SIZ, "time to play: %s", s);
+            release(s);
+        }
         flog_info("gtp", buf);
 
         u64 stop_time = request_received_mark + time_to_play;
@@ -635,65 +655,26 @@ static void generic_genmove(
     else
         m = select_play(&out_b, is_black, &current_game);
 
+    coord_to_gtp_vertex(buf, m);
+    gtp_answer(fp, id, buf);
+
     if(!reg)
     {
-        add_play_out_of_order(&current_game, is_black, m);
-        current_game.game_finished = false;
-
         if(limit_by_playouts == 0)
         {
             u32 elapsed = (u32)(current_time_in_millis() -
                 request_received_mark);
 
             advance_clock(curr_clock, elapsed);
-            if(curr_clock->timed_out)
-            {
-                if(resign_on_timeout)
-                {
-                    gtp_answer(fp, id, "resign");
-
-                    snprintf(buf, MAX_PAGE_SIZ, "matilda playing as %s (%c) res\
-igns because of timeout\n", is_black ? "black" : "white", is_black ?
-                        BLACK_STONE_CHAR : WHITE_STONE_CHAR);
-                    flog_warn("gtp", buf);
-
-                    current_game.game_finished = true;
-                    current_game.resignation = true;
-                    current_game.final_score = is_black ? -1 : 1;
-
-
-
-
-#if 0
-
-                    /* TODO just for counting resigns on timeout for paper */
-                    flog_dbug("gtp", "TIMEOUT");
-
-
-#endif
-
-
-
-
-                    release(buf);
-
-                    close_if_sentinel_found();
-                    return;
-                }
-                if(!out_on_time_warning)
-                {
-                    out_on_time_warning = true;
-                    snprintf(buf, MAX_PAGE_SIZ, "matilda is believed to have lo\
-st on time");
-                    flog_warn("gtp", buf);
-                }
-                /* we don't do anything else when timed out */
-            }
         }
+
+        /*
+        Transpositions table maintenance
+        */
+        add_play_out_of_order(&current_game, is_black, m);
+        current_game.game_finished = false;
     }
 
-    coord_to_gtp_vertex(buf, m);
-    gtp_answer(fp, id, buf);
     release(buf);
 }
 
@@ -1343,7 +1324,7 @@ static void gtp_loadsgf(
         }
 
     char * filepath = alloc();
-    snprintf(filepath, MAX_PAGE_SIZ, "%s%s", get_data_folder(), filename);
+    snprintf(filepath, MAX_PAGE_SIZ, "%s%s", data_folder(), filename);
 
     game_record tmp;
     reset_warning_messages();
@@ -1388,7 +1369,7 @@ static void gtp_printsgf(
             return;
         }
 
-        snprintf(buf, MAX_PAGE_SIZ, "%s%s", get_data_folder(), filename);
+        snprintf(buf, MAX_PAGE_SIZ, "%s%s", data_folder(), filename);
 
         bool success = export_game_as_sgf(&current_game, buf);
         if(!success)
@@ -1417,7 +1398,7 @@ void main_gtp(
     bool think_in_opt_turn
 ){
     load_hoshi_points();
-    transpositions_table_init();
+    tt_init();
 
     flog_info("gtp", "matilda now running over GTP");
     char * s = alloc();
@@ -1454,10 +1435,9 @@ void main_gtp(
         board current_state;
         current_game_state(&current_state, &current_game);
 
-        while(1)
+        if(think_in_opt_turn)
         {
-            if(think_in_opt_turn)
-            {
+            do{
                 FD_ZERO(&readfs);
                 FD_SET(STDIN_FILENO, &readfs);
                 struct timeval tm;
@@ -1466,12 +1446,10 @@ void main_gtp(
 
                 int ready = select(STDIN_FILENO + 1, &readfs, NULL, NULL, &tm);
                 if(ready == 0) /* nothing to read */
-                {
                     evaluate_in_background(&current_state, is_black);
-                    continue;
-                }
-            }
-            break;
+                else
+                    break;
+            }while(1);
         }
 
         opt_turn_maintenance(&current_state, is_black);

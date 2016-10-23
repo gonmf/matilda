@@ -185,7 +185,7 @@ int main()
     char * buffer = calloc(MAX_FILE_SIZ, 1);
 
     char * s = alloc();
-    snprintf(s, MAX_PAGE_SIZ, "%s%s", get_data_folder(), "kogo.sgf");
+    snprintf(s, MAX_PAGE_SIZ, "%s%s", data_folder(), "kogo.sgf");
 
     d32 rd = read_ascii_file(buffer, MAX_FILE_SIZ, s);
     if(rd <= 0)
@@ -203,7 +203,7 @@ int main()
         exit(EXIT_FAILURE);
     }
 
-    snprintf(s, MAX_PAGE_SIZ, "%s%s", get_data_folder(),
+    snprintf(s, MAX_PAGE_SIZ, "%s%s", data_folder(),
         "output.joseki");
     fp = fopen(s, "w");
     if(fp == NULL)

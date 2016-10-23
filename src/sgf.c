@@ -234,8 +234,8 @@ bool import_game_from_sgf2(
     d32 chars_read = read_ascii_file(buf, MAX_FILE_SIZ, filename);
     if(chars_read < 1)
     {
-        flog_warn("sgff", "could not open/read file");
-        free(buf);
+        snprintf(buf, MAX_PAGE_SIZ, "could not open/read file %s", filename);
+        flog_warn("sgff", buf);
         return false;
     }
 

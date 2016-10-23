@@ -55,7 +55,7 @@ static u8 maintenance_mark = 0;
 /*
 Initialize the transpositions table structures.
 */
-void transpositions_table_init()
+void tt_init()
 {
     if(b_stats_table == NULL)
     {
@@ -98,13 +98,12 @@ static tt_stats * find_state(
     else
         p = w_stats_table[key];
 
-    bool last_passed = (b->last_played == PASS);
+    move last_eaten_passed = (b->last_played == PASS) ? PASS : b->last_eaten;
 
     while(p != NULL)
     {
         if(p->zobrist_hash == hash && memcmp(p->p, b->p, TOTAL_BOARD_SIZ)
-            == 0 && p->last_eaten == b->last_eaten && p->last_passed ==
-            last_passed)
+            == 0 && p->last_eaten_passed == last_eaten_passed)
             return p;
 
         p = p->next;
@@ -126,13 +125,12 @@ static tt_stats * find_state2(
     else
         p = w_stats_table[key];
 
-    bool last_passed = (cb->last_played == PASS);
+    move last_eaten_passed = (cb->last_played == PASS) ? PASS : cb->last_eaten;
 
     while(p != NULL)
     {
         if(p->zobrist_hash == hash && memcmp(p->p, cb->p, TOTAL_BOARD_SIZ)
-            == 0 && p->last_eaten == cb->last_eaten && p->last_passed ==
-            last_passed)
+            == 0 && p->last_eaten_passed == last_eaten_passed)
             return p;
 
         p = p->next;
@@ -262,7 +260,7 @@ static void mark_states_for_keeping(
 Frees states outside of the subtree started at state b. Not thread-safe.
 RETURNS number of states freed.
 */
-u32 tt_clean_outside_tree(
+u32 tt_clean_unreachable(
     const board * b,
     bool is_black
 ){
@@ -291,7 +289,7 @@ the memory is full it allocates a new state regardless. If the state is found
 and returned it's OpenMP lock is first set. Thread-safe.
 RETURNS the state information
 */
-tt_stats * transpositions_lookup_create(
+tt_stats * tt_lookup_create(
     const board * b,
     bool is_black,
     u64 hash
@@ -310,7 +308,7 @@ tt_stats * transpositions_lookup_create(
             where freeing the game tree that is not reachable doesn't free any
             states.
             */
-            transpositions_log_status();
+            tt_log_status();
             char * s = alloc();
             board_to_string(s, b->p, b->last_played, b->last_eaten);
             flog_warn("tt", s);
@@ -320,8 +318,8 @@ tt_stats * transpositions_lookup_create(
 
         ret = create_state(hash);
         memcpy(ret->p, b->p, TOTAL_BOARD_SIZ);
-        ret->last_eaten = b->last_eaten;
-        ret->last_passed = (b->last_played == PASS);
+        ret->last_eaten_passed =
+            (b->last_played == PASS) ? PASS : b->last_eaten;
         omp_set_lock(&ret->lock);
 
         if(is_black)
@@ -352,7 +350,7 @@ states has been met the function returns NULL. If the state is found and
 returned it's OpenMP lock is first set. Thread-safe.
 RETURNS the state information or NULL
 */
-tt_stats * transpositions_lookup_null(
+tt_stats * tt_lookup_null(
     const cfg_board * cb,
     bool is_black,
     u64 hash
@@ -372,8 +370,8 @@ tt_stats * transpositions_lookup_null(
 
         ret = create_state(hash);
         memcpy(ret->p, cb->p, TOTAL_BOARD_SIZ);
-        ret->last_eaten = cb->last_eaten;
-        ret->last_passed = (cb->last_played == PASS);
+        ret->last_eaten_passed =
+            (cb->last_played == PASS) ? PASS : cb->last_eaten;
         omp_set_lock(&ret->lock);
 
         if(is_black)
@@ -432,13 +430,13 @@ u32 tt_clean_all()
 Mostly for debugging -- log the current memory status of the transpositions
 table to stderr and log file.
 */
-void transpositions_log_status()
+void tt_log_status()
 {
     char * buf = alloc();
     u32 idx = snprintf(buf, MAX_PAGE_SIZ,
         "\n*** Transpositions table trace start ***\n\n");
     idx += snprintf(buf + idx, MAX_PAGE_SIZ - idx, "Max size in MiB: %" PRIu64
-      "\n", max_size_in_mbs);
+        "\n", max_size_in_mbs);
     idx += snprintf(buf + idx, MAX_PAGE_SIZ - idx, "Max allocated states: %u\n",
         max_allocated_states);
     idx += snprintf(buf + idx, MAX_PAGE_SIZ - idx, "Allocated states: %u\n",

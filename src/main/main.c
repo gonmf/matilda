@@ -482,7 +482,7 @@ int main(
                     continue;
                 }
 
-                fprintf(stderr, "illegal logging destination: %c\n", 
+                fprintf(stderr, "illegal logging destination: %c\n",
                     argv[i + 1][j]);
                 exit(EXIT_FAILURE);
             }

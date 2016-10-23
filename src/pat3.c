@@ -528,7 +528,7 @@ void pat3_init()
         Read pattern weights file
         */
         char * filename = alloc();
-        snprintf(filename, MAX_PAGE_SIZ, "%s%ux%u.weights", get_data_folder(),
+        snprintf(filename, MAX_PAGE_SIZ, "%s%ux%u.weights", data_folder(),
             BOARD_SIZ, BOARD_SIZ);
 
         d32 chars_read = read_ascii_file(file_buf, MAX_FILE_SIZ, filename);
@@ -543,7 +543,7 @@ void pat3_init()
         {
             u32 weights = read_patern_weights(file_buf);
 
-            snprintf(buf, MAX_PAGE_SIZ, "read %s (%u weights)", filename, 
+            snprintf(buf, MAX_PAGE_SIZ, "read %s (%u weights)", filename,
                 weights);
             flog_info("pat3", buf);
         }
@@ -554,7 +554,7 @@ void pat3_init()
     Discover .pat3 files
     */
     char * pat3_filenames[128];
-    u32 files_found = recurse_find_files(get_data_folder(), ".pat3",
+    u32 files_found = recurse_find_files(data_folder(), ".pat3",
         pat3_filenames, 128);
 
     snprintf(buf, MAX_PAGE_SIZ, "found %u 3x3 pattern files", files_found);

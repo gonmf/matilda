@@ -37,13 +37,13 @@ os.chdir(path)
 #
 
 # program to be optimized
-optimized_program = '/home/user/Documents/go/matilda/github/src/matilda -d /home/user/Documents/go/matilda/github/src/data/ -m gtp -l'
+optimized_program = '/home/user/Documents/go/matilda/branch-develop/src/matilda -d /home/user/Documents/go/matilda/branch-develop/src/data/ -m gtp -l --disable_opening_books --playouts 10000'
 # --disable_opening_books
 # --playouts 1000
 
 # (fixed) opponent program
-opponent_program = 'gnugo --mode gtp --chinese-rules --positional-superko --level 10'
-#opponent_program = '/home/user/Documents/go/matilda/github/src/matilda -d /home/user/Documents/go/matilda/github/src/data/ -m gtp -l --disable_opening_books'
+#opponent_program = 'gnugo --mode gtp --chinese-rules --positional-superko --level 10'
+opponent_program = '/home/user/Documents/go/matilda/branch-develop/src/matilda -d /home/user/Documents/go/matilda/branch-develop/src/data/ -m gtp -l --disable_opening_books --playouts 10000'
 
 
 i = 4
@@ -64,7 +64,7 @@ opponent_program = '\"' + opponent_program + '\"'
 #
 # Run one game with gogui-twogtp
 #
-command = 'gogui-twogtp -size 9 -komi 7.5 -white ' + optimized_program + ' -black ' + opponent_program + ' -sgffile twogtp.sgf -games 1 -auto -time 5s' # -time 2s'
+command = 'gogui-twogtp -size 9 -komi 4.5 -white ' + optimized_program + ' -black ' + opponent_program + ' -sgffile twogtp.sgf -games 1 -auto' # -time 2s'
 
 #print "command = ", command
 

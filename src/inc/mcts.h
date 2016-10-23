@@ -26,19 +26,19 @@ It can also record the average final score, for the purpose of score estimation.
 When to resign instead of insisting on playing.
 */
 #define UCT_RESIGN_PLAYOUTS 100
-#define UCT_RESIGN_WINRATE 0.10
+#define UCT_RESIGN_WINRATE 0.20
 
 /*
 When to stop the search early because it is already very overwhelmingly
 positive.
 */
 #define UCT_CAN_STOP_EARLY true
-#define UCT_EARLY_WINRATE 0.95
+#define UCT_EARLY_WINRATE 0.90
 
 /*
 How overwhelming a pass quality must be to be played even if not the top ranked.
 */
-#define JUST_PASS_WINRATE 0.92
+#define JUST_PASS_WINRATE 0.90
 
 
 #define USE_UCT_BRANCH_LIMITER true

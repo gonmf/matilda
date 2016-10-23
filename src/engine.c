@@ -18,6 +18,7 @@ maintenance if needed.
 #include "game_record.h"
 #include "mcts.h"
 #include "opening_book.h"
+#include "stringm.h"
 #include "transpositions.h"
 #include "types.h"
 #include "version.h"
@@ -50,7 +51,7 @@ Obtains the current data folder path. It may be absolute or relative and ends
 with a path separator.
 RETURNS folder path
 */
-const char * get_data_folder()
+const char * data_folder()
 {
     return _data_folder;
 }
@@ -151,6 +152,23 @@ void evaluate_in_background(
     tt_requires_maintenance = true;
 }
 
+static void freed_mem_message(
+    u32 states
+){
+    if(states == 0)
+        return;
+
+    char * s = alloc();
+    char * s2 = alloc();
+
+    format_mem_size(s2, states * sizeof(tt_stats));
+    snprintf(s, MAX_PAGE_SIZ, "freed %u states (%s)", states, s2);
+    flog_info("mcts", s);
+
+    release(s2);
+    release(s);
+}
+
 /*
 Inform that we are currently between matches and proceed with the maintenance
 that is suitable at the moment.
@@ -159,16 +177,7 @@ void new_match_maintenance()
 {
     u32 freed = tt_clean_all();
     tt_requires_maintenance = false;
-
-    if(freed > 0)
-    {
-        char * s = alloc();
-        snprintf(s, MAX_PAGE_SIZ,
-            "freed all %u states between matches (%lu MiB)", freed,
-            (freed * sizeof(tt_stats)) / 1048576);
-        flog_info("mcts", s);
-        release(s);
-    }
+    freed_mem_message(freed);
 }
 
 /*
@@ -182,17 +191,9 @@ void opt_turn_maintenance(
 ){
     if(tt_requires_maintenance)
     {
-        u32 freed = tt_clean_outside_tree(b, is_black);
+        u32 freed = tt_clean_unreachable(b, is_black);
         tt_requires_maintenance = false;
-
-        if(freed > 0)
-        {
-            char * s = alloc();
-            snprintf(s, MAX_PAGE_SIZ, "freed %u states (%lu MiB)\n", freed,
-                (freed * sizeof(tt_stats)) / 1048576);
-            flog_info("mcts", s);
-            release(s);
-        }
+        freed_mem_message(freed);
     }
 }
 
@@ -202,12 +203,12 @@ doesn't.
 */
 void assert_data_folder_exists()
 {
-    DIR * dir = opendir(get_data_folder());
+    DIR * dir = opendir(data_folder());
     if(dir == NULL)
     {
         char * s = alloc();
         snprintf(s, MAX_PAGE_SIZ, "data folder %s does not exist or is unavaila\
-ble\n", get_data_folder());
+ble\n", data_folder());
         flog_crit("data", s);
         release(s);
     }else

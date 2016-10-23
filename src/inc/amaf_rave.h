@@ -30,9 +30,9 @@ action estimation in computer Go' by Sylvain Gelly and David Silver
 */
 #if BOARD_SIZ < 12
 /*
-Tuned with CLOP in 9x9 with 1k playouts/turn vs GNU Go 3.8 lvl 1. 37k games.
+Tuned with CLOP in 9x9 with 10k playouts/turn in self-play for 34k games.
 */
-#define RAVE_MSE_EQUIV 2003
+#define RAVE_MSE_EQUIV 719
 #else
 #define RAVE_MSE_EQUIV 2003
 #endif

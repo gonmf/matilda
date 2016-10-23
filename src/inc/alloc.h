@@ -1,5 +1,14 @@
 /*
-Guard functions over standard malloc.
+Fast memory allocation layer above standard malloc.
+
+These are meant to inexpensively allocate buffers for string operations.
+
+They are thread-safe, fast, with canary values used (in debug mode) to ensure
+memory is correctly freed and written to.
+
+If you are need to perform recursive operations then use malloc/free. Releasing
+these buffers does not actually free the underlying memory to be used by other
+programs.
 */
 
 #ifndef MATILDA_ALLOC_H
@@ -8,17 +17,20 @@ Guard functions over standard malloc.
 #include "matilda.h"
 
 /*
-Initiate the safe allocation.
+Initiate the safe allocation functions.
 */
 void alloc_init();
 
 /*
-Allocate a small block of memory; intended for string formatting and the like.
+Allocate a block of exactly MAX_PAGE_SIZ.
+Thread-safe.
 */
 void * alloc();
 
 /*
-Releases a previously allocated block of memory.
+Releases a previously allocated block of memory, to be used again in later
+calls. Does not free the memory.
+Thread-safe.
 */
 void release(void * ptr);
 
