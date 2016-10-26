@@ -969,7 +969,7 @@ Tests whether group g can be attacked and eventually killed by its opponent,
 with no chance of making at least three liberties.
 RETURNS play that ensures the group is killed, or NONE
 */
-move can_be_killed(
+move get_killing_play(
     const cfg_board * cb,
     const group * g
 ){
@@ -1108,17 +1108,14 @@ void can_be_killed_all(
 
 
 /*
-Tests whether group g can be led to have at least three liberties regardless of
-the opponent attack. None is also returned if the saving play is to pass.
-RETURNS one play that saves the group from being killed, or NONE
+Assuming the group is in danger, attempts to find a play that will produce at
+least three liberties, regardless of opponent play.
+RETURNS  play that saves the group from being killed, or NONE
 */
-move can_be_saved(
+move get_saving_play(
     const cfg_board * cb,
     const group * g
 ){
-    if(g->liberties > 3)
-        return true;
-
     cfg_board tmp;
 
     /* attempt defend group */
@@ -1179,6 +1176,21 @@ move can_be_saved(
     }
 
     return NONE;
+}
+
+/*
+Tests whether group g can be led to have at least three liberties regardless of
+opponent play.
+RETURNS true if can be made to have at least three liberties
+*/
+bool can_be_saved(
+    const cfg_board * cb,
+    const group * g
+){
+    if(g->liberties > 3)
+        return true;
+
+    return get_saving_play(cb, g) != NONE;
 }
 
 /*

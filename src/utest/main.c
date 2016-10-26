@@ -259,9 +259,9 @@ static void test_ladders()
 
     /* This is not a ladder, just a stone in atari */
     cfg_from_board(&cb, &b);
-    massert(can_be_killed(&cb, cb.g[coord_to_move(1, 1)]) ==
+    massert(get_killing_play(&cb, cb.g[coord_to_move(1, 1)]) ==
         coord_to_move(1, 2), "can_be_killed1");
-    massert(can_be_saved(&cb, cb.g[coord_to_move(1, 1)]) == coord_to_move(1, 2),
+    massert(get_saving_play(&cb, cb.g[coord_to_move(1, 1)]) == coord_to_move(1, 2),
         "can_be_saved1");
     cfg_board_free(&cb);
 
@@ -269,27 +269,27 @@ static void test_ladders()
 
     /* Now it's a ladder */
     cfg_from_board(&cb, &b);
-    massert(can_be_killed(&cb, cb.g[coord_to_move(1, 1)]) ==
+    massert(get_killing_play(&cb, cb.g[coord_to_move(1, 1)]) ==
         coord_to_move(1, 2), "can_be_killed2");
-    massert(can_be_saved(&cb, cb.g[coord_to_move(1, 1)]) == NONE,
+    massert(get_saving_play(&cb, cb.g[coord_to_move(1, 1)]) == NONE,
         "can_be_saved2");
     cfg_board_free(&cb);
 
     b.p[coord_to_move(6, 5)] = BLACK_STONE;
     /* Still a ladder */
     cfg_from_board(&cb, &b);
-    massert(can_be_killed(&cb, cb.g[coord_to_move(1, 1)]) ==
+    massert(get_killing_play(&cb, cb.g[coord_to_move(1, 1)]) ==
         coord_to_move(1, 2), "can_be_killed3");
-    massert(can_be_saved(&cb, cb.g[coord_to_move(1, 1)]) == NONE,
+    massert(get_saving_play(&cb, cb.g[coord_to_move(1, 1)]) == NONE,
         "can_be_saved3");
     cfg_board_free(&cb);
 
     b.p[coord_to_move(6, 5)] = WHITE_STONE;
     /* No longer a ladder because white can connect */
     cfg_from_board(&cb, &b);
-    massert(can_be_killed(&cb, cb.g[coord_to_move(1, 1)]) ==
+    massert(get_killing_play(&cb, cb.g[coord_to_move(1, 1)]) ==
         coord_to_move(1, 2), "can_be_killed4");
-    massert(can_be_saved(&cb, cb.g[coord_to_move(1, 1)]) == coord_to_move(1, 2),
+    massert(get_saving_play(&cb, cb.g[coord_to_move(1, 1)]) == coord_to_move(1, 2),
         "can_be_saved4");
     cfg_board_free(&cb);
 
@@ -314,7 +314,7 @@ static void test_ladders()
     b.p[coord_to_move(2, 4)] = BLACK_STONE;
 
     cfg_from_board(&cb, &b);
-    massert(can_be_killed(&cb, cb.g[coord_to_move(3, 3)]) ==
+    massert(get_killing_play(&cb, cb.g[coord_to_move(3, 3)]) ==
         coord_to_move(3, 4), "can_be_killed5");
     massert(can_be_saved(&cb, cb.g[coord_to_move(3, 3)]) == coord_to_move(3, 4),
         "can_be_saved5");
@@ -327,7 +327,7 @@ static void test_ladders()
     */
 
     cfg_from_board(&cb, &b);
-    massert(can_be_killed(&cb, cb.g[coord_to_move(3, 3)]) ==
+    massert(get_killing_play(&cb, cb.g[coord_to_move(3, 3)]) ==
         coord_to_move(3, 4), "can_be_killed6");
     massert(can_be_saved(&cb, cb.g[coord_to_move(3, 3)]) == NONE,
         "can_be_saved6");
@@ -364,7 +364,7 @@ static void test_ladders()
     b.p[coord_to_move(3, 5)] = WHITE_STONE;
 
     cfg_from_board(&cb, &b);
-    massert(can_be_killed(&cb, cb.g[coord_to_move(0, 0)]) ==
+    massert(get_killing_play(&cb, cb.g[coord_to_move(0, 0)]) ==
         coord_to_move(1, 2), "can_be_killed7");
     massert(can_be_saved(&cb, cb.g[coord_to_move(0, 0)]) == coord_to_move(1, 2),
         "can_be_saved7");
