@@ -46,7 +46,7 @@ int create_and_open_file(
                 in_data_folder ? data_folder() : "", prefix, tm.tm_year % 100,
                 tm.tm_mon, tm.tm_mday, attempt, extension);
 
-        int fd = open(filename, O_CREAT | O_EXCL, S_IRUSR | S_IWUSR);
+        int fd = open(filename, O_WRONLY | O_CREAT | O_EXCL, S_IRUSR | S_IWUSR);
         /* File created */
         if(fd != -1)
             return fd;
