@@ -10,7 +10,6 @@ Play variations and annotations/commentary are ignored.
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include <unistd.h> /* mkstemps in macOS */
 #include <assert.h>
 
 #include "alloc.h"
@@ -151,8 +150,7 @@ bool export_game_as_sgf_auto_named(
     const game_record * gr,
     char filename[32]
 ){
-    snprintf(filename, 32, "matilda-XXXXXX.sgf");
-    int fid = mkstemps(filename, 4);
+    int fid = create_and_open_file(filename, 32, true, "matilda", "sgf");
     if(fid == -1)
         return false;
 
@@ -163,7 +161,8 @@ bool export_game_as_sgf_auto_named(
         return false;
     }
 
-    u32 chars = export_game_as_sgf_to_buffer(gr, buffer, 4 * 1024);
+    u32 chars = export_game_as_sgf_to_buffer(gr, buffer, MAX_PAGE_SIZ);
+
     write(fid, buffer, chars);
     close(fid);
 

@@ -4,15 +4,60 @@ Functions for file input/output.
 
 #include "matilda.h"
 
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <dirent.h>
+#include <time.h> /* localtime */
 #include <errno.h>
 
-#include "types.h"
-#include "flog.h"
 #include "alloc.h"
+#include "engine.h"
+#include "flog.h"
+#include "types.h"
+
+/*
+Create a new file and open it for writing; creating new filenames if the file
+already exists.
+RETURNS file descriptor
+*/
+int create_and_open_file(
+    char * filename,
+    u32 filename_size,
+    bool in_data_folder,
+    const char * prefix,
+    const char * extension
+){
+    u32 attempt = 1;
+    time_t t = time(NULL);
+    struct tm tm = *localtime(&t);
+
+    while(1)
+    {
+        if(attempt == 1)
+            snprintf(filename, filename_size, "%s%s_%02u%02u%02u.%s",
+                in_data_folder ? data_folder() : "", prefix, tm.tm_year % 100,
+                tm.tm_mon, tm.tm_mday, extension);
+        else
+            snprintf(filename, filename_size, "%s%s_%02u%02u%02u_%u.%s",
+                in_data_folder ? data_folder() : "", prefix, tm.tm_year % 100,
+                tm.tm_mon, tm.tm_mday, attempt, extension);
+
+        int fd = open(filename, O_CREAT | O_EXCL, S_IRUSR | S_IWUSR);
+        /* File created */
+        if(fd != -1)
+            return fd;
+
+        /* We will never be able to create the file */
+        if(errno != EEXIST)
+            return -1;
+
+        ++attempt;
+    }
+}
 
 /*
 RETURNS the number of bytes read or -1 if failed to open/be read
@@ -54,8 +99,8 @@ d32 read_binary_file(
     if(file_unfinished)
     {
         char * s = alloc();
-        snprintf(s, MAX_PAGE_SIZ, "file %s longer than buffer available for r\
-eading\n", filename);
+        snprintf(s, MAX_PAGE_SIZ,
+            "file %s longer than buffer available for reading\n", filename);
         flog_crit("file", s);
         release(s);
     }

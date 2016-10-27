@@ -13,13 +13,13 @@ crashes, but it is impossible to guarantee this in all cases.
 
 #include <stdio.h>
 #include <string.h>
-#include <unistd.h> /* mkstemps in macOS */
-#include <stdlib.h> /* mkstemps */
+#include <stdlib.h>
 #include <time.h> /* localtime */
 
 #include "alloc.h"
 #include "amaf_rave.h"
 #include "engine.h"
+#include "file_io.h"
 #include "flog.h"
 #include "game_record.h"
 #include "mcts.h"
@@ -32,7 +32,7 @@ crashes, but it is impossible to guarantee this in all cases.
 #include "version.h"
 
 static int log_file = -1;
-static char log_filename[32];
+static char log_filename[64];
 /*
 By default print everything to standard output. Only the main matilda executable
 changes this by default.
@@ -199,16 +199,13 @@ static void open_log_file()
 {
     if(log_file == -1)
     {
-        time_t t = time(NULL);
-        struct tm tm = *localtime(&t);
-        snprintf(log_filename, 32, "matilda_%02u%02u%02u_XXXXXX.log", tm.tm_year
-        % 100, tm.tm_mon, tm.tm_mday);
-        log_file = mkstemps(log_filename, 4);
+        log_file = create_and_open_file(log_filename, 64, false, "matilda",
+            "log");
         if(log_file == -1)
         {
-            fprintf(stderr, "Failed to generate random log file name.\n");
-            snprintf(log_filename, 32, "matilda_%02u%02u%02u.log",
-                tm.tm_year % 100, tm.tm_mon, tm.tm_mday);
+            fprintf(stderr, "Failed to create log file.\n");
+            log_dest &= ~LOG_DEST_FILE;
+            return;
         }
 
         char * s = alloc();

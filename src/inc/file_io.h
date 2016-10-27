@@ -11,6 +11,20 @@ Functions for file input/output.
 
 #include "types.h"
 
+
+/*
+Create a new file and open it for writing; creating new filenames if the file
+already exists.
+RETURNS file descriptor
+*/
+int create_and_open_file(
+    char * filename,
+    u32 filename_size,
+    bool in_data_folder,
+    const char * prefix,
+    const char * extension
+);
+
 /*
 RETURNS the number of bytes read or -1 if failed to open/be read
 */

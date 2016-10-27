@@ -156,11 +156,6 @@ functions: fdopen, strtok_r, rand_r, fsync
 #define _POSIX_C_SOURCE 199309L
 #define _XOPEN_SOURCE 600
 
-/*
-This is required for fsync in glibc versions < 2.8 and for mkstemps
-*/
-#define _BSD_SOURCE
-
 
 #define YN(EXPR) ((EXPR) ? "yes" : "no")
 
