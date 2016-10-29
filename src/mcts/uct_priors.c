@@ -162,7 +162,7 @@ void init_new_state(
                     can_be_saved_all(cb, g, &candidates_count, candidates);
                     for(u16 j = 0; j < candidates_count; ++j)
                         saving_play[candidates[j]] += g->stones.count +
-                    g->liberties;
+                            g->liberties;
                 }
             }
             else
