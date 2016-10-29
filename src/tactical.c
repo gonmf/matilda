@@ -860,8 +860,8 @@ static bool can_be_killed3(
     if(g->liberties > 2)
         return false;
 
-    if(depth >= BOARD_SIZ * 3)
-        return false; /* probably superko */
+    if(depth >= BOARD_SIZ * 4)
+        return false; /* superko */
 
     move m = get_1st_liberty(g);
     if(can_play(cb, is_black, m))
@@ -902,8 +902,8 @@ static bool can_be_killed2(
     if(g->liberties > 2)
         return false;
 
-    if(depth >= BOARD_SIZ * 3)
-        return false; /* probably superko */
+    if(depth >= BOARD_SIZ * 4)
+        return false; /* superko */
 
     cfg_board tmp;
 
