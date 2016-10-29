@@ -168,17 +168,10 @@ void init_new_state(
             else
             {
                 can_be_killed_all(cb, g, &candidates_count, candidates);
-                if(candidates_count > 0)
-                {
-                    if(can_be_saved(cb, g))
-                        for(u16 j = 0; j < candidates_count; ++j)
-                            capturable[candidates[j]] += g->stones.count +
-                                g->liberties;
-                    else
-                        for(u16 j = 0; j < candidates_count; ++j)
-                            capturable[candidates[j]] += (g->stones.count +
-                                g->liberties) / 2;
-                }
+                if(candidates_count > 0 && can_be_saved(cb, g))
+                    for(u16 j = 0; j < candidates_count; ++j)
+                        capturable[candidates[j]] += g->stones.count +
+                            g->liberties;
             }
         }
     }
