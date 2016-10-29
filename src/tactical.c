@@ -1118,6 +1118,27 @@ move get_saving_play(
 ){
     cfg_board tmp;
 
+    /* try a capture if possible */
+    for(u16 k = 0; k < g->neighbors_count; ++k)
+    {
+        group * n = cb->g[g->neighbors[k]];
+        if(n->liberties == 1 && !groups_share_liberties(g, n))
+        {
+            move m = get_1st_liberty(n);
+            if(can_play(cb, g->is_black, m))
+            {
+                cfg_board_clone(&tmp, cb);
+                just_play(&tmp, g->is_black, m);
+                if(!can_be_killed3(&tmp, g->stones.coord[0], !g->is_black, 0))
+                {
+                    cfg_board_free(&tmp);
+                    return m;
+                }
+                cfg_board_free(&tmp);
+            }
+        }
+    }
+
     /* attempt defend group */
     move m = get_1st_liberty(g);
     if(can_play(cb, g->is_black, m))
@@ -1164,17 +1185,6 @@ move get_saving_play(
         }
     }
 
-    for(u16 k = 0; k < g->neighbors_count; ++k)
-    {
-        group * n = cb->g[g->neighbors[k]];
-        if(n->liberties == 1)
-        {
-            m = get_1st_liberty(n);
-            if(can_play(cb, g->is_black, m))
-                return m;
-        }
-    }
-
     return NONE;
 }
 
@@ -1208,6 +1218,27 @@ void can_be_saved_all(
         return;
 
     cfg_board tmp;
+
+    /* try a capture if possible */
+    for(u16 k = 0; k < g->neighbors_count; ++k)
+    {
+        group * n = cb->g[g->neighbors[k]];
+        if(n->liberties == 1 && !groups_share_liberties(g, n))
+        {
+            move m = get_1st_liberty(n);
+            if(can_play(cb, g->is_black, m))
+            {
+                cfg_board_clone(&tmp, cb);
+                just_play(&tmp, g->is_black, m);
+                if(!can_be_killed3(&tmp, g->stones.coord[0], !g->is_black, 0))
+                {
+                    plays[*plays_count] = m;
+                    (*plays_count)++;
+                }
+                cfg_board_free(&tmp);
+            }
+        }
+    }
 
     /* attempt defend group */
     move m = get_1st_liberty(g);
@@ -1251,20 +1282,6 @@ void can_be_saved_all(
                     (*plays_count)++;
                 }
                 cfg_board_free(&tmp);
-            }
-        }
-    }
-
-    for(u16 k = 0; k < g->neighbors_count; ++k)
-    {
-        group * n = cb->g[g->neighbors[k]];
-        if(n->liberties == 1)
-        {
-            m = get_1st_liberty(n);
-            if(can_play(cb, g->is_black, m))
-            {
-                plays[*plays_count] = m;
-                (*plays_count)++;
             }
         }
     }
