@@ -350,22 +350,14 @@ static move heavy_select_play(
         move m = cb->empty.coord[k];
         if(cache[m] & CACHE_PLAY_LEGAL)
         {
-            u16 w = (cache[m] & CACHE_PLAY_SAFE)? 2 : 1;
-            weights[candidate_plays] = w;
             candidate_play[candidate_plays] = m;
-            weight_total += w;
             ++candidate_plays;
         }
     }
     if(candidate_plays > 0)
     {
-        d32 w = (d32)rand_u16(weight_total);
-        for(u16 i = 0; ; ++i)
-        {
-            w -= weights[i];
-            if(w < 0)
-                return candidate_play[i];
-        }
+        u16 p = rand_u16(candidate_plays);
+        return candidate_play[p];
     }
 
     /*
