@@ -852,9 +852,6 @@ static bool can_be_killed3(
     bool is_black,
     u32 depth
 ){
-    if(depth >= TOTAL_BOARD_SIZ / 2)
-        return false; /* probably superko */
-
     group * g = cb->g[om];
 
     if(g->liberties < 2)
@@ -862,6 +859,9 @@ static bool can_be_killed3(
 
     if(g->liberties > 2)
         return false;
+
+    if(depth >= BOARD_SIZ * 4)
+        return false; /* superko */
 
     move m = get_1st_liberty(g);
     if(can_play(cb, is_black, m))
@@ -897,13 +897,13 @@ static bool can_be_killed2(
     bool is_black,
     u32 depth
 ){
-    if(depth >= TOTAL_BOARD_SIZ / 2)
-        return false; /* probably superko */
-
     group * g = cb->g[om];
 
     if(g->liberties > 2)
         return false;
+
+    if(depth >= BOARD_SIZ * 4)
+        return false; /* superko */
 
     cfg_board tmp;
 
@@ -969,7 +969,7 @@ Tests whether group g can be attacked and eventually killed by its opponent,
 with no chance of making at least three liberties.
 RETURNS play that ensures the group is killed, or NONE
 */
-move can_be_killed(
+move get_killing_play(
     const cfg_board * cb,
     const group * g
 ){
@@ -1108,18 +1108,36 @@ void can_be_killed_all(
 
 
 /*
-Tests whether group g can be led to have at least three liberties regardless of
-the opponent attack. None is also returned if the saving play is to pass.
-RETURNS one play that saves the group from being killed, or NONE
+Assuming the group is in danger, attempts to find a play that will produce at
+least three liberties, regardless of opponent play.
+RETURNS  play that saves the group from being killed, or NONE
 */
-move can_be_saved(
+move get_saving_play(
     const cfg_board * cb,
     const group * g
 ){
-    if(g->liberties > 3)
-        return true;
-
     cfg_board tmp;
+
+    /* try a capture if possible */
+    for(u16 k = 0; k < g->neighbors_count; ++k)
+    {
+        group * n = cb->g[g->neighbors[k]];
+        if(n->liberties == 1 && !groups_share_liberties(g, n))
+        {
+            move m = get_1st_liberty(n);
+            if(can_play(cb, g->is_black, m))
+            {
+                cfg_board_clone(&tmp, cb);
+                just_play(&tmp, g->is_black, m);
+                if(!can_be_killed3(&tmp, g->stones.coord[0], !g->is_black, 0))
+                {
+                    cfg_board_free(&tmp);
+                    return m;
+                }
+                cfg_board_free(&tmp);
+            }
+        }
+    }
 
     /* attempt defend group */
     move m = get_1st_liberty(g);
@@ -1167,18 +1185,22 @@ move can_be_saved(
         }
     }
 
-    for(u16 k = 0; k < g->neighbors_count; ++k)
-    {
-        group * n = cb->g[g->neighbors[k]];
-        if(n->liberties == 1)
-        {
-            m = get_1st_liberty(n);
-            if(can_play(cb, g->is_black, m))
-                return m;
-        }
-    }
-
     return NONE;
+}
+
+/*
+Tests whether group g can be led to have at least three liberties regardless of
+opponent play.
+RETURNS true if can be made to have at least three liberties
+*/
+bool can_be_saved(
+    const cfg_board * cb,
+    const group * g
+){
+    if(g->liberties > 3)
+        return true;
+
+    return get_saving_play(cb, g) != NONE;
 }
 
 /*
@@ -1196,6 +1218,27 @@ void can_be_saved_all(
         return;
 
     cfg_board tmp;
+
+    /* try a capture if possible */
+    for(u16 k = 0; k < g->neighbors_count; ++k)
+    {
+        group * n = cb->g[g->neighbors[k]];
+        if(n->liberties == 1 && !groups_share_liberties(g, n))
+        {
+            move m = get_1st_liberty(n);
+            if(can_play(cb, g->is_black, m))
+            {
+                cfg_board_clone(&tmp, cb);
+                just_play(&tmp, g->is_black, m);
+                if(!can_be_killed3(&tmp, g->stones.coord[0], !g->is_black, 0))
+                {
+                    plays[*plays_count] = m;
+                    (*plays_count)++;
+                }
+                cfg_board_free(&tmp);
+            }
+        }
+    }
 
     /* attempt defend group */
     move m = get_1st_liberty(g);
@@ -1239,20 +1282,6 @@ void can_be_saved_all(
                     (*plays_count)++;
                 }
                 cfg_board_free(&tmp);
-            }
-        }
-    }
-
-    for(u16 k = 0; k < g->neighbors_count; ++k)
-    {
-        group * n = cb->g[g->neighbors[k]];
-        if(n->liberties == 1)
-        {
-            m = get_1st_liberty(n);
-            if(can_play(cb, g->is_black, m))
-            {
-                plays[*plays_count] = m;
-                (*plays_count)++;
             }
         }
     }

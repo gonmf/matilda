@@ -11,7 +11,6 @@ same directory.
 
 #include "matilda.h"
 
-#include <unistd.h>
 #include <stdlib.h>
 #include <time.h>
 #include <stdio.h>
@@ -256,11 +255,14 @@ n", secs_per_turn);
     printf("\nEvaluating game states and saving best play\n");
 
     char * log_filename = alloc();
-    time_t t = time(NULL);
-    struct tm tm = *localtime(&t);
-    snprintf(log_filename, MAX_PAGE_SIZ, "%smatilda_%02u%02u%02u_XXXXXX.ob",
-        data_folder(), tm.tm_year % 100, tm.tm_mon, tm.tm_mday);
-    int fd = mkstemps(log_filename, 3);
+    int fd = create_and_open_file(log_filename, MAX_PAGE_SIZ, true, "matilda",
+        "ob");
+    if(fd == -1)
+    {
+        timestamp(ts);
+        printf("%s: Failed to create output file %s\n", ts, log_filename);
+        exit(EXIT_FAILURE);
+    }
 
     timestamp(ts);
     printf("%s: Created output file %s\n", ts, log_filename);

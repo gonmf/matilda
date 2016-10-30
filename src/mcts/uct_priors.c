@@ -102,7 +102,7 @@ static bool lib2_self_atari(
     cfg_board_clone(&tmp, cb);
     just_play(&tmp, is_black, m);
 
-    bool ret = is_board_move(can_be_killed(&tmp, tmp.g[m]));
+    bool ret = is_board_move(get_killing_play(&tmp, tmp.g[m]));
     cfg_board_free(&tmp);
 
     return ret;
@@ -157,28 +157,21 @@ void init_new_state(
 
             if(g->is_black == is_black)
             {
-                if(can_be_killed(cb, g) != NONE)
+                if(get_killing_play(cb, g) != NONE)
                 {
                     can_be_saved_all(cb, g, &candidates_count, candidates);
                     for(u16 j = 0; j < candidates_count; ++j)
                         saving_play[candidates[j]] += g->stones.count +
-                    g->liberties;
+                            g->liberties;
                 }
             }
             else
             {
                 can_be_killed_all(cb, g, &candidates_count, candidates);
-                if(candidates_count > 0)
-                {
-                    if(can_be_saved(cb, g) != NONE)
-                        for(u16 j = 0; j < candidates_count; ++j)
-                            capturable[candidates[j]] += g->stones.count +
-                                g->liberties;
-                    else
-                        for(u16 j = 0; j < candidates_count; ++j)
-                            capturable[candidates[j]] += (g->stones.count +
-                                g->liberties) / 2;
-                }
+                if(candidates_count > 0 && can_be_saved(cb, g))
+                    for(u16 j = 0; j < candidates_count; ++j)
+                        capturable[candidates[j]] += g->stones.count +
+                            g->liberties;
             }
         }
     }
