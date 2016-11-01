@@ -14,7 +14,7 @@ Script ./goguiscript.py
 #LinearParameter prior_stone_scale_factor 1.0 1.6
 #IntegerParameter prior_even 5 60
 #IntegerParameter prior_nakade 36 120
-IntegerParameter prior_self_atari 1 62
+#IntegerParameter prior_self_atari 1 62
 #IntegerParameter prior_attack 10 73
 #IntegerParameter prior_defend 2 40
 #IntegerParameter prior_pat3 4 50
@@ -28,6 +28,7 @@ IntegerParameter prior_self_atari 1 62
 #IntegerParameter prior_corner 6 70
 #IntegerParameter prior_bad_play 20 180
 #IntegerParameter prior_pass 20 200
+IntegerParameter prior_starting_point 0 200
 
 #LinearParameter time_allot_factor 1.0 6.0
 
@@ -36,7 +37,7 @@ IntegerParameter prior_self_atari 1 62
 # Probabilities of skipping playout checks are 1:128 instead of percentage
 # (1:100)
 #IntegerParameter pl_skip_saving 0 128
-# IntegerParameter pl_skip_nakade 0 128
+#IntegerParameter pl_skip_nakade 0 128
 #IntegerParameter pl_skip_capture 0 128
 #IntegerParameter pl_skip_pattern 0 128
 #IntegerParameter pl_ban_self_atari 0 128

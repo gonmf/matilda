@@ -23,9 +23,14 @@ reading handicap, hoshi and starting plays for MCTS.
 static bool handicap_points_attempted_load = false;
 static bool hoshi_points_attempted_load = false;
 static bool starting_points_attempted_load = false;
+
 static move_seq handicap;
 static move_seq hoshi;
 static move_seq starting;
+
+bool is_handicap[TOTAL_BOARD_SIZ];
+bool is_hoshi[TOTAL_BOARD_SIZ];
+bool is_starting[TOTAL_BOARD_SIZ];
 
 /*
 State for interpreting rule files one by one.
@@ -217,6 +222,11 @@ void load_handicap_points()
         return;
 
     load_points("handicap", &handicap);
+
+    memset(is_handicap, false, TOTAL_BOARD_SIZ);
+    for(move i = 0; i < handicap.count; ++i)
+        is_handicap[handicap.coord[i]] = true;
+
     handicap_points_attempted_load = true;
 }
 
@@ -229,6 +239,11 @@ void load_hoshi_points()
         return;
 
     load_points("hoshi", &hoshi);
+
+    memset(is_hoshi, false, TOTAL_BOARD_SIZ);
+    for(move i = 0; i < hoshi.count; ++i)
+        is_hoshi[hoshi.coord[i]] = true;
+
     hoshi_points_attempted_load = true;
 }
 
@@ -241,6 +256,11 @@ void load_starting_points()
         return;
 
     load_points("starting", &starting);
+
+    memset(is_starting, false, TOTAL_BOARD_SIZ);
+    for(move i = 0; i < starting.count; ++i)
+        is_starting[starting.coord[i]] = true;
+
     starting_points_attempted_load = true;
 }
 
@@ -256,33 +276,5 @@ void get_ordered_handicap(
 
     memcpy(dst->coord, handicap.coord, handicap.count * sizeof(move));
     dst->count = handicap.count;
-}
-
-/*
-Tests if a point is hoshi.
-RETURNS true if hoshi
-*/
-bool is_hoshi_point(
-    move m
-){
-    load_hoshi_points();
-
-    for(move i = 0; i < hoshi.count; ++i)
-        if(hoshi.coord[i] == m)
-            return true;
-
-    return false;
-}
-
-/*
-Retrieve a list of starting points for MCTS.
-*/
-void get_starting_points(
-    move_seq * dst
-){
-    load_starting_points();
-
-    memcpy(dst->coord, starting.coord, starting.count * sizeof(move));
-    dst->count = starting.count;
 }
 

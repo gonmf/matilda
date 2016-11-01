@@ -13,6 +13,7 @@ UCT expanded states initialization.
 #include "move.h"
 #include "pat3.h"
 #include "priors.h"
+#include "pts_file.h"
 #include "tactical.h"
 #include "transpositions.h"
 #include "types.h"
@@ -37,6 +38,8 @@ u16 prior_line3x = PRIOR_LINE3X;
 u16 prior_corner = PRIOR_CORNER;
 u16 prior_bad_play = PRIOR_BAD_PLAY;
 u16 prior_pass = PRIOR_PASS;
+u16 prior_starting_point = PRIOR_STARTING;
+
 
 extern u8 distances_to_border[TOTAL_BOARD_SIZ];
 extern move_seq nei_dst_3[TOTAL_BOARD_SIZ];
@@ -46,6 +49,9 @@ extern bool border_left[TOTAL_BOARD_SIZ];
 extern bool border_right[TOTAL_BOARD_SIZ];
 extern bool border_top[TOTAL_BOARD_SIZ];
 extern bool border_bottom[TOTAL_BOARD_SIZ];
+
+extern bool is_starting[TOTAL_BOARD_SIZ];
+
 
 
 static u16 stones_in_manhattan_dst3(
@@ -121,6 +127,8 @@ void init_new_state(
     cfg_board * cb,
     bool is_black
 ){
+    load_starting_points();
+
     bool near_last_play[TOTAL_BOARD_SIZ];
     if(is_board_move(cb->last_played))
         mark_near_pos(near_last_play, cb, cb->last_played);
@@ -132,6 +140,7 @@ void init_new_state(
 
     bool viable[TOTAL_BOARD_SIZ];
     memset(viable, true, TOTAL_BOARD_SIZ);
+
     bool play_okay[TOTAL_BOARD_SIZ];
     memset(play_okay, true, TOTAL_BOARD_SIZ);
 
@@ -308,6 +317,12 @@ void init_new_state(
                 default:
                     mc_w += prior_empty;
                     mc_v += prior_empty;
+            }
+
+            if(is_starting[m])
+            {
+                mc_w += prior_starting_point;
+                mc_v += prior_starting_point;
             }
         }
         else
