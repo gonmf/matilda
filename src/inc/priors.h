@@ -56,8 +56,7 @@ information.
 void init_new_state(
     tt_stats * stats,
     cfg_board * cb,
-    bool is_black,
-    const bool branch_limit[TOTAL_BOARD_SIZ]
+    bool is_black
 );
 
 #if PRIOR_EVEN == 0

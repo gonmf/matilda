@@ -119,8 +119,7 @@ with at least one visit.
 void init_new_state(
     tt_stats * stats,
     cfg_board * cb,
-    bool is_black,
-    const bool branch_limit[TOTAL_BOARD_SIZ]
+    bool is_black
 ){
     bool near_last_play[TOTAL_BOARD_SIZ];
     if(is_board_move(cb->last_played))
@@ -132,9 +131,9 @@ void init_new_state(
     memset(in_nakade, 0, TOTAL_BOARD_SIZ);
 
     bool viable[TOTAL_BOARD_SIZ];
-    memcpy(viable, branch_limit, TOTAL_BOARD_SIZ * sizeof(bool));
+    memset(viable, true, TOTAL_BOARD_SIZ);
     bool play_okay[TOTAL_BOARD_SIZ];
-    memcpy(play_okay, branch_limit, TOTAL_BOARD_SIZ * sizeof(bool));
+    memset(play_okay, true, TOTAL_BOARD_SIZ);
 
     estimate_eyes(cb, is_black, viable, play_okay, in_nakade);
 

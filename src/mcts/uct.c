@@ -81,46 +81,6 @@ void mcts_init()
 
 
 
-/*
-For limiting the branching actor by a certain distance from an already place
-stone.
-*/
-#if USE_UCT_BRANCH_LIMITER
-static bool enable_branch_limit = false;
-
-static void update_branch_limit(
-    bool b[TOTAL_BOARD_SIZ],
-    move m
-){
-    for(u16 n = 0; n < nei_dst_3[m].count; ++n)
-    {
-        move m2 = nei_dst_3[m].coord[n];
-        b[m2] = true;
-    }
-}
-
-static void init_branch_limit(
-    const u8 p[TOTAL_BOARD_SIZ],
-    bool b[TOTAL_BOARD_SIZ]
-){
-    move_seq ms;
-    get_starting_points(&ms);
-
-    memset(b, false, TOTAL_BOARD_SIZ);
-    for(move m = 0; m < TOTAL_BOARD_SIZ; ++m)
-        if(p[m] != EMPTY)
-            update_branch_limit(b, m);
-
-    for(move i = 0; i < ms.count; ++i)
-    {
-        move m = ms.coord[i];
-        if(p[m] == EMPTY)
-            b[m] = true;
-    }
-}
-#endif
-
-
 static void select_play(
     tt_stats * stats,
     tt_play ** play
@@ -177,12 +137,11 @@ static d16 mcts_expansion(
     cfg_board * cb,
     bool is_black,
     tt_stats * stats,
-    const bool branch_limit[TOTAL_BOARD_SIZ],
     u8 traversed[TOTAL_BOARD_SIZ]
 ){
     stats->expansion_delay--;
     if(stats->expansion_delay == -1)
-        init_new_state(stats, cb, is_black, branch_limit);
+        init_new_state(stats, cb, is_black);
     omp_unset_lock(&stats->lock);
     d16 outcome = playout_heavy_amaf(cb, is_black, traversed);
 
@@ -192,8 +151,7 @@ static d16 mcts_expansion(
 static d16 mcts_selection(
     cfg_board * cb,
     u64 zobrist_hash,
-    bool is_black,
-    bool branch_limit[TOTAL_BOARD_SIZ]
+    bool is_black
 ){
 
     d16 depth = 6;
@@ -256,8 +214,8 @@ static d16 mcts_selection(
 
         if(curr_stats->expansion_delay >= 0)
         {
-            outcome = mcts_expansion(cb, is_black, curr_stats, (const bool
-                *)branch_limit, traversed); /* already unsets lock */
+            /* already unsets lock */
+            outcome = mcts_expansion(cb, is_black, curr_stats, traversed);
             break;
         }
 
@@ -278,10 +236,6 @@ static d16 mcts_selection(
         }
         else
         {
-#if USE_UCT_BRANCH_LIMITER
-            if(enable_branch_limit)
-                update_branch_limit(branch_limit, play->m);
-#endif
             just_play2(cb, is_black, play->m, &zobrist_hash);
         }
 
@@ -376,22 +330,6 @@ bool mcts_start_timed(
 ){
     mcts_init();
 
-    bool start_branch_limit[TOTAL_BOARD_SIZ];
-#if USE_UCT_BRANCH_LIMITER
-    /* ignore branch limiting if too many stones on the board */
-    u16 stones = stone_count(b->p);
-    if(stones <= TOTAL_BOARD_SIZ / 3)
-    {
-        init_branch_limit(b->p, start_branch_limit);
-        enable_branch_limit = true;
-    }
-    else
-    {
-        memset(start_branch_limit, true, TOTAL_BOARD_SIZ);
-        enable_branch_limit = false;
-    }
-#endif
-
     u64 start_zobrist_hash = zobrist_new_hash(b);
     tt_stats * stats = tt_lookup_create(b, is_black,
         start_zobrist_hash);
@@ -403,7 +341,7 @@ bool mcts_start_timed(
     if(stats->expansion_delay != -1)
     {
         stats->expansion_delay = -1;
-        init_new_state(stats, &initial_cfg_board, is_black, start_branch_limit);
+        init_new_state(stats, &initial_cfg_board, is_black);
     }
 
     memset(max_depths, 0, sizeof(u16) * MAXIMUM_NUM_THREADS);
@@ -426,15 +364,9 @@ bool mcts_start_timed(
             continue;
         }
 
-        bool branch_limit[TOTAL_BOARD_SIZ];
-#if USE_UCT_BRANCH_LIMITER
-        memcpy(branch_limit, start_branch_limit, TOTAL_BOARD_SIZ);
-#endif
-
         cfg_board cb;
         cfg_board_clone(&cb, &initial_cfg_board);
-        d16 outcome = mcts_selection(&cb, start_zobrist_hash, is_black,
-            branch_limit);
+        d16 outcome = mcts_selection(&cb, start_zobrist_hash, is_black);
         cfg_board_free(&cb);
         if(outcome == 0)
         {
@@ -558,22 +490,6 @@ bool mcts_start_sims(
 ){
     mcts_init();
 
-    bool start_branch_limit[TOTAL_BOARD_SIZ];
-#if USE_UCT_BRANCH_LIMITER
-    /* ignore branch limiting if too many stones on the board */
-    u16 stones = stone_count(b->p);
-    if(stones <= TOTAL_BOARD_SIZ / 3)
-    {
-        init_branch_limit(b->p, start_branch_limit);
-        enable_branch_limit = true;
-    }
-    else
-    {
-        memset(start_branch_limit, true, TOTAL_BOARD_SIZ);
-        enable_branch_limit = false;
-    }
-#endif
-
     u64 start_zobrist_hash = zobrist_new_hash(b);
     tt_stats * stats = tt_lookup_create(b, is_black,
         start_zobrist_hash);
@@ -585,7 +501,7 @@ bool mcts_start_sims(
     if(stats->expansion_delay != -1)
     {
         stats->expansion_delay = -1;
-        init_new_state(stats, &initial_cfg_board, is_black, start_branch_limit);
+        init_new_state(stats, &initial_cfg_board, is_black);
     }
 
     memset(max_depths, 0, sizeof(u16) * MAXIMUM_NUM_THREADS);
@@ -600,15 +516,9 @@ bool mcts_start_sims(
     #pragma omp parallel for
     for(u32 sim = 0; sim < simulations; ++sim)
     {
-        bool branch_limit[TOTAL_BOARD_SIZ];
-#if USE_UCT_BRANCH_LIMITER
-        memcpy(branch_limit, start_branch_limit, TOTAL_BOARD_SIZ);
-#endif
-
         cfg_board cb;
         cfg_board_clone(&cb, &initial_cfg_board);
-        d16 outcome = mcts_selection(&cb, start_zobrist_hash, is_black,
-            branch_limit);
+        d16 outcome = mcts_selection(&cb, start_zobrist_hash, is_black);
         cfg_board_free(&cb);
         if(outcome == 0)
         {
@@ -709,21 +619,6 @@ void mcts_resume(
     search_stop = false;
 
     u64 start_zobrist_hash = zobrist_new_hash(b);
-    bool start_branch_limit[TOTAL_BOARD_SIZ];
-#if USE_UCT_BRANCH_LIMITER
-     /* ignore branch limiting if too many stones on the board */
-    u16 stones = stone_count(b->p);
-    if(stones <= TOTAL_BOARD_SIZ / 3)
-    {
-        init_branch_limit(b->p, start_branch_limit);
-        enable_branch_limit = true;
-    }
-    else
-    {
-        memset(start_branch_limit, true, TOTAL_BOARD_SIZ);
-        enable_branch_limit = false;
-    }
-#endif
 
     cfg_board initial_cfg_board;
     cfg_from_board(&initial_cfg_board, b);
@@ -738,14 +633,9 @@ void mcts_resume(
             continue;
         }
 
-        bool branch_limit[TOTAL_BOARD_SIZ];
-#if USE_UCT_BRANCH_LIMITER
-        memcpy(branch_limit, start_branch_limit, TOTAL_BOARD_SIZ);
-#endif
-
         cfg_board cb;
         cfg_board_clone(&cb, &initial_cfg_board);
-        mcts_selection(&cb, start_zobrist_hash, is_black, branch_limit);
+        mcts_selection(&cb, start_zobrist_hash, is_black);
         cfg_board_free(&cb);
 
         if(omp_get_thread_num() == 0)
@@ -776,13 +666,6 @@ u32 mcts_benchmark()
     u64 curr_time = current_time_in_millis();
     u64 stop_time = curr_time + 1000;
 
-    bool start_branch_limit[TOTAL_BOARD_SIZ];
-#if USE_UCT_BRANCH_LIMITER
-    /* ignore branch limiting if too many stones on the board */
-    init_branch_limit(b.p, start_branch_limit);
-    enable_branch_limit = true;
-#endif
-
     u64 start_zobrist_hash = zobrist_new_hash(&b);
     tt_stats * stats = tt_lookup_create(&b, true,
         start_zobrist_hash);
@@ -794,7 +677,7 @@ u32 mcts_benchmark()
     if(stats->expansion_delay != -1)
     {
         stats->expansion_delay = -1;
-        init_new_state(stats, &initial_cfg_board, true, start_branch_limit);
+        init_new_state(stats, &initial_cfg_board, true);
     }
 
     memset(max_depths, 0, sizeof(u16) * MAXIMUM_NUM_THREADS);
@@ -812,14 +695,9 @@ u32 mcts_benchmark()
             continue;
         }
 
-        bool branch_limit[TOTAL_BOARD_SIZ];
-#if USE_UCT_BRANCH_LIMITER
-        memcpy(branch_limit, start_branch_limit, TOTAL_BOARD_SIZ);
-#endif
-
         cfg_board cb;
         cfg_board_clone(&cb, &initial_cfg_board);
-        mcts_selection(&cb, start_zobrist_hash, true, branch_limit);
+        mcts_selection(&cb, start_zobrist_hash, true);
         cfg_board_free(&cb);
 
         #pragma omp atomic
