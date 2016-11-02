@@ -46,7 +46,8 @@ Tuned with CLOP in 9x9 with 10k playouts/turn in self-play for 34k games.
 #define PRIOR_LINE3X      8
 #define PRIOR_CORNER     44
 #define PRIOR_BAD_PLAY   95
-#define PRIOR_PASS       130
+#define PRIOR_PASS      130
+#define PRIOR_STARTING   76 /* starting point like around the hoshi */
 
 
 /*
@@ -56,8 +57,7 @@ information.
 void init_new_state(
     tt_stats * stats,
     cfg_board * cb,
-    bool is_black,
-    const bool branch_limit[TOTAL_BOARD_SIZ]
+    bool is_black
 );
 
 #if PRIOR_EVEN == 0

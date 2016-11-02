@@ -41,8 +41,6 @@ How overwhelming a pass quality must be to be played even if not the top ranked.
 #define JUST_PASS_WINRATE 0.90
 
 
-#define USE_UCT_BRANCH_LIMITER true
-
 #define MAX_UCT_DEPTH ((TOTAL_BOARD_SIZ * 2) / 3)
 
 

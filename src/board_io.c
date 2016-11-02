@@ -14,6 +14,9 @@ More board functions related to cleaning and outputing board states.
 #include "state_changes.h"
 #include "stringm.h"
 
+extern bool is_hoshi[TOTAL_BOARD_SIZ];
+
+
 
 /*
 Clears the contents of a board.
@@ -87,6 +90,8 @@ void board_to_string(
     move last_played,
     move last_eaten
 ){
+    load_hoshi_points();
+
     move ko_pos = NONE;
     if(last_eaten != NONE)
     {
@@ -163,7 +168,7 @@ void board_to_string(
                         last_play_indicator);
                     break;
                 }
-                if(is_hoshi_point(m))
+                if(is_hoshi[m])
                     idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx, "%c+",
                         last_play_indicator);
                 else

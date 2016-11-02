@@ -11,6 +11,12 @@ reading handicap, hoshi and starting plays for MCTS.
 
 #include "types.h"
 
+/*
+Include as external to access
+bool is_handicap[TOTAL_BOARD_SIZ];
+bool is_hoshi[TOTAL_BOARD_SIZ];
+bool is_starting[TOTAL_BOARD_SIZ];
+*/
 
 /*
 Open and prepare a file to be interpreted line by line.
@@ -46,23 +52,6 @@ Retrieve an ordered list of suggested handicap points.
 void get_ordered_handicap(
     move_seq * dst
 );
-
-/*
-Tests if a point is hoshi.
-RETURNS true if hoshi
-*/
-bool is_hoshi_point(
-    move m
-);
-
-/*
-Retrieve a list of starting points for MCTS.
-*/
-void get_starting_points(
-    move_seq * dst
-);
-
-
 
 
 /*

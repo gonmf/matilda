@@ -267,8 +267,6 @@ void build_info(
         kstr);
     release(kstr);
 
-    idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx,
-        "MCTS-UCT branch limiter: %s\n", YN(USE_UCT_BRANCH_LIMITER));
     idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx, "Can resign: %s\n",
         YN(CAN_RESIGN));
     if(CAN_RESIGN)

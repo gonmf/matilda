@@ -9,5 +9,5 @@ gogui-twogtp -white "$WHITE" -black "$BLACK" -referee "$REFEREE" \
 -auto \
 -size 13 \
 -komi 7.5 \
--alternate \
+-alternate
 exit 0
