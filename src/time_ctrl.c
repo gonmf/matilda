@@ -64,7 +64,7 @@ u32 calc_time_to_play(
     t_t -= LATENCY_COMPENSATION;
 #endif
 
-    return (u32)MAX(t_t, 100.0);
+    return MAX((u32)t_t, 50);
 }
 
 /*

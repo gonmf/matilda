@@ -403,7 +403,6 @@ bool mcts_start_timed(
                     {
                         stopped_early_by_wr = true;
                         search_stop = true;
-                        sim = INT32_MAX;
                     }
                 }
             }
@@ -614,7 +613,7 @@ void mcts_resume(
 
     mcts_init();
 
-    u64 stop_time = current_time_in_millis() + 100;
+    u64 stop_time = current_time_in_millis() + 50;
     ran_out_of_memory = false;
     search_stop = false;
 
@@ -640,7 +639,6 @@ void mcts_resume(
 
         if(omp_get_thread_num() == 0)
         {
-
             u64 curr_time = current_time_in_millis();
             if(curr_time >= stop_time)
                 search_stop = true;

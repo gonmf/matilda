@@ -615,7 +615,7 @@ static void generic_genmove(
         flog_info("gtp", buf);
 
         u64 stop_time = request_received_mark + time_to_play;
-        u64 early_stop_time = request_received_mark + (time_to_play / 2);
+        u64 early_stop_time = request_received_mark + (time_to_play / 3);
 
         has_play = evaluate_position_timed(&current_state, is_black, &out_b,
             stop_time, early_stop_time);

@@ -296,7 +296,7 @@ n", secs_per_turn);
         u64 curr_time = current_time_in_millis();
         u32 given = secs_per_turn * 1000;
         u64 stop_time = curr_time + given;
-        u64 early_stop_time = curr_time + given / 2;
+        u64 early_stop_time = curr_time + given / 3;
         mcts_start_timed(&out_b, &b, true, stop_time, early_stop_time);
 
         out_b.pass = -1.0;
