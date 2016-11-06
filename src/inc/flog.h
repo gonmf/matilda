@@ -94,7 +94,7 @@ void flog_info(
 /*
     Log a message with verbosity level debug.
 */
-void flog_dbug(
+void flog_debug(
     const char * ctx,
     const char * msg
 );
