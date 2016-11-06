@@ -44,80 +44,6 @@ It can also record the average final score, for the purpose of score estimation.
 #include "types.h"
 #include "zobrist.h"
 
-
-
-
-/*
-TODO
-*/
-static move best_play_visits(
-    const tt_stats * stats
-){
-    u32 best_q = 0;
-    move best_m = 0;
-    for(move k = 0; k < stats->plays_count; ++k)
-    {
-        if(stats->plays[k].mc_n > best_q)
-        {
-            best_q = stats->plays[k].mc_n;
-            best_m = stats->plays[k].m;
-        }
-    }
-    return best_m;
-}
-
-static move best_play_rave(
-    const tt_stats * stats
-){
-    double best_q = 0.0;
-    move best_m = 0;
-    for(move k = 0; k < stats->plays_count; ++k)
-    {
-        double rave = uct1_rave(&stats->plays[k]);
-        if(rave > best_q)
-        {
-            best_q = rave;
-            best_m = stats->plays[k].m;
-        }
-    }
-    return best_m;
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 /* from board_constants */
 extern u8 distances_to_border[TOTAL_BOARD_SIZ];
 extern move_seq nei_dst_3[TOTAL_BOARD_SIZ];
@@ -428,14 +354,6 @@ bool mcts_start_timed(
     search_stop = false;
     bool stopped_early_by_wr = false;
 
-
-
-    //TODO
-    bool extended = false;
-
-rep: ;
-
-
     #pragma omp parallel for
     for(u32 sim = 0; sim < INT32_MAX; ++sim)
     {
@@ -498,42 +416,6 @@ rep: ;
 
     if(ran_out_of_memory)
         flog_warn("uct", "search ran out of memory");
-    else
-    {
-
-
-
-
-        /*
-        TODO
-        */
-#if 1
-        if(!extended && !stopped_early_by_wr)
-        {
-            move m1 = best_play_visits(stats);
-            move m2 = best_play_rave(stats);
-            if(m1 != m2)
-            {
-                extended = true;
-                search_stop = false;
-                stop_time += 100;
-                goto rep;
-            }
-        }
-#endif
-
-
-
-
-
-
-
-
-
-
-
-
-    }
 
     char * s = alloc();
     if(stopped_early_by_wr)
