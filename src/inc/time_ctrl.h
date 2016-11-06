@@ -25,9 +25,9 @@ the match. Values over 1 favor thinking more in the begining of matches, which
 is the objective.
 */
 #if BOARD_SIZ < 12
-#define TIME_ALLOT_FACTOR 1.25 // TODO
+#define TIME_ALLOT_FACTOR 1.24 // TODO
 #else
-#define TIME_ALLOT_FACTOR 1.25 // TODO
+#define TIME_ALLOT_FACTOR 1.24 // TODO
 #endif
 
 #define EXPECTED_GAME_LENGTH ((TOTAL_BOARD_SIZ * 2) / 3)

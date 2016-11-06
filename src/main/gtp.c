@@ -587,7 +587,7 @@ static void generic_genmove(
         current_game.final_score = is_black ? -1 : 1;
 #if 0
         /* TODO just for counting resigns on timeout for paper */
-        flog_dbug("gtp", "TIMEOUT");
+        flog_debug("gtp", "TIMEOUT");
 #endif
         close_if_sentinel_found();
         return;
@@ -1403,7 +1403,7 @@ void main_gtp(
     flog_info("gtp", "matilda now running over GTP");
     char * s = alloc();
     build_info(s);
-    flog_dbug("gtp", s);
+    flog_debug("gtp", s);
     release(s);
 
     FILE * out_fp;

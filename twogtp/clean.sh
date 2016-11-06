@@ -1,4 +1,4 @@
 #!/bin/bash
-rm -f output.* output-* matilda_*_*.log michi.log
+rm -f output.* output-* matilda_*.log michi.log
 exit 0
 
