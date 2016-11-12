@@ -5,18 +5,21 @@ UCT expanded states initialization.
 #include "matilda.h"
 
 #include <string.h>
+#include <stdlib.h> /* qsort */
 #include <math.h> /* powf */
 
 #include "board.h"
 #include "cfg_board.h"
 #include "dragon.h"
 #include "move.h"
+#include "neural_network.h"
 #include "pat3.h"
 #include "priors.h"
 #include "pts_file.h"
 #include "tactical.h"
 #include "transpositions.h"
 #include "types.h"
+
 
 /*
 Public to allow parameter optimization
@@ -52,6 +55,23 @@ extern bool border_bottom[TOTAL_BOARD_SIZ];
 
 extern bool is_starting[TOTAL_BOARD_SIZ];
 
+
+typedef struct __quality_pair_ {
+    double quality;
+    move play;
+} quality_pair;
+
+
+int qp_compare(
+    const void * e1,
+    const void * e2
+){
+    const quality_pair * a = (const quality_pair *)e1;
+    const quality_pair * b = (const quality_pair *)e2;
+    if(a->quality == b->quality)
+        return 0;
+    return a->quality < b->quality ? 1 : -1;
+}
 
 
 static u16 stones_in_manhattan_dst3(
@@ -125,10 +145,9 @@ with at least one visit.
 void init_new_state(
     tt_stats * stats,
     cfg_board * cb,
-    bool is_black
+    bool is_black,
+    mlp * net /* null if unavailable */
 ){
-    load_starting_points();
-
     bool near_last_play[TOTAL_BOARD_SIZ];
     if(is_board_move(cb->last_played))
         mark_near_pos(near_last_play, cb, cb->last_played);
@@ -184,6 +203,8 @@ void init_new_state(
         }
     }
 
+    u8 libs_after_playing[TOTAL_BOARD_SIZ];
+    memset(libs_after_playing, 0, TOTAL_BOARD_SIZ);
 
     move ko = get_ko_play(cb);
     stats->plays_count = 0;
@@ -205,13 +226,16 @@ void init_new_state(
         if(ko == m)
             continue;
 
-        u8 libs = safe_to_play(cb, is_black, m);
+        move _ignored;
+        u8 libs = libs_after_play(cb, is_black, m, &_ignored);
 
         /*
         Don't play suicides
         */
         if(libs == 0)
             continue;
+
+        libs_after_playing[m] = libs;
 
         /*
         Even game heuristic
@@ -354,6 +378,73 @@ void init_new_state(
 
 
         stats_add_play(stats, m, mc_w, mc_v);
+    }
+
+    if(cb->empty.count >= (TOTAL_BOARD_SIZ / 3) * 2 && net != NULL)
+    {
+        u8 codified[TOTAL_BOARD_SIZ];
+        nn_codify_cfg_board(codified, cb, is_black, libs_after_playing);
+
+        double input_units[3][TOTAL_BOARD_SIZ];
+        nn_populate_input_units(codified, input_units);
+
+        nn_forward_pass_single_threaded(net,
+            (const double (*)[TOTAL_BOARD_SIZ])input_units);
+
+        quality_pair qlist[TOTAL_BOARD_SIZ];
+        u16 qlist_siz = 0;
+
+        /* retrieve all legal play energies */
+        for(u16 i = 0; i < stats->plays_count; ++i)
+        {
+            move m = stats->plays[i].m;
+            qlist[qlist_siz].quality = net->output_layer[m].output;
+            qlist[qlist_siz].play = m;
+            qlist_siz++;
+        }
+
+        /* sort the plays by energy */
+        qsort(qlist, qlist_siz, sizeof(quality_pair), qp_compare);
+
+        // TODO move this
+        u16 nn_prior = 50;
+        double best_sep = 0.25;
+        double neutral_sep = 0.25;
+
+        /* divide by quality category */
+        u16 best_pos = trunc((stats->plays_count * best_sep) / 100.0);
+        u16 neutral_pos = best_pos + trunc(((stats->plays_count - best_pos) *
+            neutral_sep) / 100.0);
+
+        u16 i;
+        for(i = 0; i <= best_pos; ++i)
+            libs_after_playing[qlist[i].play] = 2;
+        for(; i <= neutral_pos; ++i)
+            libs_after_playing[qlist[i].play] = 1;
+
+        /* add prior values */
+        for(i = 0; i < stats->plays_count; ++i)
+        {
+            tt_play * play = &stats->plays[i];
+            u32 mc_w;
+            switch(libs_after_playing[play->m]){
+                case 2:
+                    mc_w = (u32)(play->mc_n * play->mc_q);
+                    play->mc_n += nn_prior;
+                    play->amaf_n = play->mc_n;
+                    mc_w += nn_prior;
+                    play->mc_q = play->amaf_q = ((double)mc_w) /
+                        ((double)play->mc_n);
+                    break;
+                case 0:
+                    mc_w = (u32)(play->mc_n * play->mc_q);
+                    play->mc_n += nn_prior;
+                    play->amaf_n = play->mc_n;
+                    play->mc_q = play->amaf_q = ((double)mc_w) /
+                        ((double)play->mc_n);
+                    break;
+            }
+        }
     }
 
     if(cb->empty.count < TOTAL_BOARD_SIZ / 2 ||

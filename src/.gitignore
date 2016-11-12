@@ -16,4 +16,7 @@ callgrind.out.*
 *.sgf
 *.ugi
 *.ugf
+*.nn
+*.ds
+*.ds.txt
 output.*

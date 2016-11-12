@@ -31,6 +31,7 @@ It can also record the average final score, for the purpose of score estimation.
 #include "flog.h"
 #include "mcts.h"
 #include "move.h"
+#include "neural_network.h"
 #include "pat3.h"
 #include "playout.h"
 #include "priors.h"
@@ -51,7 +52,7 @@ extern move_seq nei_dst_3[TOTAL_BOARD_SIZ];
 static bool ran_out_of_memory;
 static bool search_stop;
 static u16 max_depths[MAXIMUM_NUM_THREADS];
-
+static mlp * neural_nets[MAXIMUM_NUM_THREADS];
 
 /*
 Whether a MCTS can be started on background. Is disabled if memory runs out, and
@@ -75,6 +76,10 @@ void mcts_init()
     zobrist_init();
     pat3_init();
     tt_init();
+    load_starting_points();
+    nn_init();
+    for(u8 i = 0; i < MAXIMUM_NUM_THREADS; ++i)
+        neural_nets[i] = alloc_instance();
 
     uct_inited = true;
 }
@@ -141,7 +146,7 @@ static d16 mcts_expansion(
 ){
     stats->expansion_delay--;
     if(stats->expansion_delay == -1)
-        init_new_state(stats, cb, is_black);
+        init_new_state(stats, cb, is_black, neural_nets[omp_get_thread_num()]);
     omp_unset_lock(&stats->lock);
     d16 outcome = playout_heavy_amaf(cb, is_black, traversed);
 
@@ -341,7 +346,8 @@ bool mcts_start_timed(
     if(stats->expansion_delay != -1)
     {
         stats->expansion_delay = -1;
-        init_new_state(stats, &initial_cfg_board, is_black);
+        init_new_state(stats, &initial_cfg_board, is_black,
+            neural_nets[omp_get_thread_num()]);
     }
 
     memset(max_depths, 0, sizeof(u16) * MAXIMUM_NUM_THREADS);
@@ -500,7 +506,8 @@ bool mcts_start_sims(
     if(stats->expansion_delay != -1)
     {
         stats->expansion_delay = -1;
-        init_new_state(stats, &initial_cfg_board, is_black);
+        init_new_state(stats, &initial_cfg_board, is_black,
+            neural_nets[omp_get_thread_num()]);
     }
 
     memset(max_depths, 0, sizeof(u16) * MAXIMUM_NUM_THREADS);
@@ -675,7 +682,8 @@ u32 mcts_benchmark()
     if(stats->expansion_delay != -1)
     {
         stats->expansion_delay = -1;
-        init_new_state(stats, &initial_cfg_board, true);
+        init_new_state(stats, &initial_cfg_board, true,
+            neural_nets[omp_get_thread_num()]);
     }
 
     memset(max_depths, 0, sizeof(u16) * MAXIMUM_NUM_THREADS);

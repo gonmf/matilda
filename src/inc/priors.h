@@ -20,9 +20,10 @@ It can also record the average final score, for the purpose of score estimation.
 #include "matilda.h"
 
 #include "board.h"
-#include "types.h"
-#include "transpositions.h"
 #include "cfg_board.h"
+#include "neural_network.h"
+#include "transpositions.h"
+#include "types.h"
 
 /*
 Prior values heuristic contributions.
@@ -57,7 +58,8 @@ information.
 void init_new_state(
     tt_stats * stats,
     cfg_board * cb,
-    bool is_black
+    bool is_black,
+    mlp * net /* null if unavailable */
 );
 
 #if PRIOR_EVEN == 0
