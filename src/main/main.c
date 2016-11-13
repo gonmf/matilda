@@ -65,6 +65,9 @@ extern u16 prior_corner;
 extern u16 prior_bad_play;
 extern u16 prior_pass;
 extern u16 prior_starting_point;
+extern u16 prior_neural_network;
+extern double prior_nn_best_sep;
+extern double prior_nn_neutral_sep;
 extern double rave_equiv;
 extern u16 pl_skip_saving;
 extern u16 pl_skip_nakade;
@@ -99,6 +102,9 @@ const void * tunable[] =
     "i", "prior_bad_play", &prior_bad_play,
     "i", "prior_pass", &prior_pass,
     "i", "prior_starting_point", &prior_starting_point,
+    "i", "prior_neural_network", &prior_neural_network,
+    "f", "prior_nn_best_sep", &prior_nn_best_sep,
+    "f", "prior_nn_neutral_sep", &prior_nn_neutral_sep,
     "f", "rave_equiv", &rave_equiv,
     "i", "pl_skip_saving", &pl_skip_saving,
     "i", "pl_skip_nakade", &pl_skip_nakade,

@@ -634,7 +634,7 @@ static void generic_genmove(
         snprintf(buf, MAX_PAGE_SIZ, "matilda playing as %s (%c) resigns\n",
             is_black ? "black" : "white", is_black ? BLACK_STONE_CHAR :
             WHITE_STONE_CHAR);
-        flog_warn("gtp", buf);
+        flog_info("gtp", buf);
 
         current_game.game_finished = true;
         current_game.resignation = true;

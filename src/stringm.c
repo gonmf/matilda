@@ -292,15 +292,15 @@ void format_mem_size(
 ){
     char * suffix = "bytes";
     double fbytes = (double)bytes;
-    if(fbytes > 1280.0)
+    if(fbytes > 800.0)
     {
         fbytes /= 1024.0;
         suffix = "KiB";
-        if(fbytes > 1280.0)
+        if(fbytes > 800.0)
         {
             fbytes /= 1024.0;
             suffix = "MiB";
-            if(fbytes > 1280.0)
+            if(fbytes > 800.0)
             {
                 fbytes /= 1024.0;
                 suffix = "GiB";
@@ -325,15 +325,15 @@ void format_nr_millis(
 
     char * suffix = NULL;
     double fmillis = (double)millis;
-    if(fmillis > 1200.0)
+    if(fmillis > 750.0)
     {
         fmillis /= 1000.0;
         suffix = "s";
-        if(fmillis > 72.0)
+        if(fmillis > 45.0)
         {
             fmillis /= 60.0;
             suffix = "m";
-            if(fmillis > 72.0)
+            if(fmillis > 45.0)
             {
                 fmillis /= 60.0;
                 suffix = "h";

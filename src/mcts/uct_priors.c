@@ -42,6 +42,9 @@ u16 prior_corner = PRIOR_CORNER;
 u16 prior_bad_play = PRIOR_BAD_PLAY;
 u16 prior_pass = PRIOR_PASS;
 u16 prior_starting_point = PRIOR_STARTING;
+u16 prior_neural_network = 50; // TODO tune
+double prior_nn_best_sep = 0.25;
+double prior_nn_neutral_sep = 0.25;
 
 
 extern u8 distances_to_border[TOTAL_BOARD_SIZ];
@@ -406,15 +409,10 @@ void init_new_state(
         /* sort the plays by energy */
         qsort(qlist, qlist_siz, sizeof(quality_pair), qp_compare);
 
-        // TODO move this
-        u16 nn_prior = 50;
-        double best_sep = 0.25;
-        double neutral_sep = 0.25;
-
         /* divide by quality category */
-        u16 best_pos = trunc((stats->plays_count * best_sep) / 100.0);
+        u16 best_pos = trunc((stats->plays_count * prior_nn_best_sep) / 100.0);
         u16 neutral_pos = best_pos + trunc(((stats->plays_count - best_pos) *
-            neutral_sep) / 100.0);
+            prior_nn_neutral_sep) / 100.0);
 
         u16 i;
         for(i = 0; i <= best_pos; ++i)
@@ -430,15 +428,15 @@ void init_new_state(
             switch(libs_after_playing[play->m]){
                 case 2:
                     mc_w = (u32)(play->mc_n * play->mc_q);
-                    play->mc_n += nn_prior;
+                    play->mc_n += prior_neural_network;
                     play->amaf_n = play->mc_n;
-                    mc_w += nn_prior;
+                    mc_w += prior_neural_network;
                     play->mc_q = play->amaf_q = ((double)mc_w) /
                         ((double)play->mc_n);
                     break;
                 case 0:
                     mc_w = (u32)(play->mc_n * play->mc_q);
-                    play->mc_n += nn_prior;
+                    play->mc_n += prior_neural_network;
                     play->amaf_n = play->mc_n;
                     play->mc_q = play->amaf_q = ((double)mc_w) /
                         ((double)play->mc_n);

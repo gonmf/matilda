@@ -11,6 +11,8 @@ gen_joseki_book
 learn_best_plays
 learn_pat_weights
 gen_zobrist_table
+gen_data_set
+train_nn
 callgrind.out.*
 *.log
 *.sgf

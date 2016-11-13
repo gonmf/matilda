@@ -28,7 +28,11 @@ Script ./goguiscript.py
 #IntegerParameter prior_corner 6 70
 #IntegerParameter prior_bad_play 20 180
 #IntegerParameter prior_pass 20 200
-IntegerParameter prior_starting_point 0 200
+#IntegerParameter prior_starting_point 0 200
+
+IntegerParameter prior_neural_network 0 100
+LinearParameter prior_nn_best_sep 0.0 0.45
+LinearParameter prior_nn_neutral_sep 0.0 0.45
 
 #LinearParameter time_allot_factor 1.0 6.0
 
