@@ -1,7 +1,7 @@
 #!/bin/bash
 rm -f output.html output.summary.dat
-BLACK="../src/matilda -m gtp -d ../src/data/ -l ipew --disable_opening_books --memory 3200"
-WHITE="../src/matilda-old -m gtp -d ../src/data/ -l ipew --disable_opening_books --memory 3200"
+BLACK="../src/matilda -m gtp -d ../src/data/ -l --disable_opening_books --memory 3200"
+WHITE="../src/matilda-old -m gtp -d ../src/data/ -l --disable_opening_books --memory 3200"
 REFEREE="gnugo --level 0 --mode gtp --chinese-rules --positional-superko"
 gogui-twogtp -white "$WHITE" -black "$BLACK" -referee "$REFEREE" \
 -sgffile output \
@@ -10,5 +10,5 @@ gogui-twogtp -white "$WHITE" -black "$BLACK" -referee "$REFEREE" \
 -size 9 \
 -komi 7.0 \
 -alternate \
--time 2s
+-time 5m
 exit 0
