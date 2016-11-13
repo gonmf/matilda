@@ -165,8 +165,10 @@ void nn_init()
     {
         char * s = alloc();
         snprintf(s, MAX_PAGE_SIZ, "couldn't open %s for reading\n", filename);
-        flog_crit("nn", s);
+        flog_warn("nn", s);
         release(s);
+        release(filename);
+        return;
     }
     release(filename);
 
