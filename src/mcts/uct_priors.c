@@ -91,28 +91,44 @@ static u16 stones_in_manhattan_dst3(
     return ret;
 }
 
-static void stats_add_play(
+static void stats_add_play_tmp(
     tt_stats * stats,
     move m,
     u32 mc_w, /* wins */
     u32 mc_v /* visits */
 ){
-    double mc_q = ((double)mc_w) / ((double)mc_v);
     u32 idx = stats->plays_count++;
     stats->plays[idx].m = m;
-    stats->plays[idx].mc_q = mc_q;
+    stats->plays[idx].mc_q = mc_w;
     stats->plays[idx].mc_n = mc_v;
 
-
-    /*
-    Heuristic-MC
-
-    Copying the MC prior values to AMAF and initializing other fields
-    */
     stats->plays[idx].next_stats = NULL;
-    /* AMAF/RAVE */
-    stats->plays[idx].amaf_n = mc_v;
-    stats->plays[idx].amaf_q = mc_q;
+
+    /* LGRF */
+    stats->plays[idx].lgrf1_reply = NULL;
+
+    /* Criticality */
+    stats->plays[idx].owner_winning = 0.5;
+    stats->plays[idx].color_owning = 0.5;
+}
+
+/*
+Heuristic-MC
+
+Copying the MC prior values to AMAF and initializing other fields
+*/
+static void stats_add_play_final(
+    tt_stats * stats,
+    move m,
+    double mc_q, /* quality */
+    u32 mc_v /* visits */
+){
+    u32 idx = stats->plays_count++;
+    stats->plays[idx].m = m;
+    stats->plays[idx].amaf_q = stats->plays[idx].mc_q = mc_q;
+    stats->plays[idx].amaf_n = stats->plays[idx].mc_n = mc_v;
+
+    stats->plays[idx].next_stats = NULL;
 
     /* LGRF */
     stats->plays[idx].lgrf1_reply = NULL;
@@ -380,7 +396,7 @@ void init_new_state(
         }
 
 
-        stats_add_play(stats, m, mc_w, mc_v);
+        stats_add_play_tmp(stats, m, mc_w, mc_v);
     }
 
     if(cb->empty.count >= (TOTAL_BOARD_SIZ / 3) * 2 && net != NULL)
@@ -395,27 +411,25 @@ void init_new_state(
             (const double (*)[TOTAL_BOARD_SIZ])input_units);
 
         quality_pair qlist[TOTAL_BOARD_SIZ];
-        u16 qlist_siz = 0;
 
         /* retrieve all legal play energies */
         for(u16 i = 0; i < stats->plays_count; ++i)
         {
             move m = stats->plays[i].m;
-            qlist[qlist_siz].quality = net->output_layer[m].output;
-            qlist[qlist_siz].play = m;
-            qlist_siz++;
+            qlist[i].quality = net->output_layer[m].output;
+            qlist[i].play = m;
         }
 
         /* sort the plays by energy */
-        qsort(qlist, qlist_siz, sizeof(quality_pair), qp_compare);
+        qsort(qlist, stats->plays_count, sizeof(quality_pair), qp_compare);
 
         /* divide by quality category */
-        u16 best_pos = trunc((stats->plays_count * prior_nn_best_sep) / 100.0);
-        u16 neutral_pos = best_pos + trunc(((stats->plays_count - best_pos) *
-            prior_nn_neutral_sep) / 100.0);
+        u16 best_pos = (u16)(stats->plays_count * prior_nn_best_sep);
+        u16 neutral_pos = best_pos + (u16)((stats->plays_count - best_pos) *
+            prior_nn_neutral_sep);
 
-        u16 i;
-        for(i = 0; i <= best_pos; ++i)
+        u16 i = 0;
+        for(; i <= best_pos; ++i)
             libs_after_playing[qlist[i].play] = 2;
         for(; i <= neutral_pos; ++i)
             libs_after_playing[qlist[i].play] = 1;
@@ -424,35 +438,33 @@ void init_new_state(
         for(i = 0; i < stats->plays_count; ++i)
         {
             tt_play * play = &stats->plays[i];
-            u32 mc_w;
             switch(libs_after_playing[play->m]){
                 case 2:
-                    mc_w = (u32)(play->mc_n * play->mc_q);
-                    play->mc_n += prior_neural_network;
-                    play->amaf_n = play->mc_n;
-                    mc_w += prior_neural_network;
-                    play->mc_q = play->amaf_q = ((double)mc_w) /
-                        ((double)play->mc_n);
-                    break;
+                    play->mc_q += prior_neural_network;
                 case 0:
-                    mc_w = (u32)(play->mc_n * play->mc_q);
                     play->mc_n += prior_neural_network;
-                    play->amaf_n = play->mc_n;
-                    play->mc_q = play->amaf_q = ((double)mc_w) /
-                        ((double)play->mc_n);
-                    break;
             }
         }
     }
 
+    /*
+    Transform win/visits into quality/visits statistics and copy MC to
+    AMAF/RAVE statistics
+    */
+    for(u16 i = 0; i < stats->plays_count; ++i)
+    {
+        tt_play * play = &stats->plays[i];
+        play->amaf_q = play->mc_q = play->mc_q / play->mc_n;
+        play->amaf_n = play->mc_n;
+    }
+
+    /*
+    Add pass simulation
+    */
     if(cb->empty.count < TOTAL_BOARD_SIZ / 2 ||
         stats->plays_count < TOTAL_BOARD_SIZ / 8)
     {
-        /*
-        Add pass simulation
-        */
-        stats_add_play(stats, PASS, UCT_RESIGN_WINRATE * prior_pass,
-            prior_pass);
+        stats_add_play_final(stats, PASS, UCT_RESIGN_WINRATE, prior_pass);
     }
 }
 
