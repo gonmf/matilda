@@ -158,8 +158,8 @@ void nn_init()
         flog_crit("nn", "system out of memory\n");
 
     char * filename = alloc();
-    snprintf(filename, MAX_PAGE_SIZ, "%s%dx%d.nn", data_folder(), BOARD_SIZ,
-        BOARD_SIZ);
+    snprintf(filename, MAX_PAGE_SIZ, "%s%dx%d.nn%u", data_folder(), BOARD_SIZ,
+        BOARD_SIZ, NN_CONN_DST);
     FILE * fp = fopen(filename, "rb");
     if(fp == NULL)
     {

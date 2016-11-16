@@ -10,5 +10,5 @@ gogui-twogtp -white "$WHITE" -black "$BLACK" -referee "$REFEREE" \
 -size 9 \
 -komi 7.0 \
 -alternate \
--time 5m
+-time 1m
 exit 0

@@ -224,7 +224,7 @@ void reset_warning_messages()
 RETURNS true if the game has been found and read correctly
 */
 bool import_game_from_sgf2(
-    game_record * gr,
+    game_record * gr, // TODO receive buffer size
     const char * filename,
     char * buf
 ){

@@ -42,9 +42,9 @@ u16 prior_corner = PRIOR_CORNER;
 u16 prior_bad_play = PRIOR_BAD_PLAY;
 u16 prior_pass = PRIOR_PASS;
 u16 prior_starting_point = PRIOR_STARTING;
-u16 prior_neural_network = 50; // TODO tune
-double prior_nn_best_sep = 0.25;
-double prior_nn_neutral_sep = 0.25;
+u16 prior_neural_network = PRIOR_NEURAL_NETWORK;
+double prior_nn_best_sep = PRIOR_NN_BEST_SEP;
+double prior_nn_neutral_sep = PRIOR_NN_NEUTRAL_SEP;
 
 
 extern u8 distances_to_border[TOTAL_BOARD_SIZ];
@@ -425,8 +425,8 @@ void init_new_state(
 
         /* divide by quality category */
         u16 best_pos = (u16)(stats->plays_count * prior_nn_best_sep);
-        u16 neutral_pos = best_pos + (u16)((stats->plays_count - best_pos) *
-            prior_nn_neutral_sep);
+        u16 neutral_pos = (u16)(stats->plays_count * prior_nn_neutral_sep) +
+            best_pos;
 
         u16 i = 0;
         for(; i <= best_pos; ++i)

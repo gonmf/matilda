@@ -59,8 +59,8 @@ static void backup_network(
     u32 pass_nr
 ){
     char * filename = alloc();
-    snprintf(filename, MAX_PAGE_SIZ, "%s%ux%u_%u.nn", data_folder(), BOARD_SIZ,
-        BOARD_SIZ, pass_nr);
+    snprintf(filename, MAX_PAGE_SIZ, "%s%ux%u_%u.nn%u", data_folder(), BOARD_SIZ,
+        BOARD_SIZ, pass_nr, NN_CONN_DST);
 
     FILE * fp = fopen(filename, "wb");
     release(filename);

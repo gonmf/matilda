@@ -75,19 +75,27 @@ int main(){
 
     u32 uniques = 0;
     char * buf = alloc();
-    char * buf2 = alloc();
+    char * file_buf = malloc(MAX_FILE_SIZ);
+    if(file_buf == NULL)
+    {
+        fprintf(stderr, "error: out of memory exception\n");
+        return EXIT_FAILURE;
+    }
     game_record gr;
 
     u32 fid;
     for(fid = 0; fid < filenames_found; ++fid)
     {
+        // TODO do not use handicap games
+
+        // TODO use a division of the filenames found instead of 2048
         if((fid % 2048) == 0)
         {
             printf("\r %u%%", ((fid + 1) * 100) / filenames_found);
             fflush(stdout);
         }
 
-        if(!import_game_from_sgf2(&gr, filenames[fid], buf2))
+        if(!import_game_from_sgf2(&gr, filenames[fid], file_buf))
         {
             ++games_skipped;
             continue;
@@ -169,7 +177,6 @@ int main(){
             }
         }
     }
-    release(buf2);
     release(buf);
 
     printf("\n\n");

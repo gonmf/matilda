@@ -36,7 +36,7 @@ typedef struct __mlp_ {
 
 
 /* Perceptive field distance */
-#define NN_CONN_DST 9
+#define NN_CONN_DST 6 // TODO write to flog
 
 #define TARGET_VALUE_OFFSET 0.7159
 #define HYPERBOLIC_CONSTANT_A 1.7159
