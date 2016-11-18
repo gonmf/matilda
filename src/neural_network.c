@@ -170,6 +170,8 @@ void nn_init()
         release(filename);
         return;
     }
+    char * notice = alloc();
+    snprintf(notice, MAX_PAGE_SIZ, "read %s", filename);
     release(filename);
 
     for(move i = 0; i < TOTAL_BOARD_SIZ; ++i)
@@ -193,7 +195,9 @@ void nn_init()
                 flog_crit("nn", "file reading error\n");
         }
     fclose(fp);
-    flog_info("nn", "imported neural network\n");
+    flog_info("nn", notice);
+    release(notice);
+
 }
 
 /*
@@ -214,8 +218,8 @@ mlp * alloc_instance()
 Initialize the input units.
 */
 void nn_populate_input_units(
-    const u8 p[TOTAL_BOARD_SIZ],
-    double input_units[3][TOTAL_BOARD_SIZ]
+    double input_units[3][TOTAL_BOARD_SIZ],
+    const u8 p[TOTAL_BOARD_SIZ]
 ){
     for(move i = 0; i < TOTAL_BOARD_SIZ; ++i){
         input_units[0][i] = (p[i] & 1) ? 1.0 : 0.0;
@@ -320,24 +324,26 @@ void nn_codify_cfg_board(
     }
 }
 
-#if 0
-// TODO delete
 /*
-Strategy that converts the board into the input units of the default neural
-network, performs its forward pass and updates an out_board structure.
-Assumes the player is black.
+Assuming the player color is black, initializes a neural network, performs a
+feed-forward pass and updates the output structure.
 */
-void neural_network(
+void neural_network_eval(
     out_board * out_b,
-    board * state
+    board * state,
+    bool is_black
 ){
-    mlp * nn = nn_init();
+    nn_init();
+    mlp * nn = alloc_instance();
+    if(nn == NULL){
+        flog_crit("nn", "neural network file not available");
+    }
 
     u8 codified_board[TOTAL_BOARD_SIZ];
-    nn_codify_board(codified_board, state, true);
+    nn_codify_board(codified_board, state, is_black);
 
     double input_units[3][TOTAL_BOARD_SIZ];
-    nn_populate_input_units((const u8 *)codified_board, input_units);
+    nn_populate_input_units(input_units, (const u8 *)codified_board);
     nn_forward_pass_multi_threaded(nn,
         (const double (*)[TOTAL_BOARD_SIZ])input_units);
 
@@ -346,10 +352,9 @@ void neural_network(
     */
     out_b->pass = -1.0;
     for(move m = 0; m < TOTAL_BOARD_SIZ; ++m)
-        if(can_play_slow(state, m, true)){
+        if(can_play_slow(state, m, is_black)){
             out_b->value[m] = 1.0 - fabs(1.0 - nn->output_layer[m].output);
             out_b->tested[m] = true;
         }else
             out_b->tested[m] = false;
 }
-#endif

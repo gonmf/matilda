@@ -36,7 +36,7 @@ typedef struct __mlp_ {
 
 
 /* Perceptive field distance */
-#define NN_CONN_DST 6 // TODO write to flog
+#define NN_CONN_DST 6
 
 #define TARGET_VALUE_OFFSET 0.7159
 #define HYPERBOLIC_CONSTANT_A 1.7159
@@ -79,7 +79,7 @@ Feed-forward the energy through the network.
 Single-threaded.
 */
 void nn_forward_pass_single_threaded(
-    mlp * n, // TODO change argument names
+    mlp * n,
     const double input_units[3][TOTAL_BOARD_SIZ]
 );
 
@@ -96,8 +96,8 @@ void nn_forward_pass_multi_threaded(
 Initialize the input units.
 */
 void nn_populate_input_units(
-    const u8 p[TOTAL_BOARD_SIZ], // TODO change argument order and names to be clearer
-    double input_units[3][TOTAL_BOARD_SIZ]
+    double input_units[3][TOTAL_BOARD_SIZ],
+    const u8 p[TOTAL_BOARD_SIZ]
 );
 
 /*
@@ -122,5 +122,14 @@ void nn_codify_cfg_board(
     const u8 liberties_after_playing[TOTAL_BOARD_SIZ]
 );
 
+/*
+Assuming the player color is black, initializes a neural network, performs a
+feed-forward pass and updates the output structure.
+*/
+void neural_network_eval(
+    out_board * out_b,
+    board * state,
+    bool is_black
+);
 
 #endif

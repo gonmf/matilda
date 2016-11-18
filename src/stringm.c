@@ -7,6 +7,8 @@ Miscellanea C string functions.
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include <errno.h>
+#include <math.h>
 
 #include "alloc.h"
 #include "board.h"
@@ -166,16 +168,9 @@ bool parse_int(
     d32 * i,
     const char * s
 ){
-    /*
-    TODO remove this function
-    */
-    if(s[0] != '-' && (s[0] < '0' || s[0] > '9'))
-        return false;
-    for(u32 j = 1; s[j]; ++j)
-        if(s[j] < '0' || s[j] > '9')
-            return false;
-    *i = atoi(s);
-    return true;
+    errno = 0;
+    *i = (d32)strtol(s, NULL, 0);
+    return !(errno == ERANGE || errno == EINVAL);
 }
 
 /*
@@ -186,11 +181,9 @@ bool parse_float(
     double * d,
     const char * s
 ){
-    /*
-    TODO remove this function
-    */
-    *d = atof(s);
-    return true;
+    errno = 0;
+    *d = strtod(s, NULL);
+    return !(errno == ERANGE || isnan(*d) || isinf(*d));
 }
 
 

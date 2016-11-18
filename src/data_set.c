@@ -61,6 +61,16 @@ RETURNS table set size (number of cases)
 */
 u32 data_set_load()
 {
+    return data_set_load2(UINT32_MAX);
+}
+
+/*
+Read a data set, with a maximum size, and shuffles it.
+RETURNS table set size (number of cases)
+*/
+u32 data_set_load2(
+    u32 max
+){
     assert(data_set == NULL);
 
     char * filename = alloc();
@@ -76,6 +86,8 @@ u32 data_set_load()
     if(r != 1)
         flog_crit("dset", "communication failure\n");
     assert(ds_elems > 0);
+
+    ds_elems = MIN(ds_elems, max);
 
     data_set = (training_example **)malloc(sizeof(training_example *) * ds_elems
         * 8);

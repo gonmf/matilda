@@ -86,16 +86,14 @@ int main(){
     u32 fid;
     for(fid = 0; fid < filenames_found; ++fid)
     {
-        // TODO do not use handicap games
-
-        // TODO use a division of the filenames found instead of 2048
-        if((fid % 2048) == 0)
+        if((fid % (filenames_found / 256)) == 0)
         {
             printf("\r %u%%", ((fid + 1) * 100) / filenames_found);
             fflush(stdout);
         }
 
-        if(!import_game_from_sgf2(&gr, filenames[fid], file_buf))
+        if(!import_game_from_sgf2(&gr, filenames[fid], file_buf, MAX_FILE_SIZ)
+            || gr.handicap_stones.count > 0)
         {
             ++games_skipped;
             continue;

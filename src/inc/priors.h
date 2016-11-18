@@ -50,7 +50,7 @@ Tuned with CLOP in 9x9 with 10k playouts/turn in self-play for 34k games.
 #define PRIOR_PASS      130
 #define PRIOR_STARTING   76 /* starting point like around the hoshi */
 #define PRIOR_NEURAL_NETWORK    14
-#define PRIOR_NN_BEST_SEP     0.23 // TODO write to flog
+#define PRIOR_NN_BEST_SEP     0.23
 #define PRIOR_NN_NEUTRAL_SEP 0.258
 
 

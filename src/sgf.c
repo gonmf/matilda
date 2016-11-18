@@ -221,16 +221,18 @@ void reset_warning_messages()
 }
 
 /*
+Import a game record from the contents of the buffer.
 RETURNS true if the game has been found and read correctly
 */
 bool import_game_from_sgf2(
-    game_record * gr, // TODO receive buffer size
+    game_record * gr,
     const char * filename,
-    char * buf
+    char * buf,
+    u32 buf_siz
 ){
     clear_game_record(gr);
 
-    d32 chars_read = read_ascii_file(buf, MAX_FILE_SIZ, filename);
+    d32 chars_read = read_ascii_file(buf, buf_siz, filename);
     if(chars_read < 1)
     {
         snprintf(buf, MAX_PAGE_SIZ, "could not open/read file %s", filename);
@@ -469,7 +471,7 @@ bool import_game_from_sgf(
         return false;
     }
 
-    bool ret = import_game_from_sgf2(gr, filename, buf);
+    bool ret = import_game_from_sgf2(gr, filename, buf, MAX_FILE_SIZ);
     free(buf);
 
     return ret;

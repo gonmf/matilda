@@ -134,7 +134,7 @@ int main(
         if(!no_print)
             printf("%u/%u: %s", fid + 1, filenames_found, filenames[fid]);
 
-        if(!import_game_from_sgf2(gr, filenames[fid], buf))
+        if(!import_game_from_sgf2(gr, filenames[fid], buf, MAX_FILE_SIZ))
         {
             if(!no_print)
                 printf(" skipped\n");

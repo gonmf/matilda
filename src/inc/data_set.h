@@ -45,6 +45,14 @@ RETURNS table set size (number of cases)
 u32 data_set_load();
 
 /*
+Read a data set, with a maximum size, and shuffles it.
+RETURNS table set size (number of cases)
+*/
+u32 data_set_load2(
+    u32 max
+);
+
+/*
 Get a specific data set element by position.
 */
 training_example * data_set_get(

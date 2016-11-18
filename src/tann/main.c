@@ -27,6 +27,8 @@ area input for each next layer neuron, and output to the entire board.
 
 #define INIT_MIN_WEIGHT 0.0001
 
+#define MAX_TRAINING_SET_SIZE 1000000
+
 typedef struct __lneuron2_ {
     double weights[3][TOTAL_BOARD_SIZ];
     double output;
@@ -379,7 +381,7 @@ rbolic constant a=%.4f\n\thyperbolic constant b=%.4f\n\tinitial minimum weight=\
         nr_of_connections, ((double)nr_of_connections) /
         ((double)nr_of_neurons), NN_CONN_DST);
 
-    u32 data_set_size = data_set_load();
+    u32 data_set_size = data_set_load2(MAX_TRAINING_SET_SIZE);
 
     char * s = alloc();
     timestamp(s);
@@ -406,13 +408,13 @@ rbolic constant a=%.4f\n\thyperbolic constant b=%.4f\n\tinitial minimum weight=\
         double avg_sq_err = 0.0;
         for(u32 tsi = 0; tsi < training_set_size; ++tsi)
         {
-            if((tsi % 1000) == 0)
+            if((tsi % (training_set_size / 256)) == 0)
             {
                 printf("\r %u%%", (tsi * 100) / training_set_size);
                 fflush(stdout);
             }
             training_example * te = data_set_get(tsi);
-            nn_populate_input_units(te->p, input_units);
+            nn_populate_input_units(input_units, te->p);
             forward_pass();
             populate_desired_output(te);
             double total_instantaneous_error = backward_pass();
@@ -423,7 +425,7 @@ rbolic constant a=%.4f\n\thyperbolic constant b=%.4f\n\tinitial minimum weight=\
         for(u32 vi = 0; vi < test_set_size; ++vi)
         {
             training_example * te = data_set_get(vi + training_set_size);
-            nn_populate_input_units(te->p, input_units);
+            nn_populate_input_units(input_units, te->p);
             forward_pass();
             process_output(te, &val_ranks[vi]);
         }

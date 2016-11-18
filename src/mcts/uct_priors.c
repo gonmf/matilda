@@ -405,7 +405,7 @@ void init_new_state(
         nn_codify_cfg_board(codified, cb, is_black, libs_after_playing);
 
         double input_units[3][TOTAL_BOARD_SIZ];
-        nn_populate_input_units(codified, input_units);
+        nn_populate_input_units(input_units, codified);
 
         nn_forward_pass_single_threaded(net,
             (const double (*)[TOTAL_BOARD_SIZ])input_units);
