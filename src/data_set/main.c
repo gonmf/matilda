@@ -132,7 +132,6 @@ int main(int argc, char * argv[]){
         if(!no_print)
             printf(" (%u)\n", gr.turns);
 
-        bool victor = gr.final_score > 0;
 
         if(gr.turns < min_plays)
             min_plays = gr.turns;
@@ -141,6 +140,7 @@ int main(int argc, char * argv[]){
 
         board b;
         clear_board(&b);
+        bool winner_is_black = gr.final_score > 0;
         bool is_black = false;
 
         /* ignoring possible outliers */
@@ -166,7 +166,7 @@ int main(int argc, char * argv[]){
             }
 
             /* Skip plays made by the loser */
-            if(victor != is_black)
+            if(winner_is_black != is_black)
             {
                 if(!attempt_play_slow(&b, is_black, m))
                 {

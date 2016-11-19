@@ -273,6 +273,14 @@ d. (default: %u)\n", minimum_samples);
             continue;
         }
 
+        /* Only use winner plays so ignore games without score */
+        if(gr->final_score == 0)
+        {
+            if(!no_print)
+                printf(" skipped\n");
+            continue;
+        }
+
         board b;
         clear_board(&b);
 
@@ -280,9 +288,11 @@ d. (default: %u)\n", minimum_samples);
         if(!no_print)
             printf(" (%u)\n", gr->turns);
 
-        bool is_black = true;
+        bool winner_is_black = gr->final_score > 0;
+        bool is_black = false;
         for(d16 k = 0; k < MIN(ob_depth, gr->turns); ++k)
         {
+            is_black = !is_black;
             move m = gr->moves[k];
 
             /* Stop at the first play that is a pass */
@@ -293,6 +303,16 @@ d. (default: %u)\n", minimum_samples);
             u8 libs = libs_after_play_slow(&b, is_black, m, &caps);
             if(libs < 1 || caps > 0)
                 break;
+
+            if(is_black != winner_is_black)
+            {
+                if(!attempt_play_slow(&b, is_black, m))
+                {
+                    fprintf(stderr, "\rerror: file contains illegal plays\n");
+                    exit(EXIT_FAILURE);
+                }
+                continue;
+            }
 
             ++plays_used;
 
@@ -335,8 +355,6 @@ d. (default: %u)\n", minimum_samples);
             }
             else /* reusing state */
                 entry->count[m]++;
-
-            is_black = !is_black;
         }
     }
 
