@@ -160,6 +160,34 @@ bool starts_with(
     return true;
 }
 
+static bool char_match(
+    char c,
+    const char * hay
+){
+    while(*hay)
+    {
+        if(c == *hay)
+        {
+            return true;
+        }
+        ++hay;
+    }
+    return false;
+}
+
+static bool string_match(
+    const char * s,
+    const char * hay
+){
+    while(*s)
+    {
+        if(!char_match(*s, hay))
+            return false;
+        ++s;
+    }
+    return true;
+}
+
 /*
 Parses a 32-bit signed integer.
 RETURNS true if valid
@@ -168,6 +196,18 @@ bool parse_int(
     d32 * i,
     const char * s
 ){
+    if(strlen(s) < 2)
+    {
+        if(!string_match(s, "1234567890"))
+            return false;
+    }
+    else
+    {
+        if(!char_match(*s, "+-1234567890") ||
+            !string_match(s + 1, "1234567890"))
+            return false;
+    }
+
     errno = 0;
     *i = (d32)strtol(s, NULL, 0);
     return !(errno == ERANGE || errno == EINVAL);
@@ -181,6 +221,9 @@ bool parse_float(
     double * d,
     const char * s
 ){
+    if(!string_match(s, "1234567890,.Ee+-XxPp"))
+        return false;
+
     errno = 0;
     *d = strtod(s, NULL);
     return !(errno == ERANGE || isnan(*d) || isinf(*d));

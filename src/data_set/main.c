@@ -120,9 +120,19 @@ int main(int argc, char * argv[]){
             continue;
         }
 
+        if(gr.final_score == 0)
+        {
+            ++games_skipped;
+            if(!no_print)
+                printf(" skipped\n");
+            continue;
+        }
+
         ++games_used;
         if(!no_print)
             printf(" (%u)\n", gr.turns);
+
+        bool victor = gr.final_score > 0;
 
         if(gr.turns < min_plays)
             min_plays = gr.turns;
@@ -153,6 +163,17 @@ int main(int argc, char * argv[]){
                 fprint_board(stderr, &b);
                 fprintf(stderr, "error: file contains plays over stones\n");
                 exit(EXIT_FAILURE);
+            }
+
+            /* Skip plays made by the loser */
+            if(victor != is_black)
+            {
+                if(!attempt_play_slow(&b, is_black, m))
+                {
+                    fprintf(stderr, "error: file contains illegal plays\n");
+                    exit(EXIT_FAILURE);
+                }
+                continue;
             }
 
             board codified_board;
