@@ -94,6 +94,11 @@ void board_to_ob_rule(
         is_black = !is_black;
     }while(found);
 
+    /* Verify we were able to codify every play */
+    for(u16 i = MAX(m1, m2); i < TOTAL_BOARD_SIZ; ++i)
+        if(p[i] != EMPTY)
+            flog_crit("ob", "game position cannot be codified as O.B. rule");
+
     coord_to_alpha_num(mstr, play);
     snprintf(dst + idx, MAX_PAGE_SIZ - idx, "| %s\n", mstr);
     release(mstr);

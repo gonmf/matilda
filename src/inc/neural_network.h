@@ -1,12 +1,8 @@
 /*
-Strategy that uses a feed forward neural network to evaluate what move to play.
-
-Supports the definition and play of 2-layer multilayer perceptrons with three
-input units per position, liberties after playing codification and focal
-receptive fields in the case of trained MLP.
-
-Warning: has problems with when to pass; expect a long game if playing by
-itself.
+Functions around performing a feed forward neural network to evaluate what move
+to play; over a trained two-layer perceptron, with three input units per board
+position. The input layer codifies liberties after playing codification and the
+connections are made within a limited range to the previous layer.
 */
 
 #ifndef MATILDA_NEURAL_NETWORK_H

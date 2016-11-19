@@ -114,9 +114,7 @@ const void * tunable[] =
     "i", "expansion_delay", &expansion_delay,
     "i", "dummy", &_dummy,
 
-
     "f", "time_allot_factor", &time_allot_factor, // TODO remove after paper
-
 
     NULL
 };
@@ -352,76 +350,12 @@ int main(
             release(s);
             return EXIT_SUCCESS;
         }
-
-        if(strcmp(argv[i], "--benchmark") == 0)
-        {
-            u32 sims = mcts_benchmark();
-            for(u8 i = 1; i < BENCHMARK_TIME; ++i)
-            {
-                tt_clean_all() ;
-                sims += mcts_benchmark();
-            }
-            fprintf(stderr, "%u\n", sims / BENCHMARK_TIME);
-            return EXIT_SUCCESS;
-        }
     }
 
     fprintf(stderr, "matilda - Go/Igo/Weiqi/Baduk computer player\n\n");
 
     for(int i = 1; i < argc; ++i)
     {
-        if((strcmp(argv[i], "-m") == 0 || strcmp(argv[i], "--mode") == 0) &&
-            i < argc - 1)
-        {
-            if(strcmp(argv[i + 1], "text") == 0)
-            {
-                use_gtp = false;
-                if(!flog_dest_set)
-                    flog_config_destinations(LOG_DEST_FILE);
-            }
-            else
-                if(strcmp(argv[i + 1], "gtp") == 0)
-                {
-                    use_gtp = true;
-                    if(!flog_dest_set)
-                        flog_config_destinations(LOG_DEST_STDF |
-                            LOG_DEST_FILE);
-                }
-                else
-                {
-                    fprintf(stderr, "illegal format for mode\n");
-                    exit(EXIT_FAILURE);
-                }
-
-            ++i;
-            continue;
-        }
-
-        if((strcmp(argv[i], "-c") == 0 || strcmp(argv[i], "--color") == 0) && i
-            < argc - 1)
-        {
-            if(argv[i + 1][0] == 'b' || argv[i + 1][0] == 'B')
-                human_player_color = true;
-            else
-                if(argv[i + 1][0] == 'w' || argv[i + 1][0] == 'W')
-                    human_player_color = false;
-                else
-                {
-                    fprintf(stderr, "illegal player color format\n");
-                    exit(EXIT_FAILURE);
-                }
-
-            ++i;
-            color_set = true;
-            continue;
-        }
-
-        if(strcmp(argv[i], "--save_all") == 0)
-        {
-            save_all_games_to_file = true;
-            continue;
-        }
-
         if((strcmp(argv[i], "-l") == 0 || strcmp(argv[i], "--log") == 0))
         {
             if(i == argc - 1)
@@ -498,6 +432,138 @@ int main(
             flog_dest_set = true;
 
             ++i;
+            continue;
+        }
+
+        if(strcmp(argv[i], "--memory") == 0 && i < argc - 1)
+        {
+            d32 v;
+            if(!parse_int(&v, argv[i + 1]))
+            {
+                fprintf(stderr,
+                    "format error in size of transpositions table\n");
+                exit(EXIT_FAILURE);
+            }
+
+            if(v < 2)
+            {
+                fprintf(stderr, "invalid size for transpositions table\n");
+                exit(EXIT_FAILURE);
+            }
+
+            max_size_in_mbs = v;
+            ++i;
+            continue;
+        }
+
+        if(strcmp(argv[i], "--set") == 0 && i < argc - 2)
+        {
+            set_parameter(argv[i + 1], argv[i + 2]);
+            i += 2;
+            continue;
+        }
+
+        if((strcmp(argv[i], "-d") == 0 || strcmp(argv[i], "--data") == 0) &&
+            i < argc - 1)
+        {
+            if(!set_data_folder(argv[i + 1]))
+            {
+                fprintf(stderr, "data directory path %s is not valid\n",
+                    argv[i + 1]);
+                exit(EXIT_FAILURE);
+            }
+
+            ++i;
+            continue;
+        }
+
+        if(strcmp(argv[i], "--threads") == 0 && i < argc - 1)
+        {
+            d32 v;
+            if(!parse_int(&v, argv[i + 1]))
+            {
+                fprintf(stderr, "format error for thread number\n");
+                exit(EXIT_FAILURE);
+            }
+
+            if(v < 1 || v > MAXIMUM_NUM_THREADS)
+            {
+                fprintf(stderr, "invalid number of threads requested\n");
+                exit(EXIT_FAILURE);
+            }
+
+            desired_num_threads = v;
+            ++i;
+            continue;
+        }
+    }
+
+    for(int i = 1; i < argc; ++i)
+    {
+        if(strcmp(argv[i], "--benchmark") == 0)
+        {
+            u32 sims = mcts_benchmark();
+            for(u8 i = 1; i < BENCHMARK_TIME; ++i)
+            {
+                tt_clean_all() ;
+                sims += mcts_benchmark();
+            }
+            fprintf(stderr, "%u\n", sims / BENCHMARK_TIME);
+            return EXIT_SUCCESS;
+        }
+    }
+
+    for(int i = 1; i < argc; ++i)
+    {
+        if((strcmp(argv[i], "-m") == 0 || strcmp(argv[i], "--mode") == 0) &&
+            i < argc - 1)
+        {
+            if(strcmp(argv[i + 1], "text") == 0)
+            {
+                use_gtp = false;
+                if(!flog_dest_set)
+                    flog_config_destinations(LOG_DEST_FILE);
+            }
+            else
+                if(strcmp(argv[i + 1], "gtp") == 0)
+                {
+                    use_gtp = true;
+                    if(!flog_dest_set)
+                        flog_config_destinations(LOG_DEST_STDF |
+                            LOG_DEST_FILE);
+                }
+                else
+                {
+                    fprintf(stderr, "illegal format for mode\n");
+                    exit(EXIT_FAILURE);
+                }
+
+            ++i;
+            continue;
+        }
+
+        if((strcmp(argv[i], "-c") == 0 || strcmp(argv[i], "--color") == 0) && i
+            < argc - 1)
+        {
+            if(argv[i + 1][0] == 'b' || argv[i + 1][0] == 'B')
+                human_player_color = true;
+            else
+                if(argv[i + 1][0] == 'w' || argv[i + 1][0] == 'W')
+                    human_player_color = false;
+                else
+                {
+                    fprintf(stderr, "illegal player color format\n");
+                    exit(EXIT_FAILURE);
+                }
+
+            ++i;
+            color_set = true;
+            continue;
+        }
+
+        if(strcmp(argv[i], "--save_all") == 0)
+        {
+            save_all_games_to_file = true;
             continue;
         }
 
@@ -578,73 +644,11 @@ int main(
             continue;
         }
 
-        if(strcmp(argv[i], "--memory") == 0 && i < argc - 1)
-        {
-            d32 v;
-            if(!parse_int(&v, argv[i + 1]))
-            {
-                fprintf(stderr,
-                    "format error in size of transpositions table\n");
-                exit(EXIT_FAILURE);
-            }
-
-            if(v < 2)
-            {
-                fprintf(stderr, "invalid size for transpositions table\n");
-                exit(EXIT_FAILURE);
-            }
-
-            max_size_in_mbs = v;
-            ++i;
-            continue;
-        }
-
         if(strcmp(argv[i], "--sentinel") == 0 && i < argc - 1)
         {
             u32 len = strlen(argv[i + 1]) + 1;
             sentinel_file = malloc(len);
             memcpy(sentinel_file, argv[i + 1], len);
-            ++i;
-            continue;
-        }
-
-        if(strcmp(argv[i], "--set") == 0 && i < argc - 2)
-        {
-            set_parameter(argv[i + 1], argv[i + 2]);
-            i += 2;
-            continue;
-        }
-
-        if((strcmp(argv[i], "-d") == 0 || strcmp(argv[i], "--data") == 0) &&
-            i < argc - 1)
-        {
-            if(!set_data_folder(argv[i + 1]))
-            {
-                fprintf(stderr, "data directory path %s is not valid\n",
-                    argv[i + 1]);
-                exit(EXIT_FAILURE);
-            }
-
-            ++i;
-            continue;
-        }
-
-        if(strcmp(argv[i], "--threads") == 0 && i < argc - 1)
-        {
-            d32 v;
-            if(!parse_int(&v, argv[i + 1]))
-            {
-                fprintf(stderr, "format error for thread number\n");
-                exit(EXIT_FAILURE);
-            }
-
-            if(v < 1 || v > MAXIMUM_NUM_THREADS)
-            {
-                fprintf(stderr, "invalid number of threads requested\n");
-                exit(EXIT_FAILURE);
-            }
-
-            desired_num_threads = v;
             ++i;
             continue;
         }

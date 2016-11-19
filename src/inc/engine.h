@@ -31,6 +31,14 @@ RETURNS folder path
 const char * data_folder();
 
 /*
+Test if folder exists and is accessible.
+RETURNS true if exists
+*/
+bool folder_exists(
+    const char * filename
+);
+
+/*
 Sets the new data folder path. If the path is too long, short, or otherwise
 invalid, nothing is changed and false is returned.
 RETURNS true on success

@@ -47,7 +47,21 @@ ignored.
 
 static char * filenames[MAX_FILES];
 
-int main(){
+int main(int argc, char * argv[]){
+    bool no_print = false;
+
+    for(int i = 1; i < argc; ++i){
+        if(strcmp(argv[i], "--no_print") == 0){
+            no_print = true;
+            continue;
+        }
+
+        printf("Usage: %s [options]\n", argv[0]);
+        printf("Options:\n");
+        printf("--no_print - Do not print SGF filenames.\n");
+        exit(EXIT_SUCCESS);
+    }
+
     assert_data_folder_exists();
     cs_table_init();
 
@@ -86,20 +100,29 @@ int main(){
     u32 fid;
     for(fid = 0; fid < filenames_found; ++fid)
     {
-        if((fid % (filenames_found / 256)) == 0)
-        {
-            printf("\r %u%%", ((fid + 1) * 100) / filenames_found);
-            fflush(stdout);
-        }
+        if(!no_print)
+            printf("%u/%u: %s", fid + 1, filenames_found, filenames[fid]);
 
-        if(!import_game_from_sgf2(&gr, filenames[fid], file_buf, MAX_FILE_SIZ)
-            || gr.handicap_stones.count > 0)
+        if(!import_game_from_sgf2(&gr, filenames[fid], file_buf, MAX_FILE_SIZ))
         {
             ++games_skipped;
+            if(!no_print)
+                printf(" skipped\n");
+            continue;
+        }
+
+        /* Ignore handicap matches */
+        if(gr.handicap_stones.count > 0)
+        {
+            ++games_skipped;
+            if(!no_print)
+                printf(" skipped\n");
             continue;
         }
 
         ++games_used;
+        if(!no_print)
+            printf(" (%u)\n", gr.turns);
 
         if(gr.turns < min_plays)
             min_plays = gr.turns;
