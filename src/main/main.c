@@ -134,8 +134,8 @@ static void set_parameter(
 
         if(type[0] == 'i')
         {
-            d32 val;
-            if(!parse_int(&val, value) || val < 0)
+            u32 val;
+            if(!parse_uint(&val, value) || val > UINT16_MAX)
             {
                 char * buf = alloc();
                 snprintf(buf, MAX_PAGE_SIZ, "integer format error: %s", value);
