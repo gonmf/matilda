@@ -15,6 +15,7 @@ http://www.weddslist.com/kgs/past/superko.html
 #include "matilda.h"
 
 #include <stdlib.h>
+#include <math.h> /* fabs */
 #include <string.h>
 
 #include "alloc.h"
@@ -48,7 +49,7 @@ void clear_game_record(
     snprintf(gr->white_name, MAX_PLAYER_NAME_SIZ, "white");
     gr->handicap_stones.count = 0;
     gr->turns = 0;
-    gr->game_finished = false;
+    gr->game_finished = gr->resignation = gr->timeout = false;
     current_game_bak_set = false;
 }
 
@@ -65,6 +66,7 @@ void add_play(
     gr->turns++;
     if(gr->turns == MAX_GAME_LENGTH)
         flog_crit("gr", "the maximum number of plays has been reached");
+    gr->game_finished = false;
     current_game_bak_set = false;
 }
 
@@ -85,29 +87,38 @@ void add_play_out_of_order(
 }
 
 /*
-Print a text representation of the game record to the fp file stream.
+Write a text representation of the game record in the string buffer specified.
 */
-void fprint_game_record(
-    FILE * fp,
+void game_record_to_string(
+    char * buf,
+    u32 buf_siz,
     const game_record * gr
 ){
-    fprintf(fp, "White (%c): %s\nBlack (%c): %s\n", WHITE_STONE_CHAR,
-        gr->white_name, BLACK_STONE_CHAR, gr->black_name);
+    u32 idx = snprintf(buf, buf_siz, "White (%c): %s\nBlack (%c): %s\n",
+        WHITE_STONE_CHAR, gr->white_name, BLACK_STONE_CHAR, gr->black_name);
     if(gr->game_finished)
     {
         if(gr->resignation)
-            fprintf(fp, "Winner: %s by resignation\n", gr->final_score > 0 ?
+            idx += snprintf(buf + idx, buf_siz - idx,
+                "Winner: %s by resignation\n", gr->final_score > 0 ?
                 gr->black_name : gr->white_name);
         else
-            fprintf(fp, "Winner: %s by %u.5 points\n", gr->final_score > 0 ?
-                gr->black_name : gr->white_name, abs(gr->final_score) / 2);
+            if(gr->timeout)
+                idx += snprintf(buf + idx, buf_siz - idx,
+                    "Winner: %s by timeout\n", gr->final_score > 0 ?
+                    gr->black_name : gr->white_name);
+            else
+                idx += snprintf(buf + idx, buf_siz - idx,
+                    "Winner: %s by %.1f points\n", gr->final_score > 0 ?
+                    gr->black_name : gr->white_name, fabs(gr->final_score) / 2.0);
     }
 
     char * v = alloc();
 
     if(gr->handicap_stones.count > 0)
     {
-        fprintf(fp, "Handicap stones (%u):", gr->handicap_stones.count);
+        idx += snprintf(buf + idx, buf_siz - idx, "Handicap stones (%u):",
+            gr->handicap_stones.count);
         for(u16 i = 0; i < gr->handicap_stones.count; ++i)
         {
 #if EUROPEAN_NOTATION
@@ -115,14 +126,14 @@ void fprint_game_record(
 #else
             coord_to_num_num(v, gr->handicap_stones.coord[i]);
 #endif
-            fprintf(fp, " %s", v);
+            idx += snprintf(buf + idx, buf_siz - idx, " %s", v);
         }
-        fprintf(fp, "\n");
+        idx += snprintf(buf + idx, buf_siz - idx, "\n");
     }
 
     if(gr->turns > 0)
     {
-        fprintf(fp, "Plays (%u):", gr->turns);
+        idx += snprintf(buf + idx, buf_siz - idx, "Plays (%u):", gr->turns);
         for(u16 i = 0; i < gr->turns; ++i)
             if(is_board_move(gr->moves[i]))
             {
@@ -133,22 +144,41 @@ void fprint_game_record(
                 coord_to_num_num(v, gr->moves[i]);
 #endif
                 if(gr->handicap_stones.count == 0)
-                    fprintf(fp, " %c%s", (i & 1) == 0 ? 'B' : 'W', v);
+                    idx += snprintf(buf + idx, buf_siz - idx, " %c%s",
+                        (i & 1) == 0 ? 'B' : 'W', v);
                 else
-                    fprintf(fp, " %c%s", (i & 1) == 1 ? 'B' : 'W', v);
+                    idx += snprintf(buf + idx, buf_siz - idx, " %c%s",
+                        (i & 1) == 1 ? 'B' : 'W', v);
             }
             else
             {
                 if(gr->handicap_stones.count == 0)
-                    fprintf(fp, " %c--", (i & 1) == 0 ? 'B' : 'W');
+                    idx += snprintf(buf + idx, buf_siz - idx, " %c--",
+                        (i & 1) == 0 ? 'B' : 'W');
                 else
-                    fprintf(fp, " %c--", (i & 1) == 1 ? 'B' : 'W');
+                    idx += snprintf(buf + idx, buf_siz - idx, " %c--",
+                        (i & 1) == 1 ? 'B' : 'W');
             }
 
-        fprintf(fp, "\n");
+        idx += snprintf(buf + idx, buf_siz - idx, "\n");
     }
 
     release(v);
+}
+
+/*
+Print a text representation of the game record to the fp file stream.
+*/
+void fprint_game_record(
+    FILE * fp,
+    const game_record * gr
+){
+    char * s = malloc(MAX_FILE_SIZ);
+    if(s == NULL)
+        flog_crit("gr", "system out of memory");
+    game_record_to_string(s, MAX_FILE_SIZ, gr);
+    fprintf(fp, "%s", s);
+    free(s);
 }
 
 /*
@@ -346,6 +376,8 @@ bool undo_last_play(
             pass(&tmp);
         is_black = !is_black;
     }
+
+    gr->game_finished = false;
 
     current_game_bak_set = false;
     return true;

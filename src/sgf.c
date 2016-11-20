@@ -74,7 +74,7 @@ u32 export_game_as_sgf_to_buffer(
 
     if(gr->game_finished)
     {
-        if(gr->resignation == 0)
+        if(gr->resignation)
             buf += snprintf(buf, size - (buf - buffer), "RE[%c+R]\n",
                 gr->final_score > 0 ? 'B' : 'W');
         else
@@ -307,6 +307,11 @@ tes");
     /*
     Result
     */
+    bool game_finished = false;
+    bool resignation = false;
+    bool timeout = false;
+    d16 final_score = 0;
+
     char * result = tmp;
     str_between(result, buf, "RE[", "]");
 
@@ -316,26 +321,25 @@ tes");
         if(strcmp(result, "?") == 0 || strcmp(result, "Draw") == 0 ||
             strcmp(result, "0") == 0)
         {
-            gr->game_finished = true;
-            gr->resignation = false;
-            gr->final_score = 0;
+            game_finished = true;
         }
         else
             if(result[0] == 'B')
             {
-                gr->game_finished = true;
+                game_finished = true;
                 if(strlen(result) > 2)
                 {
                     result += 2;
                     if(result[0] == 'R')
                     {
-                        gr->resignation = true;
-                        gr->final_score = 1;
+                        resignation = true;
+                        final_score = 1;
                     }
                     else
                         if(result[0] == 'T')
                         {
-                            gr->final_score = 1;
+                            timeout = true;
+                            final_score = 1;
                         }
                         else
                         {
@@ -349,25 +353,26 @@ tes");
                                 release(tmp);
                                 return false;
                             }
-                            gr->final_score = (d32)(f * 2.0);
+                            final_score = (d32)(f * 2.0);
                         }
                 }
             }
             else
             {
-                gr->game_finished = true;
+                game_finished = true;
                 if(strlen(result) > 2)
                 {
                     result += 2;
                     if(result[0] == 'R')
                     {
-                        gr->resignation = true;
-                        gr->final_score = -1;
+                        resignation = true;
+                        final_score = -1;
                     }
                     else
                         if(result[0] == 'T')
                         {
-                            gr->final_score = -1;
+                            timeout = true;
+                            final_score = -1;
                         }
                         else
                         {
@@ -381,7 +386,7 @@ tes");
                                 release(tmp);
                                 return false;
                             }
-                            gr->final_score = (d32)(f * -2.0);
+                            final_score = (d32)(f * -2.0);
                         }
                 }
             }
@@ -453,6 +458,11 @@ tes");
                 }
         }
     }
+
+    gr->game_finished = game_finished;
+    gr->resignation = resignation;
+    gr->timeout = timeout;
+    gr->final_score = final_score;
 
     return true;
 }

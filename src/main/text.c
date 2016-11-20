@@ -267,6 +267,8 @@ signation.\n\n", s);
 
             if(resigned)
             {
+                current_game.game_finished = true;
+                current_game.resignation = true;
                 fprintf(stderr, "\n\"I resign. Thank you for the game.\"\n\n");
 
                 fprintf(stderr, "%s (%c) wins by resignation.\n\n", is_black ?
@@ -280,6 +282,7 @@ signation.\n\n", s);
             {
                 if(last_played_pass)
                 {
+                    current_game.game_finished = true;
                     fprintf(stderr, "Computer passes, game is over.\n");
                     text_print_score();
                     fprintf(stderr, "\n");
@@ -336,6 +339,8 @@ sign/tip/score/quit)\n", mstr);
 
             if(strcmp(line, "resign") == 0)
             {
+                current_game.game_finished = true;
+                current_game.resignation = true;
                 fprintf(stderr, "%s (%c) wins by resignation.\n\n", is_black ?
                     "White" : "Black", is_black ? WHITE_STONE_CHAR :
                     BLACK_STONE_CHAR);
@@ -406,6 +411,7 @@ sign/tip/score/quit)\n", mstr);
             {
                 if(last_played_pass)
                 {
+                    current_game.game_finished = true;
                     fprintf(stderr, "Two passes in a row, game is over.\n");
                     text_print_score();
                     fprintf(stderr, "\n");

@@ -75,6 +75,7 @@ const char * supported_commands[] =
     "komi",
     "list_commands",
     "loadsgf",
+    "mtld-game_info",
     "mtld-last_evaluation",
     "mtld-ponder",
     "mtld-review_game",
@@ -494,7 +495,6 @@ static void gtp_play(
         if(strcmp(vertex, "skip") == 0)
         {
             add_play_out_of_order(&current_game, is_black, NONE);
-            current_game.game_finished = false;
             gtp_answer(fp, id, NULL);
             return;
         }
@@ -525,7 +525,6 @@ static void gtp_play(
     gtp_answer(fp, id, NULL);
 
     add_play_out_of_order(&current_game, is_black, m);
-    current_game.game_finished = false;
 }
 
 /*
@@ -672,7 +671,6 @@ static void generic_genmove(
         Transpositions table maintenance
         */
         add_play_out_of_order(&current_game, is_black, m);
-        current_game.game_finished = false;
     }
 
     release(buf);
@@ -1113,6 +1111,18 @@ static void gtp_showboard(
 
     release(str2);
     release(str);
+}
+
+static void gtp_game_info(
+    FILE * fp,
+    int id
+){
+    char * s = malloc(MAX_FILE_SIZ);
+    if(s == NULL)
+        flog_crit("gtp", "system out of memory");
+    game_record_to_string(s, MAX_FILE_SIZ, &current_game);
+    gtp_answer(fp, id, s);
+    free(s);
 }
 
 /*
@@ -1740,6 +1750,12 @@ lbl_parse_command:
         if(argc == 0 && strcmp(cmd, "clear_cache") == 0)
         {
             gtp_clear_cache(out_fp, idn);
+            continue;
+        }
+
+        if(argc == 0 && strcmp(cmd, "mtld-game_info") == 0)
+        {
+            gtp_game_info(out_fp, idn);
             continue;
         }
 
