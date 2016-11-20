@@ -20,6 +20,7 @@ or pass).
 #include "engine.h"
 #include "flog.h"
 #include "game_record.h"
+#include "mcts.h"
 #include "pts_file.h"
 #include "scoring.h"
 #include "sgf.h"
@@ -137,7 +138,11 @@ static void text_genmove(
         return;
     }
 
-    move m = select_play(&out_b, is_black, &current_game);
+    move m;
+    if(out_b.pass >= JUST_PASS_WINRATE)
+        m = PASS;
+    else
+        m = select_play(&out_b, is_black, &current_game);
 
     add_play(&current_game, m);
 
