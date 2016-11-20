@@ -263,8 +263,8 @@ static void gtp_ponder(
     int id,
     const char * timestr /* in seconds */
 ){
-    d32 seconds;
-    if(!parse_int(&seconds, timestr) || seconds < 1)
+    u32 seconds;
+    if(!parse_uint(&seconds, timestr) || seconds < 1)
     {
         gtp_error(fp, id, "syntax error");
         return;
@@ -292,8 +292,8 @@ static void gtp_review_game(
     int id,
     const char * timestr /* in seconds */
 ){
-    d32 seconds;
-    if(!parse_int(&seconds, timestr) || seconds < 1)
+    u32 seconds;
+    if(!parse_uint(&seconds, timestr) || seconds < 1)
     {
         gtp_error(fp, id, "syntax error");
         return;
@@ -424,8 +424,8 @@ static void gtp_boardsize(
     int id,
     const char * new_size
 ){
-    d32 ns;
-    if(!parse_int(&ns, new_size))
+    u32 ns;
+    if(!parse_uint(&ns, new_size))
     {
         gtp_error(fp, id, "syntax error");
         return;
@@ -510,7 +510,7 @@ static void gtp_play(
     if(m == NONE)
     {
         /* Resign */
-        current_game.game_finished = true;
+        current_game.finished = true;
         current_game.resignation = true;
         current_game.final_score = is_black ? -1 : 1;
         gtp_answer(fp, id, NULL);
@@ -581,7 +581,7 @@ static void generic_genmove(
             flog_warn("gtp", buf);
         }
 
-        current_game.game_finished = true;
+        current_game.finished = true;
         current_game.resignation = true;
         current_game.final_score = is_black ? -1 : 1;
 #if 0
@@ -635,7 +635,7 @@ static void generic_genmove(
             WHITE_STONE_CHAR);
         flog_info("gtp", buf);
 
-        current_game.game_finished = true;
+        current_game.finished = true;
         current_game.resignation = true;
         current_game.final_score = is_black ? -1 : 1;
 
@@ -739,25 +739,24 @@ static void gtp_time_settings(
     char * previous_ts_as_s = alloc();
     time_system_to_str(previous_ts_as_s, &current_clock_black);
 
-    d32 new_main_time;
-    d32 new_byo_yomi_time;
-    d32 new_byo_yomi_stones;
-    if(!parse_int(&new_main_time, main_time) || new_main_time < 0 ||
-        new_main_time > ((d32)(UINT32_MAX / 1000)))
+    u32 new_main_time;
+    u32 new_byo_yomi_time;
+    u32 new_byo_yomi_stones;
+    if(!parse_uint(&new_main_time, main_time) ||
+        new_main_time > (UINT32_MAX / 1000))
     {
         gtp_error(fp, id, "syntax error");
         release(previous_ts_as_s);
         return;
     }
-    if(!parse_int(&new_byo_yomi_time, byo_yomi_time) || new_byo_yomi_time < 0 ||
-        new_byo_yomi_time > ((d32)(UINT32_MAX / 1000)))
+    if(!parse_uint(&new_byo_yomi_time, byo_yomi_time) ||
+        new_byo_yomi_time > (UINT32_MAX / 1000))
     {
         gtp_error(fp, id, "syntax error");
         release(previous_ts_as_s);
         return;
     }
-    if(!parse_int(&new_byo_yomi_stones, byo_yomi_stones) || new_byo_yomi_stones
-        < 0)
+    if(!parse_uint(&new_byo_yomi_stones, byo_yomi_stones))
     {
         gtp_error(fp, id, "syntax error");
         release(previous_ts_as_s);
@@ -822,9 +821,9 @@ static void gtp_kgs_time_settings(
     else
         if(strcmp(systemstr, "absolute") == 0)
         {
-            d32 new_main_time;
-            if(main_time == NULL || !parse_int(&new_main_time, main_time) ||
-                new_main_time < 0 || new_main_time > ((d32)(UINT32_MAX / 1000)))
+            u32 new_main_time;
+            if(main_time == NULL || !parse_uint(&new_main_time, main_time) ||
+                new_main_time > (UINT32_MAX / 1000))
             {
                 gtp_error(fp, id, "syntax error");
                 release(previous_ts_as_s);
@@ -840,27 +839,26 @@ static void gtp_kgs_time_settings(
             {
                 const char * byo_yomi_periods = byo_yomi_stones;
 
-                d32 new_main_time;
-                d32 new_byo_yomi_time;
-                d32 new_byo_yomi_periods;
-                if(main_time == NULL || !parse_int(&new_main_time, main_time) ||
-                    new_main_time < 0 ||
-                    new_main_time > ((d32)(UINT32_MAX / 1000)))
+                u32 new_main_time;
+                u32 new_byo_yomi_time;
+                u32 new_byo_yomi_periods;
+                if(main_time == NULL || !parse_uint(&new_main_time, main_time)
+                    || new_main_time > (UINT32_MAX / 1000))
                 {
                     gtp_error(fp, id, "syntax error");
                     release(previous_ts_as_s);
                     return;
                 }
-                if(byo_yomi_time == NULL || !parse_int(&new_byo_yomi_time,
-                    byo_yomi_time) || new_byo_yomi_time < 0 ||
-                    new_byo_yomi_time > ((d32)(UINT32_MAX / 1000)))
+                if(byo_yomi_time == NULL || !parse_uint(&new_byo_yomi_time,
+                    byo_yomi_time) ||
+                    new_byo_yomi_time > (UINT32_MAX / 1000))
                 {
                     gtp_error(fp, id, "syntax error");
                     release(previous_ts_as_s);
                     return;
                 }
-                if(byo_yomi_periods == NULL || !parse_int(&new_byo_yomi_periods,
-                    byo_yomi_periods) || new_byo_yomi_periods < 0)
+                if(byo_yomi_periods == NULL || !parse_uint(&new_byo_yomi_periods,
+                    byo_yomi_periods))
                 {
                     gtp_error(fp, id, "syntax error");
                     release(previous_ts_as_s);
@@ -874,28 +872,26 @@ static void gtp_kgs_time_settings(
             }else
                 if(strcmp(systemstr, "canadian") == 0)
                 {
-                    d32 new_main_time;
-                    d32 new_byo_yomi_time;
-                    d32 new_byo_yomi_stones;
-                    if(main_time == NULL || !parse_int(&new_main_time,
-                        main_time) || new_main_time < 0 ||
-                        new_main_time >= ((d32)(UINT32_MAX / 1000)))
+                    u32 new_main_time;
+                    u32 new_byo_yomi_time;
+                    u32 new_byo_yomi_stones;
+                    if(main_time == NULL || !parse_uint(&new_main_time,
+                        main_time) || new_main_time >= (UINT32_MAX / 1000))
                     {
                         gtp_error(fp, id, "syntax error");
                         release(previous_ts_as_s);
                         return;
                     }
-                    if(byo_yomi_time == NULL || !parse_int(&new_byo_yomi_time,
-                        byo_yomi_time) || new_byo_yomi_time < 0 ||
-                        new_byo_yomi_time > ((d32)(UINT32_MAX / 1000)))
+                    if(byo_yomi_time == NULL || !parse_uint(&new_byo_yomi_time,
+                        byo_yomi_time) ||
+                        new_byo_yomi_time > (UINT32_MAX / 1000))
                     {
                         gtp_error(fp, id, "syntax error");
                         release(previous_ts_as_s);
                         return;
                     }
                     if(byo_yomi_stones == NULL ||
-                        !parse_int(&new_byo_yomi_stones, byo_yomi_stones) ||
-                        new_byo_yomi_stones < 0)
+                        !parse_uint(&new_byo_yomi_stones, byo_yomi_stones))
                     {
                         gtp_error(fp, id, "syntax error");
                         release(previous_ts_as_s);
@@ -954,15 +950,14 @@ static void gtp_time_left_seconds(
         gtp_error(fp, id, "syntax error");
         return;
     }
-    d32 new_time_remaining;
-    d32 new_byo_yomi_stones_remaining;
-    if(!parse_int(&new_time_remaining, time_left) || new_time_remaining < 0)
+    u32 new_time_remaining;
+    u32 new_byo_yomi_stones_remaining;
+    if(!parse_uint(&new_time_remaining, time_left))
     {
         gtp_error(fp, id, "syntax error");
         return;
     }
-    if(!parse_int(&new_byo_yomi_stones_remaining, stones) ||
-        new_byo_yomi_stones_remaining < 0)
+    if(!parse_uint(&new_byo_yomi_stones_remaining, stones))
     {
         gtp_error(fp, id, "syntax error");
         return;
@@ -1007,15 +1002,14 @@ static void gtp_time_left_millis(
         gtp_error(fp, id, "syntax error");
         return;
     }
-    d32 new_time_remaining;
-    d32 new_byo_yomi_stones_remaining;
-    if(!parse_int(&new_time_remaining, time_left) || new_time_remaining < 0)
+    u32 new_time_remaining;
+    u32 new_byo_yomi_stones_remaining;
+    if(!parse_uint(&new_time_remaining, time_left))
     {
         gtp_error(fp, id, "syntax error");
         return;
     }
-    if(!parse_int(&new_byo_yomi_stones_remaining, stones) ||
-        new_byo_yomi_stones_remaining < 0)
+    if(!parse_uint(&new_byo_yomi_stones_remaining, stones))
     {
         gtp_error(fp, id, "syntax error");
         return;
@@ -1160,11 +1154,11 @@ static void gtp_undo_multiple(
     int id,
     const char * number
 ){
-    d32 moves;
+    u32 moves;
     if(number == NULL)
         moves = 1;
     else
-        if(!parse_int(&moves, number) || moves < 1)
+        if(!parse_uint(&moves, number) || moves < 1)
         {
             gtp_error(fp, id, "syntax error");
             return;
@@ -1195,7 +1189,7 @@ static void gtp_final_score(
     current_game_state(&current_state, &current_game);
     d16 score = score_stones_and_area(current_state.p);
 
-    current_game.game_finished = true;
+    current_game.finished = true;
     current_game.final_score = score;
 
     char * s = alloc();
@@ -1211,8 +1205,8 @@ static void gtp_place_free_handicap(
     int id,
     const char * nstones
 ){
-    d32 num_stones;
-    if(!parse_int(&num_stones, nstones) || num_stones < 1)
+    u32 num_stones;
+    if(!parse_uint(&num_stones, nstones) || num_stones < 1)
     {
         gtp_error(fp, id, "syntax error");
         return;
@@ -1323,11 +1317,11 @@ static void gtp_loadsgf(
         return;
     }
 
-    d32 move_until;
+    u32 move_until;
     if(move_number == NULL)
         move_until = MAX_GAME_LENGTH;
     else
-        if(!parse_int(&move_until, move_number) || move_until < 1)
+        if(!parse_uint(&move_until, move_number) || move_until < 1)
         {
             gtp_error(fp, id, "syntax error");
             return;

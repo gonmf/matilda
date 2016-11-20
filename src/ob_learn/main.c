@@ -83,8 +83,8 @@ int main(int argc, char * argv[]){
 
     for(int i = 1; i < argc; ++i){
         if(i < argc - 1 && strcmp(argv[i], "--time") == 0){
-            d32 a;
-            if(!parse_int(&a, argv[i + 1]) || a < 1)
+            u32 a;
+            if(!parse_uint(&a, argv[i + 1]) || a < 1)
                 goto lbl_usage;
             ++i;
             secs_per_turn = a;
@@ -95,8 +95,8 @@ int main(int argc, char * argv[]){
             continue;
         }
         if(i < argc - 1 && strcmp(argv[i], "--max_depth") == 0){
-            d32 a;
-            if(!parse_int(&a, argv[i + 1]) || a < 1)
+            u32 a;
+            if(!parse_uint(&a, argv[i + 1]) || a < 1)
                 goto lbl_usage;
             ++i;
             ob_depth = a;

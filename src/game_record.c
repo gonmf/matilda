@@ -49,7 +49,7 @@ void clear_game_record(
     snprintf(gr->white_name, MAX_PLAYER_NAME_SIZ, "white");
     gr->handicap_stones.count = 0;
     gr->turns = 0;
-    gr->game_finished = gr->resignation = gr->timeout = false;
+    gr->finished = gr->resignation = gr->timeout = false;
     current_game_bak_set = false;
 }
 
@@ -66,7 +66,7 @@ void add_play(
     gr->turns++;
     if(gr->turns == MAX_GAME_LENGTH)
         flog_crit("gr", "the maximum number of plays has been reached");
-    gr->game_finished = false;
+    gr->finished = false;
     current_game_bak_set = false;
 }
 
@@ -96,7 +96,7 @@ void game_record_to_string(
 ){
     u32 idx = snprintf(buf, buf_siz, "White (%c): %s\nBlack (%c): %s\n",
         WHITE_STONE_CHAR, gr->white_name, BLACK_STONE_CHAR, gr->black_name);
-    if(gr->game_finished)
+    if(gr->finished)
     {
         if(gr->resignation)
             idx += snprintf(buf + idx, buf_siz - idx,
@@ -377,7 +377,7 @@ bool undo_last_play(
         is_black = !is_black;
     }
 
-    gr->game_finished = false;
+    gr->finished = false;
 
     current_game_bak_set = false;
     return true;

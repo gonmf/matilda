@@ -33,7 +33,7 @@ typedef struct __game_record_ {
 	move moves[MAX_GAME_LENGTH];
     u16 hashes[MAX_GAME_LENGTH];
 	u16 turns;
-	bool game_finished;
+	bool finished;
     bool resignation;
     bool timeout;
 	d16 final_score; /* 0 if draw */

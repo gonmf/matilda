@@ -72,7 +72,7 @@ u32 export_game_as_sgf_to_buffer(
     buf += snprintf(buf, size - (buf - buffer), "KM[%s]\n", kstr);
     release(kstr);
 
-    if(gr->game_finished)
+    if(gr->finished)
     {
         if(gr->resignation)
             buf += snprintf(buf, size - (buf - buffer), "RE[%c+R]\n",
@@ -307,7 +307,7 @@ tes");
     /*
     Result
     */
-    bool game_finished = false;
+    bool finished = false;
     bool resignation = false;
     bool timeout = false;
     d16 final_score = 0;
@@ -316,17 +316,17 @@ tes");
     str_between(result, buf, "RE[", "]");
 
     if(result[0] == 0 || strcmp(result, "Void") == 0)
-        gr->game_finished = false;
+        gr->finished = false;
     else
         if(strcmp(result, "?") == 0 || strcmp(result, "Draw") == 0 ||
             strcmp(result, "0") == 0)
         {
-            game_finished = true;
+            finished = true;
         }
         else
             if(result[0] == 'B')
             {
-                game_finished = true;
+                finished = true;
                 if(strlen(result) > 2)
                 {
                     result += 2;
@@ -359,7 +359,7 @@ tes");
             }
             else
             {
-                game_finished = true;
+                finished = true;
                 if(strlen(result) > 2)
                 {
                     result += 2;
@@ -459,7 +459,7 @@ tes");
         }
     }
 
-    gr->game_finished = game_finished;
+    gr->finished = finished;
     gr->resignation = resignation;
     gr->timeout = timeout;
     gr->final_score = final_score;

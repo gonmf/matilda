@@ -83,6 +83,15 @@ bool parse_int(
 );
 
 /*
+Parses a 32-bit unsigned integer.
+RETURNS true if valid
+*/
+bool parse_uint(
+    u32 * i,
+    const char * s
+);
+
+/*
 Parses a floating point value.
 RETURNS true if valid
 */

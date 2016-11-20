@@ -214,6 +214,22 @@ bool parse_int(
 }
 
 /*
+Parses a 32-bit unsigned integer.
+RETURNS true if valid
+*/
+bool parse_uint(
+    u32 * i,
+    const char * s
+){
+    if(!string_match(s, "1234567890"))
+        return false;
+
+    errno = 0;
+    *i = (u32)strtol(s, NULL, 0);
+    return !(errno == ERANGE || errno == EINVAL);
+}
+
+/*
 Parses a floating point value.
 RETURNS true if valid
 */
