@@ -136,6 +136,7 @@ int main(
 
         if(!import_game_from_sgf2(gr, filenames[fid], buf, MAX_FILE_SIZ))
         {
+            ++games_skipped;
             if(!no_print)
                 printf(" skipped\n");
             continue;
@@ -144,6 +145,7 @@ int main(
         /* Ignore handicap matches */
         if(gr->handicap_stones.count > 0)
         {
+            ++games_skipped;
             if(!no_print)
                 printf(" skipped\n");
             continue;
@@ -152,6 +154,7 @@ int main(
         /* Only use winner plays so ignore games without score */
         if(gr->final_score == 0)
         {
+            ++games_skipped;
             if(!no_print)
                 printf(" skipped\n");
             continue;
@@ -167,7 +170,9 @@ int main(
         bool winner_is_black = gr->final_score > 0;
         bool is_black = false;
 
-        for(d16 k = 0; k < gr->turns; ++k)
+        u16 total_turns = (gr->turns * 2) / 3;
+
+        for(d16 k = 0; k < total_turns; ++k)
         {
             is_black = !is_black;
             move m = gr->moves[k];

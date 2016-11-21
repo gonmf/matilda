@@ -138,7 +138,8 @@ static void set_parameter(
             if(!parse_uint(&val, value) || val > UINT16_MAX)
             {
                 char * buf = alloc();
-                snprintf(buf, MAX_PAGE_SIZ, "integer format error: %s", value);
+                snprintf(buf, MAX_PAGE_SIZ, "unsigned integer format error: %s",
+                    value);
                 flog_crit("init", buf);
                 release(buf);
             }
@@ -353,11 +354,13 @@ int main(
     }
 
     fprintf(stderr, "matilda - Go/Igo/Weiqi/Baduk computer player\n\n");
+    u16 args_understood = 0;
 
     for(int i = 1; i < argc; ++i)
     {
         if((strcmp(argv[i], "-l") == 0 || strcmp(argv[i], "--log") == 0))
         {
+            args_understood += 1;
             if(i == argc - 1)
             {
                 flog_config_modes(0);
@@ -370,6 +373,7 @@ int main(
                 continue;
             }
 
+            args_understood += 1;
             u16 mode = 0;
             for(u16 j = 0; argv[i + 1][j]; ++j)
             {
@@ -410,6 +414,7 @@ int main(
 
         if(strcmp(argv[i], "--log_dest") == 0 && i < argc - 1)
         {
+            args_understood += 2;
             u16 dest = 0;
             for(u16 j = 0; argv[i + 1][j]; ++j)
             {
@@ -437,6 +442,7 @@ int main(
 
         if(strcmp(argv[i], "--memory") == 0 && i < argc - 1)
         {
+            args_understood += 2;
             d32 v;
             if(!parse_int(&v, argv[i + 1]))
             {
@@ -458,6 +464,7 @@ int main(
 
         if(strcmp(argv[i], "--set") == 0 && i < argc - 2)
         {
+            args_understood += 3;
             set_parameter(argv[i + 1], argv[i + 2]);
             i += 2;
             continue;
@@ -466,6 +473,7 @@ int main(
         if((strcmp(argv[i], "-d") == 0 || strcmp(argv[i], "--data") == 0) &&
             i < argc - 1)
         {
+            args_understood += 2;
             if(!set_data_folder(argv[i + 1]))
             {
                 fprintf(stderr, "data directory path %s is not valid\n",
@@ -479,6 +487,7 @@ int main(
 
         if(strcmp(argv[i], "--threads") == 0 && i < argc - 1)
         {
+            args_understood += 2;
             d32 v;
             if(!parse_int(&v, argv[i + 1]))
             {
@@ -502,6 +511,7 @@ int main(
     {
         if(strcmp(argv[i], "--benchmark") == 0)
         {
+            args_understood += 1;
             u32 sims = mcts_benchmark();
             for(u8 i = 1; i < BENCHMARK_TIME; ++i)
             {
@@ -518,6 +528,7 @@ int main(
         if((strcmp(argv[i], "-m") == 0 || strcmp(argv[i], "--mode") == 0) &&
             i < argc - 1)
         {
+            args_understood += 2;
             if(strcmp(argv[i + 1], "text") == 0)
             {
                 use_gtp = false;
@@ -545,6 +556,7 @@ int main(
         if((strcmp(argv[i], "-c") == 0 || strcmp(argv[i], "--color") == 0) && i
             < argc - 1)
         {
+            args_understood += 2;
             if(argv[i + 1][0] == 'b' || argv[i + 1][0] == 'B')
                 human_player_color = true;
             else
@@ -563,12 +575,14 @@ int main(
 
         if(strcmp(argv[i], "--save_all") == 0)
         {
+            args_understood += 1;
             save_all_games_to_file = true;
             continue;
         }
 
         if(strcmp(argv[i], "--think_in_opt_time") == 0)
         {
+            args_understood += 1;
             think_in_opt_turn = true;
             time_related_set = true;
             continue;
@@ -576,6 +590,7 @@ int main(
 
         if(strcmp(argv[i], "-t") == 0 || strcmp(argv[i], "--time") == 0)
         {
+            args_understood += 2;
             time_system tmp;
             if(!str_to_time_system(&tmp, argv[i + 1]))
             {
@@ -606,12 +621,14 @@ int main(
 
         if(strcmp(argv[i], "--disable_gtp_time_control") == 0)
         {
+            args_understood += 1;
             time_system_overriden = true;
             continue;
         }
 
         if(strcmp(argv[i], "--resign_on_timeout") == 0)
         {
+            args_understood += 1;
             resign_on_timeout = true;
             time_related_set = true;
             continue;
@@ -619,6 +636,7 @@ int main(
 
         if(strcmp(argv[i], "--playouts") == 0 && i < argc - 1)
         {
+            args_understood += 2;
             d32 v;
             if(!parse_int(&v, argv[i + 1]))
             {
@@ -639,6 +657,7 @@ int main(
 
         if(strcmp(argv[i], "--disable_opening_books") == 0)
         {
+            args_understood += 1;
             opening_books_enabled = false;
             set_use_of_opening_book(false);
             continue;
@@ -646,15 +665,19 @@ int main(
 
         if(strcmp(argv[i], "--sentinel") == 0 && i < argc - 1)
         {
+            args_understood += 2;
             u32 len = strlen(argv[i + 1]) + 1;
             sentinel_file = malloc(len);
             memcpy(sentinel_file, argv[i + 1], len);
             ++i;
             continue;
         }
+    }
 
-        fprintf(stderr, "Unknown argument supplied: %s\nStart with --help flag \
-for usage information.\n", argv[i]);
+    if(args_understood != argc - 1)
+    {
+        fprintf(stderr, "Unknown argument supplied; start with --help flag for \
+usage instructions.\n");
         return EXIT_FAILURE;
     }
 
