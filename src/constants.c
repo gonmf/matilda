@@ -29,7 +29,7 @@ u8 active_bits_in_byte[256];
 #include "move.h"
 #include "types.h"
 
-d16 komi;
+d16 komi = DEFAULT_KOMI;
 u8 out_neighbors8[TOTAL_BOARD_SIZ];
 u8 out_neighbors4[TOTAL_BOARD_SIZ];
 move_seq neighbors_side[TOTAL_BOARD_SIZ];
@@ -176,8 +176,6 @@ void board_constants_init()
     if(board_constants_inited)
         return;
     board_constants_inited = true;
-
-    komi = DEFAULT_KOMI;
 
     /* Adjacent neighbor positions */
     init_moves_by_distance(neighbors_side, 1, false);
