@@ -43,7 +43,7 @@ ignored.
 #include "timem.h"
 
 
-#define MAX_FILES 500000
+#define MAX_FILES 200000
 
 static char * filenames[MAX_FILES];
 
@@ -116,7 +116,7 @@ int main(int argc, char * argv[]){
         {
             ++games_skipped;
             if(!no_print)
-                printf(" skipped\n");
+                printf(" skipped - handicap game\n");
             continue;
         }
 
@@ -124,7 +124,7 @@ int main(int argc, char * argv[]){
         {
             ++games_skipped;
             if(!no_print)
-                printf(" skipped\n");
+                printf(" skipped - unknown final score\n");
             continue;
         }
 

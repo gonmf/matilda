@@ -32,14 +32,13 @@ typedef struct __mlp_ {
 
 
 /* Perceptive field distance */
-#define NN_CONN_DST 6
+#define NN_CONN_DST 7
 
 #define TARGET_VALUE_OFFSET 0.7159
 #define HYPERBOLIC_CONSTANT_A 1.7159
 #define HYPERBOLIC_CONSTANT_B (2.0 / 3.0)
 
-/*    Feature codification (3 bit, 3 matrixes)
-*/
+/* Feature codification (3 bit, 3 matrixes) */
 #define NN_BLACK_STONE 2
 #define NN_WHITE_STONE 1
 #define NN_ILLEGAL 0 /* liberties after playing = 0 */

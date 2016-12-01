@@ -271,7 +271,7 @@ bool import_game_from_sgf2(
             flog_warn("sgff", "board size can not be guessed from play coordina\
 tes");
         }
-        if(board_size != BOARD_SIZ)
+        if(board_size != BOARD_SIZ && board_size + 1 != BOARD_SIZ)
         {
             if(!wrong_board_size_warned){
                 wrong_board_size_warned = true;

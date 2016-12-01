@@ -1,10 +1,7 @@
 *.o
 *.d
 matilda
-matilda-old
-matilda9
-matilda13
-matilda19
+matilda*
 test
 gen_opening_book
 gen_joseki_book
