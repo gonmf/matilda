@@ -77,7 +77,7 @@ static void export_table_as_ob(
 ){
     char * str = alloc();
 
-    snprintf(str, MAX_PAGE_SIZ, "%s%ux%u.ob", data_folder(),
+    snprintf(str, MAX_PAGE_SIZ, "%s%ux%u.ob.new", data_folder(),
         BOARD_SIZ, BOARD_SIZ);
 
     FILE * fp = fopen(str, "w");
