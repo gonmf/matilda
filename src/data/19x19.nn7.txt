@@ -1,0 +1,24 @@
+ANN TRAINER
+    board size=19x19
+    target value offset=0.7159
+    hyperbolic constant a=1.7159
+    hyperbolic constant b=0.6667
+    initial minimum weight=0.0001
+    learning rate=0.0020
+    omp thread num=4
+    nr of input units=1083
+    nr of neurons=722
+    nr of connections=122628, avg 169.8
+    max weight distance=7
+
+20:16:26 | info | dset | Data set loaded with 1000000 examples, yielding 7999497 examples
+20:16:26: Init learning rates and randomizing weights
+Epoch       Error  Accuracy  Selected  BPAvg Min  Q1  Med  Q2  Max      Time
+    1    2.000573  0.018171  0.544771   85.5   1  27   65 123  361  20:49:01
+    2    1.994835  0.015413  0.567869   82.8   1  25   61 118  361  21:22:15
+    3    1.993810  0.019916  0.565611   81.9   1  22   61 119  361  21:56:56
+    4    1.993492  0.019639  0.568851   81.9   1  23   60 119  361  22:30:21
+    5    1.993291  0.015787  0.567337   81.8   1  24   60 120  361  23:02:14
+    6    1.993119  0.017287  0.568993   82.3   1  24   60 118  361  23:33:47
+    7    1.992965  0.019244  0.569815   82.0   1  23   60 119  361  00:07:57
+    8    1.992803  0.016998  0.568440   82.2   1  25   61 116  361  00:40:08
