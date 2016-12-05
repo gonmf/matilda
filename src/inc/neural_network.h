@@ -32,7 +32,11 @@ typedef struct __mlp_ {
 
 
 /* Perceptive field distance */
+#if BOARD_SIZ < 10
 #define NN_CONN_DST 8
+#else
+#define NN_CONN_DST 7
+#endif
 
 #define TARGET_VALUE_OFFSET 0.7159
 #define HYPERBOLIC_CONSTANT_A 1.7159
