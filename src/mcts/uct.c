@@ -77,7 +77,7 @@ void mcts_init()
     pat3_init();
     tt_init();
     load_starting_points();
-    nn_init();
+
     for(u8 i = 0; i < MAXIMUM_NUM_THREADS; ++i)
         neural_nets[i] = alloc_instance();
 

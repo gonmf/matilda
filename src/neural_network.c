@@ -330,7 +330,6 @@ void neural_network_eval(
     board * state,
     bool is_black
 ){
-    nn_init();
     mlp * nn = alloc_instance();
     if(nn == NULL){
         flog_crit("nn", "neural network file not available");

@@ -21,6 +21,7 @@ Also deals with updating some internal parameters at startup time.
 #include "flog.h"
 #include "game_record.h"
 #include "mcts.h"
+#include "neural_network.h"
 #include "opening_book.h"
 #include "pts_file.h"
 #include "randg.h"
@@ -238,6 +239,9 @@ he opponents turn.\n\n");
         fprintf(stderr, "        \033[1m--disable_opening_books\033[0m\n\n");
         fprintf(stderr, "        Disable the use of opening books.\n\n");
 
+        fprintf(stderr, "        \033[1m--disable_neural_nets\033[0m\n\n");
+        fprintf(stderr, "        Disable the use of neural networks.\n\n");
+
         fprintf(stderr, "        \033[1m-l, --log <mask>\033[0m\n\n");
         fprintf(stderr, "        Set the message types to log to file and print\
  to the standard error\n        file descriptor. The available modes are:\n\n  \
@@ -320,6 +324,7 @@ int main(
     bool human_player_color = true;
     bool think_in_opt_turn = false;
     bool opening_books_enabled = true;
+    bool neural_networks_enabled = true;
     set_time_per_turn(&current_clock_black, DEFAULT_TIME_PER_TURN);
     set_time_per_turn(&current_clock_white, DEFAULT_TIME_PER_TURN);
     d16 desired_num_threads = DEFAULT_NUM_THREADS;
@@ -663,6 +668,13 @@ int main(
             continue;
         }
 
+        if(strcmp(argv[i], "--disable_neural_nets") == 0)
+        {
+            args_understood += 1;
+            neural_networks_enabled = false;
+            continue;
+        }
+
         if(strcmp(argv[i], "--sentinel") == 0 && i < argc - 1)
         {
             args_understood += 2;
@@ -718,6 +730,8 @@ usage instructions.\n");
     assert_data_folder_exists();
     if(opening_books_enabled)
         opening_book_init();
+    if(neural_networks_enabled)
+        nn_init();
     mcts_init();
     load_handicap_points();
     load_hoshi_points();
