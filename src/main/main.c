@@ -540,8 +540,11 @@ int main(
             load_hoshi_points();
             load_starting_points();
 
-            // Perform two initial benchmarsk just to allocate memory so all
-            // next runs are made in similar conditions.
+            /*
+            Perform a larger initial MCTS just to allocate memory so all
+            next runs are made in more similar pre-allocated memory
+            conditions.
+            */
             mcts_benchmark(14 * 1000);
 
             u32 sims = 0;
