@@ -514,11 +514,34 @@ int main(
 
     for(int i = 1; i < argc; ++i)
     {
+        if(strcmp(argv[i], "--disable_neural_nets") == 0)
+        {
+            args_understood += 1;
+            neural_networks_enabled = false;
+            continue;
+        }
+    }
+
+    for(int i = 1; i < argc; ++i)
+    {
         if(strcmp(argv[i], "--benchmark") == 0)
         {
             args_understood += 1;
-            u32 sims = mcts_benchmark();
-            for(u8 i = 1; i < BENCHMARK_TIME; ++i)
+
+            if(neural_networks_enabled)
+                nn_init();
+            mcts_init();
+            load_handicap_points();
+            load_hoshi_points();
+            load_starting_points();
+
+            // Perform two initial benchmarsk just to allocate memory so all
+            // next runs are made in similar conditions.
+            mcts_benchmark();
+            mcts_benchmark();
+
+            u32 sims = 0;
+            for(u8 i = 0; i < BENCHMARK_TIME; ++i)
             {
                 tt_clean_all() ;
                 sims += mcts_benchmark();
@@ -665,13 +688,6 @@ int main(
             args_understood += 1;
             opening_books_enabled = false;
             set_use_of_opening_book(false);
-            continue;
-        }
-
-        if(strcmp(argv[i], "--disable_neural_nets") == 0)
-        {
-            args_understood += 1;
-            neural_networks_enabled = false;
             continue;
         }
 

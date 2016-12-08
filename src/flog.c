@@ -322,7 +322,7 @@ void build_info(
     }
     idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx,
         "  Stone value scale factor: %.1f\n", prior_stone_scale_factor);
-    idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx, "  Even: %u\n",
+    idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx, "  Even: %u (x2)\n",
         prior_even);
     idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx, "  Nakade: %u\n",
         prior_nakade);

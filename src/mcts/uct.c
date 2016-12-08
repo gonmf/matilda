@@ -691,6 +691,7 @@ u32 mcts_benchmark()
     bool search_stop = false;
     u32 simulations = 0;
 
+    // TODO do a longer initial run to initialize state
     #pragma omp parallel for
     for(u32 sim = 0; sim < INT32_MAX; ++sim)
     {
@@ -698,7 +699,7 @@ u32 mcts_benchmark()
         {
             /* there is no way to simultaneously cancel all OMP threads */
             sim = INT32_MAX;
-            continue;
+            continue; // TODO change to break
         }
 
         cfg_board cb;

@@ -259,8 +259,8 @@ void init_new_state(
         /*
         Even game heuristic
         */
-        u32 mc_w = prior_even / 2;
-        u32 mc_v = prior_even;
+        u32 mc_w = prior_even;
+        u32 mc_v = prior_even * 2;
 
         /*
         Avoid typically poor plays like eye shape

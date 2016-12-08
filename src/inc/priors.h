@@ -32,7 +32,7 @@ Set to 0 to disable each heuristic.
 Tuned with CLOP in 9x9 with 10k playouts/turn in self-play for 34k games.
 */
 #define PRIOR_STONE_SCALE_FACTOR 1.28755
-#define PRIOR_EVEN       31 /* even heuristic */
+#define PRIOR_EVEN       15 /* even heuristic, is multiplied by two */
 #define PRIOR_NAKADE     70 /* nakade heuristic */
 #define PRIOR_SELF_ATARI 18 /* avoid self-ataris */
 #define PRIOR_ATTACK     28

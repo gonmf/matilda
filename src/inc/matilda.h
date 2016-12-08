@@ -44,7 +44,7 @@ The value is in milliseconds.
 
 EXPECTED: 2 to 400
 */
-#define LATENCY_COMPENSATION 0 // 250 /* Japan is quite far away */
+#define LATENCY_COMPENSATION 250 // 250 /* Japan is quite far away */
 
 
 /*
