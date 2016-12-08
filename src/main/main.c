@@ -39,6 +39,7 @@ time_system current_clock_white;
 bool time_system_overriden = false; /* ignore attempts to change time system */
 bool save_all_games_to_file = false; /* save all games as SGF on gameover */
 bool resign_on_timeout = false; /* resign instead of passing if timed out */
+bool pass_when_losing; /* whether we pass instead of resigning */
 u32 limit_by_playouts = 0; /* limit MCTS by playouts instead of time */
 char * sentinel_file = NULL;
 clock_t start_cpu_time;
@@ -211,6 +212,14 @@ the specific mode you want\n        to be used.\n\n");
         fprintf(stderr, "        Select human player color (text mode only).\n\\
 n");
 
+        fprintf(stderr, "        \033[1m--losing <keyword>\033[0m\n\n");
+        fprintf(stderr, "        If playing with even komi Matilda may confuse \
+drawn positions with\n        lost positions, and resign when actually winning.\
+\n");
+        fprintf(stderr, "        Choose whether to resign or pass when losing t\
+he match. The keyword\n        argument can be resign or pass. By default Matil\
+da resigns on text mode\n        and passes on GTP mode.\n\n");
+
         fprintf(stderr, "        \033[1m--resign_on_timeout\033[0m\n\n");
         fprintf(stderr, "        Resign if the program believes to have lost on\
  time.\n\n");
@@ -319,7 +328,8 @@ int main(
     flog_config_destinations(LOG_DEST_FILE); // default for text mode
     bool flog_dest_set = false;
 
-    bool use_gtp = (isatty(STDIN_FILENO) == 0);
+    bool use_gtp = pass_when_losing = (isatty(STDIN_FILENO) == 0);
+
     bool color_set = false;
     bool time_related_set = false;
     bool human_player_color = true;
@@ -569,6 +579,8 @@ int main(
                 use_gtp = false;
                 if(!flog_dest_set)
                     flog_config_destinations(LOG_DEST_FILE);
+
+                pass_when_losing = false;
             }
             else
                 if(strcmp(argv[i + 1], "gtp") == 0)
@@ -577,6 +589,8 @@ int main(
                     if(!flog_dest_set)
                         flog_config_destinations(LOG_DEST_STDF |
                             LOG_DEST_FILE);
+
+                    pass_when_losing = true;
                 }
                 else
                 {
@@ -704,6 +718,31 @@ int main(
             u32 len = strlen(argv[i + 1]) + 1;
             sentinel_file = malloc(len);
             memcpy(sentinel_file, argv[i + 1], len);
+            ++i;
+            continue;
+        }
+    }
+
+    for(int i = 1; i < argc - 1; ++i)
+    {
+        if(strcmp(argv[i], "--losing") == 0)
+        {
+            args_understood += 2;
+            if(strcmp(argv[i + 1], "pass") == 0)
+            {
+                pass_when_losing = true;
+            }
+            else
+                if(strcmp(argv[i + 1], "resign") == 0)
+                {
+                    pass_when_losing = false;
+                }
+                else
+                {
+                    fprintf(stderr, "illegal format for --losing argument\n");
+                    exit(EXIT_FAILURE);
+                }
+
             ++i;
             continue;
         }

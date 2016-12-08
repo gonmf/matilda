@@ -183,7 +183,7 @@ static void freed_mem_message(
 
     format_mem_size(s2, states * sizeof(tt_stats));
     snprintf(s, MAX_PAGE_SIZ, "freed %u states (%s)", states, s2);
-    flog_info("mcts", s);
+    flog_info("engn", s);
 
     release(s2);
     release(s);

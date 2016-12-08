@@ -99,6 +99,7 @@ const char * supported_commands[] =
 extern bool time_system_overriden;
 extern bool save_all_games_to_file;
 extern bool resign_on_timeout;
+extern bool pass_when_losing;
 extern game_record current_game;
 extern time_system current_clock_black;
 extern time_system current_clock_white;
@@ -534,8 +535,8 @@ static void generic_genmove(
     FILE * fp,
     int id,
     const char * color,
-    bool reg,
-    bool allow_early_pass
+    bool commit_game_changes,
+    bool allow_pass_when_winning
 ){
     bool is_black;
     if(!parse_color(&is_black, color))
@@ -547,10 +548,13 @@ static void generic_genmove(
     char * buf = alloc();
     out_board out_b;
 
-    if(is_black)
-        has_genmoved_as_black = true;
-    else
-        has_genmoved_as_white = true;
+    if(commit_game_changes)
+    {
+        if(is_black)
+            has_genmoved_as_black = true;
+        else
+            has_genmoved_as_white = true;
+    }
 
     board current_state;
     current_game_state(&current_state, &current_game);
@@ -570,6 +574,9 @@ static void generic_genmove(
     time_system * curr_clock = is_black ? &current_clock_black :
         &current_clock_white;
 
+    /*
+    Resign on timeout
+    */
     if(resign_on_timeout && curr_clock->timed_out)
     {
         gtp_answer(fp, id, "resign");
@@ -622,42 +629,53 @@ static void generic_genmove(
 
     memcpy(&last_out_board, &out_b, sizeof(out_board));
 
-    /*
-    The game is lost, resign or play something at random.
-    */
-    if(!has_play)
-    {
-#if CAN_RESIGN
-        gtp_answer(fp, id, "resign");
-
-        snprintf(buf, MAX_PAGE_SIZ, "matilda playing as %s (%c) resigns\n",
-            is_black ? "black" : "white", is_black ? BLACK_STONE_CHAR :
-            WHITE_STONE_CHAR);
-        flog_info("gtp", buf);
-
-        current_game.finished = true;
-        current_game.resignation = true;
-        current_game.final_score = is_black ? -1 : 1;
-
-        release(buf);
-
-        close_if_sentinel_found();
-        return;
-#endif
-        /* Pass */
-        clear_out_board(&out_b);
-    }
-
     move m;
-    if(allow_early_pass && out_b.pass >= JUST_PASS_WINRATE)
-        m = PASS;
+    if(has_play)
+    {
+        /*
+        A play or pass is suggested.
+        */
+        if(allow_pass_when_winning && out_b.pass >= JUST_PASS_WINRATE)
+            m = PASS;
+        else
+            m = select_play(&out_b, is_black, &current_game);
+    }
     else
-        m = select_play(&out_b, is_black, &current_game);
+    {
+        /*
+        The game is lost, a resign or pass is suggested.
+        */
+        if(pass_when_losing)
+        {
+            m = PASS;
+        }
+        else
+        {
+            gtp_answer(fp, id, "resign");
+
+            snprintf(buf, MAX_PAGE_SIZ, "matilda playing as %s (%c) resigns\n",
+                is_black ? "black" : "white", is_black ? BLACK_STONE_CHAR :
+                WHITE_STONE_CHAR);
+            flog_info("gtp", buf);
+
+            if(commit_game_changes)
+            {
+                current_game.finished = true;
+                current_game.resignation = true;
+                current_game.final_score = is_black ? -1 : 1;
+            }
+
+            release(buf);
+
+            close_if_sentinel_found();
+            return;
+        }
+    }
 
     coord_to_gtp_vertex(buf, m);
     gtp_answer(fp, id, buf);
 
-    if(!reg)
+    if(commit_game_changes)
     {
         if(limit_by_playouts == 0)
         {
@@ -681,7 +699,7 @@ static void gtp_genmove(
     int id,
     const char * color
 ){
-    generic_genmove(fp, id, color, false, true);
+    generic_genmove(fp, id, color, true, true);
 }
 
 static void gtp_genmove_cleanup(
@@ -689,7 +707,7 @@ static void gtp_genmove_cleanup(
     int id,
     const char * color
 ){
-    generic_genmove(fp, id, color, false, false);
+    generic_genmove(fp, id, color, true, false);
 }
 
 static void gtp_reg_genmove(
@@ -697,7 +715,7 @@ static void gtp_reg_genmove(
     int id,
     const char * color
 ){
-    generic_genmove(fp, id, color, true, true);
+    generic_genmove(fp, id, color, false, true);
 }
 
 static void gtp_echo(
