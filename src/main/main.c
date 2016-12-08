@@ -277,8 +277,9 @@ The default is the total\n        number of normal plus hyperthreaded CPU cores\
 .\n\n");
 
         fprintf(stderr, "        \033[1m--benchmark\033[0m\n\n");
-        fprintf(stderr, "        Run a %u second benchmark of the system, retur\
-ning a linear measure of\n        MCTS performance.\n\n", BENCHMARK_TIME);
+        fprintf(stderr, "        Run a two minute benchmark of the system, retu\
+rning a linear measure of\n        MCTS performance (number of simulations per \
+second.\n\n");
 
         fprintf(stderr, "        \033[1m--sentinel <filename>\033[0m\n\n");
         fprintf(stderr, "        Close the program after a game if the file is \
@@ -526,6 +527,10 @@ int main(
     {
         if(strcmp(argv[i], "--benchmark") == 0)
         {
+            /*
+            Perform a 2-minute benchmark made of 12 1-minute MCTS,
+            priting the number of simulations per second.
+            */
             args_understood += 1;
 
             if(neural_networks_enabled)
@@ -537,16 +542,15 @@ int main(
 
             // Perform two initial benchmarsk just to allocate memory so all
             // next runs are made in similar conditions.
-            mcts_benchmark();
-            mcts_benchmark();
+            mcts_benchmark(14 * 1000);
 
             u32 sims = 0;
-            for(u8 i = 0; i < BENCHMARK_TIME; ++i)
+            for(u8 i = 0; i < 12; ++i)
             {
                 tt_clean_all() ;
-                sims += mcts_benchmark();
+                sims += mcts_benchmark(10 * 1000);
             }
-            fprintf(stderr, "%u\n", sims / BENCHMARK_TIME);
+            fprintf(stderr, "%u\n", sims / 120);
             return EXIT_SUCCESS;
         }
     }

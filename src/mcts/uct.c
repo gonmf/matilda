@@ -662,14 +662,15 @@ void mcts_resume(
 Execute a 1 second MCTS and return the number of simulations ran.
 RETURNS simulations number
 */
-u32 mcts_benchmark()
-{
+u32 mcts_benchmark(
+    u32 time_available /* in milliseconds */
+){
     mcts_init();
     board b;
     clear_board(&b);
 
     u64 curr_time = current_time_in_millis();
-    u64 stop_time = curr_time + 1000;
+    u64 stop_time = curr_time + time_available;
 
     u64 start_zobrist_hash = zobrist_new_hash(&b);
     tt_stats * stats = tt_lookup_create(&b, true,

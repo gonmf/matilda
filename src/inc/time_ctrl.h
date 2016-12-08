@@ -24,7 +24,7 @@ How much time a play should be given over the linear distribution of time for
 the match. Values over 1 favor thinking more in the begining of matches, which
 is the objective.
 */
-#define TIME_ALLOT_FACTOR 1.24
+#define TIME_ALLOT_FACTOR 1.22
 
 
 #define EXPECTED_GAME_LENGTH ((TOTAL_BOARD_SIZ * 2) / 3)

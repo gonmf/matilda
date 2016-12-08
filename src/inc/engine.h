@@ -13,9 +13,6 @@ maintenance if needed.
 #include "board.h"
 
 
-#define BENCHMARK_TIME 60 /* seconds */
-
-
 /*
 Produce a short version string. Does not include program name.
 */
