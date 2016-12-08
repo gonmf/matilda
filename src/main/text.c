@@ -20,6 +20,7 @@ or pass).
 #include "engine.h"
 #include "flog.h"
 #include "game_record.h"
+#include "mcts.h"
 #include "pts_file.h"
 #include "scoring.h"
 #include "sgf.h"
@@ -33,6 +34,7 @@ extern game_record current_game;
 extern time_system current_clock_black;
 extern time_system current_clock_white;
 extern bool save_all_games_to_file;
+extern bool pass_when_losing;
 extern u32 limit_by_playouts;
 
 static u8 tips = 3;
@@ -127,17 +129,18 @@ static void text_genmove(
 
     if(!has_play)
     {
-#if CAN_RESIGN
-        *resigned = true;
-        return;
-#else
-        *resigned = false;
-#endif
-        *passed = true;
+        if(pass_when_losing)
+            *resigned = true;
+        else
+            *passed = true;
         return;
     }
 
-    move m = select_play(&out_b, is_black, &current_game);
+    move m;
+    if(out_b.pass >= JUST_PASS_WINRATE)
+        m = PASS;
+    else
+        m = select_play(&out_b, is_black, &current_game);
 
     add_play(&current_game, m);
 
@@ -267,6 +270,8 @@ signation.\n\n", s);
 
             if(resigned)
             {
+                current_game.finished = true;
+                current_game.resignation = true;
                 fprintf(stderr, "\n\"I resign. Thank you for the game.\"\n\n");
 
                 fprintf(stderr, "%s (%c) wins by resignation.\n\n", is_black ?
@@ -280,6 +285,7 @@ signation.\n\n", s);
             {
                 if(last_played_pass)
                 {
+                    current_game.finished = true;
                     fprintf(stderr, "Computer passes, game is over.\n");
                     text_print_score();
                     fprintf(stderr, "\n");
@@ -336,6 +342,8 @@ sign/tip/score/quit)\n", mstr);
 
             if(strcmp(line, "resign") == 0)
             {
+                current_game.finished = true;
+                current_game.resignation = true;
                 fprintf(stderr, "%s (%c) wins by resignation.\n\n", is_black ?
                     "White" : "Black", is_black ? WHITE_STONE_CHAR :
                     BLACK_STONE_CHAR);
@@ -406,6 +414,7 @@ sign/tip/score/quit)\n", mstr);
             {
                 if(last_played_pass)
                 {
+                    current_game.finished = true;
                     fprintf(stderr, "Two passes in a row, game is over.\n");
                     text_print_score();
                     fprintf(stderr, "\n");

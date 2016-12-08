@@ -65,12 +65,14 @@ bool import_game_from_sgf(
 );
 
 /*
+Import a game record from the contents of the buffer.
 RETURNS true if the game has been found and read correctly
 */
 bool import_game_from_sgf2(
     game_record * gr,
     const char * filename,
-    char * buffer
+    char * buf,
+    u32 buf_siz
 );
 
 #endif

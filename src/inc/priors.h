@@ -20,9 +20,10 @@ It can also record the average final score, for the purpose of score estimation.
 #include "matilda.h"
 
 #include "board.h"
-#include "types.h"
-#include "transpositions.h"
 #include "cfg_board.h"
+#include "neural_network.h"
+#include "transpositions.h"
+#include "types.h"
 
 /*
 Prior values heuristic contributions.
@@ -31,7 +32,7 @@ Set to 0 to disable each heuristic.
 Tuned with CLOP in 9x9 with 10k playouts/turn in self-play for 34k games.
 */
 #define PRIOR_STONE_SCALE_FACTOR 1.28755
-#define PRIOR_EVEN       31 /* even heuristic */
+#define PRIOR_EVEN       15 /* even heuristic, is multiplied by two */
 #define PRIOR_NAKADE     70 /* nakade heuristic */
 #define PRIOR_SELF_ATARI 18 /* avoid self-ataris */
 #define PRIOR_ATTACK     28
@@ -48,6 +49,9 @@ Tuned with CLOP in 9x9 with 10k playouts/turn in self-play for 34k games.
 #define PRIOR_BAD_PLAY   95
 #define PRIOR_PASS      130
 #define PRIOR_STARTING   76 /* starting point like around the hoshi */
+#define PRIOR_NEURAL_NETWORK    14
+#define PRIOR_NN_BEST_SEP     0.23
+#define PRIOR_NN_NEUTRAL_SEP 0.258
 
 
 /*
@@ -57,7 +61,8 @@ information.
 void init_new_state(
     tt_stats * stats,
     cfg_board * cb,
-    bool is_black
+    bool is_black,
+    mlp * net /* null if unavailable */
 );
 
 #if PRIOR_EVEN == 0

@@ -23,6 +23,7 @@ crashes, but it is impossible to guarantee this in all cases.
 #include "flog.h"
 #include "game_record.h"
 #include "mcts.h"
+#include "neural_network.h"
 #include "pat3.h"
 #include "playout.h"
 #include "scoring.h"
@@ -57,6 +58,9 @@ extern u16 prior_line2;
 extern u16 prior_line3;
 extern u16 prior_empty;
 extern u16 prior_corner;
+extern u16 prior_neural_network;
+extern double prior_nn_best_sep;
+extern double prior_nn_neutral_sep;
 extern double rave_equiv;
 extern u16 pl_skip_saving;
 extern u16 pl_skip_nakade;
@@ -267,15 +271,11 @@ void build_info(
         kstr);
     release(kstr);
 
-    idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx, "Can resign: %s\n",
-        YN(CAN_RESIGN));
-    if(CAN_RESIGN)
-    {
-        idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx,
-            "  Bellow win rate: %.2f\n", UCT_RESIGN_WINRATE);
-        idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx,
-            "  Minimum simulations: %u\n", UCT_RESIGN_PLAYOUTS);
-    }
+    idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx,
+        "Resign/pass bellow win rate: %.2f\n", UCT_RESIGN_WINRATE);
+    idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx,
+        "  Minimum simulations: %u\n", UCT_RESIGN_PLAYOUTS);
+
     idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx, "Can stop MCTS early: %s\n",
         YN(UCT_CAN_STOP_EARLY));
     if(UCT_CAN_STOP_EARLY)
@@ -318,7 +318,7 @@ void build_info(
     }
     idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx,
         "  Stone value scale factor: %.1f\n", prior_stone_scale_factor);
-    idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx, "  Even: %u\n",
+    idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx, "  Even: %u (x2)\n",
         prior_even);
     idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx, "  Nakade: %u\n",
         prior_nakade);
@@ -337,6 +337,15 @@ void build_info(
         prior_empty);
     idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx, "  Corners: -%u\n",
         prior_corner);
+
+    idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx, "  NN prior: %u\n",
+        prior_neural_network);
+    idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx, "  NN best: %u%%\n",
+        (u16)(prior_nn_best_sep * 100));
+    idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx, "  NN neutral: %u%%\n",
+        (u16)((prior_nn_neutral_sep + prior_nn_best_sep) * 100));
+    idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx, "  NN distance: %u\n",
+        NN_CONN_DST);
 
     idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx, "Max UCT depth: %u\n",
         MAX_UCT_DEPTH);

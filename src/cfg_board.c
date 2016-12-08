@@ -1020,6 +1020,7 @@ move get_ko_play(
 
 /*
 Calculates the liberties after playing and the number of stones captured.
+Does not test ko.
 RETURNS number of liberties after play
 */
 u8 libs_after_play(
@@ -1244,6 +1245,7 @@ u8 libs_after_play(
 /*
 Calculates if playing at the designated position is legal and safe.
 Also returns whether it would return in a capture.
+Does not test ko.
 RETURNS 0 for illegal, 1 for placed in atari, 2 for safe to play
 */
 u8 safe_to_play2(
@@ -1434,6 +1436,7 @@ u8 safe_to_play2(
 
 /*
 Calculates if playing at the designated position is legal and safe.
+Does not test ko.
 RETURNS 0 for illegal, 1 for placed in atari, 2 for safe to play
 */
 u8 safe_to_play(

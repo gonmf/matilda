@@ -51,7 +51,6 @@ Formats a board position to a Fuego-style opening book rule, for example:
 13 K4 C3 | F11
 With no line break. Does not ascertain the validity of the rule, i.e. do not
 invoke after a capture or pass has occurred.
-// TODO add assertions that format is well understood
 */
 void board_to_ob_rule(
     char * dst,
@@ -94,6 +93,11 @@ void board_to_ob_rule(
         }
         is_black = !is_black;
     }while(found);
+
+    /* Verify we were able to codify every play */
+    for(u16 i = MAX(m1, m2); i < TOTAL_BOARD_SIZ; ++i)
+        if(p[i] != EMPTY)
+            flog_crit("ob", "game position cannot be codified as O.B. rule");
 
     coord_to_alpha_num(mstr, play);
     snprintf(dst + idx, MAX_PAGE_SIZ - idx, "| %s\n", mstr);

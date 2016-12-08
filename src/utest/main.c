@@ -12,7 +12,11 @@
 #include "engine.h"
 #include "flog.h"
 #include "game_record.h"
+#include "mcts.h"
+#include "neural_network.h"
+#include "opening_book.h"
 #include "pat3.h"
+#include "pts_file.h"
 #include "randg.h"
 #include "random_play.h"
 #include "state_changes.h"
@@ -640,7 +644,12 @@ int main()
     rand_init();
     board_constants_init();
     zobrist_init();
-
+    opening_book_init();
+    nn_init();
+    mcts_init();
+    load_handicap_points();
+    load_hoshi_points();
+    load_starting_points();
 
 #if 1
     omp_set_num_threads(1);

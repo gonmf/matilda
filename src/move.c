@@ -140,13 +140,13 @@ move coord_parse_alpha_num(
 
     char c1 = low_char(s[0]);
     u8 i1 = c1 > 'i' ? c1 - 'b' : c1 - 'a';
-    d32 i2;
-    if(!parse_int(&i2, s + 1))
+    u32 i2;
+    if(!parse_uint(&i2, s + 1))
         return NONE;
 
     i2 = BOARD_SIZ - i2;
 
-    if(i1 >= BOARD_SIZ || i2 >= BOARD_SIZ || i2 < 0)
+    if(i1 >= BOARD_SIZ || i2 >= BOARD_SIZ)
         return NONE;
 
     return coord_to_move(i1, i2);
@@ -194,8 +194,8 @@ move coord_parse_num_num(
     char * c1 = strtok(buf, "-");
     if(c1 == NULL)
         return NONE;
-    d32 i1;
-    if(!parse_int(&i1, c1))
+    u32 i1;
+    if(!parse_uint(&i1, c1))
         return NONE;
     if(i1 < 1 || i1 > BOARD_SIZ)
         return NONE;
@@ -203,8 +203,8 @@ move coord_parse_num_num(
     char * c2 = strtok(NULL, "-");
     if(c2 == NULL)
         return NONE;
-    d32 i2;
-    if(!parse_int(&i2, c2))
+    u32 i2;
+    if(!parse_uint(&i2, c2))
         return NONE;
     if(i2 < 1 || i2 > BOARD_SIZ)
         return NONE;

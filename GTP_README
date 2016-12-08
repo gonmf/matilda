@@ -73,6 +73,12 @@ gomill-describe_engine
 
 2.4 Matilda Commands
 
+mtld-game_info -- display current game information including the sequence of all
+plays, player names and game result if any.
+Arguments: none
+Fails: never
+
+
 mtld-last_evaluation -- returns in multi-line format the last full board
 evaluation. It may not cover all plays if the last strategy ran only evaluated
 part of them.

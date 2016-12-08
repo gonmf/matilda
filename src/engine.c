@@ -57,6 +57,22 @@ const char * data_folder()
 }
 
 /*
+Test if folder exists and is accessible.
+RETURNS true if exists
+*/
+bool folder_exists(
+    const char * filename
+){
+    DIR * dir = opendir(filename);
+    if(dir != NULL)
+    {
+        closedir(dir);
+        return false;
+    }
+    return true;
+}
+
+/*
 Sets the new data folder path. If the path is too long, short, or otherwise
 invalid, nothing is changed and false is returned.
 RETURNS true on success
@@ -65,13 +81,17 @@ bool set_data_folder(
     const char * s
 ){
     u32 l = strlen(s);
-    if(l < 2 || l >= MAX_PATH_SIZ - 1)
+    if(l < 2 || l >= MAX_PATH_SIZ - 2)
+        return false;
+
+    if(folder_exists(s))
         return false;
 
     if(s[l - 1] == '/')
         snprintf(_data_folder, MAX_PATH_SIZ, "%s", s);
     else
         snprintf(_data_folder, MAX_PATH_SIZ, "%s/", s);
+
     return true;
 }
 
@@ -163,7 +183,7 @@ static void freed_mem_message(
 
     format_mem_size(s2, states * sizeof(tt_stats));
     snprintf(s, MAX_PAGE_SIZ, "freed %u states (%s)", states, s2);
-    flog_info("mcts", s);
+    flog_info("engn", s);
 
     release(s2);
     release(s);

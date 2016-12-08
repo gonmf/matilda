@@ -29,6 +29,9 @@ The files recognized by Matilda are:
 - *.log - Text file used for event logging. Created by default in the working
     directory.
 
-- *.pts - Text file with lists of points used for handicap, hoshi and other 
+- *.pts - Text file with lists of points used for handicap, hoshi and other
     stone placement. Similar in format to .ob files.
 
+- *.nn - Two-layer multilayer perceptron for whole-board evaluation.
+
+- *.ds - Data set codified for neural network training.

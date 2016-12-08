@@ -72,9 +72,9 @@ u32 export_game_as_sgf_to_buffer(
     buf += snprintf(buf, size - (buf - buffer), "KM[%s]\n", kstr);
     release(kstr);
 
-    if(gr->game_finished)
+    if(gr->finished)
     {
-        if(gr->resignation == 0)
+        if(gr->resignation)
             buf += snprintf(buf, size - (buf - buffer), "RE[%c+R]\n",
                 gr->final_score > 0 ? 'B' : 'W');
         else
@@ -221,16 +221,18 @@ void reset_warning_messages()
 }
 
 /*
+Import a game record from the contents of the buffer.
 RETURNS true if the game has been found and read correctly
 */
 bool import_game_from_sgf2(
     game_record * gr,
     const char * filename,
-    char * buf
+    char * buf,
+    u32 buf_siz
 ){
     clear_game_record(gr);
 
-    d32 chars_read = read_ascii_file(buf, MAX_FILE_SIZ, filename);
+    d32 chars_read = read_ascii_file(buf, buf_siz, filename);
     if(chars_read < 1)
     {
         snprintf(buf, MAX_PAGE_SIZ, "could not open/read file %s", filename);
@@ -269,7 +271,7 @@ bool import_game_from_sgf2(
             flog_warn("sgff", "board size can not be guessed from play coordina\
 tes");
         }
-        if(board_size != BOARD_SIZ)
+        if(board_size != BOARD_SIZ && board_size + 1 != BOARD_SIZ)
         {
             if(!wrong_board_size_warned){
                 wrong_board_size_warned = true;
@@ -305,35 +307,39 @@ tes");
     /*
     Result
     */
+    bool finished = false;
+    bool resignation = false;
+    bool timeout = false;
+    d16 final_score = 0;
+
     char * result = tmp;
     str_between(result, buf, "RE[", "]");
 
     if(result[0] == 0 || strcmp(result, "Void") == 0)
-        gr->game_finished = false;
+        gr->finished = false;
     else
         if(strcmp(result, "?") == 0 || strcmp(result, "Draw") == 0 ||
             strcmp(result, "0") == 0)
         {
-            gr->game_finished = true;
-            gr->resignation = false;
-            gr->final_score = 0;
+            finished = true;
         }
         else
             if(result[0] == 'B')
             {
-                gr->game_finished = true;
+                finished = true;
                 if(strlen(result) > 2)
                 {
                     result += 2;
                     if(result[0] == 'R')
                     {
-                        gr->resignation = true;
-                        gr->final_score = 1;
+                        resignation = true;
+                        final_score = 1;
                     }
                     else
                         if(result[0] == 'T')
                         {
-                            gr->final_score = 1;
+                            timeout = true;
+                            final_score = 1;
                         }
                         else
                         {
@@ -347,25 +353,26 @@ tes");
                                 release(tmp);
                                 return false;
                             }
-                            gr->final_score = (d32)(f * 2.0);
+                            final_score = (d32)(f * 2.0);
                         }
                 }
             }
             else
             {
-                gr->game_finished = true;
+                finished = true;
                 if(strlen(result) > 2)
                 {
                     result += 2;
                     if(result[0] == 'R')
                     {
-                        gr->resignation = true;
-                        gr->final_score = -1;
+                        resignation = true;
+                        final_score = -1;
                     }
                     else
                         if(result[0] == 'T')
                         {
-                            gr->final_score = -1;
+                            timeout = true;
+                            final_score = -1;
                         }
                         else
                         {
@@ -379,7 +386,7 @@ tes");
                                 release(tmp);
                                 return false;
                             }
-                            gr->final_score = (d32)(f * -2.0);
+                            final_score = (d32)(f * -2.0);
                         }
                 }
             }
@@ -452,6 +459,11 @@ tes");
         }
     }
 
+    gr->finished = finished;
+    gr->resignation = resignation;
+    gr->timeout = timeout;
+    gr->final_score = final_score;
+
     return true;
 }
 
@@ -469,7 +481,7 @@ bool import_game_from_sgf(
         return false;
     }
 
-    bool ret = import_game_from_sgf2(gr, filename, buf);
+    bool ret = import_game_from_sgf2(gr, filename, buf, MAX_FILE_SIZ);
     free(buf);
 
     return ret;

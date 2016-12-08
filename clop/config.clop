@@ -12,7 +12,8 @@ Script ./goguiscript.py
 # Warning: 123 and not 123.0 should be used for IntegerParameter
 
 #LinearParameter prior_stone_scale_factor 1.0 1.6
-#IntegerParameter prior_even 5 60
+# Even prior is multiplied by 2
+#IntegerParameter prior_even 2 30
 #IntegerParameter prior_nakade 36 120
 #IntegerParameter prior_self_atari 1 62
 #IntegerParameter prior_attack 10 73
@@ -28,7 +29,11 @@ Script ./goguiscript.py
 #IntegerParameter prior_corner 6 70
 #IntegerParameter prior_bad_play 20 180
 #IntegerParameter prior_pass 20 200
-IntegerParameter prior_starting_point 0 200
+#IntegerParameter prior_starting_point 0 200
+
+IntegerParameter prior_neural_network 0 50
+LinearParameter prior_nn_best_sep 0.0 0.5
+LinearParameter prior_nn_neutral_sep 0.0 0.5
 
 #LinearParameter time_allot_factor 1.0 6.0
 

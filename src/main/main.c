@@ -21,6 +21,7 @@ Also deals with updating some internal parameters at startup time.
 #include "flog.h"
 #include "game_record.h"
 #include "mcts.h"
+#include "neural_network.h"
 #include "opening_book.h"
 #include "pts_file.h"
 #include "randg.h"
@@ -38,6 +39,7 @@ time_system current_clock_white;
 bool time_system_overriden = false; /* ignore attempts to change time system */
 bool save_all_games_to_file = false; /* save all games as SGF on gameover */
 bool resign_on_timeout = false; /* resign instead of passing if timed out */
+bool pass_when_losing; /* whether we pass instead of resigning */
 u32 limit_by_playouts = 0; /* limit MCTS by playouts instead of time */
 char * sentinel_file = NULL;
 clock_t start_cpu_time;
@@ -65,6 +67,9 @@ extern u16 prior_corner;
 extern u16 prior_bad_play;
 extern u16 prior_pass;
 extern u16 prior_starting_point;
+extern u16 prior_neural_network;
+extern double prior_nn_best_sep;
+extern double prior_nn_neutral_sep;
 extern double rave_equiv;
 extern u16 pl_skip_saving;
 extern u16 pl_skip_nakade;
@@ -99,6 +104,9 @@ const void * tunable[] =
     "i", "prior_bad_play", &prior_bad_play,
     "i", "prior_pass", &prior_pass,
     "i", "prior_starting_point", &prior_starting_point,
+    "i", "prior_neural_network", &prior_neural_network,
+    "f", "prior_nn_best_sep", &prior_nn_best_sep,
+    "f", "prior_nn_neutral_sep", &prior_nn_neutral_sep,
     "f", "rave_equiv", &rave_equiv,
     "i", "pl_skip_saving", &pl_skip_saving,
     "i", "pl_skip_nakade", &pl_skip_nakade,
@@ -108,9 +116,7 @@ const void * tunable[] =
     "i", "expansion_delay", &expansion_delay,
     "i", "dummy", &_dummy,
 
-
     "f", "time_allot_factor", &time_allot_factor, // TODO remove after paper
-
 
     NULL
 };
@@ -130,11 +136,12 @@ static void set_parameter(
 
         if(type[0] == 'i')
         {
-            d32 val;
-            if(!parse_int(&val, value) || val < 0)
+            u32 val;
+            if(!parse_uint(&val, value) || val > UINT16_MAX)
             {
                 char * buf = alloc();
-                snprintf(buf, MAX_PAGE_SIZ, "integer format error: %s", value);
+                snprintf(buf, MAX_PAGE_SIZ, "unsigned integer format error: %s",
+                    value);
                 flog_crit("init", buf);
                 release(buf);
             }
@@ -205,6 +212,14 @@ the specific mode you want\n        to be used.\n\n");
         fprintf(stderr, "        Select human player color (text mode only).\n\\
 n");
 
+        fprintf(stderr, "        \033[1m--losing <keyword>\033[0m\n\n");
+        fprintf(stderr, "        If playing with even komi Matilda may confuse \
+drawn positions with\n        lost positions, and resign when actually winning.\
+\n");
+        fprintf(stderr, "        Choose whether to resign or pass when losing t\
+he match. The keyword\n        argument can be resign or pass. By default Matil\
+da resigns on text mode\n        and passes on GTP mode.\n\n");
+
         fprintf(stderr, "        \033[1m--resign_on_timeout\033[0m\n\n");
         fprintf(stderr, "        Resign if the program believes to have lost on\
  time.\n\n");
@@ -232,6 +247,9 @@ he opponents turn.\n\n");
 
         fprintf(stderr, "        \033[1m--disable_opening_books\033[0m\n\n");
         fprintf(stderr, "        Disable the use of opening books.\n\n");
+
+        fprintf(stderr, "        \033[1m--disable_neural_nets\033[0m\n\n");
+        fprintf(stderr, "        Disable the use of neural networks.\n\n");
 
         fprintf(stderr, "        \033[1m-l, --log <mask>\033[0m\n\n");
         fprintf(stderr, "        Set the message types to log to file and print\
@@ -268,8 +286,9 @@ The default is the total\n        number of normal plus hyperthreaded CPU cores\
 .\n\n");
 
         fprintf(stderr, "        \033[1m--benchmark\033[0m\n\n");
-        fprintf(stderr, "        Run a %u second benchmark of the system, retur\
-ning a linear measure of\n        MCTS performance.\n\n", BENCHMARK_TIME);
+        fprintf(stderr, "        Run a two minute benchmark of the system, retu\
+rning a linear measure of\n        MCTS performance (number of simulations per \
+second.\n\n");
 
         fprintf(stderr, "        \033[1m--sentinel <filename>\033[0m\n\n");
         fprintf(stderr, "        Close the program after a game if the file is \
@@ -309,12 +328,14 @@ int main(
     flog_config_destinations(LOG_DEST_FILE); // default for text mode
     bool flog_dest_set = false;
 
-    bool use_gtp = (isatty(STDIN_FILENO) == 0);
+    bool use_gtp = pass_when_losing = (isatty(STDIN_FILENO) == 0);
+
     bool color_set = false;
     bool time_related_set = false;
     bool human_player_color = true;
     bool think_in_opt_turn = false;
     bool opening_books_enabled = true;
+    bool neural_networks_enabled = true;
     set_time_per_turn(&current_clock_black, DEFAULT_TIME_PER_TURN);
     set_time_per_turn(&current_clock_white, DEFAULT_TIME_PER_TURN);
     d16 desired_num_threads = DEFAULT_NUM_THREADS;
@@ -346,78 +367,16 @@ int main(
             release(s);
             return EXIT_SUCCESS;
         }
-
-        if(strcmp(argv[i], "--benchmark") == 0)
-        {
-            u32 sims = mcts_benchmark();
-            for(u8 i = 1; i < BENCHMARK_TIME; ++i)
-            {
-                tt_clean_all() ;
-                sims += mcts_benchmark();
-            }
-            fprintf(stderr, "%u\n", sims / BENCHMARK_TIME);
-            return EXIT_SUCCESS;
-        }
     }
 
     fprintf(stderr, "matilda - Go/Igo/Weiqi/Baduk computer player\n\n");
+    u16 args_understood = 0;
 
     for(int i = 1; i < argc; ++i)
     {
-        if((strcmp(argv[i], "-m") == 0 || strcmp(argv[i], "--mode") == 0) &&
-            i < argc - 1)
-        {
-            if(strcmp(argv[i + 1], "text") == 0)
-            {
-                use_gtp = false;
-                if(!flog_dest_set)
-                    flog_config_destinations(LOG_DEST_FILE);
-            }
-            else
-                if(strcmp(argv[i + 1], "gtp") == 0)
-                {
-                    use_gtp = true;
-                    if(!flog_dest_set)
-                        flog_config_destinations(LOG_DEST_STDF |
-                            LOG_DEST_FILE);
-                }
-                else
-                {
-                    fprintf(stderr, "illegal format for mode\n");
-                    exit(EXIT_FAILURE);
-                }
-
-            ++i;
-            continue;
-        }
-
-        if((strcmp(argv[i], "-c") == 0 || strcmp(argv[i], "--color") == 0) && i
-            < argc - 1)
-        {
-            if(argv[i + 1][0] == 'b' || argv[i + 1][0] == 'B')
-                human_player_color = true;
-            else
-                if(argv[i + 1][0] == 'w' || argv[i + 1][0] == 'W')
-                    human_player_color = false;
-                else
-                {
-                    fprintf(stderr, "illegal player color format\n");
-                    exit(EXIT_FAILURE);
-                }
-
-            ++i;
-            color_set = true;
-            continue;
-        }
-
-        if(strcmp(argv[i], "--save_all") == 0)
-        {
-            save_all_games_to_file = true;
-            continue;
-        }
-
         if((strcmp(argv[i], "-l") == 0 || strcmp(argv[i], "--log") == 0))
         {
+            args_understood += 1;
             if(i == argc - 1)
             {
                 flog_config_modes(0);
@@ -430,6 +389,7 @@ int main(
                 continue;
             }
 
+            args_understood += 1;
             u16 mode = 0;
             for(u16 j = 0; argv[i + 1][j]; ++j)
             {
@@ -470,6 +430,7 @@ int main(
 
         if(strcmp(argv[i], "--log_dest") == 0 && i < argc - 1)
         {
+            args_understood += 2;
             u16 dest = 0;
             for(u16 j = 0; argv[i + 1][j]; ++j)
             {
@@ -495,8 +456,182 @@ int main(
             continue;
         }
 
+        if(strcmp(argv[i], "--memory") == 0 && i < argc - 1)
+        {
+            args_understood += 2;
+            d32 v;
+            if(!parse_int(&v, argv[i + 1]))
+            {
+                fprintf(stderr,
+                    "format error in size of transpositions table\n");
+                exit(EXIT_FAILURE);
+            }
+
+            if(v < 2)
+            {
+                fprintf(stderr, "invalid size for transpositions table\n");
+                exit(EXIT_FAILURE);
+            }
+
+            max_size_in_mbs = v;
+            ++i;
+            continue;
+        }
+
+        if(strcmp(argv[i], "--set") == 0 && i < argc - 2)
+        {
+            args_understood += 3;
+            set_parameter(argv[i + 1], argv[i + 2]);
+            i += 2;
+            continue;
+        }
+
+        if((strcmp(argv[i], "-d") == 0 || strcmp(argv[i], "--data") == 0) &&
+            i < argc - 1)
+        {
+            args_understood += 2;
+            if(!set_data_folder(argv[i + 1]))
+            {
+                fprintf(stderr, "data directory path %s is not valid\n",
+                    argv[i + 1]);
+                exit(EXIT_FAILURE);
+            }
+
+            ++i;
+            continue;
+        }
+
+        if(strcmp(argv[i], "--threads") == 0 && i < argc - 1)
+        {
+            args_understood += 2;
+            d32 v;
+            if(!parse_int(&v, argv[i + 1]))
+            {
+                fprintf(stderr, "format error for thread number\n");
+                exit(EXIT_FAILURE);
+            }
+
+            if(v < 1 || v > MAXIMUM_NUM_THREADS)
+            {
+                fprintf(stderr, "invalid number of threads requested\n");
+                exit(EXIT_FAILURE);
+            }
+
+            desired_num_threads = v;
+            ++i;
+            continue;
+        }
+    }
+
+    for(int i = 1; i < argc; ++i)
+    {
+        if(strcmp(argv[i], "--disable_neural_nets") == 0)
+        {
+            args_understood += 1;
+            neural_networks_enabled = false;
+            continue;
+        }
+    }
+
+    for(int i = 1; i < argc; ++i)
+    {
+        if(strcmp(argv[i], "--benchmark") == 0)
+        {
+            /*
+            Perform a 2-minute benchmark made of 12 1-minute MCTS,
+            priting the number of simulations per second.
+            */
+            args_understood += 1;
+
+            if(neural_networks_enabled)
+                nn_init();
+            mcts_init();
+            load_handicap_points();
+            load_hoshi_points();
+            load_starting_points();
+
+            /*
+            Perform a larger initial MCTS just to allocate memory so all
+            next runs are made in more similar pre-allocated memory
+            conditions.
+            */
+            mcts_benchmark(14 * 1000);
+
+            u32 sims = 0;
+            for(u8 i = 0; i < 12; ++i)
+            {
+                tt_clean_all() ;
+                sims += mcts_benchmark(10 * 1000);
+            }
+            fprintf(stderr, "%u\n", sims / 120);
+            return EXIT_SUCCESS;
+        }
+    }
+
+    for(int i = 1; i < argc; ++i)
+    {
+        if((strcmp(argv[i], "-m") == 0 || strcmp(argv[i], "--mode") == 0) &&
+            i < argc - 1)
+        {
+            args_understood += 2;
+            if(strcmp(argv[i + 1], "text") == 0)
+            {
+                use_gtp = false;
+                if(!flog_dest_set)
+                    flog_config_destinations(LOG_DEST_FILE);
+
+                pass_when_losing = false;
+            }
+            else
+                if(strcmp(argv[i + 1], "gtp") == 0)
+                {
+                    use_gtp = true;
+                    if(!flog_dest_set)
+                        flog_config_destinations(LOG_DEST_STDF |
+                            LOG_DEST_FILE);
+
+                    pass_when_losing = true;
+                }
+                else
+                {
+                    fprintf(stderr, "illegal format for mode\n");
+                    exit(EXIT_FAILURE);
+                }
+
+            ++i;
+            continue;
+        }
+
+        if((strcmp(argv[i], "-c") == 0 || strcmp(argv[i], "--color") == 0) && i
+            < argc - 1)
+        {
+            args_understood += 2;
+            if(argv[i + 1][0] == 'b' || argv[i + 1][0] == 'B')
+                human_player_color = true;
+            else
+                if(argv[i + 1][0] == 'w' || argv[i + 1][0] == 'W')
+                    human_player_color = false;
+                else
+                {
+                    fprintf(stderr, "illegal player color format\n");
+                    exit(EXIT_FAILURE);
+                }
+
+            ++i;
+            color_set = true;
+            continue;
+        }
+
+        if(strcmp(argv[i], "--save_all") == 0)
+        {
+            args_understood += 1;
+            save_all_games_to_file = true;
+            continue;
+        }
+
         if(strcmp(argv[i], "--think_in_opt_time") == 0)
         {
+            args_understood += 1;
             think_in_opt_turn = true;
             time_related_set = true;
             continue;
@@ -504,6 +639,7 @@ int main(
 
         if(strcmp(argv[i], "-t") == 0 || strcmp(argv[i], "--time") == 0)
         {
+            args_understood += 2;
             time_system tmp;
             if(!str_to_time_system(&tmp, argv[i + 1]))
             {
@@ -534,12 +670,14 @@ int main(
 
         if(strcmp(argv[i], "--disable_gtp_time_control") == 0)
         {
+            args_understood += 1;
             time_system_overriden = true;
             continue;
         }
 
         if(strcmp(argv[i], "--resign_on_timeout") == 0)
         {
+            args_understood += 1;
             resign_on_timeout = true;
             time_related_set = true;
             continue;
@@ -547,6 +685,7 @@ int main(
 
         if(strcmp(argv[i], "--playouts") == 0 && i < argc - 1)
         {
+            args_understood += 2;
             d32 v;
             if(!parse_int(&v, argv[i + 1]))
             {
@@ -567,84 +706,52 @@ int main(
 
         if(strcmp(argv[i], "--disable_opening_books") == 0)
         {
+            args_understood += 1;
             opening_books_enabled = false;
             set_use_of_opening_book(false);
             continue;
         }
 
-        if(strcmp(argv[i], "--memory") == 0 && i < argc - 1)
-        {
-            d32 v;
-            if(!parse_int(&v, argv[i + 1]))
-            {
-                fprintf(stderr,
-                    "format error in size of transpositions table\n");
-                exit(EXIT_FAILURE);
-            }
-
-            if(v < 2)
-            {
-                fprintf(stderr, "invalid size for transpositions table\n");
-                exit(EXIT_FAILURE);
-            }
-
-            max_size_in_mbs = v;
-            ++i;
-            continue;
-        }
-
         if(strcmp(argv[i], "--sentinel") == 0 && i < argc - 1)
         {
+            args_understood += 2;
             u32 len = strlen(argv[i + 1]) + 1;
             sentinel_file = malloc(len);
             memcpy(sentinel_file, argv[i + 1], len);
             ++i;
             continue;
         }
+    }
 
-        if(strcmp(argv[i], "--set") == 0 && i < argc - 2)
+    for(int i = 1; i < argc - 1; ++i)
+    {
+        if(strcmp(argv[i], "--losing") == 0)
         {
-            set_parameter(argv[i + 1], argv[i + 2]);
-            i += 2;
-            continue;
-        }
-
-        if((strcmp(argv[i], "-d") == 0 || strcmp(argv[i], "--data") == 0) &&
-            i < argc - 1)
-        {
-            if(!set_data_folder(argv[i + 1]))
+            args_understood += 2;
+            if(strcmp(argv[i + 1], "pass") == 0)
             {
-                fprintf(stderr, "data directory path %s is not valid\n",
-                    argv[i + 1]);
-                exit(EXIT_FAILURE);
+                pass_when_losing = true;
             }
+            else
+                if(strcmp(argv[i + 1], "resign") == 0)
+                {
+                    pass_when_losing = false;
+                }
+                else
+                {
+                    fprintf(stderr, "illegal format for --losing argument\n");
+                    exit(EXIT_FAILURE);
+                }
 
             ++i;
             continue;
         }
+    }
 
-        if(strcmp(argv[i], "--threads") == 0 && i < argc - 1)
-        {
-            d32 v;
-            if(!parse_int(&v, argv[i + 1]))
-            {
-                fprintf(stderr, "format error for thread number\n");
-                exit(EXIT_FAILURE);
-            }
-
-            if(v < 1 || v > MAXIMUM_NUM_THREADS)
-            {
-                fprintf(stderr, "invalid number of threads requested\n");
-                exit(EXIT_FAILURE);
-            }
-
-            desired_num_threads = v;
-            ++i;
-            continue;
-        }
-
-        fprintf(stderr, "Unknown argument supplied: %s\nStart with --help flag \
-for usage information.\n", argv[i]);
+    if(args_understood != argc - 1)
+    {
+        fprintf(stderr, "Unknown argument supplied; start with --help flag for \
+usage instructions.\n");
         return EXIT_FAILURE;
     }
 
@@ -685,6 +792,8 @@ for usage information.\n", argv[i]);
     assert_data_folder_exists();
     if(opening_books_enabled)
         opening_book_init();
+    if(neural_networks_enabled)
+        nn_init();
     mcts_init();
     load_handicap_points();
     load_hoshi_points();

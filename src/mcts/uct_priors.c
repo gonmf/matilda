@@ -5,18 +5,21 @@ UCT expanded states initialization.
 #include "matilda.h"
 
 #include <string.h>
+#include <stdlib.h> /* qsort */
 #include <math.h> /* powf */
 
 #include "board.h"
 #include "cfg_board.h"
 #include "dragon.h"
 #include "move.h"
+#include "neural_network.h"
 #include "pat3.h"
 #include "priors.h"
 #include "pts_file.h"
 #include "tactical.h"
 #include "transpositions.h"
 #include "types.h"
+
 
 /*
 Public to allow parameter optimization
@@ -39,6 +42,9 @@ u16 prior_corner = PRIOR_CORNER;
 u16 prior_bad_play = PRIOR_BAD_PLAY;
 u16 prior_pass = PRIOR_PASS;
 u16 prior_starting_point = PRIOR_STARTING;
+u16 prior_neural_network = PRIOR_NEURAL_NETWORK;
+double prior_nn_best_sep = PRIOR_NN_BEST_SEP;
+double prior_nn_neutral_sep = PRIOR_NN_NEUTRAL_SEP;
 
 
 extern u8 distances_to_border[TOTAL_BOARD_SIZ];
@@ -52,6 +58,23 @@ extern bool border_bottom[TOTAL_BOARD_SIZ];
 
 extern bool is_starting[TOTAL_BOARD_SIZ];
 
+
+typedef struct __quality_pair_ {
+    double quality;
+    move play;
+} quality_pair;
+
+
+int qp_compare(
+    const void * e1,
+    const void * e2
+){
+    const quality_pair * a = (const quality_pair *)e1;
+    const quality_pair * b = (const quality_pair *)e2;
+    if(a->quality == b->quality)
+        return 0;
+    return a->quality < b->quality ? 1 : -1;
+}
 
 
 static u16 stones_in_manhattan_dst3(
@@ -68,28 +91,44 @@ static u16 stones_in_manhattan_dst3(
     return ret;
 }
 
-static void stats_add_play(
+static void stats_add_play_tmp(
     tt_stats * stats,
     move m,
     u32 mc_w, /* wins */
     u32 mc_v /* visits */
 ){
-    double mc_q = ((double)mc_w) / ((double)mc_v);
     u32 idx = stats->plays_count++;
     stats->plays[idx].m = m;
-    stats->plays[idx].mc_q = mc_q;
+    stats->plays[idx].mc_q = mc_w;
     stats->plays[idx].mc_n = mc_v;
 
-
-    /*
-    Heuristic-MC
-
-    Copying the MC prior values to AMAF and initializing other fields
-    */
     stats->plays[idx].next_stats = NULL;
-    /* AMAF/RAVE */
-    stats->plays[idx].amaf_n = mc_v;
-    stats->plays[idx].amaf_q = mc_q;
+
+    /* LGRF */
+    stats->plays[idx].lgrf1_reply = NULL;
+
+    /* Criticality */
+    stats->plays[idx].owner_winning = 0.5;
+    stats->plays[idx].color_owning = 0.5;
+}
+
+/*
+Heuristic-MC
+
+Copying the MC prior values to AMAF and initializing other fields
+*/
+static void stats_add_play_final(
+    tt_stats * stats,
+    move m,
+    double mc_q, /* quality */
+    u32 mc_v /* visits */
+){
+    u32 idx = stats->plays_count++;
+    stats->plays[idx].m = m;
+    stats->plays[idx].amaf_q = stats->plays[idx].mc_q = mc_q;
+    stats->plays[idx].amaf_n = stats->plays[idx].mc_n = mc_v;
+
+    stats->plays[idx].next_stats = NULL;
 
     /* LGRF */
     stats->plays[idx].lgrf1_reply = NULL;
@@ -125,10 +164,9 @@ with at least one visit.
 void init_new_state(
     tt_stats * stats,
     cfg_board * cb,
-    bool is_black
+    bool is_black,
+    mlp * net /* null if unavailable */
 ){
-    load_starting_points();
-
     bool near_last_play[TOTAL_BOARD_SIZ];
     if(is_board_move(cb->last_played))
         mark_near_pos(near_last_play, cb, cb->last_played);
@@ -184,6 +222,8 @@ void init_new_state(
         }
     }
 
+    u8 libs_after_playing[TOTAL_BOARD_SIZ];
+    memset(libs_after_playing, 0, TOTAL_BOARD_SIZ);
 
     move ko = get_ko_play(cb);
     stats->plays_count = 0;
@@ -205,7 +245,8 @@ void init_new_state(
         if(ko == m)
             continue;
 
-        u8 libs = safe_to_play(cb, is_black, m);
+        move _ignored;
+        u8 libs = libs_after_play(cb, is_black, m, &_ignored);
 
         /*
         Don't play suicides
@@ -213,11 +254,13 @@ void init_new_state(
         if(libs == 0)
             continue;
 
+        libs_after_playing[m] = libs;
+
         /*
         Even game heuristic
         */
-        u32 mc_w = prior_even / 2;
-        u32 mc_v = prior_even;
+        u32 mc_w = prior_even;
+        u32 mc_v = prior_even * 2;
 
         /*
         Avoid typically poor plays like eye shape
@@ -353,17 +396,75 @@ void init_new_state(
         }
 
 
-        stats_add_play(stats, m, mc_w, mc_v);
+        stats_add_play_tmp(stats, m, mc_w, mc_v);
     }
 
+    if(cb->empty.count >= (TOTAL_BOARD_SIZ / 3) * 2 && net != NULL)
+    {
+        u8 codified[TOTAL_BOARD_SIZ];
+        nn_codify_cfg_board(codified, cb, is_black, libs_after_playing);
+
+        double input_units[3][TOTAL_BOARD_SIZ];
+        nn_populate_input_units(input_units, codified);
+
+        nn_forward_pass_single_threaded(net,
+            (const double (*)[TOTAL_BOARD_SIZ])input_units);
+
+        quality_pair qlist[TOTAL_BOARD_SIZ];
+
+        /* retrieve all legal play energies */
+        for(u16 i = 0; i < stats->plays_count; ++i)
+        {
+            move m = stats->plays[i].m;
+            qlist[i].quality = net->output_layer[m].output;
+            qlist[i].play = m;
+        }
+
+        /* sort the plays by energy */
+        qsort(qlist, stats->plays_count, sizeof(quality_pair), qp_compare);
+
+        /* divide by quality category */
+        u16 best_pos = (u16)(stats->plays_count * prior_nn_best_sep);
+        u16 neutral_pos = (u16)(stats->plays_count * prior_nn_neutral_sep) +
+            best_pos;
+
+        u16 i = 0;
+        for(; i <= best_pos; ++i)
+            libs_after_playing[qlist[i].play] = 2;
+        for(; i <= neutral_pos; ++i)
+            libs_after_playing[qlist[i].play] = 1;
+
+        /* add prior values */
+        for(i = 0; i < stats->plays_count; ++i)
+        {
+            tt_play * play = &stats->plays[i];
+            switch(libs_after_playing[play->m]){
+                case 2:
+                    play->mc_q += prior_neural_network;
+                case 0:
+                    play->mc_n += prior_neural_network;
+            }
+        }
+    }
+
+    /*
+    Transform win/visits into quality/visits statistics and copy MC to
+    AMAF/RAVE statistics
+    */
+    for(u16 i = 0; i < stats->plays_count; ++i)
+    {
+        tt_play * play = &stats->plays[i];
+        play->amaf_q = play->mc_q = play->mc_q / play->mc_n;
+        play->amaf_n = play->mc_n;
+    }
+
+    /*
+    Add pass simulation
+    */
     if(cb->empty.count < TOTAL_BOARD_SIZ / 2 ||
         stats->plays_count < TOTAL_BOARD_SIZ / 8)
     {
-        /*
-        Add pass simulation
-        */
-        stats_add_play(stats, PASS, UCT_RESIGN_WINRATE * prior_pass,
-            prior_pass);
+        stats_add_play_final(stats, PASS, UCT_RESIGN_WINRATE, prior_pass);
     }
 }
 
