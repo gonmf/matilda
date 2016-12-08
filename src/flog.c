@@ -271,15 +271,11 @@ void build_info(
         kstr);
     release(kstr);
 
-    idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx, "Can resign: %s\n",
-        YN(CAN_RESIGN));
-    if(CAN_RESIGN)
-    {
-        idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx,
-            "  Bellow win rate: %.2f\n", UCT_RESIGN_WINRATE);
-        idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx,
-            "  Minimum simulations: %u\n", UCT_RESIGN_PLAYOUTS);
-    }
+    idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx,
+        "Resign/pass bellow win rate: %.2f\n", UCT_RESIGN_WINRATE);
+    idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx,
+        "  Minimum simulations: %u\n", UCT_RESIGN_PLAYOUTS);
+
     idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx, "Can stop MCTS early: %s\n",
         YN(UCT_CAN_STOP_EARLY));
     if(UCT_CAN_STOP_EARLY)

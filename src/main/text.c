@@ -34,6 +34,7 @@ extern game_record current_game;
 extern time_system current_clock_black;
 extern time_system current_clock_white;
 extern bool save_all_games_to_file;
+extern bool pass_when_losing;
 extern u32 limit_by_playouts;
 
 static u8 tips = 3;
@@ -128,13 +129,10 @@ static void text_genmove(
 
     if(!has_play)
     {
-#if CAN_RESIGN
-        *resigned = true;
-        return;
-#else
-        *resigned = false;
-#endif
-        *passed = true;
+        if(pass_when_losing)
+            *resigned = true;
+        else
+            *passed = true;
         return;
     }
 

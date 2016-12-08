@@ -86,14 +86,6 @@ EXPECTED: 1 to 64
 
 
 /*
-Set whether the program should resign or pass, when losing hard.
-
-EXPECTED: 0 or 1
-*/
-#define CAN_RESIGN 1
-
-
-/*
 Set how many visits are needed before expanding a new state in MCTS. If the
 program is running out of memory mid-turn consider increasing this value.
 Tuned with CLOP in 9x9 with 10k playouts/turn in self-play for 34k games.
