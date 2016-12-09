@@ -76,6 +76,7 @@ extern u16 pl_skip_nakade;
 extern u16 pl_skip_pattern;
 extern u16 pl_skip_capture;
 extern u16 pl_ban_self_atari;
+extern u16 light_playouts_threshold; // TODO rename
 extern u16 expansion_delay;
 static u16 _dummy; /* used for testing CLOP */
 
@@ -115,6 +116,7 @@ const void * tunable[] =
     "i", "pl_ban_self_atari", &pl_ban_self_atari,
     "i", "expansion_delay", &expansion_delay,
     "i", "dummy", &_dummy,
+    "i", "light_playouts_threshold", &light_playouts_threshold,
 
     "f", "time_allot_factor", &time_allot_factor, // TODO remove after paper
 
