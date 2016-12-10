@@ -3,27 +3,29 @@ required or supported. It is currently aimed at Linux, BSD and macOS systems.
 If you have difficulties compiling Matilda for these systems please open an
 issue at GitHub.
 
+
 PREPARATION
 
 It is tested using GCC and Clang. Please try to use modern versions of these
 compilers. They need to be recent enough to support OpenMP 3.0.
 
-On macOS do not use the default Xcode clang, that does not support OpenMP.
+On macOS do not use the default Xcode clang -- it does not support OpenMP.
 Instead install through brew clang-omp, and override the compiler to be used
 in src/Makefile.
 
-Before compiling review the contents of the file src/inc/matilda.h for your
+Before compiling, review the contents of the file src/inc/matilda.h for your
 system. Remember to edit the line
 
 #define UCT_MEMORY 512
 
 with the amount of memory (in MiB) that Matilda can use for MCTS. Please notice
-Matilda is agressive in its use of the available memory. It will cache game
+Matilda is agressive in its use of the available memory: It will cache game
 state information instead of freeing it, so do not be surprised to see the
 memory used always go up.
 
 Other settings may also be configured for testing by mistake, so please
 understand what each setting does and set them correctly.
+
 
 COMPILATION
 
@@ -39,10 +41,7 @@ the executable named test.
 For short instructions on how to use each program run them with --help.
 
 All external files reside in the folder data/. Files produced by Matilda will
-also be produced to this folder only. Please notice that Matilda enforces its
-external file dependencies. If it is expecting a file to be found it has to be
-provided or the program will close. If you do not have opening books you can
-disable their use with the switch --disable_opening_books.
+also be produced to this folder only.
 
 Matilda will expect to find the data/ folder in the current working directory,
 that by default is that of the parent process. Because of this, you may need to

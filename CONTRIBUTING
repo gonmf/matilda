@@ -10,7 +10,7 @@ configuration options can be obtained from running matilda --info. The system
 attributes should include the kernel version, compiler version, and versions of
 other software used to communicate with Matilda. If the bug is reproducible also
 attempt to provide a script or SGF file that can reproduce it, plus running
-Matilda with logging enabled (--log cwpi) and submitting the log file generated.
+Matilda with logging enabled (--log ewpi) and submitting the log file generated.
 
 2. Suggestions, questions, ideas, commentary
 
@@ -20,9 +20,8 @@ its contents would be appreciated.
 
 3. Pull requests
 
-If you want to help but don't know where to start, start by reading the  issue
-tracker. Sometimes smaller things are also marked TODO in the source code; they
-can be found by running ./fn.sh TODO
+If you want to help but don't know where to start, start by reading the issue
+tracker. Sometimes smaller things are also marked TODO in the source code.
 
 To submit a pull request first read the src/README file on some code guidelines.
 Before committing to a certain problem you may also want to get in touch to make
@@ -30,7 +29,9 @@ sure that is a worthwhile endeavor. If you decide to go ahead with the pull
 request be reminded it is assumed to follow the licensing model (permissive free
 software) of the rest of Matilda. If you require a different licensing model, or
 want to submit something that is not yours, please state so clearly in the pull
-request and in the specific files; and be prepared to defend your request.
+request and in the specific files. Also it may be possible that your employer
+owns your contributions to open source software, in which case their permission
+is also required.
 
 Please test all pull requests locally before submitting them, this includes
 testing a few different board sizes, with some options on and off, and so on (to
