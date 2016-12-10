@@ -20,7 +20,6 @@ RETURNS file descriptor
 int create_and_open_file(
     char * filename,
     u32 filename_size,
-    bool in_data_folder,
     const char * prefix,
     const char * extension
 );

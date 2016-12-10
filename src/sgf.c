@@ -150,7 +150,7 @@ bool export_game_as_sgf_auto_named(
     const game_record * gr,
     char filename[32]
 ){
-    int fid = create_and_open_file(filename, 32, true, "matilda", "sgf");
+    int fid = create_and_open_file(filename, 32, "matilda", "sgf");
     if(fid == -1)
         return false;
 

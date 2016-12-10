@@ -203,8 +203,7 @@ static void open_log_file()
 {
     if(log_file == -1)
     {
-        log_file = create_and_open_file(log_filename, 64, false, "matilda",
-            "log");
+        log_file = create_and_open_file(log_filename, 64, "matilda", "log");
         if(log_file == -1)
         {
             fprintf(stderr, "Failed to create log file.\n");

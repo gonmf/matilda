@@ -255,8 +255,7 @@ n", secs_per_turn);
     printf("\nEvaluating game states and saving best play\n");
 
     char * log_filename = alloc();
-    int fd = create_and_open_file(log_filename, MAX_PAGE_SIZ, true, "matilda",
-        "ob");
+    int fd = create_and_open_file(log_filename, MAX_PAGE_SIZ, "matilda", "ob");
     if(fd == -1)
     {
         timestamp(ts);

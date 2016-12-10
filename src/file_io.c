@@ -27,7 +27,6 @@ RETURNS file descriptor
 int create_and_open_file(
     char * filename,
     u32 filename_size,
-    bool in_data_folder,
     const char * prefix,
     const char * extension
 ){
@@ -39,13 +38,12 @@ int create_and_open_file(
     {
         if(attempt == 1)
             snprintf(filename, filename_size, "%s%s_%02u%02u%02u%02u%02u.%s",
-                in_data_folder ? data_folder() : "", prefix, tm.tm_year % 100,
-                tm.tm_mon, tm.tm_mday, tm.tm_hour, tm.tm_min, extension);
+                data_folder(), prefix, tm.tm_year % 100, tm.tm_mon, tm.tm_mday,
+                tm.tm_hour, tm.tm_min, extension);
         else
             snprintf(filename, filename_size, "%s%s_%02u%02u%02u%02u%02u_%u.%s",
-                in_data_folder ? data_folder() : "", prefix, tm.tm_year % 100,
-                tm.tm_mon, tm.tm_mday, tm.tm_hour, tm.tm_min, attempt,
-                extension);
+                data_folder(), prefix, tm.tm_year % 100, tm.tm_mon, tm.tm_mday,
+                tm.tm_hour, tm.tm_min, attempt, extension);
 
         int fd = open(filename, O_WRONLY | O_CREAT | O_EXCL, S_IRUSR | S_IWUSR);
         /* File created */

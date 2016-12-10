@@ -74,7 +74,8 @@ train_nn: $(OBJFILES) tann/*.c
 -include $(DEPFILES)
 
 tidy:
-	@$(RM) -f callgrind.out.* matilda*.log tuning.log *.o mcts/*.o *.d mcts/*.d
+	@$(RM) -f callgrind.out.* matilda*.log tuning.log *.o mcts/*.o *.d \
+		mcts/*.d data/matilda*.log
 
 clean: tidy
 	@$(RM) -f $(PROGRAMS)
