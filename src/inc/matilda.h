@@ -47,7 +47,7 @@ The value is in milliseconds.
 
 EXPECTED: 2 to 400
 */
-#define LATENCY_COMPENSATION 5 // 250 /* Japan is quite far away */
+#define LATENCY_COMPENSATION 0 // 250 /* Japan is quite far away */
 
 
 /*
@@ -95,7 +95,7 @@ Tuned with CLOP in 9x9 with 10k playouts/turn in self-play for 34k games.
 
 EXPECTED: 0 to 10
 */
-#define UCT_EXPANSION_DELAY 0
+#define UCT_EXPANSION_DELAY 5
 
 
 /*
