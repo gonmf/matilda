@@ -8,6 +8,6 @@ gogui-twogtp -white "$WHITE" -black "$BLACK" -referee "$REFEREE" \
 -games 4000 \
 -auto \
 -size 9 \
--komi 4.5 \
+-komi 5.5 \
 -alternate
 exit 0

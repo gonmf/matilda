@@ -311,7 +311,6 @@ static d16 mcts_selection(
         }
     }
 
-    depth -= 6;
     if(depth > max_depths[omp_get_thread_num()])
         max_depths[omp_get_thread_num()] = depth;
 
@@ -444,7 +443,11 @@ bool mcts_start_timed(
         else
         {
             out_b->tested[stats->plays[k].m] = true;
+#if USE_AMAF_RAVE
             out_b->value[stats->plays[k].m] = uct1_rave(&stats->plays[k]);
+#else
+            out_b->value[stats->plays[k].m] = stats->plays[k].mc_q;
+#endif
         }
     }
 
@@ -452,6 +455,7 @@ bool mcts_start_timed(
     for(u16 k = 1; k < MAXIMUM_NUM_THREADS; ++k)
         if(max_depths[k] > max_depth)
             max_depth = max_depths[k];
+    max_depth -= 6;
 
     u32 simulations = wins + losses;
     double wr = ((double)wins) / ((double)simulations);
@@ -563,7 +567,11 @@ bool mcts_start_sims(
         else
         {
             out_b->tested[stats->plays[k].m] = true;
+#if USE_AMAF_RAVE
             out_b->value[stats->plays[k].m] = uct1_rave(&stats->plays[k]);
+#else
+            out_b->value[stats->plays[k].m] = stats->plays[k].mc_q;
+#endif
         }
     }
 
