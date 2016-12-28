@@ -95,7 +95,7 @@ Tuned with CLOP in 9x9 with 10k playouts/turn in self-play for 34k games.
 
 EXPECTED: 0 to 10
 */
-#define UCT_EXPANSION_DELAY 5
+#define UCT_EXPANSION_DELAY 0 // TODO change back
 
 
 /*
