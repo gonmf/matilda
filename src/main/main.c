@@ -182,9 +182,38 @@ static void set_parameter(
 void main_gtp(
     bool think_in_opt_turn
 );
+
 void main_text(
     bool is_black
 );
+
+static void startup(
+    bool opening_books_enabled,
+    bool neural_networks_enabled,
+    d16 desired_num_threads
+){
+    assert_data_folder_exists();
+    if(opening_books_enabled)
+        opening_book_init();
+    if(neural_networks_enabled)
+        nn_init();
+    mcts_init();
+    load_handicap_points();
+    load_hoshi_points();
+    load_starting_points();
+
+    u32 automatic_num_threads;
+    #pragma omp parallel
+    #pragma omp master
+    {
+        automatic_num_threads = omp_get_num_threads();
+    }
+    if(automatic_num_threads > MAXIMUM_NUM_THREADS)
+        omp_set_num_threads(MAXIMUM_NUM_THREADS);
+    if(desired_num_threads > 0)
+        omp_set_num_threads(MIN(desired_num_threads, MAXIMUM_NUM_THREADS));
+    omp_set_dynamic(0);
+}
 
 static void usage()
 {
@@ -543,12 +572,7 @@ int main(
             */
             args_understood += 1;
 
-            if(neural_networks_enabled)
-                nn_init();
-            mcts_init();
-            load_handicap_points();
-            load_hoshi_points();
-            load_starting_points();
+            startup(false, false, desired_num_threads);
 
             /*
             Perform a larger initial MCTS just to allocate memory so all
@@ -789,27 +813,8 @@ usage instructions.\n");
         flog_warn("init",
             "MCTS using a constant number of simulations per turn");
 
-    assert_data_folder_exists();
-    if(opening_books_enabled)
-        opening_book_init();
-    if(neural_networks_enabled)
-        nn_init();
-    mcts_init();
-    load_handicap_points();
-    load_hoshi_points();
-    load_starting_points();
-
-    u32 automatic_num_threads;
-    #pragma omp parallel
-    #pragma omp master
-    {
-        automatic_num_threads = omp_get_num_threads();
-    }
-    if(automatic_num_threads > MAXIMUM_NUM_THREADS)
-        omp_set_num_threads(MAXIMUM_NUM_THREADS);
-    if(desired_num_threads > 0)
-        omp_set_num_threads(MIN(desired_num_threads, MAXIMUM_NUM_THREADS));
-    omp_set_dynamic(0);
+    startup(opening_books_enabled, neural_networks_enabled,
+        desired_num_threads);
 
     if(use_gtp)
         main_gtp(think_in_opt_turn);
