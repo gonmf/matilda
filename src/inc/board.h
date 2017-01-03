@@ -25,9 +25,9 @@ Simple board definition
 Warning: don't change the order of the fields
 */
 typedef struct __board_ {
-	u8 p[TOTAL_BOARD_SIZ];
-	move last_eaten;
-	move last_played;
+    u8 p[TOTAL_BOARD_SIZ];
+    move last_eaten;
+    move last_played;
 } board;
 
 /*
@@ -55,14 +55,14 @@ WARNING: DO NOT CHANGE
 #define ILLEGAL     3 /* seldom used */
 
 typedef struct __out_board_ {
-	double value[TOTAL_BOARD_SIZ];
-	bool tested[TOTAL_BOARD_SIZ];
-	double pass;
+    double value[TOTAL_BOARD_SIZ];
+    bool tested[TOTAL_BOARD_SIZ];
+    double pass;
 } out_board;
 
 
 #define DISTANCE_TO_BORDER(X,Y) \
-	MIN((X), MIN((Y), MIN(BOARD_SIZ - 1 - (X), BOARD_SIZ - 1 - (Y))))
+    MIN((X), MIN((Y), MIN(BOARD_SIZ - 1 - (X), BOARD_SIZ - 1 - (Y))))
 
 
 /*

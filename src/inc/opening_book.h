@@ -12,10 +12,10 @@ Strategy that makes use of an opening book.
 #include "move.h"
 
 typedef struct __ob_entry_ {
-	u32 hash;
-	u8 p[PACKED_BOARD_SIZ];
-	move play;
-	struct __ob_entry_ * next;
+    u32 hash;
+    u8 p[PACKED_BOARD_SIZ];
+    move play;
+    struct __ob_entry_ * next;
 } ob_entry;
 
 

@@ -123,6 +123,9 @@ extern clock_t start_cpu_time;
 
 static void update_player_names()
 {
+    if(current_game.player_names_set)
+        return;
+
     if(has_genmoved_as_black == has_genmoved_as_white)
     {
         snprintf(current_game.black_name, MAX_PLAYER_NAME_SIZ, "black");
@@ -447,6 +450,16 @@ static void gtp_komi(
     int id,
     const char * new_komi
 ){
+    if(new_komi == NULL)
+    {
+
+        char * kstr = alloc();
+        komi_to_string(kstr, komi);
+        gtp_answer(fp, id, kstr);
+        release(kstr);
+        return;
+    }
+
     double komid;
     if(!parse_float(&komid, new_komi))
     {
@@ -1656,7 +1669,7 @@ lbl_parse_command:
             continue;
         }
 
-        if(argc == 1 && strcmp(cmd, "komi") == 0)
+        if(argc <= 1 && strcmp(cmd, "komi") == 0)
         {
             gtp_komi(out_fp, idn, args[0]);
             continue;

@@ -33,29 +33,29 @@ allowed when there are few plays possible.
 #define MAX_PLAYS_COUNT TOTAL_BOARD_SIZ
 
 typedef struct __tt_play_ {
-	move m;
-	u32 mc_n;
-	u32 amaf_n;
-	double mc_q;
-	double amaf_q;
-	/* Criticality */
-	double owner_winning;
-	double color_owning;
-	void * next_stats;
-	struct __tt_play_ * lgrf1_reply;
+    move m;
+    u32 mc_n;
+    u32 amaf_n;
+    double mc_q;
+    double amaf_q;
+    /* Criticality */
+    double owner_winning;
+    double color_owning;
+    void * next_stats;
+    struct __tt_play_ * lgrf1_reply;
 } tt_play;
 
 
 typedef struct __tt_stats_ {
-	u64 zobrist_hash;
-	u8 p[TOTAL_BOARD_SIZ];
+    u64 zobrist_hash;
+    u8 p[TOTAL_BOARD_SIZ];
     move last_eaten_passed; // position of last single stone eaten or NONE/PASS
-	u8 maintenance_mark;
-	d8 expansion_delay;
-	move plays_count;
-	tt_play plays[MAX_PLAYS_COUNT];
-	omp_lock_t lock;
-	struct __tt_stats_ * next;
+    u8 maintenance_mark;
+    d8 expansion_delay;
+    move plays_count;
+    tt_play plays[MAX_PLAYS_COUNT];
+    omp_lock_t lock;
+    struct __tt_stats_ * next;
 } tt_stats;
 
 
