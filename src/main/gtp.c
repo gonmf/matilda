@@ -458,7 +458,6 @@ static void gtp_komi(
 ){
     if(new_komi == NULL)
     {
-
         char * kstr = alloc();
         komi_to_string(kstr, komi);
         gtp_answer(fp, id, kstr);
@@ -474,25 +473,7 @@ static void gtp_komi(
     }
     gtp_answer(fp, id, NULL);
 
-    char * kstr = alloc();
-    komi_to_string(kstr, komi);
-
-    d16 komi2 = (d16)(komid * 2.0);
-    if(komi != komi2)
-    {
-        char * kstr2 = alloc();
-        komi_to_string(kstr2, komi2);
-
-        fprintf(stderr, "komidashi changed from %s to %s stones\n", kstr,
-            kstr2);
-
-        release(kstr2);
-        komi = komi2;
-    }
-    else
-        fprintf(stderr, "komidashi kept at %s stones\n", kstr);
-
-    release(kstr);
+    komi = (d16)(komid * 2.0);
 }
 
 static void gtp_play(
@@ -1287,14 +1268,7 @@ static void gtp_place_free_handicap(
         move m = random_play2(&current_state, true);
 
         if(!add_handicap_stone(&current_game, m))
-        {
-            fprint_board(stderr, &current_state);
-            char * s = alloc();
-            coord_to_alpha_num(s, m);
-            fprintf(stderr, "%s\n", s);
-            release(s);
             flog_crit("gtp", "add handicap stone failed (2)");
-        }
 
         --num_stones;
         coord_to_alpha_num(mstr, m);
@@ -1349,7 +1323,6 @@ static void gtp_loadsgf(
 ){
     if(!validate_filename(filename))
     {
-        fprintf(stderr, "illegal file name\n");
         gtp_error(fp, id, "cannot load file");
         return;
     }
@@ -1395,7 +1368,7 @@ static void gtp_printsgf(
 
     char * buf = alloc();
 
-    if(filename == NULL)
+    if(filename == NULL || strcmp(filename, "-") == 0)
     {
         export_game_as_sgf_to_buffer(&current_game, buf, MAX_PAGE_SIZ);
         gtp_answer(fp, id, buf);
@@ -1404,8 +1377,7 @@ static void gtp_printsgf(
     {
         if(!validate_filename(filename))
         {
-            gtp_error(fp, id, "cannot save file");
-            fprintf(stderr, "illegal file name\n");
+            gtp_error(fp, id, "illegal file name");
             release(buf);
             return;
         }
@@ -1413,16 +1385,10 @@ static void gtp_printsgf(
         snprintf(buf, MAX_PAGE_SIZ, "%s%s", data_folder(), filename);
 
         bool success = export_game_as_sgf(&current_game, buf);
-        if(!success)
-        {
-            gtp_error(fp, id, "cannot create file");
-            fprintf(stderr, "could not create file %s\n", buf);
-        }
-        else
-        {
+        if(success)
             gtp_answer(fp, id, NULL);
-            fprintf(stderr, "saved to file %s\n", buf);
-        }
+        else
+            gtp_error(fp, id, "could not create file");
     }
 
     release(buf);
@@ -1833,11 +1799,11 @@ t is wrong; please check the documentation\n", cmd);
                 goto lbl_parse_command;
             }
             if(best_dst_val < 4)
-                fprintf(stderr, "warning: command '%s' was not understood; did \
-you mean '%s'?\n", cmd, best_dst_str);
+                fprintf(stderr, "warning: command '%s' does not exist; did you \
+mean '%s'?\n", cmd, best_dst_str);
             else
-                fprintf(stderr, "warning: command '%s' was not understood; run \
-\"help\" for a list of available commands\n", cmd);
+                fprintf(stderr, "warning: command '%s' does not exist; run \"he\
+lp\" for a list of available commands\n", cmd);
 
             gtp_error(out_fp, idn, "unknown command");
         }
