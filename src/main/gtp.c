@@ -428,6 +428,12 @@ static void gtp_boardsize(
     int id,
     const char * new_size
 ){
+    if(new_size == NULL)
+    {
+        gtp_answer(fp, id, BOARD_SIZ_AS_STR);
+        return;
+    }
+
     u32 ns;
     if(!parse_uint(&ns, new_size))
     {
@@ -1651,7 +1657,7 @@ lbl_parse_command:
             continue;
         }
 
-        if(argc == 1 && strcmp(cmd, "boardsize") == 0)
+        if(argc <= 1 && strcmp(cmd, "boardsize") == 0)
         {
             gtp_boardsize(out_fp, idn, args[0]);
             continue;
