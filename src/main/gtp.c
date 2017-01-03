@@ -444,8 +444,14 @@ static void gtp_boardsize(
     if(ns != BOARD_SIZ)
     {
         gtp_error(fp, id, "unacceptable size");
-        flog_warn("gtp", "changing the board size requires the program to be re\
-compiled");
+
+        fprintf(stderr, "board size cannot be changed on runtime; please edit t\
+he master header file and recompile matilda\n");
+        char * s = alloc();
+        snprintf(s, MAX_PAGE_SIZ, "requested board size change to %ux%u", ns,
+            ns);
+        flog_info("gtp", s);
+        release(s);
     }
     else
         gtp_answer(fp, id, NULL);
@@ -1159,16 +1165,6 @@ static bool generic_undo(
 
 static void gtp_undo(
     FILE * fp,
-    int id
-){
-    if(generic_undo(1))
-        gtp_answer(fp, id, NULL);
-    else
-        gtp_error(fp, id, "cannot undo");
-}
-
-static void gtp_undo_multiple(
-    FILE * fp,
     int id,
     const char * number
 ){
@@ -1541,8 +1537,7 @@ to %u milliseconds", network_roundtrip_delay);
 
 lbl_parse_command:
         /*
-        Command commonly used should be parsed first, like the ones usually used
-        every turn.
+        Commands more commonly used should be parsed first:
         */
         if(argc == 2 && strcmp(cmd, "play") == 0)
         {
@@ -1556,15 +1551,45 @@ lbl_parse_command:
             continue;
         }
 
+        if(argc == 3 && strcmp(cmd, "time_left") == 0)
+        {
+            gtp_time_left_seconds(out_fp, idn, args[0], args[1], args[2]);
+            continue;
+        }
+
         if(argc == 1 && strcmp(cmd, "reg_genmove") == 0)
         {
             gtp_reg_genmove(out_fp, idn, args[0]);
             continue;
         }
 
-        if(argc == 3 && strcmp(cmd, "time_left") == 0)
+        if(argc == 0 && strcmp(cmd, "clear_board") == 0)
         {
-            gtp_time_left_seconds(out_fp, idn, args[0], args[1], args[2]);
+            gtp_clear_board(out_fp, idn);
+            continue;
+        }
+
+        if(argc == 0 && strcmp(cmd, "kgs-game_over") == 0)
+        {
+            gtp_kgs_game_over(out_fp, idn);
+            continue;
+        }
+
+        if(argc <= 1 && strcmp(cmd, "komi") == 0)
+        {
+            gtp_komi(out_fp, idn, args[0]);
+            continue;
+        }
+
+        if(argc == 1 && strcmp(cmd, "kgs-genmove_cleanup") == 0)
+        {
+            gtp_genmove_cleanup(out_fp, idn, args[0]);
+            continue;
+        }
+
+        if(argc == 1 && strcmp(cmd, "final_status_list") == 0)
+        {
+            gtp_final_status_list(out_fp, idn, args[0]);
             continue;
         }
 
@@ -1576,13 +1601,13 @@ lbl_parse_command:
 
         if(argc == 0 && strcmp(cmd, "undo") == 0)
         {
-            gtp_undo(out_fp, idn);
+            gtp_undo(out_fp, idn, NULL);
             continue;
         }
 
         if(argc <= 1 && strcmp(cmd, "gg-undo") == 0)
         {
-            gtp_undo_multiple(out_fp, idn, args[0]);
+            gtp_undo(out_fp, idn, args[0]);
             continue;
         }
 
@@ -1617,51 +1642,21 @@ lbl_parse_command:
             continue;
         }
 
-        if(argc == 0 && (strcmp(cmd, "quit") == 0 || strcmp(cmd, "exit") == 0))
-        {
-            gtp_quit(out_fp, idn);
-            continue;
-        }
-
         if(argc <= 1 && strcmp(cmd, "boardsize") == 0)
         {
             gtp_boardsize(out_fp, idn, args[0]);
             continue;
         }
 
-        if(argc == 0 && strcmp(cmd, "clear_board") == 0)
-        {
-            gtp_clear_board(out_fp, idn);
-            continue;
-        }
-
-        if(argc == 0 && strcmp(cmd, "kgs-game_over") == 0)
-        {
-            gtp_kgs_game_over(out_fp, idn);
-            continue;
-        }
-
-        if(argc <= 1 && strcmp(cmd, "komi") == 0)
-        {
-            gtp_komi(out_fp, idn, args[0]);
-            continue;
-        }
-
-        if(argc == 1 && strcmp(cmd, "kgs-genmove_cleanup") == 0)
-        {
-            gtp_genmove_cleanup(out_fp, idn, args[0]);
-            continue;
-        }
-
-        if(argc == 1 && strcmp(cmd, "final_status_list") == 0)
-        {
-            gtp_final_status_list(out_fp, idn, args[0]);
-            continue;
-        }
-
         if(argc == 0 && strcmp(cmd, "showboard") == 0)
         {
             gtp_showboard(out_fp, idn);
+            continue;
+        }
+
+        if(argc == 0 && strcmp(cmd, "final_score") == 0)
+        {
+            gtp_final_score(out_fp, idn);
             continue;
         }
 
@@ -1674,12 +1669,6 @@ lbl_parse_command:
         if(argc == 1 && strcmp(cmd, "mtld-review_game") == 0)
         {
             gtp_review_game(out_fp, idn, args[0]);
-            continue;
-        }
-
-        if(argc == 0 && strcmp(cmd, "final_score") == 0)
-        {
-            gtp_final_score(out_fp, idn);
             continue;
         }
 
@@ -1708,7 +1697,13 @@ lbl_parse_command:
             continue;
         }
 
-        if(argc == 0 && (strcmp(cmd, "cputime") == 0 || strcmp(cmd, "gomill-cpu_time") == 0))
+        if(argc == 0 && strcmp(cmd, "cputime") == 0)
+        {
+            gtp_cputime(out_fp, idn);
+            continue;
+        }
+
+        if(argc == 0 && strcmp(cmd, "gomill-cpu_time") == 0)
         {
             gtp_cputime(out_fp, idn);
             continue;
@@ -1759,6 +1754,18 @@ lbl_parse_command:
         if(argc == 0 && strcmp(cmd, "gomill-describe_engine") == 0)
         {
             gtp_gomill_describe_engine(out_fp, idn);
+            continue;
+        }
+
+        if(argc == 0 && strcmp(cmd, "quit") == 0)
+        {
+            gtp_quit(out_fp, idn);
+            continue;
+        }
+
+        if(argc == 0 && strcmp(cmd, "exit") == 0)
+        {
+            gtp_quit(out_fp, idn);
             continue;
         }
 
