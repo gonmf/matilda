@@ -14,7 +14,7 @@ Board/goban size given by the length of one side.
 
 EXPECTED: 5, 7, 9, 11, 13, 15, 17, 19 or 21
 */
-#define BOARD_SIZ 9
+#define BOARD_SIZ 19
 
 /*
 Default komidashi used, multiplied by 2 to give an integer number.
@@ -95,7 +95,7 @@ Tuned with CLOP in 9x9 with 10k playouts/turn in self-play for 34k games.
 
 EXPECTED: 0 to 10
 */
-#define UCT_EXPANSION_DELAY 5
+#define UCT_EXPANSION_DELAY 0 // TODO 5
 
 
 /*

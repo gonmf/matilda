@@ -20,7 +20,7 @@ LDFLAGS += -lm
 # CFLAGS += -g
 
 # GCC > 4.9 only
-# CFLAGS += -fdiagnostics-color=auto
+CFLAGS += -fdiagnostics-color=auto
 
 
 COMMIT := $(shell git rev-parse --short HEAD 2> /dev/null)
