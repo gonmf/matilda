@@ -7,7 +7,7 @@ gogui-twogtp -white "$WHITE" -black "$BLACK" -referee "$REFEREE" \
 -sgffile output \
 -games 4000 \
 -auto \
--size 19 \
+-size 9 \
 -komi 7.5 \
 -alternate
 exit 0

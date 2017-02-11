@@ -43,9 +43,9 @@ Tuned with CLOP in 9x9 with 10k playouts/turn in self-play for 34k games.
 #define PRIOR_LINE2      45 /* if empty in a certain distance around it */
 #define PRIOR_LINE3      29
 #define PRIOR_EMPTY      40 /* bonuses for empty zones of the board not above */
-#define PRIOR_LINE1X     13 /* bonus for 3rd line and malus to 1st and 2nd */
-#define PRIOR_LINE2X      5 /* if not empty in a certain distance around it */
-#define PRIOR_LINE3X      8
+#define PRIOR_LINE1X      0 // 13 /* bonus for 3rd line and malus to 1st and 2nd */
+#define PRIOR_LINE2X      0 // 5 /* if not empty in a certain distance around it */
+#define PRIOR_LINE3X      0 // 8
 #else
 #define PRIOR_LINE2       0 // 45 /* if empty in a certain distance around it */
 #define PRIOR_LINE3       0 // 29

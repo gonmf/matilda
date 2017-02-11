@@ -241,12 +241,11 @@ static move heavy_select_play(
         }
     }
 
-
 #if 0
     /*
     Nakade
     */
-    if(rand_u16(128) >= pl_skip_nakade)
+    if(cb->last_eaten != NONE && rand_u16(128) >= pl_skip_nakade)
     {
         for(u16 k = 0; k < cb->empty.count; ++k)
         {
