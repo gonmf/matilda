@@ -1,5 +1,4 @@
 #!/bin/bash
-cd matilda
 
 cd twogtp0
 ./stop.sh
@@ -26,5 +25,10 @@ cd twogtp4
 echo '----------- part 4 -----------'
 ./analyze2.sh
 cd ..
+
+rm -rf ./twogtp1
+rm -rf ./twogtp2
+rm -rf ./twogtp3
+rm -rf ./twogtp4
 
 exit

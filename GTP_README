@@ -8,11 +8,19 @@ the private command extensions supported.
 Reference: http://www.lysator.liu.se/~gunnar/gtp/gtp2-spec-draft2/gtp2-spec.html
 
 boardsize -- the command fails if the board size requested is different than the
-expected value set at compile time.
+value set at compile time. Furthermore, if no argument is given the command
+succeeds and returns the current board size.
 
 
-final_status_list -- Matilda always prefers playing to passing and as such will
-kill dead groups; when answering this command it will always mark all stones as
+komi -- the command also accepts no parameters, returning the current komidashi.
+
+
+loadsgf -- the command fails if the game board size requested is different than
+the value set at compile time.
+
+
+final_status_list -- Matilda may prefer playing to passing and, as such, kill
+dead groups; when answering this command it will always mark all stones as
 alive, not identifying life in seki.
 
 

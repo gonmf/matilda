@@ -30,7 +30,7 @@ And chooses a play based on (by order of importance):
 
 
 /*
-Probability of skipping a check in parts of 128 (instead of 100	for performance
+Probability of skipping a check in parts of 128 (instead of 100 for performance
 reasons).
 */
 #if BOARD_SIZ < 12

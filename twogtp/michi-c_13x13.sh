@@ -1,7 +1,7 @@
 #!/bin/bash
 rm -f output.html output.summary.dat
-BLACK="../src/matilda     -m gtp -d ../src/data/ -l e --disable_opening_books --disable_neural_nets --losing resign --playouts 10000"
-WHITE="../src/matilda-old -m gtp -d ../src/data/ -l e --disable_opening_books --disable_neural_nets --losing resign --playouts 10000"
+BLACK="../src/matilda -m gtp -d ../src/data/ -l e --disable_opening_books --losing resign --disable_neural_nets --playouts 10000 --threads 1"
+WHITE="../src/michi-c"
 REFEREE="gnugo --level 0 --mode gtp --chinese-rules --positional-superko"
 gogui-twogtp -white "$WHITE" -black "$BLACK" -referee "$REFEREE" \
 -sgffile output \

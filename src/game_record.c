@@ -49,7 +49,7 @@ void clear_game_record(
     snprintf(gr->white_name, MAX_PLAYER_NAME_SIZ, "white");
     gr->handicap_stones.count = 0;
     gr->turns = 0;
-    gr->finished = gr->resignation = gr->timeout = false;
+    gr->finished = gr->resignation = gr->timeout = gr->player_names_set = false;
     current_game_bak_set = false;
 }
 

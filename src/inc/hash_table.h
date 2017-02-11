@@ -10,17 +10,17 @@ Implementation of a generic hash table
 #include "types.h"
 
 typedef struct __ht_node_ {
-	void * data;
-	struct __ht_node_ * next;
+    void * data;
+    struct __ht_node_ * next;
 } ht_node;
 
 typedef struct __hash_table_ {
-	u32 number_of_buckets;
-	u32 elem_size;
-	u32 elements;
-	ht_node ** table;
-	u32 (* hash_func)(void *);
-	int (* cmp_func)(const void *, const void *);
+    u32 number_of_buckets;
+    u32 elem_size;
+    u32 elements;
+    ht_node ** table;
+    u32 (* hash_func)(void *);
+    int (* cmp_func)(const void *, const void *);
 } hash_table;
 
 

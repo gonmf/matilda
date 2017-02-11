@@ -1,28 +1,35 @@
 #!/bin/bash
-cd matilda
 
-cd twogtp0
+cd twogtp
 ./clean.sh
+cd ..
+
+mv -rf twogtp1
+mv -rf twogtp2
+mv -rf twogtp3
+mv -rf twogtp4
+cp -r twogtp twogtp1
+cp -r twogtp twogtp2
+cp -r twogtp twogtp3
+cp -r twogtp twogtp4
+
+cd twogtp
 nohup ./michi-c_9x9.sh &
 cd ..
 
 cd twogtp1
-./clean.sh
 nohup ./michi-c_9x9.sh &
 cd ..
 
 cd twogtp2
-./clean.sh
 nohup ./michi-c_9x9.sh &
 cd ..
 
 cd twogtp3
-./clean.sh
 nohup ./michi-c_9x9.sh &
 cd ..
 
 cd twogtp4
-./clean.sh
 nohup ./michi-c_9x9.sh &
 cd ..
 

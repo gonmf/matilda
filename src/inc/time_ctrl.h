@@ -31,18 +31,18 @@ is the objective.
 
 
 typedef struct __time_system_ {
-	bool can_timeout;
-	bool timed_out;
+    bool can_timeout;
+    bool timed_out;
 
-	u32 main_time;
-	u32 byo_yomi_stones;
-	u32 byo_yomi_time;
-	u32 byo_yomi_periods;
+    u32 main_time;
+    u32 byo_yomi_stones;
+    u32 byo_yomi_time;
+    u32 byo_yomi_periods;
 
-	u32 main_time_remaining;
-	u32 byo_yomi_stones_remaining;
-	u32 byo_yomi_time_remaining;
-	u32 byo_yomi_periods_remaining;
+    u32 main_time_remaining;
+    u32 byo_yomi_stones_remaining;
+    u32 byo_yomi_time_remaining;
+    u32 byo_yomi_periods_remaining;
 } time_system;
 
 

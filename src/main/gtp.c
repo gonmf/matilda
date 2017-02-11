@@ -123,6 +123,9 @@ extern clock_t start_cpu_time;
 
 static void update_player_names()
 {
+    if(current_game.player_names_set)
+        return;
+
     if(has_genmoved_as_black == has_genmoved_as_white)
     {
         snprintf(current_game.black_name, MAX_PLAYER_NAME_SIZ, "black");
@@ -425,6 +428,12 @@ static void gtp_boardsize(
     int id,
     const char * new_size
 ){
+    if(new_size == NULL)
+    {
+        gtp_answer(fp, id, BOARD_SIZ_AS_STR);
+        return;
+    }
+
     u32 ns;
     if(!parse_uint(&ns, new_size))
     {
@@ -435,8 +444,14 @@ static void gtp_boardsize(
     if(ns != BOARD_SIZ)
     {
         gtp_error(fp, id, "unacceptable size");
-        flog_warn("gtp", "changing the board size requires the program to be re\
-compiled");
+
+        fprintf(stderr, "board size cannot be changed on runtime; please edit t\
+he master header file and recompile matilda\n");
+        char * s = alloc();
+        snprintf(s, MAX_PAGE_SIZ, "requested board size change to %ux%u", ns,
+            ns);
+        flog_info("gtp", s);
+        release(s);
     }
     else
         gtp_answer(fp, id, NULL);
@@ -447,6 +462,15 @@ static void gtp_komi(
     int id,
     const char * new_komi
 ){
+    if(new_komi == NULL)
+    {
+        char * kstr = alloc();
+        komi_to_string(kstr, komi);
+        gtp_answer(fp, id, kstr);
+        release(kstr);
+        return;
+    }
+
     double komid;
     if(!parse_float(&komid, new_komi))
     {
@@ -455,25 +479,7 @@ static void gtp_komi(
     }
     gtp_answer(fp, id, NULL);
 
-    char * kstr = alloc();
-    komi_to_string(kstr, komi);
-
-    d16 komi2 = (d16)(komid * 2.0);
-    if(komi != komi2)
-    {
-        char * kstr2 = alloc();
-        komi_to_string(kstr2, komi2);
-
-        fprintf(stderr, "komidashi changed from %s to %s stones\n", kstr,
-            kstr2);
-
-        release(kstr2);
-        komi = komi2;
-    }
-    else
-        fprintf(stderr, "komidashi kept at %s stones\n", kstr);
-
-    release(kstr);
+    komi = (d16)(komid * 2.0);
 }
 
 static void gtp_play(
@@ -1159,16 +1165,6 @@ static bool generic_undo(
 
 static void gtp_undo(
     FILE * fp,
-    int id
-){
-    if(generic_undo(1))
-        gtp_answer(fp, id, NULL);
-    else
-        gtp_error(fp, id, "cannot undo");
-}
-
-static void gtp_undo_multiple(
-    FILE * fp,
     int id,
     const char * number
 ){
@@ -1268,14 +1264,7 @@ static void gtp_place_free_handicap(
         move m = random_play2(&current_state, true);
 
         if(!add_handicap_stone(&current_game, m))
-        {
-            fprint_board(stderr, &current_state);
-            char * s = alloc();
-            coord_to_alpha_num(s, m);
-            fprintf(stderr, "%s\n", s);
-            release(s);
             flog_crit("gtp", "add handicap stone failed (2)");
-        }
 
         --num_stones;
         coord_to_alpha_num(mstr, m);
@@ -1330,7 +1319,6 @@ static void gtp_loadsgf(
 ){
     if(!validate_filename(filename))
     {
-        fprintf(stderr, "illegal file name\n");
         gtp_error(fp, id, "cannot load file");
         return;
     }
@@ -1376,7 +1364,7 @@ static void gtp_printsgf(
 
     char * buf = alloc();
 
-    if(filename == NULL)
+    if(filename == NULL || strcmp(filename, "-") == 0)
     {
         export_game_as_sgf_to_buffer(&current_game, buf, MAX_PAGE_SIZ);
         gtp_answer(fp, id, buf);
@@ -1385,8 +1373,7 @@ static void gtp_printsgf(
     {
         if(!validate_filename(filename))
         {
-            gtp_error(fp, id, "cannot save file");
-            fprintf(stderr, "illegal file name\n");
+            gtp_error(fp, id, "illegal file name");
             release(buf);
             return;
         }
@@ -1394,16 +1381,10 @@ static void gtp_printsgf(
         snprintf(buf, MAX_PAGE_SIZ, "%s%s", data_folder(), filename);
 
         bool success = export_game_as_sgf(&current_game, buf);
-        if(!success)
-        {
-            gtp_error(fp, id, "cannot create file");
-            fprintf(stderr, "could not create file %s\n", buf);
-        }
-        else
-        {
+        if(success)
             gtp_answer(fp, id, NULL);
-            fprintf(stderr, "saved to file %s\n", buf);
-        }
+        else
+            gtp_error(fp, id, "could not create file");
     }
 
     release(buf);
@@ -1556,8 +1537,7 @@ to %u milliseconds", network_roundtrip_delay);
 
 lbl_parse_command:
         /*
-        Command commonly used should be parsed first, like the ones usually used
-        every turn.
+        Commands more commonly used should be parsed first:
         */
         if(argc == 2 && strcmp(cmd, "play") == 0)
         {
@@ -1571,15 +1551,45 @@ lbl_parse_command:
             continue;
         }
 
+        if(argc == 3 && strcmp(cmd, "time_left") == 0)
+        {
+            gtp_time_left_seconds(out_fp, idn, args[0], args[1], args[2]);
+            continue;
+        }
+
         if(argc == 1 && strcmp(cmd, "reg_genmove") == 0)
         {
             gtp_reg_genmove(out_fp, idn, args[0]);
             continue;
         }
 
-        if(argc == 3 && strcmp(cmd, "time_left") == 0)
+        if(argc == 0 && strcmp(cmd, "clear_board") == 0)
         {
-            gtp_time_left_seconds(out_fp, idn, args[0], args[1], args[2]);
+            gtp_clear_board(out_fp, idn);
+            continue;
+        }
+
+        if(argc == 0 && strcmp(cmd, "kgs-game_over") == 0)
+        {
+            gtp_kgs_game_over(out_fp, idn);
+            continue;
+        }
+
+        if(argc <= 1 && strcmp(cmd, "komi") == 0)
+        {
+            gtp_komi(out_fp, idn, args[0]);
+            continue;
+        }
+
+        if(argc == 1 && strcmp(cmd, "kgs-genmove_cleanup") == 0)
+        {
+            gtp_genmove_cleanup(out_fp, idn, args[0]);
+            continue;
+        }
+
+        if(argc == 1 && strcmp(cmd, "final_status_list") == 0)
+        {
+            gtp_final_status_list(out_fp, idn, args[0]);
             continue;
         }
 
@@ -1591,13 +1601,13 @@ lbl_parse_command:
 
         if(argc == 0 && strcmp(cmd, "undo") == 0)
         {
-            gtp_undo(out_fp, idn);
+            gtp_undo(out_fp, idn, NULL);
             continue;
         }
 
         if(argc <= 1 && strcmp(cmd, "gg-undo") == 0)
         {
-            gtp_undo_multiple(out_fp, idn, args[0]);
+            gtp_undo(out_fp, idn, args[0]);
             continue;
         }
 
@@ -1632,51 +1642,21 @@ lbl_parse_command:
             continue;
         }
 
-        if(argc == 0 && (strcmp(cmd, "quit") == 0 || strcmp(cmd, "exit") == 0))
-        {
-            gtp_quit(out_fp, idn);
-            continue;
-        }
-
-        if(argc == 1 && strcmp(cmd, "boardsize") == 0)
+        if(argc <= 1 && strcmp(cmd, "boardsize") == 0)
         {
             gtp_boardsize(out_fp, idn, args[0]);
-            continue;
-        }
-
-        if(argc == 0 && strcmp(cmd, "clear_board") == 0)
-        {
-            gtp_clear_board(out_fp, idn);
-            continue;
-        }
-
-        if(argc == 0 && strcmp(cmd, "kgs-game_over") == 0)
-        {
-            gtp_kgs_game_over(out_fp, idn);
-            continue;
-        }
-
-        if(argc == 1 && strcmp(cmd, "komi") == 0)
-        {
-            gtp_komi(out_fp, idn, args[0]);
-            continue;
-        }
-
-        if(argc == 1 && strcmp(cmd, "kgs-genmove_cleanup") == 0)
-        {
-            gtp_genmove_cleanup(out_fp, idn, args[0]);
-            continue;
-        }
-
-        if(argc == 1 && strcmp(cmd, "final_status_list") == 0)
-        {
-            gtp_final_status_list(out_fp, idn, args[0]);
             continue;
         }
 
         if(argc == 0 && strcmp(cmd, "showboard") == 0)
         {
             gtp_showboard(out_fp, idn);
+            continue;
+        }
+
+        if(argc == 0 && strcmp(cmd, "final_score") == 0)
+        {
+            gtp_final_score(out_fp, idn);
             continue;
         }
 
@@ -1689,12 +1669,6 @@ lbl_parse_command:
         if(argc == 1 && strcmp(cmd, "mtld-review_game") == 0)
         {
             gtp_review_game(out_fp, idn, args[0]);
-            continue;
-        }
-
-        if(argc == 0 && strcmp(cmd, "final_score") == 0)
-        {
-            gtp_final_score(out_fp, idn);
             continue;
         }
 
@@ -1723,7 +1697,13 @@ lbl_parse_command:
             continue;
         }
 
-        if(argc == 0 && (strcmp(cmd, "cputime") == 0 || strcmp(cmd, "gomill-cpu_time") == 0))
+        if(argc == 0 && strcmp(cmd, "cputime") == 0)
+        {
+            gtp_cputime(out_fp, idn);
+            continue;
+        }
+
+        if(argc == 0 && strcmp(cmd, "gomill-cpu_time") == 0)
         {
             gtp_cputime(out_fp, idn);
             continue;
@@ -1777,6 +1757,18 @@ lbl_parse_command:
             continue;
         }
 
+        if(argc == 0 && strcmp(cmd, "quit") == 0)
+        {
+            gtp_quit(out_fp, idn);
+            continue;
+        }
+
+        if(argc == 0 && strcmp(cmd, "exit") == 0)
+        {
+            gtp_quit(out_fp, idn);
+            continue;
+        }
+
 
         const char * best_dst_str = NULL;
         u16 best_dst_val = 0;
@@ -1814,11 +1806,11 @@ t is wrong; please check the documentation\n", cmd);
                 goto lbl_parse_command;
             }
             if(best_dst_val < 4)
-                fprintf(stderr, "warning: command '%s' was not understood; did \
-you mean '%s'?\n", cmd, best_dst_str);
+                fprintf(stderr, "warning: command '%s' does not exist; did you \
+mean '%s'?\n", cmd, best_dst_str);
             else
-                fprintf(stderr, "warning: command '%s' was not understood; run \
-\"help\" for a list of available commands\n", cmd);
+                fprintf(stderr, "warning: command '%s' does not exist; run \"he\
+lp\" for a list of available commands\n", cmd);
 
             gtp_error(out_fp, idn, "unknown command");
         }

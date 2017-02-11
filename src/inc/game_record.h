@@ -27,16 +27,17 @@ http://www.weddslist.com/kgs/past/superko.html
 #define MAX_PLAYER_NAME_SIZ 32
 
 typedef struct __game_record_ {
-	char black_name[MAX_PLAYER_NAME_SIZ];
-	char white_name[MAX_PLAYER_NAME_SIZ];
-	move_seq handicap_stones;
-	move moves[MAX_GAME_LENGTH];
+    char black_name[MAX_PLAYER_NAME_SIZ];
+    char white_name[MAX_PLAYER_NAME_SIZ];
+    move_seq handicap_stones;
+    move moves[MAX_GAME_LENGTH];
     u16 hashes[MAX_GAME_LENGTH];
-	u16 turns;
-	bool finished;
+    u16 turns;
+    bool player_names_set;
+    bool finished;
     bool resignation;
     bool timeout;
-	d16 final_score; /* 0 if draw */
+    d16 final_score; /* 0 if draw */
 } game_record;
 
 

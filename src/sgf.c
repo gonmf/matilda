@@ -33,6 +33,7 @@ static bool wrong_board_size_warned = false;
 static bool illegal_final_score_warned = false;
 static bool illegal_handicap_placement_warned = false;
 static bool illegal_stone_placement_warned = false;
+static bool komi_format_error = false;
 
 static u8 guess_board_size(
     const char * sgf
@@ -63,6 +64,7 @@ u32 export_game_as_sgf_to_buffer(
     char * buf = buffer;
     buf += snprintf(buf, size - (buf - buffer), "(;GM[1]\n");
     buf += snprintf(buf, size - (buf - buffer), "FF[4]\n");
+    buf += snprintf(buf, size - (buf - buffer), "CA[UTF-8]\n");
     buf += snprintf(buf, size - (buf - buffer), "SZ[%u]\n", BOARD_SIZ);
     buf += snprintf(buf, size - (buf - buffer), "PW[%s]\n", gr->white_name);
     buf += snprintf(buf, size - (buf - buffer), "PB[%s]\n", gr->black_name);
@@ -86,7 +88,6 @@ u32 export_game_as_sgf_to_buffer(
 
     /* Not standard but as used in KGS; closest would be AGA rules */
     buf += snprintf(buf, size - (buf - buffer), "RU[Chinese]\n");
-    buf += snprintf(buf, size - (buf - buffer), "CA[UTF-8]\n");
     buf += snprintf(buf, size - (buf - buffer), "AP[matilda:%s]\n",
         MATILDA_VERSION);
 
@@ -108,6 +109,9 @@ u32 export_game_as_sgf_to_buffer(
     /* Plays */
     for(u16 i = 0; i < gr->turns; ++i)
     {
+        if(i > 0 && (i % 10) == 0)
+            buf += snprintf(buf, size - (buf - buffer), "\n");
+
         assert(gr->moves[i] != NONE);
         if(gr->moves[i] == PASS)
         {
@@ -253,6 +257,27 @@ bool import_game_from_sgf2(
     char * tmp = alloc();
 
     /*
+    Komi
+    */
+    str_between(tmp, buf, "KM[", "]");
+    if(tmp[0] != 0)
+    {
+        double komid;
+        if(!parse_float(&komid, tmp))
+        {
+            if(!komi_format_error)
+            {
+                komi_format_error = true;
+                flog_warn("sgff", "komi format error; current komi kept");
+            }
+        }
+        else
+        {
+            komi = (d16)(komid * 2.0);
+        }
+    }
+
+    /*
     Board size
     */
     str_between(tmp, buf, "SZ[", "]");
@@ -298,11 +323,17 @@ tes");
 
     str_between(tmp, buf, "PB[", "]");
     if(tmp[0])
+    {
         strncpy(gr->black_name, tmp, MAX_PLAYER_NAME_SIZ);
+        gr->player_names_set = true;
+    }
 
     str_between(tmp, buf, "PW[", "]");
     if(tmp[0])
+    {
         strncpy(gr->white_name, tmp, MAX_PLAYER_NAME_SIZ);
+        gr->player_names_set = true;
+    }
 
     /*
     Result
@@ -350,8 +381,8 @@ tes");
                                     illegal_final_score_warned = true;
                                     flog_warn("sgff", "illegal result format");
                                 }
-                                release(tmp);
-                                return false;
+                                finished = false;
+                                goto after_game_result;
                             }
                             final_score = (d32)(f * 2.0);
                         }
@@ -383,13 +414,15 @@ tes");
                                     illegal_final_score_warned = true;
                                     flog_warn("sgff", "illegal result format");
                                 }
-                                release(tmp);
-                                return false;
+                                finished = false;
+                                goto after_game_result;
                             }
                             final_score = (d32)(f * -2.0);
                         }
                 }
             }
+
+after_game_result:
     release(tmp);
 
     /*

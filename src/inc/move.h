@@ -27,8 +27,8 @@ typedef u16 move;
 #endif
 
 typedef struct __move_seq_ {
-	move count;
-	move coord[TOTAL_BOARD_SIZ];
+    move count;
+    move coord[TOTAL_BOARD_SIZ];
 } move_seq;
 
 /*
