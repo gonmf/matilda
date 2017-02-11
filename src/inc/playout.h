@@ -46,7 +46,7 @@ Tuned with CLOP in 9x9 with 10k playouts/turn in self-play for 34k games.
 #define PL_SKIP_SAVING    32
 #define PL_SKIP_CAPTURE   39
 #define PL_SKIP_PATTERN   15
-#define PL_SKIP_NAKADE    25
+#define PL_SKIP_NAKADE     0
 #define PL_BAN_SELF_ATARI 43
 #endif
 
