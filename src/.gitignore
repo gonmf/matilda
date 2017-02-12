@@ -1,6 +1,5 @@
 *.o
 *.d
-matilda
 matilda*
 test
 gen_opening_book
@@ -18,3 +17,4 @@ callgrind.out.*
 *.ds
 *.ds.txt
 output.*
+nohup.out

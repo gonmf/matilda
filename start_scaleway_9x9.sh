@@ -4,10 +4,10 @@ cd twogtp
 ./clean.sh
 cd ..
 
-mv -rf twogtp1
-mv -rf twogtp2
-mv -rf twogtp3
-mv -rf twogtp4
+rm -rf twogtp1
+rm -rf twogtp2
+rm -rf twogtp3
+rm -rf twogtp4
 cp -r twogtp twogtp1
 cp -r twogtp twogtp2
 cp -r twogtp twogtp3
