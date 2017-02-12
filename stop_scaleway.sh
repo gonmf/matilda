@@ -1,6 +1,6 @@
 #!/bin/bash
 
-cd twogtp0
+cd twogtp
 ./stop.sh
 echo '----------- part 0 -----------'
 ./analyze2.sh
