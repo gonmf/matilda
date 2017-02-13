@@ -17,4 +17,3 @@ callgrind.out.*
 *.ds
 *.ds.txt
 output.*
-nohup.out
