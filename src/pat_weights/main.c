@@ -70,7 +70,7 @@ static u16 get_pattern(
 ){
     u8 v[3][3];
     pat3_transpose(v, cb->p, m);
-    pat3_reduce_auto(v);
+    pat3_reduce_auto(v); // TODO: not needed?
     return pat3_to_string((const u8 (*)[3])v);
 }
 

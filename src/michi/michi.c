@@ -6,8 +6,10 @@
 #include <math.h>
 
 #include "matilda.h"
-
 #include "types.h"
+#include "move.h"
+#include "board.h"
+#include "pat3.h"
 
 #define N         BOARD_SIZ
 #define N_SIMS    10000
@@ -119,6 +121,94 @@ static d32  slist_insert(u32 * l, u32 item)
     else return 0;
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+// TODO
+static char * _str_coord(u32 pt, char str[8])
+{
+    d32 row = pt/(N+1); d32 col = (pt%(N+1));
+    sprintf(str, "%c%d", '@'+col,N+1-row);
+    if (str[0] > 'H') str[0]++;
+    return str;
+}
+
+static u32 parse_coord(char *s);
+
+static move michi_pt_to_mtld_pt(
+    d32 pt
+){
+    char code[8];
+    _str_coord(pt, code);
+
+    return coord_parse_alpha_num(code);
+}
+
+static void michi_board_to_mtld_board(
+    board * dst,
+    const Position * src
+){
+    clear_board(dst);
+
+    for(move m = 0; m < TOTAL_BOARD_SIZ; ++m)
+    {
+        char code[8];
+        coord_to_alpha_num(code, m);
+
+        d32 michi_mv = parse_coord(code);
+        switch(src->color[michi_mv])
+        {
+            case 'O':
+                dst->p[m] = WHITE_STONE;
+                break;
+            case 'o':
+                dst->p[m] = BLACK_STONE;
+                break;
+            case 'X':
+                dst->p[m] = BLACK_STONE;
+                break;
+            case 'x':
+                dst->p[m] = WHITE_STONE;
+                break;
+        }
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 static void mark_init(Mark *m) {
     m->in_use = 1;
     m->value++;
@@ -138,10 +228,20 @@ static d32 is_marked(Mark *m, u32 i) {
 
 static u8 bit[8] = { 1, 2, 4, 8, 16, 32, 64, 128 };
 
-static d32 pat3_match(Position * pos, u32 pt)
+static d32 pat3_match(u32 pt, const board * b)
 {
+#if 0
     d32 env8=(pos->env4d[pt] << 8) + pos->env4[pt], q=env8 >> 3, r=env8 & 7;
     return (pat3set[q] & bit[r]) != 0;
+#else
+    move m = michi_pt_to_mtld_pt(pt);
+
+    u8 v[3][3];
+    pat3_transpose(v, b->p, m);
+    u16 hash = pat3_to_string((const u8(*)[3])v);
+
+    return pat3_find(hash, true) != 0;
+#endif
 }
 
 static char pat3src[][10] = {
@@ -784,10 +884,13 @@ static d32 gen_playout_moves_capture(Position * pos, u32 * heuristic_set, float 
 static d32 gen_playout_moves_pat3(Position * pos, u32 * heuristic_set, float prob,
                                                                 u32 * moves)
 {
+    board b;
+    michi_board_to_mtld_board(&b, pos);
+
     slist_clear(moves);
     if (random_int(1000) <= prob*1000.0)
         FORALL_IN_SLIST(heuristic_set, pt)
-            if (pos->color[pt] == '.' && pat3_match(pos, pt))
+            if (pos->color[pt] == '.' && pat3_match(pt, &b))
                slist_push(moves, pt);
     return slist_size(moves);
 }
@@ -1147,7 +1250,7 @@ static char * str_coord(u32 pt, char str[8])
 static void gtp_io(void)
 {
     char line[BUFLEN], *cmdid, *command, msg[BUFLEN], *ret;
-    char *known_commands="\nboardsize\ngenmove\nhelp\nknown_command"
+    char *known_commands="\nboardsize\nshowboard\ngenmove\nhelp\nknown_command"
     "\nkomi\nlist_commands\nname\nplay\nprotocol_version\nquit\nversion\n";
     d32      i;
     d32      *owner_map=calloc(BOARDSIZE, sizeof(d32));
@@ -1225,6 +1328,12 @@ static void gtp_io(void)
             else
                 ret = "";
         }
+        else if (strcmp(command,"showboard") == 0){
+            board b;
+            michi_board_to_mtld_board(&b, pos);
+            fprint_board(stderr, &b);
+            ret = "";
+        }
         else if (strcmp(command,"name") == 0)
             ret = "michi-c";
         else if (strcmp(command,"version") == 0)
@@ -1260,6 +1369,7 @@ finish_command:
 
 int main()
 {
+    pat3_init();
     make_pat3set();
     mark1 = calloc(1, sizeof(Mark));
     mark2 = calloc(1, sizeof(Mark));
