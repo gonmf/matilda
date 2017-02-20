@@ -1,5 +1,4 @@
 #!/bin/bash
-gogui-twogtp -analyze ./output.dat
-cat output.html | grep -E 'Black wins|<h2>Result'
-cat output.html | grep "Games used:" -F
+head -47 output.html | grep 'Black score'
+head -36 output.html | grep 'Games used'
 exit 0
