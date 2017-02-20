@@ -1,34 +1,41 @@
 #!/bin/bash
-
 cd twogtp
 ./stop.sh
-echo '----------- part 0 -----------'
-./analyze2.sh
+cd ..
+
+cd twogtp
+echo 'Results instance 0'
+./analyze_short.sh
 cd ..
 
 cd twogtp1
-echo '----------- part 1 -----------'
-./analyze2.sh
+echo 'Results instance 1'
+./analyze_short.sh
 cd ..
 
 cd twogtp2
-echo '----------- part 2 -----------'
-./analyze2.sh
+echo 'Results instance 2'
+./analyze_short.sh
 cd ..
 
 cd twogtp3
-echo '----------- part 3 -----------'
-./analyze2.sh
+echo 'Results instance 3'
+./analyze_short.sh
 cd ..
 
 cd twogtp4
-echo '----------- part 4 -----------'
-./analyze2.sh
+echo 'Results instance 4'
+./analyze_short.sh
 cd ..
 
 cd twogtp5
-echo '----------- part 5 -----------' 
-./analyze2.sh
-cd .. 
+echo 'Results instance 5'
+./analyze_short.sh
+cd ..
+
+cd twogtp6
+echo 'Results instance 6'
+./analyze_short.sh
+cd ..
 
 exit
