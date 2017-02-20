@@ -21,3 +21,9 @@ nohup ./michi-c_9x9.sh &
 cd ..
 
 exit
+cd twogtp5
+nohup ./michi-c_9x9.sh &
+cd ..
+
+exit
+

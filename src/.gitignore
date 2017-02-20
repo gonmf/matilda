@@ -9,6 +9,7 @@ learn_pat_weights
 gen_zobrist_table
 gen_data_set
 train_nn
+michi-c
 callgrind.out.*
 *.log
 *.sgf
