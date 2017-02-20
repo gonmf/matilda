@@ -26,4 +26,9 @@ echo '----------- part 4 -----------'
 ./analyze2.sh
 cd ..
 
+cd twogtp5
+echo '----------- part 5 -----------' 
+./analyze2.sh
+cd .. 
+
 exit

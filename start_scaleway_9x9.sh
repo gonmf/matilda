@@ -16,6 +16,7 @@ cp -r twogtp twogtp3
 cp -r twogtp twogtp4
 cp -r twogtp twogtp5
 
+echo 'Starting...'
 ./resume_scaleway_9x9.sh
 
 exit
