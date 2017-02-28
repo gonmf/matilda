@@ -8,9 +8,11 @@
 #include "matilda.h"
 
 #include "types.h"
+#include "randg.h"
 
 #define N         BOARD_SIZ
-#define N_SIMS    10000
+
+static u32 N_SIMS;
 
 #define W         (N+2)
 #define BOARDSIZE ((N+1)*W+1)
@@ -75,7 +77,6 @@ typedef struct {
 static u8 pat3set[8192];
 static d32  npat3;
 static Mark *mark1, *mark2;
-static u32 idum;
 
 static d32 delta[] = { -N-1, 1, N+1, -1, -N, W, N, -W, 0};
 static char buf[BUFLEN];
@@ -98,9 +99,12 @@ static d32 fix_atari(Position * pos, u32 pt, d32 singlept_ok, d32 twolib_test,
     d32 _tmp=random_int(_k); SWAP(T, l[_k], l[_tmp]); \
 }
 
-static u32 qdrandom(void) {idum=(1664525*idum)+1013904223; return idum;}
-static u32 random_int(d32 n) /* random d32 between 0 and n-1 */ \
-           {unsigned long long r=qdrandom(); return (r*n)>>32;}
+//static u32 idum;
+//static u32 qdrandom(void) {idum=(1664525*idum)+1013904223; return idum;}
+static u32 random_int(d32 n){
+    return rand_u16(n);
+//    unsigned long long r=qdrandom(); return (r*n)>>32;
+}
 
 static d32  slist_size(u32 * l) {return l[0];}
 static void slist_clear(u32 * l) {l[0]=0;}
@@ -1258,8 +1262,15 @@ finish_command:
     }
 }
 
-int main()
+int main(int argc, char * argv[])
 {
+	if(argc != 2)
+		exit(1);
+	N_SIMS = atoi(argv[1]);
+	if(N_SIMS < 100)
+		exit(1);
+
+    rand_init();
     make_pat3set();
     mark1 = calloc(1, sizeof(Mark));
     mark2 = calloc(1, sizeof(Mark));
