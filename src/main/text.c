@@ -327,7 +327,7 @@ sign/tip/score/quit)\n", mstr);
 
             char * line = fgets(buf, MAX_PAGE_SIZ, stdin);
             if(line == NULL)
-                continue;
+                flog_crit("text", "standard input file descriptor closed");
 
             line = trim(buf);
             if(line == NULL)

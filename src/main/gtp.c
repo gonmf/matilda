@@ -1448,6 +1448,8 @@ void main_gtp(
                 tm.tv_usec = 2000;
 
                 int ready = select(STDIN_FILENO + 1, &readfs, NULL, NULL, &tm);
+                if(ready == -1)
+                    flog_crit("gtp", "standard input file descriptor closed");
                 if(ready == 0) /* nothing to read */
                     evaluate_in_background(&current_state, is_black);
                 else
@@ -1460,6 +1462,8 @@ void main_gtp(
 
         char * line = fgets(in_buf, MAX_PAGE_SIZ, stdin);
         request_received_mark = current_time_in_millis();
+        if(line == NULL)
+            flog_crit("gtp", "standard input file descriptor closed");
 
 #if DETECT_NETWORK_LATENCY
         /*
