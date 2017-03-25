@@ -60,9 +60,6 @@ extern u16 prior_near_last;
 extern u16 prior_line2;
 extern u16 prior_line3;
 extern u16 prior_empty;
-extern u16 prior_line1x;
-extern u16 prior_line2x;
-extern u16 prior_line3x;
 extern u16 prior_corner;
 extern u16 prior_bad_play;
 extern u16 prior_pass;
@@ -97,9 +94,6 @@ const void * tunable[] =
     "i", "prior_line2", &prior_line2,
     "i", "prior_line3", &prior_line3,
     "i", "prior_empty", &prior_empty,
-    "i", "prior_line1x", &prior_line1x,
-    "i", "prior_line2x", &prior_line2x,
-    "i", "prior_line3x", &prior_line3x,
     "i", "prior_corner", &prior_corner,
     "i", "prior_bad_play", &prior_bad_play,
     "i", "prior_pass", &prior_pass,

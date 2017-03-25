@@ -35,9 +35,6 @@ u16 prior_near_last = PRIOR_NEAR_LAST;
 u16 prior_line2 = PRIOR_LINE2;
 u16 prior_line3 = PRIOR_LINE3;
 u16 prior_empty = PRIOR_EMPTY;
-u16 prior_line1x = PRIOR_LINE1X;
-u16 prior_line2x = PRIOR_LINE2X;
-u16 prior_line3x = PRIOR_LINE3X;
 u16 prior_corner = PRIOR_CORNER;
 u16 prior_bad_play = PRIOR_BAD_PLAY;
 u16 prior_pass = PRIOR_PASS;
@@ -349,6 +346,7 @@ void init_new_state(
             switch(dst_border)
             {
                 case 0:
+                    // Do not play there at all
                     continue;
                 case 1:
                     mc_v += prior_line2;
@@ -366,23 +364,6 @@ void init_new_state(
             {
                 mc_w += prior_starting_point;
                 mc_v += prior_starting_point;
-            }
-        }
-        else
-        {
-            u8 dst_border = distances_to_border[m];
-            switch(dst_border)
-            {
-                case 0:
-                    mc_v += prior_line1x;
-                    break;
-                case 1:
-                    mc_v += prior_line2x;
-                    break;
-                case 2:
-                    mc_w += prior_line3x;
-                    mc_v += prior_line3x;
-                    break;
             }
         }
 
