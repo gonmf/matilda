@@ -33,9 +33,4 @@ echo 'Results instance 5'
 ./analyze_short.sh
 cd ..
 
-cd twogtp6
-echo 'Results instance 6'
-./analyze_short.sh
-cd ..
-
-exit
+exit 0

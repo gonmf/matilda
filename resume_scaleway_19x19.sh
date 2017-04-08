@@ -39,12 +39,5 @@ cd twogtp5
 nohup ./michi-c_19x19.sh &
 cd ..
 
-sleep 1
-
-echo 'Instance 6'
-cd twogtp6
-nohup ./michi-c_19x19.sh &
-cd ..
-
 exit 0
 

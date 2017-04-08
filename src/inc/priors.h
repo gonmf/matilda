@@ -42,9 +42,6 @@ Tuned with CLOP in 9x9 with 10k playouts/turn in self-play for 34k games.
 #define PRIOR_LINE2      45 /* if empty in a certain distance around it */
 #define PRIOR_LINE3      29
 #define PRIOR_EMPTY      40 /* bonuses for empty zones of the board not above */
-#define PRIOR_LINE1X     13 /* bonus for 3rd line and malus to 1st and 2nd */
-#define PRIOR_LINE2X      5 /* if not empty in a certain distance around it */
-#define PRIOR_LINE3X      8
 #define PRIOR_CORNER     44
 #define PRIOR_BAD_PLAY   95
 #define PRIOR_PASS      130
@@ -53,6 +50,10 @@ Tuned with CLOP in 9x9 with 10k playouts/turn in self-play for 34k games.
 #define PRIOR_NN_BEST_SEP     0.23
 #define PRIOR_NN_NEUTRAL_SEP 0.258
 
+// TODO: removed in latest mtld version
+#define PRIOR_LINE1X      0
+#define PRIOR_LINE2X      0
+#define PRIOR_LINE3X      0
 
 /*
 Initializes a game state structure with prior values and AMAF/LGRF/Criticality
