@@ -368,6 +368,68 @@ static move heavy_select_play(
 
 
 /*
+Light playout.
+Uses a cache of play statuses that is updated as needed.
+*/
+static move light_select_play(
+    cfg_board * cb,
+    bool is_black,
+    u8 cache[TOTAL_BOARD_SIZ]
+){
+    move ko = get_ko_play(cb);
+    u16 candidate_plays = 0;
+    move candidate_play[TOTAL_BOARD_SIZ];
+
+    for(u16 k = 0; k < cb->empty.count; ++k)
+    {
+        move m = cb->empty.coord[k];
+        if(cache[m] & CACHE_PLAY_DIRTY)
+        {
+            u8 libs;
+            if(!is_eye(cb, is_black, m) && ko != m &&
+                (libs = safe_to_play(cb, is_black, m)) > 0)
+            {
+
+                /*
+                Prohibit self-ataris if they don't put the opponent in atari
+                (this definition covers throw-ins)
+                */
+                if(libs == 1 && ((is_black && cb->black_neighbors4[m] > 0) ||
+                    (!is_black && cb->white_neighbors4[m] > 0)))
+                {
+                    if(rand_u16(128) < pl_ban_self_atari)
+                        cache[m] = 0;
+                    else
+                        cache[m] = CACHE_PLAY_LEGAL;
+                }
+
+                cache[m] = CACHE_PLAY_LEGAL;
+            }
+            else
+            {
+                cache[m] = 0; /* not dirty and not legal either */
+            }
+        }
+
+        if(cache[m] & CACHE_PLAY_LEGAL)
+            candidate_play[candidate_plays++] = m;
+    }
+
+    if(candidate_plays > 0)
+    {
+        u16 p = rand_u16(candidate_plays);
+        return candidate_play[p];
+    }
+
+    /*
+        Pass
+    */
+    return PASS;
+}
+
+u16 light_playouts_threshold = TOTAL_BOARD_SIZ;
+
+/*
 Make a heavy playout and returns whether black wins.
 Does not play in own proper eyes or self-ataris except for possible throw-ins.
 Avoids too many ko battles. Also uses mercy threshold.
@@ -392,9 +454,19 @@ d16 playout_heavy_amaf(
     bool stones_captured[TOTAL_BOARD_SIZ];
     u8 libs_of_nei_of_captured[LIB_BITMAP_SIZ];
 
+    u16 playout_round = 0;
     while(--depth_max)
     {
-        move m = heavy_select_play(cb, is_black, is_black ? b_cache : w_cache);
+        move m;
+        if(playout_round < light_playouts_threshold)
+        {
+            m = heavy_select_play(cb, is_black, is_black ? b_cache : w_cache);
+        }
+        else
+        {
+            ++playout_round;
+            m = light_select_play(cb, is_black, is_black ? b_cache : w_cache);
+        }
         assert(verify_cfg_board(cb));
 
         if(m == PASS) /* only passes when there are no more plays */

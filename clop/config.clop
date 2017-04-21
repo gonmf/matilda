@@ -28,9 +28,10 @@ Script ./goguiscript.py
 #IntegerParameter prior_pass 20 200
 #IntegerParameter prior_starting_point 0 200
 
-IntegerParameter prior_neural_network 0 50
-LinearParameter prior_nn_best_sep 0.0 0.5
-LinearParameter prior_nn_neutral_sep 0.0 0.5
+#IntegerParameter prior_neural_network 0 50
+#LinearParameter prior_nn_best_sep 0.0 0.5
+#LinearParameter prior_nn_neutral_sep 0.0 0.5
+IntegerParameter light_playouts_threshold 2 160
 
 #LinearParameter time_allot_factor 1.0 6.0
 

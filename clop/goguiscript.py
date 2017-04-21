@@ -64,7 +64,7 @@ opponent_program = '\"' + opponent_program + '\"'
 #
 # Run one game with gogui-twogtp
 #
-command = 'gogui-twogtp -size 9 -komi 4.5 -white ' + optimized_program + ' -black ' + opponent_program + ' -sgffile twogtp.sgf -games 1 -auto -time 30s'
+command = 'gogui-twogtp -size 9 -komi 4.5 -white ' + optimized_program + ' -black ' + opponent_program + ' -sgffile twogtp.sgf -games 1 -auto -time 2m'
 
 #print "command = ", command
 
