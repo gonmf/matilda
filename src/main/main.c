@@ -21,7 +21,6 @@ Also deals with updating some internal parameters at startup time.
 #include "flog.h"
 #include "game_record.h"
 #include "mcts.h"
-#include "neural_network.h"
 #include "opening_book.h"
 #include "pts_file.h"
 #include "randg.h"
@@ -64,9 +63,6 @@ extern u16 prior_corner;
 extern u16 prior_bad_play;
 extern u16 prior_pass;
 extern u16 prior_starting_point;
-extern u16 prior_neural_network;
-extern double prior_nn_best_sep;
-extern double prior_nn_neutral_sep;
 extern double rave_equiv;
 extern u16 pl_skip_saving;
 extern u16 pl_skip_nakade;
@@ -98,9 +94,6 @@ const void * tunable[] =
     "i", "prior_bad_play", &prior_bad_play,
     "i", "prior_pass", &prior_pass,
     "i", "prior_starting_point", &prior_starting_point,
-    "i", "prior_neural_network", &prior_neural_network,
-    "f", "prior_nn_best_sep", &prior_nn_best_sep,
-    "f", "prior_nn_neutral_sep", &prior_nn_neutral_sep,
     "f", "rave_equiv", &rave_equiv,
     "i", "pl_skip_saving", &pl_skip_saving,
     "i", "pl_skip_nakade", &pl_skip_nakade,
@@ -183,14 +176,11 @@ void main_text(
 
 static void startup(
     bool opening_books_enabled,
-    bool neural_networks_enabled,
     d16 desired_num_threads
 ){
     assert_data_folder_exists();
     if(opening_books_enabled)
         opening_book_init();
-    if(neural_networks_enabled)
-        nn_init();
     mcts_init();
     load_handicap_points();
     load_hoshi_points();
@@ -270,9 +260,6 @@ he opponents turn.\n\n");
 
         fprintf(stderr, "        \033[1m--disable_opening_books\033[0m\n\n");
         fprintf(stderr, "        Disable the use of opening books.\n\n");
-
-        fprintf(stderr, "        \033[1m--disable_neural_nets\033[0m\n\n");
-        fprintf(stderr, "        Disable the use of neural networks.\n\n");
 
         fprintf(stderr, "        \033[1m-l, --log <mask>\033[0m\n\n");
         fprintf(stderr, "        Set the message types to log to file and print\
@@ -358,7 +345,6 @@ int main(
     bool human_player_color = true;
     bool think_in_opt_turn = false;
     bool opening_books_enabled = true;
-    bool neural_networks_enabled = true;
     set_time_per_turn(&current_clock_black, DEFAULT_TIME_PER_TURN);
     set_time_per_turn(&current_clock_white, DEFAULT_TIME_PER_TURN);
     d16 desired_num_threads = DEFAULT_NUM_THREADS;
@@ -548,16 +534,6 @@ int main(
 
     for(int i = 1; i < argc; ++i)
     {
-        if(strcmp(argv[i], "--disable_neural_nets") == 0)
-        {
-            args_understood += 1;
-            neural_networks_enabled = false;
-            continue;
-        }
-    }
-
-    for(int i = 1; i < argc; ++i)
-    {
         if(strcmp(argv[i], "--benchmark") == 0)
         {
             /*
@@ -566,7 +542,7 @@ int main(
             */
             args_understood += 1;
 
-            startup(false, false, desired_num_threads);
+            startup(false, desired_num_threads);
 
             /*
             Perform a larger initial MCTS just to allocate memory so all
@@ -807,8 +783,7 @@ usage instructions.\n");
         flog_warn("init",
             "MCTS using a constant number of simulations per turn");
 
-    startup(opening_books_enabled, neural_networks_enabled,
-        desired_num_threads);
+    startup(opening_books_enabled, desired_num_threads);
 
     if(use_gtp)
         main_gtp(think_in_opt_turn);
@@ -817,4 +792,3 @@ usage instructions.\n");
 
     return EXIT_SUCCESS;
 }
-

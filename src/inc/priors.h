@@ -21,7 +21,6 @@ It can also record the average final score, for the purpose of score estimation.
 
 #include "board.h"
 #include "cfg_board.h"
-#include "neural_network.h"
 #include "transpositions.h"
 #include "types.h"
 
@@ -46,10 +45,6 @@ Tuned with CLOP in 9x9 with 10k playouts/turn in self-play for 34k games.
 #define PRIOR_BAD_PLAY   95
 #define PRIOR_PASS      130
 #define PRIOR_STARTING   76 /* starting point like around the hoshi */
-#define PRIOR_NEURAL_NETWORK    14
-#define PRIOR_NN_BEST_SEP     0.23
-#define PRIOR_NN_NEUTRAL_SEP 0.258
-
 
 /*
 Initializes a game state structure with prior values and AMAF/LGRF/Criticality
@@ -58,8 +53,7 @@ information.
 void init_new_state(
     tt_stats * stats,
     cfg_board * cb,
-    bool is_black,
-    mlp * net /* null if unavailable */
+    bool is_black
 );
 
 #if PRIOR_EVEN == 0
@@ -67,5 +61,3 @@ void init_new_state(
 #endif
 
 #endif
-
-

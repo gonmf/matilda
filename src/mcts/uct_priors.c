@@ -12,7 +12,6 @@ UCT expanded states initialization.
 #include "cfg_board.h"
 #include "dragon.h"
 #include "move.h"
-#include "neural_network.h"
 #include "pat3.h"
 #include "priors.h"
 #include "pts_file.h"
@@ -39,9 +38,6 @@ u16 prior_corner = PRIOR_CORNER;
 u16 prior_bad_play = PRIOR_BAD_PLAY;
 u16 prior_pass = PRIOR_PASS;
 u16 prior_starting_point = PRIOR_STARTING;
-u16 prior_neural_network = PRIOR_NEURAL_NETWORK;
-double prior_nn_best_sep = PRIOR_NN_BEST_SEP;
-double prior_nn_neutral_sep = PRIOR_NN_NEUTRAL_SEP;
 
 
 extern u8 distances_to_border[TOTAL_BOARD_SIZ];
@@ -161,8 +157,7 @@ with at least one visit.
 void init_new_state(
     tt_stats * stats,
     cfg_board * cb,
-    bool is_black,
-    mlp * net /* null if unavailable */
+    bool is_black
 ){
     bool near_last_play[TOTAL_BOARD_SIZ];
     if(is_board_move(cb->last_played))
@@ -380,54 +375,6 @@ void init_new_state(
         stats_add_play_tmp(stats, m, mc_w, mc_v);
     }
 
-    if(cb->empty.count >= (TOTAL_BOARD_SIZ / 3) * 2 && net != NULL)
-    {
-        u8 codified[TOTAL_BOARD_SIZ];
-        nn_codify_cfg_board(codified, cb, is_black, libs_after_playing);
-
-        double input_units[3][TOTAL_BOARD_SIZ];
-        nn_populate_input_units(input_units, codified);
-
-        nn_forward_pass_single_threaded(net,
-            (const double (*)[TOTAL_BOARD_SIZ])input_units);
-
-        quality_pair qlist[TOTAL_BOARD_SIZ];
-
-        /* retrieve all legal play energies */
-        for(u16 i = 0; i < stats->plays_count; ++i)
-        {
-            move m = stats->plays[i].m;
-            qlist[i].quality = net->output_layer[m].output;
-            qlist[i].play = m;
-        }
-
-        /* sort the plays by energy */
-        qsort(qlist, stats->plays_count, sizeof(quality_pair), qp_compare);
-
-        /* divide by quality category */
-        u16 best_pos = (u16)(stats->plays_count * prior_nn_best_sep);
-        u16 neutral_pos = (u16)(stats->plays_count * prior_nn_neutral_sep) +
-            best_pos;
-
-        u16 i = 0;
-        for(; i <= best_pos; ++i)
-            libs_after_playing[qlist[i].play] = 2;
-        for(; i <= neutral_pos; ++i)
-            libs_after_playing[qlist[i].play] = 1;
-
-        /* add prior values */
-        for(i = 0; i < stats->plays_count; ++i)
-        {
-            tt_play * play = &stats->plays[i];
-            switch(libs_after_playing[play->m]){
-                case 2:
-                    play->mc_q += prior_neural_network;
-                case 0:
-                    play->mc_n += prior_neural_network;
-            }
-        }
-    }
-
     /*
     Transform win/visits into quality/visits statistics and copy MC to
     AMAF/RAVE statistics
@@ -448,4 +395,3 @@ void init_new_state(
         stats_add_play_final(stats, PASS, UCT_RESIGN_WINRATE, prior_pass);
     }
 }
-

@@ -13,7 +13,6 @@
 #include "flog.h"
 #include "game_record.h"
 #include "mcts.h"
-#include "neural_network.h"
 #include "opening_book.h"
 #include "pat3.h"
 #include "pts_file.h"
@@ -645,7 +644,6 @@ int main()
     board_constants_init();
     zobrist_init();
     opening_book_init();
-    nn_init();
     mcts_init();
     load_handicap_points();
     load_hoshi_points();
