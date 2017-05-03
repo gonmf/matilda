@@ -6,7 +6,7 @@
 #include <math.h>
 
 #include "matilda.h"
-
+#include "amaf_rave.h"
 #include "types.h"
 #include "randg.h"
 
@@ -993,11 +993,15 @@ static double rave_urgency(TreeNode *node)
 {
     double v = node->v + node->pv;
     double expectation = (node->w + node->pw)/v;
+#if USE_AMAF_RAVE
     if (node->av==0) return expectation;
 
     double rave_expectation = (double) node->aw / (double) node->av;
     double beta = node->av / (node->av + v + (double)v*node->av/RAVE_EQUIV);
     return beta * rave_expectation + (1-beta) * expectation;
+#else
+    return expectation;
+#endif
 }
 
 static TreeNode* best_move(TreeNode *tree, TreeNode **except)
