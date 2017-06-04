@@ -152,9 +152,9 @@ RETURNS false on error
 */
 bool export_game_as_sgf_auto_named(
     const game_record * gr,
-    char filename[32]
+    char filename[MAX_PAGE_SIZ]
 ){
-    int fid = create_and_open_file(filename, 32, "matilda", "sgf");
+    int fid = create_and_open_file(filename, MAX_PAGE_SIZ, "matilda", "sgf");
     if(fid == -1)
         return false;
 
@@ -519,4 +519,3 @@ bool import_game_from_sgf(
 
     return ret;
 }
-

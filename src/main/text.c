@@ -153,12 +153,13 @@ static void text_newgame(
 ){
     if(save_all_games_to_file && current_game.turns > 0)
     {
-        char filename[32];
+        char * filename = alloc();
         if(export_game_as_sgf_auto_named(&current_game, filename))
             fprintf(stderr, "Game record written to %s.\n", filename);
         else
             fprintf(stderr, "Error encountered when attempting to write game re\
 cord to file.\n");
+        release(filename);
     }
 
     fprintf(stderr,
@@ -429,4 +430,3 @@ sign/tip/score/quit)\n", mstr);
         }
     }
 }
-

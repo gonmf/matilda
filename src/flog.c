@@ -32,7 +32,7 @@ crashes, but it is impossible to guarantee this in all cases.
 #include "version.h"
 
 static int log_file = -1;
-static char log_filename[64];
+
 /*
 By default print everything to standard output. Only the main matilda executable
 changes this by default.
@@ -199,7 +199,9 @@ static void open_log_file()
 {
     if(log_file == -1)
     {
-        log_file = create_and_open_file(log_filename, 64, "matilda", "log");
+        char * log_filename = alloc();
+        log_file = create_and_open_file(log_filename, MAX_PAGE_SIZ, "matilda", "log");
+        release(log_filename);
         if(log_file == -1)
         {
             fprintf(stderr, "Failed to create log file.\n");

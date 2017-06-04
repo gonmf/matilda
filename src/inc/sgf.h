@@ -35,7 +35,7 @@ RETURNS false on error
 */
 bool export_game_as_sgf_auto_named(
     const game_record * gr,
-    char filename[MAX_PLAYER_NAME_SIZ]
+    char filename[MAX_PAGE_SIZ]
 );
 
 /*
