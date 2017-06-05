@@ -14,7 +14,7 @@ Placing: 2nd in 4
 
 Links: [KGS](http://www.gokgs.com/tournInfo.jsp?id=1080), [Weddslist](http://www.weddslist.com/kgs/past/126/index.html)
 
-[Download game records (SGF)](20161009.zip)
+[Download game records (SGF)](20161009.zip?raw=true)
 
 ## August 2016 KGS bot tournament, Open Division
 
@@ -27,7 +27,7 @@ Placing: 2nd in 2
 Links: [KGS](http://www.gokgs.com/tournInfo.jsp?id=1065), [Weddslist](http://www.weddslist.com/kgs/past/125/index.html)
 
 
-[Download game records (SGF)](20160807.zip)
+[Download game records (SGF)](20160807.zip?raw=true)
 
 ## June 2016 KGS bot tournament
 
@@ -39,7 +39,7 @@ Placing: 3rd in 6
 
 Links: [KGS](http://www.gokgs.com/tournInfo.jsp?id=1046), [Weddslist](http://www.weddslist.com/kgs/past/123/index.html)
 
-[Download game records (SGF)](20160619.zip)
+[Download game records (SGF)](20160619.zip?raw=true)
 
 ## May 2016 KGS bot tournament
 
@@ -51,7 +51,7 @@ Placing: 6th in 6
 
 Links: [KGS](http://www.gokgs.com/tournInfo.jsp?id=1030), [Weddslist](http://www.weddslist.com/kgs/past/122/index.html)
 
-[Download game records (SGF)](20160508.zip)
+[Download game records (SGF)](20160508.zip?raw=true)
 
 ## February 2016 KGS bot tournament
 
@@ -63,4 +63,4 @@ Placing: 8th in 8
 
 Links: [KGS](http://www.gokgs.com/tournInfo.jsp?id=1012), [Weddslist](http://www.weddslist.com/kgs/past/120/index.html)
 
-[Download game records (SGF)](20160221.zip)
+[Download game records (SGF)](20160221.zip?raw=true)
