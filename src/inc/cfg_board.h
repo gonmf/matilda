@@ -348,4 +348,5 @@ u8 groups_shared_liberties(
     const group * restrict g1,
     const group * restrict g2
 );
+
 #endif

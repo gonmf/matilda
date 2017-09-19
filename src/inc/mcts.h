@@ -103,5 +103,3 @@ u32 mcts_benchmark(
 );
 
 #endif
-
-

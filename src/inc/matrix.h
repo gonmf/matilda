@@ -71,4 +71,3 @@ void reduce_coord(
 );
 
 #endif
-

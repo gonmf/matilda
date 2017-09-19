@@ -96,5 +96,4 @@ patternable configurations.
 */
 void pat3_init();
 
-
 #endif

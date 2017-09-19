@@ -12,12 +12,6 @@ say anything. All times are in milliseconds.
 
 #include "types.h"
 
-/*
-If disabled then latency compensation falls back to the value set in the
-constant DETECT_NETWORK_LATENCY.
-*/
-#define DETECT_NETWORK_LATENCY false
-
 
 /*
 How much time a play should be given over the linear distribution of time for

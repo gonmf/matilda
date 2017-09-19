@@ -154,7 +154,7 @@ void reduce_fixed(
 /*
 Performs the inverse operation of reduction of a given reduce code.
 */
-void oboard_revert_reduce(
+void out_board_revert_reduce(
     out_board * b,
     d8 method
 );

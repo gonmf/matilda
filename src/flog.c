@@ -346,8 +346,6 @@ void build_info(
         "Mercy threshold: %u stones\n", MERCY_THRESHOLD);
 
     idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx,
-        "Detect network latency: %s\n", YN(DETECT_NETWORK_LATENCY));
-    idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx,
         "Constant latency compensation: %u ms\n", LATENCY_COMPENSATION);
     idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx,
         "Time allotment factor: %.2f\n", TIME_ALLOT_FACTOR);

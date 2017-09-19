@@ -109,4 +109,3 @@ void ** hash_table_export_to_array(
 );
 
 #endif
-

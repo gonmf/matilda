@@ -388,8 +388,8 @@ Damerau-levenshtein edit distance.
 RETURNS the edit distance between two strings
 */
 u8 levenshtein_dst(
-    const char * s1,
-    const char * s2
+    const char * restrict s1,
+    const char * restrict s2
 ){
     u8 l1 = strlen(s1);
     u8 l2 = strlen(s2);
