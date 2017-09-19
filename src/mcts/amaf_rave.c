@@ -7,7 +7,7 @@ AMAF traversions are marked EMPTY when not visited, BLACK_STONE for first
 visited by black and WHITE_STONE for first visited by white.
 */
 
-#include "matilda.h"
+#include "config.h"
 
 #include <stdlib.h>
 #include <math.h>
@@ -94,4 +94,3 @@ void update_amaf_stats2(
                 stats->plays[k].amaf_n);
         }
 }
-

@@ -8,7 +8,7 @@ Play variations and annotations/commentary are ignored.
 #ifndef MATILDA_SGF_H
 #define MATILDA_SGF_H
 
-#include "matilda.h"
+#include "config.h"
 
 #include "types.h"
 #include "board.h"

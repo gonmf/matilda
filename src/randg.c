@@ -5,7 +5,7 @@ Reminder: maximums are exclusive for integer functions and inclusive (and very
 unlikely) for floating point functions.
 */
 
-#include "matilda.h"
+#include "config.h"
 
 #include <stdlib.h>
 #include <stdio.h>

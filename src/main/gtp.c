@@ -18,7 +18,7 @@ For an explanation of the extra commands support read the documentation file
 GTP_README.
 */
 
-#include "matilda.h"
+#include "config.h"
 
 #include <stdio.h>
 #include <stdlib.h>

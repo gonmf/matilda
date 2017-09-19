@@ -7,7 +7,7 @@ This is very incomplete so far.
 #ifndef MATILDA_ANALYSIS_H
 #define MATILDA_ANALYSIS_H
 
-#include "matilda.h"
+#include "config.h"
 
 #include "types.h"
 #include "board.h"

@@ -5,7 +5,7 @@ Strategy that makes use of an opening book.
 #ifndef MATILDA_OPENING_BOOK_H
 #define MATILDA_OPENING_BOOK_H
 
-#include "matilda.h"
+#include "config.h"
 
 #include "types.h"
 #include "board.h"

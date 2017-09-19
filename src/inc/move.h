@@ -15,7 +15,7 @@ BOARD_SIZ signifies a pass. A "none" play is not represented.
 #ifndef MATILDA_MOVE_H
 #define MATILDA_MOVE_H
 
-#include "matilda.h"
+#include "config.h"
 
 #include "types.h"
 

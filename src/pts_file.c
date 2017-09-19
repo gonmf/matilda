@@ -4,7 +4,7 @@ format similar to Fuego-style opening books; plus some useful functions for
 reading handicap, hoshi and starting plays for MCTS.
 */
 
-#include "matilda.h"
+#include "config.h"
 
 #include <stdio.h>
 #include <stdlib.h>

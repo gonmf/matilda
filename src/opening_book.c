@@ -2,7 +2,7 @@
 Strategy that makes use of an opening book.
 */
 
-#include "matilda.h"
+#include "config.h"
 
 #include <string.h>
 #include <stdio.h>

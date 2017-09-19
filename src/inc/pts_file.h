@@ -7,7 +7,7 @@ reading handicap, hoshi and starting plays for MCTS.
 #ifndef MATILDA_PTS_FILE_H
 #define MATILDA_PTS_FILE_H
 
-#include "matilda.h"
+#include "config.h"
 
 #include "types.h"
 

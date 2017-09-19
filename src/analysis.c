@@ -4,7 +4,7 @@ Functions for human-like analysis and ponderation on the game.
 This is very incomplete so far.
 */
 
-#include "matilda.h"
+#include "config.h"
 
 #include <stdio.h>
 #include <stdlib.h>

@@ -10,7 +10,7 @@ visited by black and WHITE_STONE for first visited by white.
 #ifndef MATILDA_AMAF_RAVE_H
 #define MATILDA_AMAF_RAVE_H
 
-#include "matilda.h"
+#include "config.h"
 
 #include "board.h"
 #include "types.h"

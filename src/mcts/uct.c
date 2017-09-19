@@ -14,7 +14,7 @@ MCTS can be resumed on demand by a few extra simulations at a time.
 It can also record the average final score, for the purpose of score estimation.
 */
 
-#include "matilda.h"
+#include "config.h"
 
 #include <stdio.h>
 #include <string.h>

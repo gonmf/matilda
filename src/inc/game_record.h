@@ -16,7 +16,7 @@ http://www.weddslist.com/kgs/past/superko.html
 #ifndef MATILDA_GAME_RECORD_H
 #define MATILDA_GAME_RECORD_H
 
-#include "matilda.h"
+#include "config.h"
 
 #include "types.h"
 #include "move.h"

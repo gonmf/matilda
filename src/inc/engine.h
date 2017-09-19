@@ -7,7 +7,7 @@ maintenance if needed.
 #ifndef MATILDA_ENGINE_H
 #define MATILDA_ENGINE_H
 
-#include "matilda.h"
+#include "config.h"
 
 #include "types.h"
 #include "board.h"

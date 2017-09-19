@@ -2,5 +2,5 @@ Tests
 
 
 For now this directory only contains unitary tests.
-For more thorough testing activate DEBUG mode in matilda.h and also perform
+For more thorough testing activate DEBUG mode in config.h and also perform
 profiling.

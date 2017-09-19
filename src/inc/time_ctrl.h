@@ -8,7 +8,7 @@ say anything. All times are in milliseconds.
 #ifndef MATILDA_TIME_CTRL_H
 #define MATILDA_TIME_CTRL_H
 
-#include "matilda.h"
+#include "config.h"
 
 #include "types.h"
 

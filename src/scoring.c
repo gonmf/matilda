@@ -4,7 +4,7 @@ Functions for board scoring that take komi and dynamic komi into consideration.
 Remember that in Matilda, scores and komi are always doubled to become integer.
 */
 
-#include "matilda.h"
+#include "config.h"
 
 #include <string.h>
 #include <stdio.h>

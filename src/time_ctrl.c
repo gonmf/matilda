@@ -5,7 +5,7 @@ does not necessarily interrupt the match, if the time keeping referee doesn't
 say anything. All times are in milliseconds.
 */
 
-#include "matilda.h"
+#include "config.h"
 
 #include <string.h>
 

@@ -7,7 +7,7 @@ For a more advanced board representation check the CFG representation
 (cfg_board.c and cfg_board.h).
 */
 
-#include "matilda.h"
+#include "config.h"
 
 #include <string.h>
 #include <stdlib.h>

@@ -11,7 +11,7 @@ these buffers does not actually free the underlying memory to be used by other
 programs.
 */
 
-#include "matilda.h"
+#include "config.h"
 
 #include <stdio.h>
 #include <stdlib.h>

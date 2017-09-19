@@ -14,7 +14,7 @@ crashes, but it is impossible to guarantee this in all cases.
 #ifndef MATILDA_FLOG_H
 #define MATILDA_FLOG_H
 
-#include "matilda.h"
+#include "config.h"
 
 #include "types.h"
 

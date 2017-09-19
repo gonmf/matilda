@@ -5,7 +5,7 @@ Implementation of CRC32 hashing for generic data.
 #ifndef MATILDA_CRC32_H
 #define MATILDA_CRC32_H
 
-#include "matilda.h"
+#include "config.h"
 
 #include "types.h"
 #include "board.h"

@@ -16,7 +16,7 @@ table color.
 #ifndef MATILDA_TRANSPOSITIONS_H
 #define MATILDA_TRANSPOSITIONS_H
 
-#include "matilda.h"
+#include "config.h"
 
 #include <omp.h>
 

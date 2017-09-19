@@ -3,7 +3,7 @@ For creating and updating Zobrist hashes on board states, both for full board
 hashes and position invariant 3x3 hashes.
 */
 
-#include "matilda.h"
+#include "config.h"
 
 #include <stdio.h>
 #include <assert.h>

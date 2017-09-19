@@ -21,7 +21,7 @@ u8 active_bits_in_byte[256];
 #ifndef MATILDA_CONSTANTS_H
 #define MATILDA_CONSTANTS_H
 
-#include "matilda.h"
+#include "config.h"
 
 
 /*

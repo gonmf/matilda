@@ -8,7 +8,7 @@ The commands supported are: quit, resign, undo and specifying plays (coordinates
 or pass).
 */
 
-#include "matilda.h"
+#include "config.h"
 
 #include <stdio.h>
 #include <string.h>

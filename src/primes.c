@@ -4,7 +4,7 @@ Prime number generator
 Intended for initializing hash tables
 */
 
-#include "matilda.h"
+#include "config.h"
 
 #include "types.h"
 

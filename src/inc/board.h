@@ -12,7 +12,7 @@ For a more advanced board representation check the CFG representation
 #ifndef MATILDA_BOARD_H
 #define MATILDA_BOARD_H
 
-#include "matilda.h"
+#include "config.h"
 
 #include <unistd.h>
 #include <stdio.h>

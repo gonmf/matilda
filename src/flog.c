@@ -9,7 +9,7 @@ Writing to files is synchronous (with fsync) to avoid loss of data in case of
 crashes, but it is impossible to guarantee this in all cases.
 */
 
-#include "matilda.h"
+#include "config.h"
 
 #include <stdio.h>
 #include <string.h>

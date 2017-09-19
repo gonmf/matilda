@@ -4,7 +4,7 @@ Where performance is important prefer using cfg_board structure and related
 functions (cfg_board.h and cfg_board.c).
 */
 
-#include "matilda.h"
+#include "config.h"
 
 #include <string.h>
 #include <stdio.h>

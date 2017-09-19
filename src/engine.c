@@ -4,7 +4,7 @@ playing program. Allows executing strategies with some abstraction, performing
 maintenance if needed.
 */
 
-#include "matilda.h"
+#include "config.h"
 
 #include <stdio.h>
 #include <string.h>

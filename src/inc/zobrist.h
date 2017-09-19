@@ -6,7 +6,7 @@ hashes and position invariant 3x3 hashes.
 #ifndef MATILDA_ZOBRIST_H
 #define MATILDA_ZOBRIST_H
 
-#include "matilda.h"
+#include "config.h"
 
 #include "types.h"
 

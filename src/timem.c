@@ -3,7 +3,7 @@ Generic time-keeping functions and Go time system related functions. All times
 are in milliseconds.
 */
 
-#include "matilda.h"
+#include "config.h"
 
 #include <time.h>
 #include <unistd.h>

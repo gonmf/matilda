@@ -14,7 +14,7 @@ programs.
 #ifndef MATILDA_ALLOC_H
 #define MATILDA_ALLOC_H
 
-#include "matilda.h"
+#include "config.h"
 
 /*
 Initiate the safe allocation functions.

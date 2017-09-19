@@ -7,7 +7,7 @@ functions (cfg_board.h and cfg_board.c).
 #ifndef MATILDA_STATE_CHANGES_H
 #define MATILDA_STATE_CHANGES_H
 
-#include "matilda.h"
+#include "config.h"
 
 #include "types.h"
 #include "board.h"

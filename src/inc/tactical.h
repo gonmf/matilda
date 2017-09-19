@@ -11,7 +11,7 @@ purpose of eye counting.
 #ifndef MATILDA_TACTICAL_H
 #define MATILDA_TACTICAL_H
 
-#include "matilda.h"
+#include "config.h"
 
 #include "cfg_board.h"
 #include "move.h"

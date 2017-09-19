@@ -5,7 +5,7 @@ Generic matrix transformations
 #ifndef MATILDA_MATRIX_H
 #define MATILDA_MATRIX_H
 
-#include "matilda.h"
+#include "config.h"
 
 #include "types.h"
 

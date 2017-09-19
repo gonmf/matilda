@@ -5,7 +5,7 @@ either GTP or text mode.
 Also deals with updating some internal parameters at startup time.
 */
 
-#include "matilda.h"
+#include "config.h"
 
 #include <stdio.h>
 #include <string.h>

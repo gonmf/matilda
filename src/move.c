@@ -12,7 +12,7 @@ If instead using coordinates in the form (x, y), a value of x larger or equal to
 BOARD_SIZ signifies a pass. A "none" play is not represented.
 */
 
-#include "matilda.h"
+#include "config.h"
 
 #include <stdio.h>
 #include <stdlib.h>

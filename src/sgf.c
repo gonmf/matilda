@@ -5,7 +5,7 @@ http://www.red-bean.com/sgf/
 Play variations and annotations/commentary are ignored.
 */
 
-#include "matilda.h"
+#include "config.h"
 
 #include <stdio.h>
 #include <string.h>

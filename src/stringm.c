@@ -2,7 +2,7 @@
 Miscellanea C string functions.
 */
 
-#include "matilda.h"
+#include "config.h"
 
 #include <stdlib.h>
 #include <string.h>
