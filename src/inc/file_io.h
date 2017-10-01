@@ -5,7 +5,7 @@ Functions for file input/output.
 #ifndef MATILDA_FILE_IO_H
 #define MATILDA_FILE_IO_H
 
-#include "matilda.h"
+#include "config.h"
 
 #include <stdio.h>
 

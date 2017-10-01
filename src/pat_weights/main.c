@@ -12,7 +12,7 @@ maximum total on a 3x3 neighborship fits 16 bits.
 */
 
 
-#include "matilda.h"
+#include "config.h"
 
 #include <unistd.h>
 #include <stdlib.h>

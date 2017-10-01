@@ -13,7 +13,7 @@ the data set size.
 #ifndef MATILDA_DATA_SET_H
 #define MATILDA_DATA_SET_H
 
-#include "matilda.h"
+#include "config.h"
 
 #include "types.h"
 #include "move.h"

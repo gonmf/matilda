@@ -94,12 +94,6 @@ Arguments: none
 Fails: never
 
 
-mtld-ponder -- returns description of the state of the game and possible
-followups.
-Arguments: time available to think, in seconds
-Fails: never
-
-
 mtld-review_game -- returns description of the quality of the moves played and
 the best moves quality.
 Arguments: time available to think (per turn), in seconds
@@ -116,5 +110,3 @@ Fails: syntax error
 exit -- alias to quit command.
 Arguments: none
 Fails: never
-
-

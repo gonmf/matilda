@@ -10,7 +10,7 @@ loaded via the data_set_load function they are fliped and rotated to increase
 the data set size.
 */
 
-#include "matilda.h"
+#include "config.h"
 
 #include <stdio.h>
 #include <stdlib.h>

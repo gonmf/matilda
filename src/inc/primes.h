@@ -8,7 +8,7 @@ Intended for initializing hash tables
 #ifndef MATILDA_PRIMES_H
 #define MATILDA_PRIMES_H
 
-#include "matilda.h"
+#include "config.h"
 
 #include "types.h"
 

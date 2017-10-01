@@ -4,7 +4,7 @@ playing program. Allows executing strategies with some abstraction, performing
 maintenance if needed.
 */
 
-#include "matilda.h"
+#include "config.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -123,7 +123,7 @@ bool evaluate_position_timed(
         d8 reduction = reduce_auto(&tmp, true);
         if(opening_book(out_b, &tmp))
         {
-            oboard_revert_reduce(out_b, reduction);
+            out_board_revert_reduce(out_b, reduction);
             return true;
         }
     }
@@ -150,7 +150,7 @@ bool evaluate_position_sims(
         d8 reduction = reduce_auto(&tmp, is_black);
         if(opening_book(out_b, &tmp))
         {
-            oboard_revert_reduce(out_b, reduction);
+            out_board_revert_reduce(out_b, reduction);
             return true;
         }
     }

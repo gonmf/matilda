@@ -2,7 +2,7 @@
 Functions for file input/output.
 */
 
-#include "matilda.h"
+#include "config.h"
 
 #include <sys/types.h>
 #include <sys/stat.h>

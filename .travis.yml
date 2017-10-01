@@ -7,7 +7,7 @@ compiler:
 - gcc
 
 script:
-- mv -fT src/inc/matilda.h-test src/inc/matilda.h
+- mv -fT src/inc/config.h-test src/inc/config.h
 - make -C src
 - cd src
 - ./test

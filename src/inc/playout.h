@@ -18,7 +18,7 @@ And chooses a play based on (by order of importance):
 #ifndef MATILDA_PLAYOUT_H
 #define MATILDA_PLAYOUT_H
 
-#include "matilda.h"
+#include "config.h"
 
 #include "types.h"
 #include "cfg_board.h"
@@ -77,5 +77,3 @@ d16 playout_heavy_amaf(
 
 
 #endif
-
-

@@ -3,7 +3,7 @@ Collection of functions over a CFG boars structure that are not related to
 actual state changes nor tactical evaluation; though they may still be useful.
 */
 
-#include "matilda.h"
+#include "config.h"
 
 #include <stdlib.h>
 #include <string.h>

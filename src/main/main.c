@@ -5,7 +5,7 @@ either GTP or text mode.
 Also deals with updating some internal parameters at startup time.
 */
 
-#include "matilda.h"
+#include "config.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -273,8 +273,7 @@ d in text mode.\n\n");
         fprintf(stderr, "        \033[1m--log_dest <mask>\033[0m\n\n");
         fprintf(stderr, "        Set the log destination. The available destina\
 tions are:\n\n          o - Standard error file descriptor\n          f - File \
-(matilda_date.log)\n\n        Default setting: -\
--log of\n\n");
+(matilda_date.log)\n\n        Default setting: --log_dest of\n\n");
 
         fprintf(stderr, "        \033[1m--memory <number>\033[0m\n\n");
         fprintf(stderr, "        Override the available memory for the MCTS tra\

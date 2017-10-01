@@ -32,9 +32,9 @@ Configuration
 
 Most things can be either set via command line flags, GTP commands or C
 preprocessor definitions. The most common symbols that are defined in
-preprocessor definitions are found in the file inc/matilda.h
+preprocessor definitions are found in the file inc/config.h
 
-The file inc/matilda.h is special. It must not include anything and should be
+The file inc/config.h is special. It must not include anything and should be
 included prior to everything else for the potential to enable or disable
 assertions and other debugging checks.
 
@@ -54,7 +54,7 @@ Project conventions/guidelines
 5.  There shouldn't be a "God import", where a single file imports all header
     files.
 6.  The structure of a C file is (in order): short description of its function,
-    matilda.h include, C library includes, 3rd party includes, local includes,
+    config.h include, C library includes, 3rd party includes, local includes,
     public symbol declaration, extern symbol declaration, static symbol
     declaration and finally function declarations. Static symbol declarations
     may also be kept close to functions that will use them for clarity.

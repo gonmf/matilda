@@ -6,7 +6,7 @@ are in milliseconds.
 #ifndef MATILDA_TIME_M_H
 #define MATILDA_TIME_M_H
 
-#include "matilda.h"
+#include "config.h"
 
 #include "types.h"
 

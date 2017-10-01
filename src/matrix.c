@@ -2,7 +2,7 @@
 Generic matrix transformations
 */
 
-#include "matilda.h"
+#include "config.h"
 
 #include <string.h>
 #include <stdio.h>

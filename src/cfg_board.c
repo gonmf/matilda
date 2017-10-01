@@ -19,7 +19,7 @@ Just like in the rest of the source code, all functions are not thread unless
 explicitly said so.
 */
 
-#include "matilda.h"
+#include "config.h"
 
 #include <stdio.h>
 #include <stdlib.h>

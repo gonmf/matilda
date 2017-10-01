@@ -2,7 +2,7 @@
 Application for the production of Fuego book from SGF game collections.
 */
 
-#include "matilda.h"
+#include "config.h"
 
 #include <unistd.h>
 #include <stdlib.h>

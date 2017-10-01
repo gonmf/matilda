@@ -13,7 +13,7 @@ On macOS do not use the default Xcode clang -- it does not support OpenMP.
 Instead install through brew clang-omp, and override the compiler to be used
 in src/Makefile.
 
-Before compiling, review the contents of the file src/inc/matilda.h for your
+Before compiling, review the contents of the file src/inc/config.h for your
 system. Remember to edit the line
 
 #define UCT_MEMORY 512

@@ -17,7 +17,7 @@ It can also record the average final score, for the purpose of score estimation.
 #ifndef MATILDA_MCTS_H
 #define MATILDA_MCTS_H
 
-#include "matilda.h"
+#include "config.h"
 
 #include "board.h"
 #include "types.h"
@@ -103,5 +103,3 @@ u32 mcts_benchmark(
 );
 
 #endif
-
-

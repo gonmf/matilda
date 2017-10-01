@@ -15,7 +15,7 @@ And chooses a play based on (by order of importance):
     5. Random play
 */
 
-#include "matilda.h"
+#include "config.h"
 
 #include <stdlib.h>
 #include <string.h>

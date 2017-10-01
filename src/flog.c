@@ -9,7 +9,7 @@ Writing to files is synchronous (with fsync) to avoid loss of data in case of
 crashes, but it is impossible to guarantee this in all cases.
 */
 
-#include "matilda.h"
+#include "config.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -345,8 +345,6 @@ void build_info(
     idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx,
         "Mercy threshold: %u stones\n", MERCY_THRESHOLD);
 
-    idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx,
-        "Detect network latency: %s\n", YN(DETECT_NETWORK_LATENCY));
     idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx,
         "Constant latency compensation: %u ms\n", LATENCY_COMPENSATION);
     idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx,

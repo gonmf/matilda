@@ -5,7 +5,7 @@ Implementation of a generic hash table
 #ifndef MATILDA_HTABLE_H
 #define MATILDA_HTABLE_H
 
-#include "matilda.h"
+#include "config.h"
 
 #include "types.h"
 
@@ -109,4 +109,3 @@ void ** hash_table_export_to_array(
 );
 
 #endif
-

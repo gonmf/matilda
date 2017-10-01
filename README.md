@@ -22,7 +22,7 @@ stronger in smaller boards than in larger ones.
   - C99 compiler suite with support for OpenMP 3.0 (like GCC or clang)
 
 Before using read the INSTALL file carefully, and at least modify the file
-src/inc/matilda.h to your taste.
+src/inc/config.h to your taste.
 
 **How to**
 

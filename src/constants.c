@@ -18,7 +18,7 @@ move_seq nei_dst_4[TOTAL_BOARD_SIZ];
 u8 active_bits_in_byte[256];
 */
 
-#include "matilda.h"
+#include "config.h"
 
 #include <stdlib.h>
 #include <string.h>

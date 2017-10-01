@@ -7,7 +7,7 @@ For a more advanced board representation check the CFG representation
 (cfg_board.c and cfg_board.h).
 */
 
-#include "matilda.h"
+#include "config.h"
 
 #include <string.h>
 #include <stdlib.h>
@@ -287,7 +287,7 @@ void reduce_fixed(
 /*
 Performs the inverse operation of reduction of a given reduce code.
 */
-void oboard_revert_reduce(
+void out_board_revert_reduce(
     out_board * b,
     d8 method
 ){
@@ -327,5 +327,3 @@ void oboard_revert_reduce(
     }
     memcpy(b, &r, sizeof(out_board));
 }
-
-

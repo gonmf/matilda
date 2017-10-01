@@ -12,7 +12,7 @@ On positional superkos:
 http://www.weddslist.com/kgs/past/superko.html
 */
 
-#include "matilda.h"
+#include "config.h"
 
 #include <stdlib.h>
 #include <math.h> /* fabs */

@@ -18,7 +18,7 @@ For an explanation of the extra commands support read the documentation file
 GTP_README.
 */
 
-#include "matilda.h"
+#include "config.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -28,7 +28,6 @@ GTP_README.
 #include <sys/select.h> /* fd_set in macOS */
 
 #include "alloc.h"
-#include "analysis.h"
 #include "board.h"
 #include "engine.h"
 #include "file_io.h"
@@ -48,9 +47,8 @@ GTP_README.
 #include "types.h"
 #include "version.h"
 
+
 extern d16 komi;
-extern u32 network_roundtrip_delay;
-extern bool network_round_trip_set;
 
 const char * supported_commands[] =
 {
@@ -77,7 +75,6 @@ const char * supported_commands[] =
     "loadsgf",
     "mtld-game_info",
     "mtld-last_evaluation",
-    "mtld-ponder",
     "mtld-review_game",
     "mtld-time_left",
     "name",
@@ -252,35 +249,6 @@ static void gtp_list_commands(
 
     if(idx > 0)
         buf[idx - 1] = 0;
-
-    gtp_answer(fp, id, buf);
-    release(buf);
-}
-
-/*
-Non-standard addition to the protocol: it asks the engine to ponder on the
-current game state. Receives time to think in seconds.
-RETURNS text description
-*/
-static void gtp_ponder(
-    FILE * fp,
-    int id,
-    const char * timestr /* in seconds */
-){
-    u32 seconds;
-    if(!parse_uint(&seconds, timestr) || seconds < 1)
-    {
-        gtp_error(fp, id, "syntax error");
-        return;
-    }
-
-    board current_state;
-    current_game_state(&current_state, &current_game);
-    bool is_black = current_player_color(&current_game);
-
-    char * buf = alloc();
-
-    request_opinion(buf, &current_state, is_black, seconds * 1000);
 
     gtp_answer(fp, id, buf);
     release(buf);
@@ -1422,11 +1390,6 @@ void main_gtp(
     clear_out_board(&last_out_board);
     clear_game_record(&current_game);
 
-#if DETECT_NETWORK_LATENCY
-    u64 last_time_frame = 0;
-    bool time_frame_set = false;
-#endif
-
     fd_set readfs;
     memset(&readfs, 0, sizeof(fd_set));
     char * in_buf = alloc();
@@ -1464,39 +1427,6 @@ void main_gtp(
         request_received_mark = current_time_in_millis();
         if(line == NULL)
             flog_crit("gtp", "standard input file descriptor closed");
-
-#if DETECT_NETWORK_LATENCY
-        /*
-        Network latency estimation
-        */
-        if(time_frame_set == false)
-        {
-            time_frame_set = true;
-            last_time_frame = current_time_in_millis();
-        }
-        else
-        {
-            u64 tmp = current_time_in_millis();
-            u32 roundtrip = tmp - last_time_frame;
-            last_time_frame = tmp;
-            if(network_round_trip_set == false)
-            {
-                network_roundtrip_delay = roundtrip;
-                network_round_trip_set = true;
-            }
-            else
-                if(roundtrip < network_roundtrip_delay){
-                    network_roundtrip_delay = roundtrip;
-                    char tabuf[64];
-                    snprintf(tabuf, 64, "network latency compensation adjusted \
-to %u milliseconds", network_roundtrip_delay);
-                    flog_info("gtp", tabuf);
-                }
-        }
-#endif
-
-        if(line == NULL)
-            break;
 
         line = strtok(line, "#");
         if(line == NULL)
@@ -1661,12 +1591,6 @@ lbl_parse_command:
         if(argc == 0 && strcmp(cmd, "final_score") == 0)
         {
             gtp_final_score(out_fp, idn);
-            continue;
-        }
-
-        if(argc == 1 && strcmp(cmd, "mtld-ponder") == 0)
-        {
-            gtp_ponder(out_fp, idn, args[0]);
             continue;
         }
 

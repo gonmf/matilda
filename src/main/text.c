@@ -8,14 +8,13 @@ The commands supported are: quit, resign, undo and specifying plays (coordinates
 or pass).
 */
 
-#include "matilda.h"
+#include "config.h"
 
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 
 #include "alloc.h"
-#include "analysis.h"
 #include "board.h"
 #include "engine.h"
 #include "flog.h"
@@ -36,8 +35,6 @@ extern time_system current_clock_white;
 extern bool save_all_games_to_file;
 extern bool pass_when_losing;
 extern u32 limit_by_playouts;
-
-static u8 tips = 3;
 
 static void update_names(
     bool human_is_black
@@ -176,7 +173,6 @@ cord to file.\n");
             clear_game_record(&current_game);
             new_match_maintenance();
             update_names(*human_player_color);
-            tips = 3;
             return;
         }
         if(c == 'n' || c == 'N')
@@ -192,7 +188,6 @@ cord to file.\n");
             clear_game_record(&current_game);
             update_names(*human_player_color);
             new_match_maintenance();
-            tips = 3;
             return;
         }
     }
@@ -317,7 +312,7 @@ signation.\n\n", s);
             coord_to_num_num(mstr, coord_to_move(3, 3));
 #endif
             fprintf(stderr, "(Type the board position, like %s, or undo/pass/re\
-sign/tip/score/quit)\n", mstr);
+sign/score/quit)\n", mstr);
             release(mstr);
         }
         while(1)
@@ -363,25 +358,6 @@ sign/tip/score/quit)\n", mstr);
                 fprintf(stderr, "Type the board position, like %s, or undo/pass\
 /resign/score/quit\n\n", mstr);
                 release(mstr);
-                continue;
-            }
-
-            if(strcmp(line, "tip") == 0)
-            {
-                if(tips > 0)
-                {
-                    current_game_state(&current_state, &current_game);
-                    char * buffer = alloc();
-                    request_opinion(buffer, &current_state, is_black, 1000);
-                    fprintf(stderr, "%s", buffer);
-                    release(buffer);
-                    --tips;
-                }
-
-                if(tips == 0)
-                    fprintf(stderr, "You have no tips left.\n");
-                else
-                    fprintf(stderr, "You now have %u/3 tips left.\n", tips);
                 continue;
             }
 

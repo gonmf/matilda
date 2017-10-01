@@ -2,7 +2,7 @@
 More board functions related to cleaning and outputing board states.
 */
 
-#include "matilda.h"
+#include "config.h"
 
 #include <stdio.h>
 #include <stdlib.h>

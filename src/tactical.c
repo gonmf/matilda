@@ -8,7 +8,7 @@ groups, connecting groups by kosumi, bamboo joints, etc for the purpose of eye
 counting.
 */
 
-#include "matilda.h"
+#include "config.h"
 
 #include <stdio.h>
 #include <stdlib.h>

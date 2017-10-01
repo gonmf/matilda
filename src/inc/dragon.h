@@ -24,7 +24,7 @@ OOXXX.XO
 #ifndef MATILDA_DRAGON_H
 #define MATILDA_DRAGON_H
 
-#include "matilda.h"
+#include "config.h"
 
 #include "cfg_board.h"
 #include "types.h"

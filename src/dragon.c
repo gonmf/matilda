@@ -21,7 +21,7 @@ OOXXX.XO
 ....OOOO
 */
 
-#include "matilda.h"
+#include "config.h"
 
 #include <assert.h>
 

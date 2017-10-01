@@ -13,7 +13,7 @@ The life of these patterns is as follow:
  and searched for in the appropriate hash table.
 */
 
-#include "matilda.h"
+#include "config.h"
 
 #include <stdio.h>
 #include <stdlib.h>

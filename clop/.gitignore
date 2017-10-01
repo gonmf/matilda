@@ -5,3 +5,4 @@ clop-console
 *.log
 *.lock
 tmp/
+.tmp/

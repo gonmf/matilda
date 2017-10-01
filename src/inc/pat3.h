@@ -16,7 +16,7 @@ The life of these patterns is as follow:
 #ifndef MATILDA_PAT3_H
 #define MATILDA_PAT3_H
 
-#include "matilda.h"
+#include "config.h"
 
 #include "types.h"
 #include "board.h"
@@ -95,6 +95,5 @@ Reads a .pat3 patterns file and expands all patterns into all possible and
 patternable configurations.
 */
 void pat3_init();
-
 
 #endif

@@ -17,7 +17,7 @@ It can also record the average final score, for the purpose of score estimation.
 #ifndef MATILDA_PRIORS_H
 #define MATILDA_PRIORS_H
 
-#include "matilda.h"
+#include "config.h"
 
 #include "board.h"
 #include "cfg_board.h"

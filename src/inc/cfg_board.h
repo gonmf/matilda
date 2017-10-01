@@ -22,7 +22,7 @@ explicitly said so.
 #ifndef MATILDA_CFG_BOARD_H
 #define MATILDA_CFG_BOARD_H
 
-#include "matilda.h"
+#include "config.h"
 
 #include "board.h"
 #include "move.h"
@@ -348,4 +348,5 @@ u8 groups_shared_liberties(
     const group * restrict g1,
     const group * restrict g2
 );
+
 #endif

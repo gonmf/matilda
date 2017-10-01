@@ -2,7 +2,7 @@
 UCT expanded states initialization.
 */
 
-#include "matilda.h"
+#include "config.h"
 
 #include <string.h>
 #include <stdlib.h> /* qsort */
