@@ -15,8 +15,8 @@ Freed cfg_board information is kept in cache for fast access in the future; it
 is best to first free previous instances before creating new ones, thus limiting
 the size the cache has to have.
 
-Just like in the rest of the source code, all functions are not thread unless
-explicitly said so.
+Just like in the rest of the source code, all functions are not thread safe
+unless explicitly said so.
 */
 
 #include "config.h"
