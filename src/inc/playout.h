@@ -72,7 +72,7 @@ RETURNS the final score
 d16 playout_heavy_amaf(
     cfg_board * cb,
     bool is_black,
-    u8 traversed[TOTAL_BOARD_SIZ]
+    u8 traversed[static TOTAL_BOARD_SIZ]
 );
 
 

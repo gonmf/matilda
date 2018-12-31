@@ -28,7 +28,8 @@
 extern u16 iv_3x3[TOTAL_BOARD_SIZ][TOTAL_BOARD_SIZ][3];
 
 static char _ts[MAX_PAGE_SIZ];
-static char * _timestamp(){
+static char * _timestamp()
+{
     timestamp(_ts);
     return _ts;
 }
@@ -191,7 +192,8 @@ static void test_cfg_board()
     fprintf(stderr, " passed\n");
 }
 
-static void test_pattern(){
+static void test_pattern()
+{
     fprintf(stderr, "%s: patterns...", _timestamp());
     u16 v1 = rand_u16(65535);
     u8 v[3][3];

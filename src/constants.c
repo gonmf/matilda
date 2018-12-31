@@ -70,7 +70,7 @@ b*b   b*b   b*b   |*b
 .bb   .bb   .b.   |b.
 */
 static u8 _out_neighbors4(
-    u8 p[3][3]
+    u8 p[static 3][3]
 ){
     u8 ret = 0;
     if(p[1][0] == ILLEGAL)
@@ -85,7 +85,7 @@ static u8 _out_neighbors4(
 }
 
 static u8 _black_neighbors4(
-    u8 p[3][3]
+    u8 p[static 3][3]
 ){
     u8 ret = 0;
     if(p[1][0] == BLACK_STONE)
@@ -100,7 +100,7 @@ static u8 _black_neighbors4(
 }
 
 static u8 _white_neighbors4(
-    u8 p[3][3]
+    u8 p[static 3][3]
 ){
     u8 ret = 0;
     if(p[1][0] == WHITE_STONE)
@@ -115,7 +115,7 @@ static u8 _white_neighbors4(
 }
 
 static u8 _black_neighbors8(
-    u8 p[3][3]
+    u8 p[static 3][3]
 ){
     u8 ret = _black_neighbors4(p);
     if(p[0][0] == BLACK_STONE)
@@ -130,7 +130,7 @@ static u8 _black_neighbors8(
 }
 
 static u8 _white_neighbors8(
-    u8 p[3][3]
+    u8 p[static 3][3]
 ){
     u8 ret = _white_neighbors4(p);
     if(p[0][0] == WHITE_STONE)

@@ -34,7 +34,7 @@ static u32 nr_buckets = 0;
 
 static move ob_get_play(
     u32 hash,
-    const u8 p[PACKED_BOARD_SIZ]
+    const u8 p[static PACKED_BOARD_SIZ]
 ){
     ob_entry * h = ob_trans_table[hash % nr_buckets];
     while(h != NULL)
@@ -54,7 +54,7 @@ invoke after a capture or pass has occurred.
 */
 void board_to_ob_rule(
     char * dst,
-    u8 p[TOTAL_BOARD_SIZ],
+    u8 p[static TOTAL_BOARD_SIZ],
     move play
 ){
     u32 idx = snprintf(dst, MAX_PAGE_SIZ, "%u ", BOARD_SIZ);

@@ -55,7 +55,7 @@ Rotate and flip the pattern to its unique representative.
 Avoid using, is not optimized.
 */
 void pat3_reduce_auto(
-    u8 v[3][3]
+    u8 v[static 3][3]
 );
 
 /*
@@ -63,8 +63,8 @@ Transposes part of an input matrix board into a 3x3 matrix pattern codified,
 with board safety.
 */
 void pat3_transpose(
-    u8 dst[3][3],
-    const u8 p[TOTAL_BOARD_SIZ],
+    u8 dst[static 3][3],
+    const u8 p[static TOTAL_BOARD_SIZ],
     move m
 );
 
@@ -72,14 +72,14 @@ void pat3_transpose(
 Codifies the pattern in a 16 bit unsigned value.
 */
 u16 pat3_to_string(
-    const u8 p[3][3]
+    const u8 p[static 3][3]
 );
 
 /*
 Decodes a 16-bit value into a 3x3 pattern, with empty center.
 */
 void string_to_pat3(
-    u8 dst[3][3],
+    u8 dst[static 3][3],
     u16 src
 );
 
@@ -87,7 +87,7 @@ void string_to_pat3(
 Invert stone colors.
 */
 void pat3_invert(
-    u8 p[3][3]
+    u8 p[static 3][3]
 );
 
 /*

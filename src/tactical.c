@@ -54,28 +54,7 @@ bool is_eye(
     bool is_black,
     move m
 ){
-#if 1
     return is_black ? black_eye[cb->hash[m]] : white_eye[cb->hash[m]];
-#else
-    if(out_neighbors4[m] == 0)
-    {
-        if(is_black)
-            return (cb->black_neighbors4[m] == 4) && (cb->white_neighbors8[m] <
-                2);
-        else
-            return (cb->white_neighbors4[m] == 4) && (cb->black_neighbors8[m] <
-                2);
-    }
-    else
-    {
-        if(is_black)
-            return (cb->black_neighbors4[m] + out_neighbors4[m] == 4) &&
-                (cb->white_neighbors8[m] == 0);
-        else
-            return (cb->white_neighbors4[m] + out_neighbors4[m] == 4) &&
-                (cb->black_neighbors8[m] == 0);
-    }
-#endif
 }
 
 /*
@@ -806,7 +785,7 @@ intersections adjacent to liberties of nearby groups, plus the 3x3 neighborhood
 of the intersection m. near_pos is cleared before marking.
 */
 void mark_near_pos(
-    bool near_pos[TOTAL_BOARD_SIZ],
+    bool near_pos[static TOTAL_BOARD_SIZ],
     const cfg_board * cb,
     move m
 ){
@@ -1286,4 +1265,3 @@ void can_be_saved_all(
         }
     }
 }
-

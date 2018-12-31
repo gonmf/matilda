@@ -143,8 +143,8 @@ void just_play3(
     bool is_black,
     move m,
     d16 * stone_difference,
-    bool stones_removed[TOTAL_BOARD_SIZ],
-    u8 rem_nei_libs[LIB_BITMAP_SIZ]
+    bool stones_removed[static TOTAL_BOARD_SIZ],
+    u8 rem_nei_libs[static LIB_BITMAP_SIZ]
 );
 
 /*

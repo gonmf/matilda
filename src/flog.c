@@ -150,9 +150,9 @@ static bool multiline(
 }
 
 static void flog(
-    const char * severity,
-    const char * context,
-    const char * msg
+    const char * restrict severity,
+    const char * restrict context,
+    const char * restrict msg
 ){
     if(!log_dest)
         return;
@@ -372,8 +372,8 @@ void build_info(
 Log a message with verbosity level critical.
 */
 void flog_crit(
-    const char * ctx,
-    const char * msg
+    const char * restrict ctx,
+    const char * restrict msg
 ){
     if((log_mode & LOG_MODE_ERROR) != 0)
     {
@@ -391,8 +391,8 @@ void flog_crit(
 Log a message with verbosity level warning.
 */
 void flog_warn(
-    const char * ctx,
-    const char * msg
+    const char * restrict ctx,
+    const char * restrict msg
 ){
     if((log_mode & LOG_MODE_WARN) != 0)
         flog("warn", ctx, msg);
@@ -403,8 +403,8 @@ void flog_warn(
 Log a message with verbosity level communication protocol.
 */
 void flog_prot(
-    const char * ctx,
-    const char * msg
+    const char * restrict ctx,
+    const char * restrict msg
 ){
     if((log_mode & LOG_MODE_PROT) != 0)
         flog("prot", ctx, msg);
@@ -415,8 +415,8 @@ void flog_prot(
     Log a message with verbosity level informational.
 */
 void flog_info(
-    const char * ctx,
-    const char * msg
+    const char * restrict ctx,
+    const char * restrict msg
 ){
     if((log_mode & LOG_MODE_INFO) != 0)
         flog("info", ctx, msg);
@@ -427,8 +427,8 @@ void flog_info(
     Log a message with verbosity level debug.
 */
 void flog_debug(
-    const char * ctx,
-    const char * msg
+    const char * restrict ctx,
+    const char * restrict msg
 ){
     if((log_mode & LOG_MODE_DEBUG) != 0)
         flog("dbug", ctx, msg);

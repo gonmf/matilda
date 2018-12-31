@@ -58,17 +58,6 @@ typedef struct __quality_pair_ {
 } quality_pair;
 
 
-int qp_compare(
-    const void * e1,
-    const void * e2
-){
-    const quality_pair * a = (const quality_pair *)e1;
-    const quality_pair * b = (const quality_pair *)e2;
-    if(a->quality == b->quality)
-        return 0;
-    return a->quality < b->quality ? 1 : -1;
-}
-
 
 static u16 stones_in_manhattan_dst3(
     const cfg_board * cb,
