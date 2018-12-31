@@ -8,7 +8,7 @@ default. All public functions have a short header description too.
 The project consists of several executable files:
 
 matilda - the main program, used for playing and analyzing Go. If you are
-unsure, use this program.
+unsure, use this program. It can also be used to benchmark the system.
 
 test - use for running unitary tests; often with a debug compilation or
 profiling activated.

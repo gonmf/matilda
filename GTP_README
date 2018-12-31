@@ -7,6 +7,7 @@ the private command extensions supported.
 
 Reference: http://www.lysator.liu.se/~gunnar/gtp/gtp2-spec-draft2/gtp2-spec.html
 
+
 boardsize -- the command fails if the board size requested is different than the
 value set at compile time. Furthermore, if no argument is given the command
 succeeds and returns the current board size.
@@ -15,8 +16,8 @@ succeeds and returns the current board size.
 komi -- the command also accepts no parameters, returning the current komidashi.
 
 
-loadsgf -- the command fails if the game board size requested is different than
-the value set at compile time.
+loadsgf -- the command fails if the game to be loaded uses a board size
+different from the value set at compile time.
 
 
 final_status_list -- Matilda may prefer playing to passing and, as such, kill
