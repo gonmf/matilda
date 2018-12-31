@@ -67,8 +67,8 @@ void move_to_coord(
 RETURNS the Manhattan distance between two points
 */
 u8 coord_distance(
-    u8 p1[2],
-    u8 p2[2]
+    const u8 p1[static 2],
+    const u8 p2[static 2]
 ){
     assert(p1[0] < BOARD_SIZ);
     assert(p2[0] < BOARD_SIZ);
@@ -267,7 +267,7 @@ Populates a move_seq structure with the moves of distance equal or closer to
 distance, for every intersection of a board.
 */
 void init_moves_by_distance(
-    move_seq neighbours[TOTAL_BOARD_SIZ],
+    move_seq neighbours[static TOTAL_BOARD_SIZ],
     u16 distance,
     bool include_own
 ){

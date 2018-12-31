@@ -109,8 +109,8 @@ const void * tunable[] =
 };
 
 static void set_parameter(
-    const char * name,
-    const char * value
+    const char * restrict name,
+    const char * restrict value
 ){
     for(u16 i = 0; tunable[i] != NULL; i += 3)
     {

@@ -43,9 +43,7 @@ assertions and other debugging checks.
 Project conventions/guidelines
 
 1.  All code must be strict C99 code, with a preference for ANSI C
-    compatibility. No, compiler pragmas are not standard no matter how popular
-    they are. Matilda is intended to be easy to maintain and valid forever, not
-    depend on the compiler.
+    compatibility.
 2.  All code must compile both in GCC and clang.
 3.  There can be as many lines in between the code as necessary for clarity.
 4.  The scope of everything should be as limited as possible (types, functions);
@@ -112,7 +110,7 @@ static void long_method_definition(
     char var2,
     char * pt1,
     char * pt2,
-    char * argv1[10] /* the last comma is optional */
+    char * argv1[static 10] /* the last comma is optional */
 );
 
 static void _main()

@@ -47,8 +47,8 @@ extern d16 komi;
 
 static void invalidate_cache_of_the_past(
     const cfg_board * cb,
-    u8 c1[TOTAL_BOARD_SIZ],
-    u8 c2[TOTAL_BOARD_SIZ]
+    u8 c1[static TOTAL_BOARD_SIZ],
+    u8 c2[static TOTAL_BOARD_SIZ]
 ){
     /*
     Positions previously illegal because of possible ko
@@ -66,10 +66,10 @@ positions marked captured
 */
 static void invalidate_cache_after_play(
     const cfg_board * cb,
-    u8 c1[TOTAL_BOARD_SIZ],
-    u8 c2[TOTAL_BOARD_SIZ],
-    bool stones_captured[TOTAL_BOARD_SIZ],
-    u8 libs_of_nei_of_captured[LIB_BITMAP_SIZ]
+    u8 c1[static TOTAL_BOARD_SIZ],
+    u8 c2[static TOTAL_BOARD_SIZ],
+    bool stones_captured[static TOTAL_BOARD_SIZ],
+    u8 libs_of_nei_of_captured[static LIB_BITMAP_SIZ]
 ){
     assert(is_board_move(cb->last_played));
 
@@ -139,7 +139,7 @@ Uses a cache of play statuses that is updated as needed.
 static move heavy_select_play(
     cfg_board * cb,
     bool is_black,
-    u8 cache[TOTAL_BOARD_SIZ]
+    u8 cache[static TOTAL_BOARD_SIZ]
 ){
     move ko = get_ko_play(cb);
 
@@ -377,7 +377,7 @@ RETURNS the final score
 d16 playout_heavy_amaf(
     cfg_board * cb,
     bool is_black,
-    u8 traversed[TOTAL_BOARD_SIZ]
+    u8 traversed[static TOTAL_BOARD_SIZ]
 ){
     assert(verify_cfg_board(cb));
     u16 depth_max = MAX_PLAYOUT_DEPTH_OVER_EMPTY + cb->empty.count +
@@ -458,4 +458,3 @@ void playout_as_strategy(
         out_b->tested[m] = true;
     }
 }
-

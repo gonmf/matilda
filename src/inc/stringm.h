@@ -60,17 +60,17 @@ Produces a copy of the string between the tokens; or empty
 */
 void str_between(
     char * dst,
-    const char * s,
-    const char * start,
-    const char * end
+    const char * restrict s,
+    const char * restrict start,
+    const char * restrict end
 );
 
 /*
 RETURNS true if s is equal or contains h
 */
 bool starts_with(
-    const char * s,
-    const char * h
+    const char * restrict s,
+    const char * restrict h
 );
 
 /*

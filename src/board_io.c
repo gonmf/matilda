@@ -86,7 +86,7 @@ RETURNS string representation
 */
 void board_to_string(
     char * dst,
-    const u8 p[TOTAL_BOARD_SIZ],
+    const u8 p[static TOTAL_BOARD_SIZ],
     move last_played,
     move last_eaten
 ){

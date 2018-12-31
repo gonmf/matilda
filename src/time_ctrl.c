@@ -225,7 +225,9 @@ void time_system_to_str(
     release(abs);
 }
 
-static d32 str_to_milliseconds(const char * s){
+static d32 str_to_milliseconds(
+    const char * s
+){
     char * char_idx = strchr(s, 'm');
     d32 mul = 0; /* multiplier */
     if(char_idx != NULL)

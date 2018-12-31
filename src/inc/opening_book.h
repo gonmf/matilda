@@ -28,7 +28,7 @@ invoke after a capture or pass has occurred.
 */
 void board_to_ob_rule(
     char * dst,
-    u8 p[TOTAL_BOARD_SIZ],
+    u8 p[static TOTAL_BOARD_SIZ],
     move play
 );
 

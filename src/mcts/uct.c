@@ -137,7 +137,7 @@ static d16 mcts_expansion(
     cfg_board * cb,
     bool is_black,
     tt_stats * stats,
-    u8 traversed[TOTAL_BOARD_SIZ]
+    u8 traversed[static TOTAL_BOARD_SIZ]
 ){
     stats->expansion_delay--;
     if(stats->expansion_delay == -1)

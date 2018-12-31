@@ -35,7 +35,7 @@ RETURNS false on error
 */
 bool export_game_as_sgf_auto_named(
     const game_record * gr,
-    char filename[MAX_PAGE_SIZ]
+    char filename[static MAX_PAGE_SIZ]
 );
 
 /*
@@ -70,8 +70,8 @@ RETURNS true if the game has been found and read correctly
 */
 bool import_game_from_sgf2(
     game_record * gr,
-    const char * filename,
-    char * buf,
+    const char * restrict filename,
+    char * restrict buf,
     u32 buf_siz
 );
 

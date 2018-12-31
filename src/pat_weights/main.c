@@ -47,15 +47,16 @@ typedef struct __pat3t_ {
 } pat3t;
 
 
-static u32 pat3t_hash_function(void * a)
-{
+static u32 pat3t_hash_function(
+    void * a
+){
     pat3t * b = (pat3t *)a;
     return b->value;
 }
 
 static int pat3t_compare_function(
-    const void * a,
-    const void * b
+    const void * restrict a,
+    const void * restrict b
 ){
     pat3t * f1 = (pat3t *)a;
     pat3t * f2 = (pat3t *)b;

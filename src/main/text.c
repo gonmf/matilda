@@ -99,8 +99,8 @@ Simple function selecting the next play in text mode.
 */
 static void text_genmove(
     bool is_black,
-    bool * passed,
-    bool * resigned
+    bool * restrict passed,
+    bool * restrict resigned
 ){
     out_board out_b;
     board current_state;
@@ -145,8 +145,8 @@ static void text_genmove(
 }
 
 static void text_newgame(
-    bool * human_player_color,
-    bool * is_black
+    bool * restrict human_player_color,
+    bool * restrict is_black
 ){
     if(save_all_games_to_file && current_game.turns > 0)
     {

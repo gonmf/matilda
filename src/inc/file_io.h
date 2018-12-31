@@ -18,10 +18,10 @@ already exists.
 RETURNS file descriptor
 */
 int create_and_open_file(
-    char * filename,
+    char * restrict filename,
     u32 filename_size,
-    const char * prefix,
-    const char * extension
+    const char * restrict prefix,
+    const char * restrict extension
 );
 
 /*
@@ -37,9 +37,9 @@ d32 read_binary_file(
 RETURNS the number of ASCII characters read or -1 if failed to open/be read
 */
 d32 read_ascii_file(
-    char * dst_buf,
+    char * restrict dst_buf,
     u32 buf_len,
-    const char * filename
+    const char * restrict filename
 );
 
 /*
@@ -49,8 +49,8 @@ At most fills max_files file names.
 RETURN number of file names saved
 */
 u32 recurse_find_files(
-    const char * root,
-    const char * extension,
+    const char * restrict root,
+    const char * restrict extension,
     char ** filenames,
     u32 max_files
 );

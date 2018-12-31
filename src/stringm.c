@@ -119,9 +119,9 @@ Produces a copy of the string between the tokens; or empty
 */
 void str_between(
     char * dst,
-    const char * s,
-    const char * start,
-    const char * end
+    const char * restrict s,
+    const char * restrict start,
+    const char * restrict end
 ){
     char * t = strstr(s, start);
     if(t == NULL)
@@ -147,8 +147,8 @@ void str_between(
 RETURNS true if s is equal or contains h
 */
 bool starts_with(
-    const char * s,
-    const char * h
+    const char * restrict s,
+    const char * restrict h
 ){
     u16 i = 0;
     while(h[i])
@@ -176,8 +176,8 @@ static bool char_match(
 }
 
 static bool string_match(
-    const char * s,
-    const char * hay
+    const char * restrict s,
+    const char * restrict hay
 ){
     while(*s)
     {

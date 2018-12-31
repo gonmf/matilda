@@ -49,8 +49,8 @@ static u32 hash_function(
 }
 
 static int compare_function(
-    const void * o1,
-    const void * o2
+    const void * restrict o1,
+    const void * restrict o2
 ){
     simple_state_transition * s1 = (simple_state_transition *)o1;
     simple_state_transition * s2 = (simple_state_transition *)o2;

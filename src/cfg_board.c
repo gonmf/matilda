@@ -623,8 +623,8 @@ static void cfg_board_kill_group3(
     cfg_board * cb,
     group * g,
     u8 own,
-    bool stones_removed[TOTAL_BOARD_SIZ],
-    u8 rem_nei_libs[LIB_BITMAP_SIZ]
+    bool stones_removed[static TOTAL_BOARD_SIZ],
+    u8 rem_nei_libs[static LIB_BITMAP_SIZ]
 ){
     move id = g->stones.coord[0];
 
@@ -851,8 +851,8 @@ void just_play3(
     bool is_black,
     move m,
     d16 * stone_difference,
-    bool stones_removed[TOTAL_BOARD_SIZ],
-    u8 rem_nei_libs[LIB_BITMAP_SIZ]
+    bool stones_removed[static TOTAL_BOARD_SIZ],
+    u8 rem_nei_libs[static LIB_BITMAP_SIZ]
 ){
     assert(verify_cfg_board(cb));
     assert(is_board_move(m));

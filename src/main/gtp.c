@@ -453,8 +453,8 @@ static void gtp_komi(
 static void gtp_play(
     FILE * fp,
     int id,
-    const char * color,
-    char * vertex,
+    const char * restrict color,
+    char * restrict vertex,
     bool allow_skip
 ){
     bool is_black;
@@ -565,10 +565,7 @@ static void generic_genmove(
         current_game.finished = true;
         current_game.resignation = true;
         current_game.final_score = is_black ? -1 : 1;
-#if 0
-        /* TODO just for counting resigns on timeout for paper */
-        flog_debug("gtp", "TIMEOUT");
-#endif
+
         close_if_sentinel_found();
         return;
     }
@@ -717,9 +714,9 @@ static void gtp_echo(
 static void gtp_time_settings(
     FILE * fp,
     int id,
-    const char * main_time,
-    const char * byo_yomi_time,
-    const char * byo_yomi_stones
+    const char * restrict main_time,
+    const char * restrict byo_yomi_time,
+    const char * restrict byo_yomi_stones
 ){
     if(time_system_overriden || limit_by_playouts > 0)
     {
@@ -784,10 +781,10 @@ layers", previous_ts_as_s);
 static void gtp_kgs_time_settings(
     FILE * fp,
     int id,
-    const char * systemstr,
-    const char * main_time,
-    const char * byo_yomi_time,
-    const char * byo_yomi_stones
+    const char * restrict systemstr,
+    const char * restrict main_time,
+    const char * restrict byo_yomi_time,
+    const char * restrict byo_yomi_stones
 ){
     if(time_system_overriden || limit_by_playouts > 0)
     {
@@ -925,9 +922,9 @@ oth players", previous_ts_as_s, new_ts_as_s);
 static void gtp_time_left_seconds(
     FILE * fp,
     int id,
-    const char * color,
-    const char * time_left, /* in seconds */
-    const char * stones
+    const char * restrict color,
+    const char * restrict time_left, /* in seconds */
+    const char * restrict stones
 ){
     if(time_system_overriden || limit_by_playouts > 0)
     {
@@ -977,9 +974,9 @@ static void gtp_time_left_seconds(
 static void gtp_time_left_millis(
     FILE * fp,
     int id,
-    const char * color,
-    const char * time_left, /* in milliseconds */
-    const char * stones
+    const char * restrict color,
+    const char * restrict time_left, /* in milliseconds */
+    const char * restrict stones
 ){
     if(time_system_overriden || limit_by_playouts > 0)
     {
@@ -1282,8 +1279,8 @@ static void gtp_set_free_handicap(
 static void gtp_loadsgf(
     FILE * fp,
     int id,
-    const char * filename,
-    const char * move_number /* optional */
+    const char * restrict filename,
+    const char * restrict move_number /* optional */
 ){
     if(!validate_filename(filename))
     {

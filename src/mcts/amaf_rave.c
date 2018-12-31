@@ -61,7 +61,7 @@ state (if visited first by the player).
 */
 void update_amaf_stats(
     tt_stats * stats,
-    const u8 traversed[TOTAL_BOARD_SIZ],
+    const u8 traversed[static TOTAL_BOARD_SIZ],
     bool is_black,
     double z
 ){
@@ -82,7 +82,7 @@ This version only adds losses -- it is meant to be used when a draw occurs.
 */
 void update_amaf_stats2(
     tt_stats * stats,
-    const u8 traversed[TOTAL_BOARD_SIZ],
+    const u8 traversed[static TOTAL_BOARD_SIZ],
     bool is_black
 ){
     for(u16 k = 0; k < stats->plays_count; ++k)
