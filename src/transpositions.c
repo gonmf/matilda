@@ -81,6 +81,14 @@ void tt_init()
     }
 }
 
+
+
+static u32 fast_bucket(u32 hash, u32 number_of_buckets) {
+    return (u32)((((u64)hash) * ((u64)number_of_buckets)) >> 32);
+}
+
+
+
 /*
 Searches for a state by hash, in a bucket by key.
 RETURNS state found or null.
@@ -90,7 +98,7 @@ static tt_stats * find_state(
     const board * b,
     bool is_black
 ){
-    u32 key = (u32)(hash % ((u64)number_of_buckets));
+    u32 key = fast_bucket(hash, number_of_buckets);
     tt_stats * p;
 
     if(is_black)
@@ -117,7 +125,7 @@ static tt_stats * find_state2(
     const cfg_board * cb,
     bool is_black
 ){
-    u32 key = (u32)(hash % ((u64)number_of_buckets));
+    u32 key = fast_bucket(hash, number_of_buckets);
     tt_stats * p;
 
     if(is_black)
@@ -294,7 +302,7 @@ tt_stats * tt_lookup_create(
     bool is_black,
     u64 hash
 ){
-    u32 key = (u32)(hash % ((u64)number_of_buckets));
+    u32 key = fast_bucket(hash, number_of_buckets);
     omp_lock_t * bucket_lock = is_black ? &b_table_lock : &w_table_lock;
     omp_set_lock(bucket_lock);
 
@@ -355,7 +363,7 @@ tt_stats * tt_lookup_null(
     bool is_black,
     u64 hash
 ){
-    u32 key = (u32)(hash % ((u64)number_of_buckets));
+    u32 key = fast_bucket(hash, number_of_buckets);
     omp_lock_t * bucket_lock = is_black ? &b_table_lock : &w_table_lock;
     omp_set_lock(bucket_lock);
 

@@ -44,6 +44,13 @@ hash_table * hash_table_create(
 }
 
 
+
+static u32 fast_bucket(u32 hash, u32 number_of_buckets) {
+    return (u32)((((u64)hash) * ((u64)number_of_buckets)) >> 32);
+}
+
+
+
 /*
 Inserts a value in the hash table.
 Tests if it already exists and doesn't do anything if it does.
@@ -56,7 +63,7 @@ void hash_table_insert_unique(
     assert(elem != NULL);
 
     u32 hash = ht->hash_func(elem);
-    u32 bucket = hash % ht->number_of_buckets;
+    u32 bucket = fast_bucket(hash, ht->number_of_buckets);
 
     ht_node * h = ht->table[bucket];
     while(h != NULL)
@@ -88,7 +95,7 @@ void hash_table_insert(
     assert(elem != NULL);
 
     u32 hash = ht->hash_func(elem);
-    u32 bucket = hash % ht->number_of_buckets;
+    u32 bucket = fast_bucket(hash, ht->number_of_buckets);
 
     ht_node * node = (ht_node *)malloc(sizeof(ht_node));
     node->data = elem;
@@ -110,7 +117,7 @@ bool hash_table_exists(
     assert(elem != NULL);
 
     u32 hash = ht->hash_func(elem);
-    u32 bucket = hash % ht->number_of_buckets;
+    u32 bucket = fast_bucket(hash, ht->number_of_buckets);
 
     ht_node * h = ht->table[bucket];
     while(h != NULL)
@@ -134,7 +141,7 @@ void * hash_table_find(
     assert(elem != NULL);
 
     u32 hash = ht->hash_func(elem);
-    u32 bucket = hash % ht->number_of_buckets;
+    u32 bucket = fast_bucket(hash, ht->number_of_buckets);
 
     ht_node * h = ht->table[bucket];
     while(h != NULL)
