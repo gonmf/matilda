@@ -21,7 +21,7 @@ OOXXX.XO
 ....OOOO
 */
 
-#include "matilda.h"
+#include "config.h"
 
 #include <assert.h>
 
@@ -67,7 +67,7 @@ static void unite_dragons(
 }
 
 static void disqualify_square(
-    bool viable[TOTAL_BOARD_SIZ],
+    bool viable[static TOTAL_BOARD_SIZ],
     move m
 ){
     /* this does not disqualify the center point */
@@ -86,9 +86,9 @@ perspective of the current player.
 void estimate_eyes(
     cfg_board * cb,
     bool is_black,
-    bool viable[TOTAL_BOARD_SIZ],
-    bool play_okay[TOTAL_BOARD_SIZ],
-    u8 in_nakade[TOTAL_BOARD_SIZ]
+    bool viable[static TOTAL_BOARD_SIZ],
+    bool play_okay[static TOTAL_BOARD_SIZ],
+    u8 in_nakade[static TOTAL_BOARD_SIZ]
 ){
     for(u8 i = 0; i < cb->unique_groups_count; ++i)
     {

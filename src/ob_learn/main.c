@@ -9,7 +9,7 @@ same directory.
 */
 
 
-#include "matilda.h"
+#include "config.h"
 
 #include <stdlib.h>
 #include <time.h>
@@ -60,8 +60,8 @@ static u32 hash_function(
 }
 
 static int compare_function(
-    const void * o1,
-    const void * o2
+    const void * restrict o1,
+    const void * restrict o2
 ){
     simple_state_transition * s1 = (simple_state_transition *)o1;
     simple_state_transition * s2 = (simple_state_transition *)o2;
@@ -69,8 +69,8 @@ static int compare_function(
 }
 
 static int sort_cmp_function(
-    const void * o1,
-    const void * o2
+    const void * restrict o1,
+    const void * restrict o2
 ){
     simple_state_transition ** s1 = (simple_state_transition **)o1;
     simple_state_transition ** s2 = (simple_state_transition **)o2;
@@ -83,8 +83,8 @@ int main(int argc, char * argv[]){
 
     for(int i = 1; i < argc; ++i){
         if(i < argc - 1 && strcmp(argv[i], "--time") == 0){
-            d32 a;
-            if(!parse_int(&a, argv[i + 1]) || a < 1)
+            u32 a;
+            if(!parse_uint(&a, argv[i + 1]) || a < 1)
                 goto lbl_usage;
             ++i;
             secs_per_turn = a;
@@ -95,8 +95,8 @@ int main(int argc, char * argv[]){
             continue;
         }
         if(i < argc - 1 && strcmp(argv[i], "--max_depth") == 0){
-            d32 a;
-            if(!parse_int(&a, argv[i + 1]) || a < 1)
+            u32 a;
+            if(!parse_uint(&a, argv[i + 1]) || a < 1)
                 goto lbl_usage;
             ++i;
             ob_depth = a;
@@ -156,7 +156,7 @@ n", secs_per_turn);
         if(!no_print)
             printf("%u/%u: %s", fid + 1, filenames_found, filenames[fid]);
 
-        if(!import_game_from_sgf2(gr, filenames[fid], buf))
+        if(!import_game_from_sgf2(gr, filenames[fid], buf, MAX_FILE_SIZ))
         {
             if(!no_print)
                 printf(" skipped\n");
@@ -255,8 +255,7 @@ n", secs_per_turn);
     printf("\nEvaluating game states and saving best play\n");
 
     char * log_filename = alloc();
-    int fd = create_and_open_file(log_filename, MAX_PAGE_SIZ, true, "matilda",
-        "ob");
+    int fd = create_and_open_file(log_filename, MAX_PAGE_SIZ, "matilda", "ob");
     if(fd == -1)
     {
         timestamp(ts);

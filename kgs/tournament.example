@@ -2,6 +2,6 @@ name=matilda
 password=
 room=Computer Go
 verbose=f
-engine=../src/matilda -m gtp --think_in_opt_time -l -d ../src/data/
+engine=../src/matilda -m gtp --think_in_opt_time --losing pass -l -d ../src/data/
 mode=tournament
 reconnect=f

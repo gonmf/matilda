@@ -5,7 +5,7 @@ http://www.red-bean.com/sgf/
 Play variations and annotations/commentary are ignored.
 */
 
-#include "matilda.h"
+#include "config.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -33,6 +33,7 @@ static bool wrong_board_size_warned = false;
 static bool illegal_final_score_warned = false;
 static bool illegal_handicap_placement_warned = false;
 static bool illegal_stone_placement_warned = false;
+static bool komi_format_error = false;
 
 static u8 guess_board_size(
     const char * sgf
@@ -63,6 +64,7 @@ u32 export_game_as_sgf_to_buffer(
     char * buf = buffer;
     buf += snprintf(buf, size - (buf - buffer), "(;GM[1]\n");
     buf += snprintf(buf, size - (buf - buffer), "FF[4]\n");
+    buf += snprintf(buf, size - (buf - buffer), "CA[UTF-8]\n");
     buf += snprintf(buf, size - (buf - buffer), "SZ[%u]\n", BOARD_SIZ);
     buf += snprintf(buf, size - (buf - buffer), "PW[%s]\n", gr->white_name);
     buf += snprintf(buf, size - (buf - buffer), "PB[%s]\n", gr->black_name);
@@ -72,9 +74,9 @@ u32 export_game_as_sgf_to_buffer(
     buf += snprintf(buf, size - (buf - buffer), "KM[%s]\n", kstr);
     release(kstr);
 
-    if(gr->game_finished)
+    if(gr->finished)
     {
-        if(gr->resignation == 0)
+        if(gr->resignation)
             buf += snprintf(buf, size - (buf - buffer), "RE[%c+R]\n",
                 gr->final_score > 0 ? 'B' : 'W');
         else
@@ -86,7 +88,6 @@ u32 export_game_as_sgf_to_buffer(
 
     /* Not standard but as used in KGS; closest would be AGA rules */
     buf += snprintf(buf, size - (buf - buffer), "RU[Chinese]\n");
-    buf += snprintf(buf, size - (buf - buffer), "CA[UTF-8]\n");
     buf += snprintf(buf, size - (buf - buffer), "AP[matilda:%s]\n",
         MATILDA_VERSION);
 
@@ -108,6 +109,9 @@ u32 export_game_as_sgf_to_buffer(
     /* Plays */
     for(u16 i = 0; i < gr->turns; ++i)
     {
+        if(i > 0 && (i % 10) == 0)
+            buf += snprintf(buf, size - (buf - buffer), "\n");
+
         assert(gr->moves[i] != NONE);
         if(gr->moves[i] == PASS)
         {
@@ -148,9 +152,9 @@ RETURNS false on error
 */
 bool export_game_as_sgf_auto_named(
     const game_record * gr,
-    char filename[32]
+    char filename[static MAX_PAGE_SIZ]
 ){
-    int fid = create_and_open_file(filename, 32, true, "matilda", "sgf");
+    int fid = create_and_open_file(filename, MAX_PAGE_SIZ, "matilda", "sgf");
     if(fid == -1)
         return false;
 
@@ -221,16 +225,18 @@ void reset_warning_messages()
 }
 
 /*
+Import a game record from the contents of the buffer.
 RETURNS true if the game has been found and read correctly
 */
 bool import_game_from_sgf2(
     game_record * gr,
-    const char * filename,
-    char * buf
+    const char * restrict filename,
+    char * restrict buf,
+    u32 buf_siz
 ){
     clear_game_record(gr);
 
-    d32 chars_read = read_ascii_file(buf, MAX_FILE_SIZ, filename);
+    d32 chars_read = read_ascii_file(buf, buf_siz, filename);
     if(chars_read < 1)
     {
         snprintf(buf, MAX_PAGE_SIZ, "could not open/read file %s", filename);
@@ -251,6 +257,27 @@ bool import_game_from_sgf2(
     char * tmp = alloc();
 
     /*
+    Komi
+    */
+    str_between(tmp, buf, "KM[", "]");
+    if(tmp[0] != 0)
+    {
+        double komid;
+        if(!parse_float(&komid, tmp))
+        {
+            if(!komi_format_error)
+            {
+                komi_format_error = true;
+                flog_warn("sgff", "komi format error; current komi kept");
+            }
+        }
+        else
+        {
+            komi = (d16)(komid * 2.0);
+        }
+    }
+
+    /*
     Board size
     */
     str_between(tmp, buf, "SZ[", "]");
@@ -269,7 +296,7 @@ bool import_game_from_sgf2(
             flog_warn("sgff", "board size can not be guessed from play coordina\
 tes");
         }
-        if(board_size != BOARD_SIZ)
+        if(board_size != BOARD_SIZ && board_size + 1 != BOARD_SIZ)
         {
             if(!wrong_board_size_warned){
                 wrong_board_size_warned = true;
@@ -296,44 +323,54 @@ tes");
 
     str_between(tmp, buf, "PB[", "]");
     if(tmp[0])
+    {
         strncpy(gr->black_name, tmp, MAX_PLAYER_NAME_SIZ);
+        gr->player_names_set = true;
+    }
 
     str_between(tmp, buf, "PW[", "]");
     if(tmp[0])
+    {
         strncpy(gr->white_name, tmp, MAX_PLAYER_NAME_SIZ);
+        gr->player_names_set = true;
+    }
 
     /*
     Result
     */
+    bool finished = false;
+    bool resignation = false;
+    bool timeout = false;
+    d16 final_score = 0;
+
     char * result = tmp;
     str_between(result, buf, "RE[", "]");
 
     if(result[0] == 0 || strcmp(result, "Void") == 0)
-        gr->game_finished = false;
+        gr->finished = false;
     else
         if(strcmp(result, "?") == 0 || strcmp(result, "Draw") == 0 ||
             strcmp(result, "0") == 0)
         {
-            gr->game_finished = true;
-            gr->resignation = false;
-            gr->final_score = 0;
+            finished = true;
         }
         else
             if(result[0] == 'B')
             {
-                gr->game_finished = true;
+                finished = true;
                 if(strlen(result) > 2)
                 {
                     result += 2;
                     if(result[0] == 'R')
                     {
-                        gr->resignation = true;
-                        gr->final_score = 1;
+                        resignation = true;
+                        final_score = 1;
                     }
                     else
                         if(result[0] == 'T')
                         {
-                            gr->final_score = 1;
+                            timeout = true;
+                            final_score = 1;
                         }
                         else
                         {
@@ -344,28 +381,29 @@ tes");
                                     illegal_final_score_warned = true;
                                     flog_warn("sgff", "illegal result format");
                                 }
-                                release(tmp);
-                                return false;
+                                finished = false;
+                                goto after_game_result;
                             }
-                            gr->final_score = (d32)(f * 2.0);
+                            final_score = (d32)(f * 2.0);
                         }
                 }
             }
             else
             {
-                gr->game_finished = true;
+                finished = true;
                 if(strlen(result) > 2)
                 {
                     result += 2;
                     if(result[0] == 'R')
                     {
-                        gr->resignation = true;
-                        gr->final_score = -1;
+                        resignation = true;
+                        final_score = -1;
                     }
                     else
                         if(result[0] == 'T')
                         {
-                            gr->final_score = -1;
+                            timeout = true;
+                            final_score = -1;
                         }
                         else
                         {
@@ -376,13 +414,15 @@ tes");
                                     illegal_final_score_warned = true;
                                     flog_warn("sgff", "illegal result format");
                                 }
-                                release(tmp);
-                                return false;
+                                finished = false;
+                                goto after_game_result;
                             }
-                            gr->final_score = (d32)(f * -2.0);
+                            final_score = (d32)(f * -2.0);
                         }
                 }
             }
+
+after_game_result:
     release(tmp);
 
     /*
@@ -452,6 +492,11 @@ tes");
         }
     }
 
+    gr->finished = finished;
+    gr->resignation = resignation;
+    gr->timeout = timeout;
+    gr->final_score = final_score;
+
     return true;
 }
 
@@ -469,9 +514,8 @@ bool import_game_from_sgf(
         return false;
     }
 
-    bool ret = import_game_from_sgf2(gr, filename, buf);
+    bool ret = import_game_from_sgf2(gr, filename, buf, MAX_FILE_SIZ);
     free(buf);
 
     return ret;
 }
-

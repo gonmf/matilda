@@ -8,18 +8,18 @@ The commands supported are: quit, resign, undo and specifying plays (coordinates
 or pass).
 */
 
-#include "matilda.h"
+#include "config.h"
 
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 
 #include "alloc.h"
-#include "analysis.h"
 #include "board.h"
 #include "engine.h"
 #include "flog.h"
 #include "game_record.h"
+#include "mcts.h"
 #include "pts_file.h"
 #include "scoring.h"
 #include "sgf.h"
@@ -33,9 +33,8 @@ extern game_record current_game;
 extern time_system current_clock_black;
 extern time_system current_clock_white;
 extern bool save_all_games_to_file;
+extern bool pass_when_losing;
 extern u32 limit_by_playouts;
-
-static u8 tips = 3;
 
 static void update_names(
     bool human_is_black
@@ -100,8 +99,8 @@ Simple function selecting the next play in text mode.
 */
 static void text_genmove(
     bool is_black,
-    bool * passed,
-    bool * resigned
+    bool * restrict passed,
+    bool * restrict resigned
 ){
     out_board out_b;
     board current_state;
@@ -127,17 +126,18 @@ static void text_genmove(
 
     if(!has_play)
     {
-#if CAN_RESIGN
-        *resigned = true;
-        return;
-#else
-        *resigned = false;
-#endif
-        *passed = true;
+        if(pass_when_losing)
+            *resigned = true;
+        else
+            *passed = true;
         return;
     }
 
-    move m = select_play(&out_b, is_black, &current_game);
+    move m;
+    if(out_b.pass >= JUST_PASS_WINRATE)
+        m = PASS;
+    else
+        m = select_play(&out_b, is_black, &current_game);
 
     add_play(&current_game, m);
 
@@ -145,17 +145,18 @@ static void text_genmove(
 }
 
 static void text_newgame(
-    bool * human_player_color,
-    bool * is_black
+    bool * restrict human_player_color,
+    bool * restrict is_black
 ){
     if(save_all_games_to_file && current_game.turns > 0)
     {
-        char filename[32];
+        char * filename = alloc();
         if(export_game_as_sgf_auto_named(&current_game, filename))
             fprintf(stderr, "Game record written to %s.\n", filename);
         else
             fprintf(stderr, "Error encountered when attempting to write game re\
 cord to file.\n");
+        release(filename);
     }
 
     fprintf(stderr,
@@ -172,7 +173,6 @@ cord to file.\n");
             clear_game_record(&current_game);
             new_match_maintenance();
             update_names(*human_player_color);
-            tips = 3;
             return;
         }
         if(c == 'n' || c == 'N')
@@ -188,7 +188,6 @@ cord to file.\n");
             clear_game_record(&current_game);
             update_names(*human_player_color);
             new_match_maintenance();
-            tips = 3;
             return;
         }
     }
@@ -267,6 +266,8 @@ signation.\n\n", s);
 
             if(resigned)
             {
+                current_game.finished = true;
+                current_game.resignation = true;
                 fprintf(stderr, "\n\"I resign. Thank you for the game.\"\n\n");
 
                 fprintf(stderr, "%s (%c) wins by resignation.\n\n", is_black ?
@@ -280,6 +281,7 @@ signation.\n\n", s);
             {
                 if(last_played_pass)
                 {
+                    current_game.finished = true;
                     fprintf(stderr, "Computer passes, game is over.\n");
                     text_print_score();
                     fprintf(stderr, "\n");
@@ -310,7 +312,7 @@ signation.\n\n", s);
             coord_to_num_num(mstr, coord_to_move(3, 3));
 #endif
             fprintf(stderr, "(Type the board position, like %s, or undo/pass/re\
-sign/tip/score/quit)\n", mstr);
+sign/score/quit)\n", mstr);
             release(mstr);
         }
         while(1)
@@ -321,7 +323,7 @@ sign/tip/score/quit)\n", mstr);
 
             char * line = fgets(buf, MAX_PAGE_SIZ, stdin);
             if(line == NULL)
-                continue;
+                flog_crit("text", "standard input file descriptor closed");
 
             line = trim(buf);
             if(line == NULL)
@@ -336,6 +338,8 @@ sign/tip/score/quit)\n", mstr);
 
             if(strcmp(line, "resign") == 0)
             {
+                current_game.finished = true;
+                current_game.resignation = true;
                 fprintf(stderr, "%s (%c) wins by resignation.\n\n", is_black ?
                     "White" : "Black", is_black ? WHITE_STONE_CHAR :
                     BLACK_STONE_CHAR);
@@ -354,25 +358,6 @@ sign/tip/score/quit)\n", mstr);
                 fprintf(stderr, "Type the board position, like %s, or undo/pass\
 /resign/score/quit\n\n", mstr);
                 release(mstr);
-                continue;
-            }
-
-            if(strcmp(line, "tip") == 0)
-            {
-                if(tips > 0)
-                {
-                    current_game_state(&current_state, &current_game);
-                    char * buffer = alloc();
-                    request_opinion(buffer, &current_state, is_black, 1000);
-                    fprintf(stderr, "%s", buffer);
-                    release(buffer);
-                    --tips;
-                }
-
-                if(tips == 0)
-                    fprintf(stderr, "You have no tips left.\n");
-                else
-                    fprintf(stderr, "You now have %u/3 tips left.\n", tips);
                 continue;
             }
 
@@ -406,6 +391,7 @@ sign/tip/score/quit)\n", mstr);
             {
                 if(last_played_pass)
                 {
+                    current_game.finished = true;
                     fprintf(stderr, "Two passes in a row, game is over.\n");
                     text_print_score();
                     fprintf(stderr, "\n");
@@ -420,4 +406,3 @@ sign/tip/score/quit)\n", mstr);
         }
     }
 }
-

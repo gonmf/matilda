@@ -9,6 +9,6 @@
 %section player
      name      matilda_1.21
      password  PASSWORD_HERE
-     invoke    ../src/matilda -m gtp -d ../src/data/ -l --think_in_opt_time
+     invoke    ../src/matilda -m gtp -d ../src/data/ --losing pass -l --think_in_opt_time
      priority  1
 

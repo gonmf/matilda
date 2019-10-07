@@ -11,7 +11,7 @@ purpose of eye counting.
 #ifndef MATILDA_TACTICAL_H
 #define MATILDA_TACTICAL_H
 
-#include "matilda.h"
+#include "config.h"
 
 #include "cfg_board.h"
 #include "move.h"
@@ -178,7 +178,7 @@ intersections adjacent to liberties of nearby groups, plus the 3x3 neighborhood
 of the intersection m. near_pos is cleared before marking.
 */
 void mark_near_pos(
-    bool near_pos[TOTAL_BOARD_SIZ],
+    bool near_pos[static TOTAL_BOARD_SIZ],
     const cfg_board * cb,
     move m
 );
@@ -239,4 +239,3 @@ void can_be_saved_all(
 
 
 #endif
-

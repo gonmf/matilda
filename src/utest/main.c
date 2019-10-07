@@ -1,4 +1,4 @@
-#include "matilda.h"
+#include "config.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -12,7 +12,10 @@
 #include "engine.h"
 #include "flog.h"
 #include "game_record.h"
+#include "mcts.h"
+#include "opening_book.h"
 #include "pat3.h"
+#include "pts_file.h"
 #include "randg.h"
 #include "random_play.h"
 #include "state_changes.h"
@@ -25,7 +28,8 @@
 extern u16 iv_3x3[TOTAL_BOARD_SIZ][TOTAL_BOARD_SIZ][3];
 
 static char _ts[MAX_PAGE_SIZ];
-static char * _timestamp(){
+static char * _timestamp()
+{
     timestamp(_ts);
     return _ts;
 }
@@ -188,7 +192,8 @@ static void test_cfg_board()
     fprintf(stderr, " passed\n");
 }
 
-static void test_pattern(){
+static void test_pattern()
+{
     fprintf(stderr, "%s: patterns...", _timestamp());
     u16 v1 = rand_u16(65535);
     u8 v[3][3];
@@ -640,7 +645,11 @@ int main()
     rand_init();
     board_constants_init();
     zobrist_init();
-
+    opening_book_init();
+    mcts_init();
+    load_handicap_points();
+    load_hoshi_points();
+    load_starting_points();
 
 #if 1
     omp_set_num_threads(1);

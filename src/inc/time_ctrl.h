@@ -8,15 +8,9 @@ say anything. All times are in milliseconds.
 #ifndef MATILDA_TIME_CTRL_H
 #define MATILDA_TIME_CTRL_H
 
-#include "matilda.h"
+#include "config.h"
 
 #include "types.h"
-
-/*
-If disabled then latency compensation falls back to the value set in the
-constant DETECT_NETWORK_LATENCY.
-*/
-#define DETECT_NETWORK_LATENCY false
 
 
 /*
@@ -24,25 +18,25 @@ How much time a play should be given over the linear distribution of time for
 the match. Values over 1 favor thinking more in the begining of matches, which
 is the objective.
 */
-#define TIME_ALLOT_FACTOR 1.24
+#define TIME_ALLOT_FACTOR 1.22
 
 
 #define EXPECTED_GAME_LENGTH ((TOTAL_BOARD_SIZ * 2) / 3)
 
 
 typedef struct __time_system_ {
-	bool can_timeout;
-	bool timed_out;
+    bool can_timeout;
+    bool timed_out;
 
-	u32 main_time;
-	u32 byo_yomi_stones;
-	u32 byo_yomi_time;
-	u32 byo_yomi_periods;
+    u32 main_time;
+    u32 byo_yomi_stones;
+    u32 byo_yomi_time;
+    u32 byo_yomi_periods;
 
-	u32 main_time_remaining;
-	u32 byo_yomi_stones_remaining;
-	u32 byo_yomi_time_remaining;
-	u32 byo_yomi_periods_remaining;
+    u32 main_time_remaining;
+    u32 byo_yomi_stones_remaining;
+    u32 byo_yomi_time_remaining;
+    u32 byo_yomi_periods_remaining;
 } time_system;
 
 

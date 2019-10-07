@@ -5,7 +5,7 @@ Miscellanea C string functions.
 #ifndef MATILDA_STRINGM_H
 #define MATILDA_STRINGM_H
 
-#include "matilda.h"
+#include "config.h"
 
 #include "types.h"
 #include "move.h"
@@ -60,17 +60,17 @@ Produces a copy of the string between the tokens; or empty
 */
 void str_between(
     char * dst,
-    const char * s,
-    const char * start,
-    const char * end
+    const char * restrict s,
+    const char * restrict start,
+    const char * restrict end
 );
 
 /*
 RETURNS true if s is equal or contains h
 */
 bool starts_with(
-    const char * s,
-    const char * h
+    const char * restrict s,
+    const char * restrict h
 );
 
 /*
@@ -79,6 +79,15 @@ RETURNS true if valid
 */
 bool parse_int(
     d32 * i,
+    const char * s
+);
+
+/*
+Parses a 32-bit unsigned integer.
+RETURNS true if valid
+*/
+bool parse_uint(
+    u32 * i,
     const char * s
 );
 
@@ -139,10 +148,9 @@ Damerau-levenshtein edit distance.
 RETURNS the edit distance between two strings
 */
 u8 levenshtein_dst(
-    const char * s1,
-    const char * s2
+    const char * restrict s1,
+    const char * restrict s2
 );
 
 
 #endif
-

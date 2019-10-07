@@ -9,7 +9,7 @@ Writing to files is synchronous (with fsync) to avoid loss of data in case of
 crashes, but it is impossible to guarantee this in all cases.
 */
 
-#include "matilda.h"
+#include "config.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -32,7 +32,7 @@ crashes, but it is impossible to guarantee this in all cases.
 #include "version.h"
 
 static int log_file = -1;
-static char log_filename[64];
+
 /*
 By default print everything to standard output. Only the main matilda executable
 changes this by default.
@@ -150,9 +150,9 @@ static bool multiline(
 }
 
 static void flog(
-    const char * severity,
-    const char * context,
-    const char * msg
+    const char * restrict severity,
+    const char * restrict context,
+    const char * restrict msg
 ){
     if(!log_dest)
         return;
@@ -199,8 +199,9 @@ static void open_log_file()
 {
     if(log_file == -1)
     {
-        log_file = create_and_open_file(log_filename, 64, false, "matilda",
-            "log");
+        char * log_filename = alloc();
+        log_file = create_and_open_file(log_filename, MAX_PAGE_SIZ, "matilda", "log");
+        release(log_filename);
         if(log_file == -1)
         {
             fprintf(stderr, "Failed to create log file.\n");
@@ -267,15 +268,11 @@ void build_info(
         kstr);
     release(kstr);
 
-    idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx, "Can resign: %s\n",
-        YN(CAN_RESIGN));
-    if(CAN_RESIGN)
-    {
-        idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx,
-            "  Bellow win rate: %.2f\n", UCT_RESIGN_WINRATE);
-        idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx,
-            "  Minimum simulations: %u\n", UCT_RESIGN_PLAYOUTS);
-    }
+    idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx,
+        "Resign/pass bellow win rate: %.2f\n", UCT_RESIGN_WINRATE);
+    idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx,
+        "  Minimum simulations: %u\n", UCT_RESIGN_PLAYOUTS);
+
     idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx, "Can stop MCTS early: %s\n",
         YN(UCT_CAN_STOP_EARLY));
     if(UCT_CAN_STOP_EARLY)
@@ -318,7 +315,7 @@ void build_info(
     }
     idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx,
         "  Stone value scale factor: %.1f\n", prior_stone_scale_factor);
-    idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx, "  Even: %u\n",
+    idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx, "  Even: %u (x2)\n",
         prior_even);
     idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx, "  Nakade: %u\n",
         prior_nakade);
@@ -349,8 +346,6 @@ void build_info(
         "Mercy threshold: %u stones\n", MERCY_THRESHOLD);
 
     idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx,
-        "Detect network latency: %s\n", YN(DETECT_NETWORK_LATENCY));
-    idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx,
         "Constant latency compensation: %u ms\n", LATENCY_COMPENSATION);
     idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx,
         "Time allotment factor: %.2f\n", TIME_ALLOT_FACTOR);
@@ -377,8 +372,8 @@ void build_info(
 Log a message with verbosity level critical.
 */
 void flog_crit(
-    const char * ctx,
-    const char * msg
+    const char * restrict ctx,
+    const char * restrict msg
 ){
     if((log_mode & LOG_MODE_ERROR) != 0)
     {
@@ -396,8 +391,8 @@ void flog_crit(
 Log a message with verbosity level warning.
 */
 void flog_warn(
-    const char * ctx,
-    const char * msg
+    const char * restrict ctx,
+    const char * restrict msg
 ){
     if((log_mode & LOG_MODE_WARN) != 0)
         flog("warn", ctx, msg);
@@ -408,8 +403,8 @@ void flog_warn(
 Log a message with verbosity level communication protocol.
 */
 void flog_prot(
-    const char * ctx,
-    const char * msg
+    const char * restrict ctx,
+    const char * restrict msg
 ){
     if((log_mode & LOG_MODE_PROT) != 0)
         flog("prot", ctx, msg);
@@ -420,8 +415,8 @@ void flog_prot(
     Log a message with verbosity level informational.
 */
 void flog_info(
-    const char * ctx,
-    const char * msg
+    const char * restrict ctx,
+    const char * restrict msg
 ){
     if((log_mode & LOG_MODE_INFO) != 0)
         flog("info", ctx, msg);
@@ -432,11 +427,9 @@ void flog_info(
     Log a message with verbosity level debug.
 */
 void flog_debug(
-    const char * ctx,
-    const char * msg
+    const char * restrict ctx,
+    const char * restrict msg
 ){
     if((log_mode & LOG_MODE_DEBUG) != 0)
         flog("dbug", ctx, msg);
 }
-
-

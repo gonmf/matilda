@@ -1,7 +1,7 @@
 #ifndef MATILDA_TYPES_H
 #define MATILDA_TYPES_H
 
-#include "matilda.h"
+#include "config.h"
 
 #include <stdint.h>
 #include <stdbool.h>

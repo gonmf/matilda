@@ -7,12 +7,21 @@ the private command extensions supported.
 
 Reference: http://www.lysator.liu.se/~gunnar/gtp/gtp2-spec-draft2/gtp2-spec.html
 
+
 boardsize -- the command fails if the board size requested is different than the
-expected value set at compile time.
+value set at compile time. Furthermore, if no argument is given the command
+succeeds and returns the current board size.
 
 
-final_status_list -- Matilda always prefers playing to passing and as such will
-kill dead groups; when answering this command it will always mark all stones as
+komi -- the command also accepts no parameters, returning the current komidashi.
+
+
+loadsgf -- the command fails if the game to be loaded uses a board size
+different from the value set at compile time.
+
+
+final_status_list -- Matilda may prefer playing to passing and, as such, kill
+dead groups; when answering this command it will always mark all stones as
 alive, not identifying life in seki.
 
 
@@ -73,16 +82,16 @@ gomill-describe_engine
 
 2.4 Matilda Commands
 
-mtld-last_evaluation -- returns in multi-line format the last full board
-evaluation. It may not cover all plays if the last strategy ran only evaluated
-part of them.
+mtld-game_info -- display current game information including the sequence of all
+plays, player names and game result if any.
 Arguments: none
 Fails: never
 
 
-mtld-ponder -- returns description of the state of the game and possible
-followups.
-Arguments: time available to think, in seconds
+mtld-last_evaluation -- returns in multi-line format the last full board
+evaluation. It may not cover all plays if the last strategy ran only evaluated
+part of them.
+Arguments: none
 Fails: never
 
 
@@ -102,5 +111,3 @@ Fails: syntax error
 exit -- alias to quit command.
 Arguments: none
 Fails: never
-
-

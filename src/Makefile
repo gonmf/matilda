@@ -22,6 +22,7 @@ LDFLAGS += -lm
 # GCC > 4.9 only
 # CFLAGS += -fdiagnostics-color=auto
 
+
 COMMIT := $(shell git rev-parse --short HEAD 2> /dev/null)
 
 CFLAGS += -DCOMMITN='"$(COMMIT)"'
@@ -34,7 +35,6 @@ DEPFILES := $(patsubst %.o,%.d,$(OBJFILES))
 
 PROGRAMS := matilda test gen_opening_book learn_best_plays learn_pat_weights \
 	gen_zobrist_table
-# gen_joseki_book
 
 .PHONY: $(PROGRAMS) clean
 
@@ -58,16 +58,14 @@ learn_pat_weights: $(OBJFILES) pat_weights/*.c
 gen_zobrist_table: $(OBJFILES) zobrist/*.c
 	@$(CC) $^ $(CFLAGS) $(LDFLAGS) -o $@
 
-#gen_joseki_book: $(OBJFILES) joseki/*.c
-#	@$(CC) $^ $(CFLAGS) $(LDFLAGS) -o $@
-
 %.o: %.c
 	@$(CC) -c -o $@ $< $(CFLAGS)
 
 -include $(DEPFILES)
 
 tidy:
-	@$(RM) -f callgrind.out.* matilda*.log tuning.log *.o mcts/*.o *.d mcts/*.d
+	@$(RM) -f callgrind.out.* matilda*.log tuning.log *.o mcts/*.o *.d \
+		mcts/*.d data/matilda*.log
 
 clean: tidy
 	@$(RM) -f $(PROGRAMS)

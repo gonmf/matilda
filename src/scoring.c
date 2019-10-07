@@ -4,7 +4,7 @@ Functions for board scoring that take komi and dynamic komi into consideration.
 Remember that in Matilda, scores and komi are always doubled to become integer.
 */
 
-#include "matilda.h"
+#include "config.h"
 
 #include <string.h>
 #include <stdio.h>
@@ -78,7 +78,7 @@ Scoring by counting stones on the board only.
 RETURNS positive score for a black win; negative for a white win; 0 for a draw
 */
 d16 score_stones_only(
-    const u8 p[TOTAL_BOARD_SIZ]
+    const u8 p[static TOTAL_BOARD_SIZ]
 ){
     d16 r = 0;
     for(move m = 0; m < TOTAL_BOARD_SIZ; ++m)
@@ -168,11 +168,11 @@ d16 score_stones_and_eyes(
 
 
 static void _search(
-    const u8 p[TOTAL_BOARD_SIZ],
+    const u8 p[static TOTAL_BOARD_SIZ],
     move m,
-    bool explored[TOTAL_BOARD_SIZ],
-    bool * black,
-    bool * white
+    bool explored[static TOTAL_BOARD_SIZ],
+    bool * restrict black,
+    bool * restrict white
 ){
     u8 x;
     u8 y;
@@ -240,7 +240,7 @@ static void _search(
 }
 
 static void _apply(
-    u8 p[TOTAL_BOARD_SIZ],
+    u8 p[static TOTAL_BOARD_SIZ],
     move m,
     u8 val
 ){
@@ -279,7 +279,7 @@ not remove dead stones.
 RETURNS positive score for a black win; negative for a white win; 0 for a draw
 */
 d16 score_stones_and_area(
-    const u8 p[TOTAL_BOARD_SIZ]
+    const u8 p[static TOTAL_BOARD_SIZ]
 ){
     /* explored intersections array is only used for empty intersections */
     bool explored[TOTAL_BOARD_SIZ];

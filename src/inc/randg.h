@@ -9,7 +9,7 @@ unlikely) for floating point functions.
 #ifndef MATILDA_RANDG_H
 #define MATILDA_RANDG_H
 
-#include "matilda.h"
+#include "config.h"
 
 #include "types.h"
 

@@ -14,7 +14,7 @@ crashes, but it is impossible to guarantee this in all cases.
 #ifndef MATILDA_FLOG_H
 #define MATILDA_FLOG_H
 
-#include "matilda.h"
+#include "config.h"
 
 #include "types.h"
 
@@ -63,40 +63,40 @@ void build_info(
 Log a message with verbosity level critical.
 */
 void flog_crit(
-    const char * ctx,
-    const char * msg
+    const char * restrict ctx,
+    const char * restrict msg
 );
 
 /*
 Log a message with verbosity level warning.
 */
 void flog_warn(
-    const char * ctx,
-    const char * msg
+    const char * restrict ctx,
+    const char * restrict msg
 );
 
 /*
 Log a message with verbosity level communication protocol.
 */
 void flog_prot(
-    const char * ctx,
-    const char * msg
+    const char * restrict ctx,
+    const char * restrict msg
 );
 
 /*
     Log a message with verbosity level informational.
 */
 void flog_info(
-    const char * ctx,
-    const char * msg
+    const char * restrict ctx,
+    const char * restrict msg
 );
 
 /*
     Log a message with verbosity level debug.
 */
 void flog_debug(
-    const char * ctx,
-    const char * msg
+    const char * restrict ctx,
+    const char * restrict msg
 );
 
 #endif

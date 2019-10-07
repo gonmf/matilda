@@ -2,7 +2,7 @@
 Application for the production of Fuego book from SGF game collections.
 */
 
-#include "matilda.h"
+#include "config.h"
 
 #include <unistd.h>
 #include <stdlib.h>
@@ -49,8 +49,8 @@ static u32 hash_function(
 }
 
 static int compare_function(
-    const void * o1,
-    const void * o2
+    const void * restrict o1,
+    const void * restrict o2
 ){
     simple_state_transition * s1 = (simple_state_transition *)o1;
     simple_state_transition * s2 = (simple_state_transition *)o2;
@@ -252,7 +252,7 @@ d. (default: %u)\n", minimum_samples);
         if(!no_print)
             printf("%u/%u: %s", fid + 1, filenames_found, filenames[fid]);
 
-        if(!import_game_from_sgf2(gr, filenames[fid], buf))
+        if(!import_game_from_sgf2(gr, filenames[fid], buf, MAX_FILE_SIZ))
         {
             if(!no_print)
                 printf(" skipped\n");
@@ -273,6 +273,14 @@ d. (default: %u)\n", minimum_samples);
             continue;
         }
 
+        /* Only use winner plays so ignore games without score */
+        if(gr->final_score == 0)
+        {
+            if(!no_print)
+                printf(" skipped\n");
+            continue;
+        }
+
         board b;
         clear_board(&b);
 
@@ -280,9 +288,11 @@ d. (default: %u)\n", minimum_samples);
         if(!no_print)
             printf(" (%u)\n", gr->turns);
 
-        bool is_black = true;
+        bool winner_is_black = gr->final_score > 0;
+        bool is_black = false;
         for(d16 k = 0; k < MIN(ob_depth, gr->turns); ++k)
         {
+            is_black = !is_black;
             move m = gr->moves[k];
 
             /* Stop at the first play that is a pass */
@@ -293,6 +303,16 @@ d. (default: %u)\n", minimum_samples);
             u8 libs = libs_after_play_slow(&b, is_black, m, &caps);
             if(libs < 1 || caps > 0)
                 break;
+
+            if(is_black != winner_is_black)
+            {
+                if(!attempt_play_slow(&b, is_black, m))
+                {
+                    fprintf(stderr, "\rerror: file contains illegal plays\n");
+                    exit(EXIT_FAILURE);
+                }
+                continue;
+            }
 
             ++plays_used;
 
@@ -335,8 +355,6 @@ d. (default: %u)\n", minimum_samples);
             }
             else /* reusing state */
                 entry->count[m]++;
-
-            is_black = !is_black;
         }
     }
 

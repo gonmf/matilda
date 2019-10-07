@@ -16,9 +16,6 @@ The files recognized by Matilda are:
 - NxN.ob - Opening book in text/Fuego-style format. Rules that are read first
     have precedence over later appearances.
 
-- *.joseki - Joseki dictionary in text format. Matilda will read any that it
-    finds. Repeated patterns are ignored.
-
 - *.pat3 - Text file with 3x3 patterns centered on a promising play.
 
 - NxN.weights - Text file with pattern weights. These two do not have to agree
@@ -29,6 +26,5 @@ The files recognized by Matilda are:
 - *.log - Text file used for event logging. Created by default in the working
     directory.
 
-- *.pts - Text file with lists of points used for handicap, hoshi and other 
+- *.pts - Text file with lists of points used for handicap, hoshi and other
     stone placement. Similar in format to .ob files.
-

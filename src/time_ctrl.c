@@ -5,7 +5,7 @@ does not necessarily interrupt the match, if the time keeping referee doesn't
 say anything. All times are in milliseconds.
 */
 
-#include "matilda.h"
+#include "config.h"
 
 #include <string.h>
 
@@ -15,8 +15,6 @@ say anything. All times are in milliseconds.
 #include "time_ctrl.h"
 #include "types.h"
 
-u32 network_roundtrip_delay = LATENCY_COMPENSATION;
-bool network_round_trip_set = false;
 
 double time_allot_factor = TIME_ALLOT_FACTOR;
 
@@ -57,12 +55,7 @@ u32 calc_time_to_play(
     /*
     Network lag correction
     */
-#if DETECT_NETWORK_LATENCY
-    if(network_round_trip_set && t_t > network_roundtrip_delay)
-        t_t -= network_roundtrip_delay;
-#else
     t_t -= LATENCY_COMPENSATION;
-#endif
 
     return (u32)MAX(t_t, 50);
 }
@@ -232,7 +225,9 @@ void time_system_to_str(
     release(abs);
 }
 
-static d32 str_to_milliseconds(const char * s){
+static d32 str_to_milliseconds(
+    const char * s
+){
     char * char_idx = strchr(s, 'm');
     d32 mul = 0; /* multiplier */
     if(char_idx != NULL)
@@ -300,8 +295,8 @@ static bool _process_nr_periods(
     time_system * dst,
     const char * src
 ){
-    d32 i;
-    if(!parse_int(&i, src) || i <= 0)
+    u32 i;
+    if(!parse_uint(&i, src))
         return false;
 
     dst->byo_yomi_periods = i;
@@ -324,8 +319,8 @@ static bool _process_period_stones(
     time_system * dst,
     const char * src
 ){
-    d32 i;
-    if(!parse_int(&i, src) || i < 0)
+    u32 i;
+    if(!parse_uint(&i, src))
         return false;
 
     dst->byo_yomi_stones = i;

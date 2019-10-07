@@ -45,7 +45,7 @@ distribution with a compatible license. No permission was asked or given by the
 original authors. For licensing enquiries contact the authors of matilda.
 */
 
-#include "matilda.h"
+#include "config.h"
 
 #include "types.h"
 

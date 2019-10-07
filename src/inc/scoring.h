@@ -7,7 +7,7 @@ Remember that in Matilda, scores and komi are always doubled to become integer.
 #ifndef MATILDA_SCORING_H
 #define MATILDA_SCORING_H
 
-#include "matilda.h"
+#include "config.h"
 
 #include "types.h"
 #include "board.h"
@@ -35,7 +35,7 @@ Scoring by counting stones on the board only.
 RETURNS positive score for a black win; negative for a white win; 0 for a draw
 */
 d16 score_stones_only(
-    const u8 p[TOTAL_BOARD_SIZ]
+    const u8 p[static TOTAL_BOARD_SIZ]
 );
 
 /*
@@ -60,7 +60,7 @@ not remove dead stones.
 RETURNS positive score for a black win; negative for a white win; 0 for a draw
 */
 d16 score_stones_and_area(
-    const u8 p[TOTAL_BOARD_SIZ]
+    const u8 p[static TOTAL_BOARD_SIZ]
 );
 
 #endif

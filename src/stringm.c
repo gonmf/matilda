@@ -2,11 +2,13 @@
 Miscellanea C string functions.
 */
 
-#include "matilda.h"
+#include "config.h"
 
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include <errno.h>
+#include <math.h>
 
 #include "alloc.h"
 #include "board.h"
@@ -117,9 +119,9 @@ Produces a copy of the string between the tokens; or empty
 */
 void str_between(
     char * dst,
-    const char * s,
-    const char * start,
-    const char * end
+    const char * restrict s,
+    const char * restrict start,
+    const char * restrict end
 ){
     char * t = strstr(s, start);
     if(t == NULL)
@@ -145,8 +147,8 @@ void str_between(
 RETURNS true if s is equal or contains h
 */
 bool starts_with(
-    const char * s,
-    const char * h
+    const char * restrict s,
+    const char * restrict h
 ){
     u16 i = 0;
     while(h[i])
@@ -154,6 +156,34 @@ bool starts_with(
         if(s[i] != h[i])
             return false;
         ++i;
+    }
+    return true;
+}
+
+static bool char_match(
+    char c,
+    const char * hay
+){
+    while(*hay)
+    {
+        if(c == *hay)
+        {
+            return true;
+        }
+        ++hay;
+    }
+    return false;
+}
+
+static bool string_match(
+    const char * restrict s,
+    const char * restrict hay
+){
+    while(*s)
+    {
+        if(!char_match(*s, hay))
+            return false;
+        ++s;
     }
     return true;
 }
@@ -166,13 +196,37 @@ bool parse_int(
     d32 * i,
     const char * s
 ){
-    if(s[0] != '-' && (s[0] < '0' || s[0] > '9'))
-        return false;
-    for(u32 j = 1; s[j]; ++j)
-        if(s[j] < '0' || s[j] > '9')
+    if(strlen(s) < 2)
+    {
+        if(!string_match(s, "1234567890"))
             return false;
-    *i = atoi(s);
-    return true;
+    }
+    else
+    {
+        if(!char_match(*s, "+-1234567890") ||
+            !string_match(s + 1, "1234567890"))
+            return false;
+    }
+
+    errno = 0;
+    *i = (d32)strtol(s, NULL, 0);
+    return !(errno == ERANGE || errno == EINVAL);
+}
+
+/*
+Parses a 32-bit unsigned integer.
+RETURNS true if valid
+*/
+bool parse_uint(
+    u32 * i,
+    const char * s
+){
+    if(!string_match(s, "1234567890"))
+        return false;
+
+    errno = 0;
+    *i = (u32)strtol(s, NULL, 0);
+    return !(errno == ERANGE || errno == EINVAL);
 }
 
 /*
@@ -183,28 +237,12 @@ bool parse_float(
     double * d,
     const char * s
 ){
-    bool dot_found = false;
-    if(s[0] == '.')
-        dot_found = true;
-    else
-        if(s[0] != '-' && (s[0] < '0' || s[0] > '9'))
-            return false;
+    if(!string_match(s, "1234567890,.Ee+-XxPp"))
+        return false;
 
-    for(u32 j = 1; s[j]; ++j)
-    {
-        if(s[j] == '.')
-        {
-            if(dot_found)
-                return false;
-            dot_found = true;
-        }
-        else
-            if(s[j] < '0' || s[j] > '9')
-                return false;
-    }
-
-    *d = atof(s);
-    return true;
+    errno = 0;
+    *d = strtod(s, NULL);
+    return !(errno == ERANGE || isnan(*d) || isinf(*d));
 }
 
 
@@ -292,15 +330,15 @@ void format_mem_size(
 ){
     char * suffix = "bytes";
     double fbytes = (double)bytes;
-    if(fbytes > 1280.0)
+    if(fbytes > 800.0)
     {
         fbytes /= 1024.0;
         suffix = "KiB";
-        if(fbytes > 1280.0)
+        if(fbytes > 800.0)
         {
             fbytes /= 1024.0;
             suffix = "MiB";
-            if(fbytes > 1280.0)
+            if(fbytes > 800.0)
             {
                 fbytes /= 1024.0;
                 suffix = "GiB";
@@ -325,15 +363,15 @@ void format_nr_millis(
 
     char * suffix = NULL;
     double fmillis = (double)millis;
-    if(fmillis > 1200.0)
+    if(fmillis > 750.0)
     {
         fmillis /= 1000.0;
         suffix = "s";
-        if(fmillis > 72.0)
+        if(fmillis > 45.0)
         {
             fmillis /= 60.0;
             suffix = "m";
-            if(fmillis > 72.0)
+            if(fmillis > 45.0)
             {
                 fmillis /= 60.0;
                 suffix = "h";
@@ -350,8 +388,8 @@ Damerau-levenshtein edit distance.
 RETURNS the edit distance between two strings
 */
 u8 levenshtein_dst(
-    const char * s1,
-    const char * s2
+    const char * restrict s1,
+    const char * restrict s2
 ){
     u8 l1 = strlen(s1);
     u8 l2 = strlen(s2);

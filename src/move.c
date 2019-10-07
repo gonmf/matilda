@@ -12,7 +12,7 @@ If instead using coordinates in the form (x, y), a value of x larger or equal to
 BOARD_SIZ signifies a pass. A "none" play is not represented.
 */
 
-#include "matilda.h"
+#include "config.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -67,8 +67,8 @@ void move_to_coord(
 RETURNS the Manhattan distance between two points
 */
 u8 coord_distance(
-    u8 p1[2],
-    u8 p2[2]
+    const u8 p1[static 2],
+    const u8 p2[static 2]
 ){
     assert(p1[0] < BOARD_SIZ);
     assert(p2[0] < BOARD_SIZ);
@@ -140,13 +140,13 @@ move coord_parse_alpha_num(
 
     char c1 = low_char(s[0]);
     u8 i1 = c1 > 'i' ? c1 - 'b' : c1 - 'a';
-    d32 i2;
-    if(!parse_int(&i2, s + 1))
+    u32 i2;
+    if(!parse_uint(&i2, s + 1))
         return NONE;
 
     i2 = BOARD_SIZ - i2;
 
-    if(i1 >= BOARD_SIZ || i2 >= BOARD_SIZ || i2 < 0)
+    if(i1 >= BOARD_SIZ || i2 >= BOARD_SIZ)
         return NONE;
 
     return coord_to_move(i1, i2);
@@ -194,8 +194,8 @@ move coord_parse_num_num(
     char * c1 = strtok(buf, "-");
     if(c1 == NULL)
         return NONE;
-    d32 i1;
-    if(!parse_int(&i1, c1))
+    u32 i1;
+    if(!parse_uint(&i1, c1))
         return NONE;
     if(i1 < 1 || i1 > BOARD_SIZ)
         return NONE;
@@ -203,8 +203,8 @@ move coord_parse_num_num(
     char * c2 = strtok(NULL, "-");
     if(c2 == NULL)
         return NONE;
-    d32 i2;
-    if(!parse_int(&i2, c2))
+    u32 i2;
+    if(!parse_uint(&i2, c2))
         return NONE;
     if(i2 < 1 || i2 > BOARD_SIZ)
         return NONE;
@@ -267,7 +267,7 @@ Populates a move_seq structure with the moves of distance equal or closer to
 distance, for every intersection of a board.
 */
 void init_moves_by_distance(
-    move_seq neighbours[TOTAL_BOARD_SIZ],
+    move_seq neighbours[static TOTAL_BOARD_SIZ],
     u16 distance,
     bool include_own
 ){

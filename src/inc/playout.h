@@ -18,7 +18,7 @@ And chooses a play based on (by order of importance):
 #ifndef MATILDA_PLAYOUT_H
 #define MATILDA_PLAYOUT_H
 
-#include "matilda.h"
+#include "config.h"
 
 #include "types.h"
 #include "cfg_board.h"
@@ -30,7 +30,7 @@ And chooses a play based on (by order of importance):
 
 
 /*
-Probability of skipping a check in parts of 128 (instead of 100	for performance
+Probability of skipping a check in parts of 128 (instead of 100 for performance
 reasons).
 */
 #if BOARD_SIZ < 12
@@ -72,10 +72,8 @@ RETURNS the final score
 d16 playout_heavy_amaf(
     cfg_board * cb,
     bool is_black,
-    u8 traversed[TOTAL_BOARD_SIZ]
+    u8 traversed[static TOTAL_BOARD_SIZ]
 );
 
 
 #endif
-
-

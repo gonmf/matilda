@@ -2,9 +2,10 @@
 UCT expanded states initialization.
 */
 
-#include "matilda.h"
+#include "config.h"
 
 #include <string.h>
+#include <stdlib.h> /* qsort */
 #include <math.h> /* powf */
 
 #include "board.h"
@@ -17,6 +18,7 @@ UCT expanded states initialization.
 #include "tactical.h"
 #include "transpositions.h"
 #include "types.h"
+
 
 /*
 Public to allow parameter optimization
@@ -32,9 +34,6 @@ u16 prior_near_last = PRIOR_NEAR_LAST;
 u16 prior_line2 = PRIOR_LINE2;
 u16 prior_line3 = PRIOR_LINE3;
 u16 prior_empty = PRIOR_EMPTY;
-u16 prior_line1x = PRIOR_LINE1X;
-u16 prior_line2x = PRIOR_LINE2X;
-u16 prior_line3x = PRIOR_LINE3X;
 u16 prior_corner = PRIOR_CORNER;
 u16 prior_bad_play = PRIOR_BAD_PLAY;
 u16 prior_pass = PRIOR_PASS;
@@ -53,6 +52,12 @@ extern bool border_bottom[TOTAL_BOARD_SIZ];
 extern bool is_starting[TOTAL_BOARD_SIZ];
 
 
+typedef struct __quality_pair_ {
+    double quality;
+    move play;
+} quality_pair;
+
+
 
 static u16 stones_in_manhattan_dst3(
     const cfg_board * cb,
@@ -68,28 +73,44 @@ static u16 stones_in_manhattan_dst3(
     return ret;
 }
 
-static void stats_add_play(
+static void stats_add_play_tmp(
     tt_stats * stats,
     move m,
     u32 mc_w, /* wins */
     u32 mc_v /* visits */
 ){
-    double mc_q = ((double)mc_w) / ((double)mc_v);
     u32 idx = stats->plays_count++;
     stats->plays[idx].m = m;
-    stats->plays[idx].mc_q = mc_q;
+    stats->plays[idx].mc_q = mc_w;
     stats->plays[idx].mc_n = mc_v;
 
-
-    /*
-    Heuristic-MC
-
-    Copying the MC prior values to AMAF and initializing other fields
-    */
     stats->plays[idx].next_stats = NULL;
-    /* AMAF/RAVE */
-    stats->plays[idx].amaf_n = mc_v;
-    stats->plays[idx].amaf_q = mc_q;
+
+    /* LGRF */
+    stats->plays[idx].lgrf1_reply = NULL;
+
+    /* Criticality */
+    stats->plays[idx].owner_winning = 0.5;
+    stats->plays[idx].color_owning = 0.5;
+}
+
+/*
+Heuristic-MC
+
+Copying the MC prior values to AMAF and initializing other fields
+*/
+static void stats_add_play_final(
+    tt_stats * stats,
+    move m,
+    double mc_q, /* quality */
+    u32 mc_v /* visits */
+){
+    u32 idx = stats->plays_count++;
+    stats->plays[idx].m = m;
+    stats->plays[idx].amaf_q = stats->plays[idx].mc_q = mc_q;
+    stats->plays[idx].amaf_n = stats->plays[idx].mc_n = mc_v;
+
+    stats->plays[idx].next_stats = NULL;
 
     /* LGRF */
     stats->plays[idx].lgrf1_reply = NULL;
@@ -127,8 +148,6 @@ void init_new_state(
     cfg_board * cb,
     bool is_black
 ){
-    load_starting_points();
-
     bool near_last_play[TOTAL_BOARD_SIZ];
     if(is_board_move(cb->last_played))
         mark_near_pos(near_last_play, cb, cb->last_played);
@@ -184,6 +203,8 @@ void init_new_state(
         }
     }
 
+    u8 libs_after_playing[TOTAL_BOARD_SIZ];
+    memset(libs_after_playing, 0, TOTAL_BOARD_SIZ);
 
     move ko = get_ko_play(cb);
     stats->plays_count = 0;
@@ -205,7 +226,8 @@ void init_new_state(
         if(ko == m)
             continue;
 
-        u8 libs = safe_to_play(cb, is_black, m);
+        move _ignored;
+        u8 libs = libs_after_play(cb, is_black, m, &_ignored);
 
         /*
         Don't play suicides
@@ -213,11 +235,13 @@ void init_new_state(
         if(libs == 0)
             continue;
 
+        libs_after_playing[m] = libs;
+
         /*
         Even game heuristic
         */
-        u32 mc_w = prior_even / 2;
-        u32 mc_v = prior_even;
+        u32 mc_w = prior_even;
+        u32 mc_v = prior_even * 2;
 
         /*
         Avoid typically poor plays like eye shape
@@ -306,6 +330,7 @@ void init_new_state(
             switch(dst_border)
             {
                 case 0:
+                    // Do not play there at all
                     continue;
                 case 1:
                     mc_v += prior_line2;
@@ -325,23 +350,6 @@ void init_new_state(
                 mc_v += prior_starting_point;
             }
         }
-        else
-        {
-            u8 dst_border = distances_to_border[m];
-            switch(dst_border)
-            {
-                case 0:
-                    mc_v += prior_line1x;
-                    break;
-                case 1:
-                    mc_v += prior_line2x;
-                    break;
-                case 2:
-                    mc_w += prior_line3x;
-                    mc_v += prior_line3x;
-                    break;
-            }
-        }
 
 
         /*
@@ -353,17 +361,26 @@ void init_new_state(
         }
 
 
-        stats_add_play(stats, m, mc_w, mc_v);
+        stats_add_play_tmp(stats, m, mc_w, mc_v);
     }
 
+    /*
+    Transform win/visits into quality/visits statistics and copy MC to
+    AMAF/RAVE statistics
+    */
+    for(u16 i = 0; i < stats->plays_count; ++i)
+    {
+        tt_play * play = &stats->plays[i];
+        play->amaf_q = play->mc_q = play->mc_q / play->mc_n;
+        play->amaf_n = play->mc_n;
+    }
+
+    /*
+    Add pass simulation
+    */
     if(cb->empty.count < TOTAL_BOARD_SIZ / 2 ||
         stats->plays_count < TOTAL_BOARD_SIZ / 8)
     {
-        /*
-        Add pass simulation
-        */
-        stats_add_play(stats, PASS, UCT_RESIGN_WINRATE * prior_pass,
-            prior_pass);
+        stats_add_play_final(stats, PASS, UCT_RESIGN_WINRATE, prior_pass);
     }
 }
-

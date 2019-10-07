@@ -22,7 +22,7 @@ explicitly said so.
 #ifndef MATILDA_CFG_BOARD_H
 #define MATILDA_CFG_BOARD_H
 
-#include "matilda.h"
+#include "config.h"
 
 #include "board.h"
 #include "move.h"
@@ -36,17 +36,17 @@ explicitly said so.
     (((BOARD_SIZ / 2) + 1) * (BOARD_SIZ / 2) + (BOARD_SIZ / 2) + 1)
 
 typedef struct __group_ {
-	bool is_black;
-	u8 unique_groups_idx;
-	u8 liberties;
-	u8 ls[LIB_BITMAP_SIZ];
-	move liberties_min_coord;
-	move_seq stones; /* stone 0 if used as representative */
-	u8 neighbors_count;
-	move neighbors[MAX_NEIGHBORS]; /* move id of neighbors */
-	u8 eyes;
-	u8 borrowed_eyes;
-	struct __group_ * next;
+    bool is_black;
+    u8 unique_groups_idx;
+    u8 liberties;
+    u8 ls[LIB_BITMAP_SIZ];
+    move liberties_min_coord;
+    move_seq stones; /* stone 0 if used as representative */
+    u8 neighbors_count;
+    move neighbors[MAX_NEIGHBORS]; /* move id of neighbors */
+    u8 eyes;
+    u8 borrowed_eyes;
+    struct __group_ * next;
 } group;
 
 /*
@@ -55,18 +55,18 @@ to that group, and the g field specifies the group that possesses a certain
 intersection (or NULL). So to get the group do cb->g[unique_groups[idx]].
 */
 typedef struct __cfg_board_ {
-	u8 p[TOTAL_BOARD_SIZ];
-	move last_eaten;
-	move last_played;
-	u16 hash[TOTAL_BOARD_SIZ]; /* hash of the 3x3 neighborhoods */
-	move_seq empty; /* free positions of the board */
-	u8 black_neighbors4[TOTAL_BOARD_SIZ]; /* stones in the neighborhood */
-	u8 white_neighbors4[TOTAL_BOARD_SIZ];
-	u8 black_neighbors8[TOTAL_BOARD_SIZ];
-	u8 white_neighbors8[TOTAL_BOARD_SIZ];
-	u8 unique_groups_count;
-	move unique_groups[MAX_GROUPS];
-	group * g[TOTAL_BOARD_SIZ]; /* CFG stone groups or NULL if empty */
+    u8 p[TOTAL_BOARD_SIZ];
+    move last_eaten;
+    move last_played;
+    u16 hash[TOTAL_BOARD_SIZ]; /* hash of the 3x3 neighborhoods */
+    move_seq empty; /* free positions of the board */
+    u8 black_neighbors4[TOTAL_BOARD_SIZ]; /* stones in the neighborhood */
+    u8 white_neighbors4[TOTAL_BOARD_SIZ];
+    u8 black_neighbors8[TOTAL_BOARD_SIZ];
+    u8 white_neighbors8[TOTAL_BOARD_SIZ];
+    u8 unique_groups_count;
+    move unique_groups[MAX_GROUPS];
+    group * g[TOTAL_BOARD_SIZ]; /* CFG stone groups or NULL if empty */
 } cfg_board;
 
 
@@ -143,8 +143,8 @@ void just_play3(
     bool is_black,
     move m,
     d16 * stone_difference,
-    bool stones_removed[TOTAL_BOARD_SIZ],
-    u8 rem_nei_libs[LIB_BITMAP_SIZ]
+    bool stones_removed[static TOTAL_BOARD_SIZ],
+    u8 rem_nei_libs[static LIB_BITMAP_SIZ]
 );
 
 /*
@@ -167,6 +167,7 @@ move get_ko_play(
 
 /*
 Calculates the liberties after playing and the number of stones captured.
+Does not test ko.
 RETURNS number of liberties after play
 */
 u8 libs_after_play(
@@ -178,6 +179,7 @@ u8 libs_after_play(
 
 /*
 Calculates if playing at the designated position is legal and safe.
+Does not test ko.
 RETURNS 0 for illegal, 1 for placed in atari, 2 for safe to play
 */
 u8 safe_to_play(
@@ -189,6 +191,7 @@ u8 safe_to_play(
 /*
 Calculates if playing at the designated position is legal and safe.
 Also returns whether it would return in a capture.
+Does not test ko.
 RETURNS 0 for illegal, 1 for placed in atari, 2 for safe to play
 */
 u8 safe_to_play2(
@@ -345,4 +348,5 @@ u8 groups_shared_liberties(
     const group * restrict g1,
     const group * restrict g2
 );
+
 #endif

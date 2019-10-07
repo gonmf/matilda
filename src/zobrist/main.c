@@ -6,7 +6,7 @@ of the vectors of a Zobrist hashing scheme. They are required by Matilda for the
 board size in use and are expected to be found in the data/ directory from the
 working directory.
 */
-#include "matilda.h"
+#include "config.h"
 
 #include <sys/select.h>
 #include <sys/time.h>

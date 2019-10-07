@@ -13,7 +13,7 @@ is illegal. The nodes statistics are from the perspective of the respective
 table color.
 */
 
-#include "matilda.h"
+#include "config.h"
 
 #include <string.h>
 #include <stdio.h>

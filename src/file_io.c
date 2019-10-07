@@ -2,7 +2,7 @@
 Functions for file input/output.
 */
 
-#include "matilda.h"
+#include "config.h"
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -25,11 +25,10 @@ already exists.
 RETURNS file descriptor
 */
 int create_and_open_file(
-    char * filename,
+    char * restrict filename,
     u32 filename_size,
-    bool in_data_folder,
-    const char * prefix,
-    const char * extension
+    const char * restrict prefix,
+    const char * restrict extension
 ){
     u32 attempt = 1;
     time_t t = time(NULL);
@@ -39,13 +38,12 @@ int create_and_open_file(
     {
         if(attempt == 1)
             snprintf(filename, filename_size, "%s%s_%02u%02u%02u%02u%02u.%s",
-                in_data_folder ? data_folder() : "", prefix, tm.tm_year % 100,
-                tm.tm_mon, tm.tm_mday, tm.tm_hour, tm.tm_min, extension);
+                data_folder(), prefix, tm.tm_year % 100, tm.tm_mon, tm.tm_mday,
+                tm.tm_hour, tm.tm_min, extension);
         else
             snprintf(filename, filename_size, "%s%s_%02u%02u%02u%02u%02u_%u.%s",
-                in_data_folder ? data_folder() : "", prefix, tm.tm_year % 100,
-                tm.tm_mon, tm.tm_mday, tm.tm_hour, tm.tm_min, attempt,
-                extension);
+                data_folder(), prefix, tm.tm_year % 100, tm.tm_mon, tm.tm_mday,
+                tm.tm_hour, tm.tm_min, attempt, extension);
 
         int fd = open(filename, O_WRONLY | O_CREAT | O_EXCL, S_IRUSR | S_IWUSR);
         /* File created */
@@ -113,9 +111,9 @@ d32 read_binary_file(
 RETURNS the number of ASCII characters read or -1 if failed to open/be read
 */
 d32 read_ascii_file(
-    char * dst_buf,
+    char * restrict dst_buf,
     u32 buf_len,
-    const char * filename
+    const char * restrict filename
 ){
     FILE * h = fopen(filename, "r"); /* text file, hopefully ASCII */
     if(h == NULL)
@@ -162,8 +160,8 @@ d32 read_ascii_file(
 }
 
 static bool ends_in(
-    const char * a,
-    const char * b
+    const char * restrict a,
+    const char * restrict b
 ){
     size_t len_a = strlen(a);
     size_t len_b = strlen(b);
@@ -183,8 +181,8 @@ static u32 filenames_found;
 static u32 _max_files;
 
 static void _recurse_find_files(
-    const char * root,
-    const char * extension,
+    const char * restrict root,
+    const char * restrict extension,
     char ** filenames
 ){
     DIR * dir;
@@ -239,8 +237,8 @@ At most fills max_files file names.
 RETURN number of file names saved
 */
 u32 recurse_find_files(
-    const char * root,
-    const char * extension,
+    const char * restrict root,
+    const char * restrict extension,
     char ** filenames,
     u32 max_files
 ){

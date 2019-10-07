@@ -4,4 +4,4 @@ To start matilda, edit the configuration files (casual or tournament) and obtain
 the latest version of kgsGTP, from https://www.gokgs.com/download.jsp.
 
 To prevent timeouts the network latency compensation settings should be set
-accordingly, in the matilda configuration (src/matilda.h).
+accordingly, in the matilda configuration (src/config.h).

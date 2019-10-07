@@ -14,7 +14,7 @@ MCTS can be resumed on demand by a few extra simulations at a time.
 It can also record the average final score, for the purpose of score estimation.
 */
 
-#include "matilda.h"
+#include "config.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -52,7 +52,6 @@ static bool ran_out_of_memory;
 static bool search_stop;
 static u16 max_depths[MAXIMUM_NUM_THREADS];
 
-
 /*
 Whether a MCTS can be started on background. Is disabled if memory runs out, and
 needs to be reset before testing again if can be run.
@@ -75,6 +74,7 @@ void mcts_init()
     zobrist_init();
     pat3_init();
     tt_init();
+    load_starting_points();
 
     uct_inited = true;
 }
@@ -137,7 +137,7 @@ static d16 mcts_expansion(
     cfg_board * cb,
     bool is_black,
     tt_stats * stats,
-    u8 traversed[TOTAL_BOARD_SIZ]
+    u8 traversed[static TOTAL_BOARD_SIZ]
 ){
     stats->expansion_delay--;
     if(stats->expansion_delay == -1)
@@ -306,7 +306,6 @@ static d16 mcts_selection(
         }
     }
 
-    depth -= 6;
     if(depth > max_depths[omp_get_thread_num()])
         max_depths[omp_get_thread_num()] = depth;
 
@@ -438,7 +437,11 @@ bool mcts_start_timed(
         else
         {
             out_b->tested[stats->plays[k].m] = true;
+#if USE_AMAF_RAVE
             out_b->value[stats->plays[k].m] = uct1_rave(&stats->plays[k]);
+#else
+            out_b->value[stats->plays[k].m] = stats->plays[k].mc_q;
+#endif
         }
     }
 
@@ -446,6 +449,7 @@ bool mcts_start_timed(
     for(u16 k = 1; k < MAXIMUM_NUM_THREADS; ++k)
         if(max_depths[k] > max_depth)
             max_depth = max_depths[k];
+    max_depth -= 6;
 
     u32 simulations = wins + losses;
     double wr = ((double)wins) / ((double)simulations);
@@ -556,7 +560,11 @@ bool mcts_start_sims(
         else
         {
             out_b->tested[stats->plays[k].m] = true;
+#if USE_AMAF_RAVE
             out_b->value[stats->plays[k].m] = uct1_rave(&stats->plays[k]);
+#else
+            out_b->value[stats->plays[k].m] = stats->plays[k].mc_q;
+#endif
         }
     }
 
@@ -655,14 +663,15 @@ void mcts_resume(
 Execute a 1 second MCTS and return the number of simulations ran.
 RETURNS simulations number
 */
-u32 mcts_benchmark()
-{
+u32 mcts_benchmark(
+    u32 time_available /* in milliseconds */
+){
     mcts_init();
     board b;
     clear_board(&b);
 
     u64 curr_time = current_time_in_millis();
-    u64 stop_time = curr_time + 1000;
+    u64 stop_time = curr_time + time_available;
 
     u64 start_zobrist_hash = zobrist_new_hash(&b);
     tt_stats * stats = tt_lookup_create(&b, true,
@@ -683,6 +692,7 @@ u32 mcts_benchmark()
     bool search_stop = false;
     u32 simulations = 0;
 
+    // TODO do a longer initial run to initialize state
     #pragma omp parallel for
     for(u32 sim = 0; sim < INT32_MAX; ++sim)
     {
@@ -690,7 +700,7 @@ u32 mcts_benchmark()
         {
             /* there is no way to simultaneously cancel all OMP threads */
             sim = INT32_MAX;
-            continue;
+            continue; // TODO change to break
         }
 
         cfg_board cb;
@@ -714,4 +724,3 @@ u32 mcts_benchmark()
 
     return simulations;
 }
-

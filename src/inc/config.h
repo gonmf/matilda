@@ -14,7 +14,7 @@ Board/goban size given by the length of one side.
 
 EXPECTED: 5, 7, 9, 11, 13, 15, 17, 19 or 21
 */
-#define BOARD_SIZ 9
+#define BOARD_SIZ 19
 
 /*
 Default komidashi used, multiplied by 2 to give an integer number.
@@ -23,8 +23,11 @@ Example: 15 for 7.5; 11 for 5.5
 
 EXPECTED: 0 to 15
 */
-#define DEFAULT_KOMI 15
-
+#if BOARD_SIZ < 10
+#define DEFAULT_KOMI 14 /* 7.0 komi */
+#else
+#define DEFAULT_KOMI 15 /* 7.5 komi */
+#endif
 
 /*
 Default memory available for use by transposition tables, in MiB.
@@ -44,7 +47,7 @@ The value is in milliseconds.
 
 EXPECTED: 2 to 400
 */
-#define LATENCY_COMPENSATION 250 /* Japan is quite far away */
+#define LATENCY_COMPENSATION 0
 
 
 /*
@@ -83,14 +86,6 @@ Just set a very high number.
 EXPECTED: 1 to 64
 */
 #define MAXIMUM_NUM_THREADS 8
-
-
-/*
-Set whether the program should resign or pass, when losing hard.
-
-EXPECTED: 0 or 1
-*/
-#define CAN_RESIGN 1
 
 
 /*
@@ -199,5 +194,3 @@ functions: fdopen, strtok_r, rand_r, fsync
 #endif
 
 #endif
-
-

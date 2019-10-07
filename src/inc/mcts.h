@@ -17,7 +17,7 @@ It can also record the average final score, for the purpose of score estimation.
 #ifndef MATILDA_MCTS_H
 #define MATILDA_MCTS_H
 
-#include "matilda.h"
+#include "config.h"
 
 #include "board.h"
 #include "types.h"
@@ -98,8 +98,8 @@ void mcts_resume(
 Execute a 1 second MCTS and return the number of simulations ran.
 RETURNS simulations number
 */
-u32 mcts_benchmark();
+u32 mcts_benchmark(
+    u32 time_available /* in milliseconds */
+);
 
 #endif
-
-

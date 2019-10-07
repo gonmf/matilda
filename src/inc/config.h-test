@@ -44,7 +44,7 @@ The value is in milliseconds.
 
 EXPECTED: 2 to 400
 */
-#define LATENCY_COMPENSATION 110
+#define LATENCY_COMPENSATION 0
 
 
 /*
@@ -83,14 +83,6 @@ Just set a very high number.
 EXPECTED: 1 to 64
 */
 #define MAXIMUM_NUM_THREADS 8
-
-
-/*
-Set whether the program should resign or pass, when losing hard.
-
-EXPECTED: 0 or 1
-*/
-#define CAN_RESIGN 1
 
 
 /*
@@ -198,5 +190,3 @@ functions: fdopen, strtok_r, rand_r, fsync
 #endif
 
 #endif
-
-

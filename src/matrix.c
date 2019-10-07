@@ -2,7 +2,7 @@
 Generic matrix transformations
 */
 
-#include "matilda.h"
+#include "config.h"
 
 #include <string.h>
 #include <stdio.h>
@@ -18,8 +18,8 @@ Generic matrix transformations
 Rotate square matrix.
 */
 void matrix_rotate(
-    u8 * dst,
-    const u8 * src,
+    u8 dst[static TOTAL_BOARD_SIZ],
+    const u8 src[static TOTAL_BOARD_SIZ],
     u16 side_len,
     u8 rotations
 ){
@@ -63,8 +63,8 @@ void matrix_rotate(
 Rotate contents of an out_board structure.
 */
 void matrix_rotate2(
-    out_board * dst,
-    const out_board * src,
+    out_board * restrict dst,
+    const out_board * restrict src,
     u8 rotations
 ){
     assert(rotations < 4);
@@ -113,8 +113,8 @@ void matrix_rotate2(
 Flips a square matrix.
 */
 void matrix_flip(
-    u8 * dst,
-    const u8 * src,
+    u8 dst[static TOTAL_BOARD_SIZ],
+    const u8 src[static TOTAL_BOARD_SIZ],
     u16 side_len
 ){
     u8 x;
@@ -132,8 +132,8 @@ void matrix_flip(
 Flips the board contents of an out_board structure.
 */
 void matrix_flip2(
-    out_board * dst,
-    const out_board * src
+    out_board * restrict dst,
+    const out_board * restrict src
 ){
     u8 x;
     u8 y;
@@ -154,8 +154,8 @@ void matrix_flip2(
 Produces the move correspondent in the transformed matrix.
 */
 void reduce_coord(
-    u8 * x,
-    u8 * y,
+    u8 * restrict x,
+    u8 * restrict y,
     u16 side_len,
     d8 method
 ){

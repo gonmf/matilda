@@ -4,7 +4,7 @@ Where performance is important prefer using cfg_board structure and related
 functions (cfg_board.h and cfg_board.c).
 */
 
-#include "matilda.h"
+#include "config.h"
 
 #include <string.h>
 #include <stdio.h>
@@ -57,7 +57,7 @@ static bool surrounded_stone(
 static u8 _liberties(
     const board * b,
     move m,
-    bool aux[TOTAL_BOARD_SIZ],
+    bool aux[static TOTAL_BOARD_SIZ],
     const u8 own_stone
 ){
     u8 x;
@@ -151,7 +151,7 @@ static bool _is_alive(
     const board * b,
     move m,
     u8 value,
-    bool aux[TOTAL_BOARD_SIZ]
+    bool aux[static TOTAL_BOARD_SIZ]
 ){
     u8 x;
     u8 y;

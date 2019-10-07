@@ -16,7 +16,7 @@ http://www.weddslist.com/kgs/past/superko.html
 #ifndef MATILDA_GAME_RECORD_H
 #define MATILDA_GAME_RECORD_H
 
-#include "matilda.h"
+#include "config.h"
 
 #include "types.h"
 #include "move.h"
@@ -27,15 +27,17 @@ http://www.weddslist.com/kgs/past/superko.html
 #define MAX_PLAYER_NAME_SIZ 32
 
 typedef struct __game_record_ {
-	char black_name[MAX_PLAYER_NAME_SIZ];
-	char white_name[MAX_PLAYER_NAME_SIZ];
-	move_seq handicap_stones;
-	move moves[MAX_GAME_LENGTH];
+    char black_name[MAX_PLAYER_NAME_SIZ];
+    char white_name[MAX_PLAYER_NAME_SIZ];
+    move_seq handicap_stones;
+    move moves[MAX_GAME_LENGTH];
     u16 hashes[MAX_GAME_LENGTH];
-	u16 turns;
-	bool game_finished;
-	bool resignation;
-	d16 final_score; /* 0 if finished by resignation/time/forfeit */
+    u16 turns;
+    bool player_names_set;
+    bool finished;
+    bool resignation;
+    bool timeout;
+    d16 final_score; /* 0 if draw */
 } game_record;
 
 
@@ -51,6 +53,7 @@ void clear_game_record(
 Adds a play to the game record and advances its state. Play legality is not
 verified. If the player is not the expected player to play (out of order
 anomaly) the error is logged and the program exits.
+Clears the game finished information from the game record if present.
 */
 void add_play(
     game_record * gr,
@@ -61,11 +64,21 @@ void add_play(
 Adds a play to the game record and advances its state. Play legality is not
 verified. If the player is not the expected player to play (out of order
 anomaly) the opponents turn is skipped.
+Clears the game finished information from the game record if present.
 */
 void add_play_out_of_order(
     game_record * gr,
     bool is_black,
     move m
+);
+
+/*
+Write a text representation of the game record in the string buffer specified.
+*/
+void game_record_to_string(
+    char * buf,
+    u32 buf_siz,
+    const game_record * gr
 );
 
 /*
@@ -122,6 +135,7 @@ move select_play_fast(
 
 /*
 Attempts to undo the last play.
+Clears the game finished information from the game record if present.
 RETURNS true if a play was undone
 */
 bool undo_last_play(
@@ -130,6 +144,7 @@ bool undo_last_play(
 
 /*
 Adds a handicap stone to a yet-to-start game.
+Clears the game finished information from the game record if present.
 RETURNS true if stone was added
 */
 bool add_handicap_stone(

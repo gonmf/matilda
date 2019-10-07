@@ -7,13 +7,10 @@ maintenance if needed.
 #ifndef MATILDA_ENGINE_H
 #define MATILDA_ENGINE_H
 
-#include "matilda.h"
+#include "config.h"
 
 #include "types.h"
 #include "board.h"
-
-
-#define BENCHMARK_TIME 60 /* seconds */
 
 
 /*
@@ -29,6 +26,14 @@ with a path separator.
 RETURNS folder path
 */
 const char * data_folder();
+
+/*
+Test if folder exists and is accessible.
+RETURNS true if exists
+*/
+bool folder_exists(
+    const char * filename
+);
 
 /*
 Sets the new data folder path. If the path is too long, short, or otherwise

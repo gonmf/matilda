@@ -13,7 +13,7 @@ The life of these patterns is as follow:
  and searched for in the appropriate hash table.
 */
 
-#include "matilda.h"
+#include "config.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -50,7 +50,7 @@ typedef struct __pat3_{
 Convert some final symbols; non-final symbols are left as-is here
 */
 static void clean_symbols(
-    u8 p[3][3]
+    u8 p[static 3][3]
 ){
     char * s;
     for(u8 i = 0; i < 3; ++i)
@@ -107,8 +107,8 @@ u16 pat3_find(
 }
 
 static void flip(
-    const u8 src[3][3],
-    u8 dst[3][3]
+    const u8 src[static 3][3],
+    u8 dst[static 3][3]
 ){
     for(u8 i = 0; i < 3; ++i)
         for(u8 j = 0; j < 3; ++j)
@@ -116,8 +116,8 @@ static void flip(
 }
 
 static void rotate(
-    const u8 src[3][3],
-    u8 dst[3][3],
+    const u8 src[static 3][3],
+    u8 dst[static 3][3],
     u8 rotations
 ){
     u8 i;
@@ -143,7 +143,7 @@ static void rotate(
 }
 
 static void reduce_pattern(
-    u8 v[3][3],
+    u8 v[static 3][3],
     u8 method
 ){
     if(method == NOREDUCE)
@@ -188,7 +188,7 @@ Rotate and flip the pattern to its unique representative.
 Avoid using, is not optimized.
 */
 void pat3_reduce_auto(
-    u8 v[3][3]
+    u8 v[static 3][3]
 ){
     u8 b[3][3];
 
@@ -206,8 +206,8 @@ Transposes part of an input matrix board into a 3x3 matrix pattern codified,
 with board safety.
 */
 void pat3_transpose(
-    u8 dst[3][3],
-    const u8 p[TOTAL_BOARD_SIZ],
+    u8 dst[static 3][3],
+    const u8 p[static TOTAL_BOARD_SIZ],
     move m
 ){
     assert(is_board_move(m));
@@ -233,7 +233,7 @@ void pat3_transpose(
 Codifies the pattern in a 16 bit unsigned value.
 */
 u16 pat3_to_string(
-    const u8 p[3][3]
+    const u8 p[static 3][3]
 ){
     u16 ret = p[0][0] & 3;
     ret = (ret << 2) + (p[0][1] & 3);
@@ -253,7 +253,7 @@ u16 pat3_to_string(
 Decodes a 16-bit value into a 3x3 pattern, with empty center.
 */
 void string_to_pat3(
-    u8 dst[3][3],
+    u8 dst[static 3][3],
     u16 src
 ){
     dst[2][2] = src & 3;
@@ -275,7 +275,7 @@ void string_to_pat3(
 }
 
 static u8 _count_stones(
-    const u8 p[3][3]
+    const u8 p[static 3][3]
 ){
     u8 ret = 0;
     for(u8 i = 0; i < 3; ++i)
@@ -289,7 +289,7 @@ static u8 _count_stones(
 Invert stone colors.
 */
 void pat3_invert(
-    u8 p[3][3]
+    u8 p[static 3][3]
 ){
     for(u8 i = 0; i < 3; ++i)
         for(u8 j = 0; j < 3; ++j)
@@ -301,7 +301,7 @@ void pat3_invert(
 }
 
 static void multiply_and_store(
-    const u8 pat[3][3]
+    const u8 pat[static 3][3]
 ){
     u8 p[3][3];
     u16 weight = 1;
@@ -353,7 +353,7 @@ into consideration.
 RETURNS total number of new unique patterns
 */
 static void expand_pattern(
-    const u8 pat[3][3]
+    const u8 pat[static 3][3]
 ){
     u8 p[3][3];
     memcpy(p, pat, 3 * 3);
@@ -394,8 +394,8 @@ sion would create patterns with a single stone or less");
 
 
 static u32 read_pat3_file(
-    const char * filename,
-    char * buffer
+    const char * restrict filename,
+    char * restrict buffer
 ){
     d32 chars_read = read_ascii_file(buffer, MAX_FILE_SIZ, filename);
     if(chars_read < 0)
@@ -449,8 +449,8 @@ static u32 pat3_hash_function(
 }
 
 static int pat3_compare_function(
-    const void * a,
-    const void * b
+    const void * restrict a,
+    const void * restrict b
 ){
     pat3 * f1 = (pat3 *)a;
     pat3 * f2 = (pat3 *)b;

@@ -15,11 +15,11 @@ Freed cfg_board information is kept in cache for fast access in the future; it
 is best to first free previous instances before creating new ones, thus limiting
 the size the cache has to have.
 
-Just like in the rest of the source code, all functions are not thread unless
-explicitly said so.
+Just like in the rest of the source code, all functions are not thread safe
+unless explicitly said so.
 */
 
-#include "matilda.h"
+#include "config.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -623,8 +623,8 @@ static void cfg_board_kill_group3(
     cfg_board * cb,
     group * g,
     u8 own,
-    bool stones_removed[TOTAL_BOARD_SIZ],
-    u8 rem_nei_libs[LIB_BITMAP_SIZ]
+    bool stones_removed[static TOTAL_BOARD_SIZ],
+    u8 rem_nei_libs[static LIB_BITMAP_SIZ]
 ){
     move id = g->stones.coord[0];
 
@@ -851,8 +851,8 @@ void just_play3(
     bool is_black,
     move m,
     d16 * stone_difference,
-    bool stones_removed[TOTAL_BOARD_SIZ],
-    u8 rem_nei_libs[LIB_BITMAP_SIZ]
+    bool stones_removed[static TOTAL_BOARD_SIZ],
+    u8 rem_nei_libs[static LIB_BITMAP_SIZ]
 ){
     assert(verify_cfg_board(cb));
     assert(is_board_move(m));
@@ -1020,6 +1020,7 @@ move get_ko_play(
 
 /*
 Calculates the liberties after playing and the number of stones captured.
+Does not test ko.
 RETURNS number of liberties after play
 */
 u8 libs_after_play(
@@ -1244,6 +1245,7 @@ u8 libs_after_play(
 /*
 Calculates if playing at the designated position is legal and safe.
 Also returns whether it would return in a capture.
+Does not test ko.
 RETURNS 0 for illegal, 1 for placed in atari, 2 for safe to play
 */
 u8 safe_to_play2(
@@ -1434,6 +1436,7 @@ u8 safe_to_play2(
 
 /*
 Calculates if playing at the designated position is legal and safe.
+Does not test ko.
 RETURNS 0 for illegal, 1 for placed in atari, 2 for safe to play
 */
 u8 safe_to_play(

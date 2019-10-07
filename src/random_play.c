@@ -3,7 +3,7 @@ Support for random play selection while avoiding playing inside a possible eye
 and some other fast checks.
 */
 
-#include "matilda.h"
+#include "config.h"
 
 #include <stdlib.h>
 #include <string.h>

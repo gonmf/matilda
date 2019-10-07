@@ -2,7 +2,7 @@ Heuristic UCT-RAVE implementation.
 
 With RAVE and criticality.
 Playout is limited with dynamic offset depending on stone count.
-Cutoff playouts are rated. Playouts	are cut short with a mercy threshold (like
+Cutoff playouts are rated. Playouts are cut short with a mercy threshold (like
 pachi, orego and others). Initilizes expanded states with prior values.
 Last-good-reply with forgetting (LGRF1) is also used. A virtual loss is also
 added on play traversion, that is later corrected if needed.

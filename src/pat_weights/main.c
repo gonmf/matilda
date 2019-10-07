@@ -12,7 +12,7 @@ maximum total on a 3x3 neighborship fits 16 bits.
 */
 
 
-#include "matilda.h"
+#include "config.h"
 
 #include <unistd.h>
 #include <stdlib.h>
@@ -47,15 +47,16 @@ typedef struct __pat3t_ {
 } pat3t;
 
 
-static u32 pat3t_hash_function(void * a)
-{
+static u32 pat3t_hash_function(
+    void * a
+){
     pat3t * b = (pat3t *)a;
     return b->value;
 }
 
 static int pat3t_compare_function(
-    const void * a,
-    const void * b
+    const void * restrict a,
+    const void * restrict b
 ){
     pat3t * f1 = (pat3t *)a;
     pat3t * f2 = (pat3t *)b;
@@ -134,8 +135,9 @@ int main(
         if(!no_print)
             printf("%u/%u: %s", fid + 1, filenames_found, filenames[fid]);
 
-        if(!import_game_from_sgf2(gr, filenames[fid], buf))
+        if(!import_game_from_sgf2(gr, filenames[fid], buf, MAX_FILE_SIZ))
         {
+            ++games_skipped;
             if(!no_print)
                 printf(" skipped\n");
             continue;
@@ -144,6 +146,16 @@ int main(
         /* Ignore handicap matches */
         if(gr->handicap_stones.count > 0)
         {
+            ++games_skipped;
+            if(!no_print)
+                printf(" skipped\n");
+            continue;
+        }
+
+        /* Only use winner plays so ignore games without score */
+        if(gr->final_score == 0)
+        {
+            ++games_skipped;
             if(!no_print)
                 printf(" skipped\n");
             continue;
@@ -156,52 +168,61 @@ int main(
         if(!no_print)
             printf(" (%u)\n", gr->turns);
 
-        for(d16 k = 0; k < gr->turns; ++k)
+        bool winner_is_black = gr->final_score > 0;
+        bool is_black = false;
+
+        u16 total_turns = (gr->turns * 2) / 3;
+
+        for(d16 k = 0; k < total_turns; ++k)
         {
+            is_black = !is_black;
             move m = gr->moves[k];
 
             if(m == PASS)
                 pass(&b);
             else
             {
-                cfg_board cb;
-                cfg_from_board(&cb, &b);
-
-                u16 winner_pattern = get_pattern(&cb, m);
-
-                for(move n = 0; n < TOTAL_BOARD_SIZ; ++n)
+                if(is_black == winner_is_black)
                 {
-                    if(cb.p[n] != EMPTY)
-                        continue;
+                    cfg_board cb;
+                    cfg_from_board(&cb, &b);
 
-                    if(ko_violation(&cb, n))
-                        continue;
+                    u16 winner_pattern = get_pattern(&cb, m);
 
-                    u8 libs;
-                    bool captures;
-                    if((libs = safe_to_play2(&cb, true, n, &captures))
-                        == 0)
-                        continue;
-
-                    u16 pattern = get_pattern(&cb, n);
-
-                    pat3t * found = hash_table_find(feature_table, &pattern);
-                    if(found == NULL)
+                    for(move n = 0; n < TOTAL_BOARD_SIZ; ++n)
                     {
-                        found = malloc(sizeof(pat3t));
-                        found->value = pattern;
-                        found->wins = 0;
-                        found->appearances = 0;
-                        hash_table_insert_unique(feature_table, found);
-                        ++unique_patterns;
+                        if(cb.p[n] != EMPTY)
+                            continue;
+
+                        if(ko_violation(&cb, n))
+                            continue;
+
+                        u8 libs;
+                        bool captures;
+                        if((libs = safe_to_play2(&cb, true, n, &captures))
+                            == 0)
+                            continue;
+
+                        u16 pattern = get_pattern(&cb, n);
+
+                        pat3t * found = hash_table_find(feature_table,
+                            &pattern);
+                        if(found == NULL)
+                        {
+                            found = malloc(sizeof(pat3t));
+                            found->value = pattern;
+                            found->wins = 0;
+                            found->appearances = 0;
+                            hash_table_insert_unique(feature_table, found);
+                            ++unique_patterns;
+                        }
+
+                        found->wins += (pattern == winner_pattern) ? 1 : 0;
+                        found->appearances++;
                     }
 
-                    found->wins += (pattern == winner_pattern) ? 1 : 0;
-                    found->appearances++;
+                    cfg_board_free(&cb);
                 }
-
-                cfg_board_free(&cb);
-
                 just_play_slow(&b, true, m);
             }
 
