@@ -266,7 +266,7 @@ void ** hash_table_export_to_array(
 ){
     assert(ht != NULL);
 
-    void ** ret = (void *)malloc((ht->elements + 1) * sizeof(void *));
+    void ** ret = (void *)malloc(sizeof(void *) * (ht->elements + 1));
     assert(ret != NULL);
 
     u32 curr_elem = 0;
