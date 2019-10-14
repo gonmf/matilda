@@ -27,8 +27,8 @@ RETURNS time available in milliseconds
 u32 calc_time_to_play(
     time_system * ts,
     u16 turns_played
-){
-    if(ts->byo_yomi_time > 0 && ts->byo_yomi_stones == 0)
+) {
+    if (ts->byo_yomi_time > 0 && ts->byo_yomi_stones == 0)
         return UINT32_MAX;
 
     double e1 = EXPECTED_GAME_LENGTH - turns_played;
@@ -41,14 +41,11 @@ u32 calc_time_to_play(
     mtt *= time_allot_factor;
 
     double t_t;
-    if(ts->byo_yomi_stones_remaining > 0)
-    {
+    if (ts->byo_yomi_stones_remaining > 0) {
         double byt = ts->byo_yomi_time_remaining /
             ((double)ts->byo_yomi_stones_remaining);
         t_t = MAX(byt, mtt);
-    }
-    else
-    {
+    } else {
         t_t = mtt;
     }
 
@@ -69,7 +66,7 @@ void set_time_system(
     u32 byo_yomi_time,
     u32 byo_yomi_stones,
     u32 byo_yomi_periods
-){
+) {
     ts->can_timeout = true;
     ts->timed_out = false;
     ts->main_time = ts->main_time_remaining = main_time;
@@ -84,7 +81,7 @@ Set the time system based only on absolute time (sudden death).
 void set_sudden_death(
     time_system * ts,
     u32 main_time
-){
+) {
     ts->can_timeout = true;
     ts->timed_out = false;
     ts->main_time = ts->main_time_remaining = main_time;
@@ -99,7 +96,7 @@ Set the time system based on a constant time per turn.
 void set_time_per_turn(
     time_system * ts,
     u32 time_per_turn
-){
+) {
     ts->can_timeout = false;
     ts->timed_out = false;
     ts->main_time = ts->main_time_remaining = 0;
@@ -115,16 +112,14 @@ affecting the value indicating time out.
 void advance_clock(
     time_system * ts,
     u32 milliseconds
-){
-    if(!ts->can_timeout || ts->timed_out)
+) {
+    if (!ts->can_timeout || ts->timed_out)
         return;
 
     bool consumed_byo_yomi_stone = false;
 
-    while(milliseconds > 0)
-    {
-        if(ts->main_time_remaining == 0)
-        {
+    while (milliseconds > 0) {
+        if (ts->main_time_remaining == 0) {
             /*
             Byo-yomi period
             */
@@ -133,19 +128,19 @@ void advance_clock(
             ts->byo_yomi_time_remaining -= byo_time_elapsed;
             milliseconds -= byo_time_elapsed;
 
-            if(consumed_byo_yomi_stone == false)
+            if (consumed_byo_yomi_stone == false)
             {
                 ts->byo_yomi_stones_remaining--;
                 consumed_byo_yomi_stone = true;
             }
 
-            if(ts->byo_yomi_time_remaining == 0)
+            if (ts->byo_yomi_time_remaining == 0)
             {
                 /*
                 The period time has run out, consume a period.
                 */
                 ts->byo_yomi_periods_remaining--;
-                if(ts->byo_yomi_periods_remaining == 0)
+                if (ts->byo_yomi_periods_remaining == 0)
                 {
                     ts->timed_out = true;
                     return;
@@ -162,7 +157,7 @@ void advance_clock(
             }
             else
             {
-                if(ts->byo_yomi_stones_remaining == 0)
+                if (ts->byo_yomi_stones_remaining == 0)
                 {
                     /*
                     The period time has not run out and we have played all the
@@ -190,7 +185,7 @@ Reset the clock to the initial values of the system.
 */
 void reset_clock(
     time_system * ts
-){
+) {
     ts->timed_out = false;
     ts->main_time_remaining = ts->main_time;
     ts->byo_yomi_time_remaining = ts->byo_yomi_time;
@@ -205,9 +200,8 @@ used, or the word infinite.
 void time_system_to_str(
     char * dst,
     time_system * ts
-){
-    if(ts->main_time == 0 && ts->byo_yomi_time > 0 && ts->byo_yomi_stones == 0)
-    {
+) {
+    if (ts->main_time == 0 && ts->byo_yomi_time > 0 && ts->byo_yomi_stones == 0) {
         snprintf(dst, MAX_PAGE_SIZ, "infinite");
         return;
     }
@@ -227,12 +221,11 @@ void time_system_to_str(
 
 static d32 str_to_milliseconds(
     const char * s
-){
+) {
     char * char_idx = strchr(s, 'm');
     d32 mul = 0; /* multiplier */
-    if(char_idx != NULL)
-    {
-        if(char_idx[1] == 's') /* milliseconds */
+    if (char_idx != NULL) {
+        if (char_idx[1] == 's') /* milliseconds */
         {
             mul = 1;
         }
@@ -240,40 +233,35 @@ static d32 str_to_milliseconds(
         {
             mul = 1000 * 60;
         }
-    }
-    else
-    {
+    } else {
         char_idx = strchr(s, 's');
-        if(char_idx != NULL)
-        {
+        if (char_idx != NULL) {
             mul = 1000;
         }
         else
         {
             char_idx = strchr(s, 'h');
-            if(char_idx != NULL)
+            if (char_idx != NULL)
             {
                 mul = 1000 * 60 * 60;
             }
         }
     }
 
-    if(mul == 0)
-    {
-        if(strcmp(s, "0") == 0)
+    if (mul == 0) {
+        if (strcmp(s, "0") == 0)
             return 0;
         return -1; /* error */
     }
 
     d32 ret = 0;
-    for(u8 i = 0; s[i]; ++i)
-    {
-        if(s[i] < '0' || s[i] > '9')
+    for (u8 i = 0; s[i]; ++i) {
+        if (s[i] < '0' || s[i] > '9')
             break;
         ret = ret * 10 + (s[i] - '0');
     }
 
-    if(ret <= 0)
+    if (ret <= 0)
         return -1;
 
     return ret * mul;
@@ -282,9 +270,9 @@ static d32 str_to_milliseconds(
 static bool _process_main_time(
     time_system * dst,
     const char * src
-){
+) {
     d32 val = str_to_milliseconds(src);
-    if(val < 0)
+    if (val < 0)
         return false;
 
     dst->main_time = val;
@@ -294,9 +282,9 @@ static bool _process_main_time(
 static bool _process_nr_periods(
     time_system * dst,
     const char * src
-){
+) {
     u32 i;
-    if(!parse_uint(&i, src))
+    if (!parse_uint(&i, src))
         return false;
 
     dst->byo_yomi_periods = i;
@@ -306,9 +294,9 @@ static bool _process_nr_periods(
 static bool _process_byo_yomi_time(
     time_system * dst,
     const char * src
-){
+) {
     d32 val = str_to_milliseconds(src);
-    if(val <= 0)
+    if (val <= 0)
         return false;
 
     dst->byo_yomi_time = val;
@@ -318,9 +306,9 @@ static bool _process_byo_yomi_time(
 static bool _process_period_stones(
     time_system * dst,
     const char * src
-){
+) {
     u32 i;
-    if(!parse_uint(&i, src))
+    if (!parse_uint(&i, src))
         return false;
 
     dst->byo_yomi_stones = i;
@@ -334,15 +322,14 @@ RETURNS true if successful and value stored in dst
 bool str_to_time_system(
     time_system * dst,
     const char * src
-){
+) {
     dst->main_time = 0;
     dst->byo_yomi_stones = 1;
     dst->byo_yomi_time = 0;
     dst->byo_yomi_periods = 1;
     dst->can_timeout = true;
 
-    if(strcmp(src, "infinite") == 0)
-    {
+    if (strcmp(src, "infinite") == 0) {
         dst->byo_yomi_stones = 0;
         dst->byo_yomi_time = 1;
         dst->can_timeout = false;
@@ -360,24 +347,21 @@ bool str_to_time_system(
     time + ...
     */
     char * char_idx = strchr(s, '+');
-    if(char_idx != NULL)
+    if (char_idx != NULL)
         char_idx[0] = 0;
 
-    if(!_process_main_time(dst, s))
-    {
+    if (!_process_main_time(dst, s)) {
         release(original_ptr);
         return false;
     }
 
-    if(char_idx == NULL)
-    {
+    if (char_idx == NULL) {
         release(original_ptr);
         return dst->main_time > 0;
     }
 
     s = char_idx + 1;
-    if(!s[0])
-    {
+    if (!s[0]) {
         release(original_ptr);
         return false;
     }
@@ -386,17 +370,14 @@ bool str_to_time_system(
     ... + number x ...
     */
     char_idx = strchr(s, 'x');
-    if(char_idx != NULL)
-    {
+    if (char_idx != NULL) {
         char_idx[0] = 0;
-        if(!_process_nr_periods(dst, s))
-        {
+        if (!_process_nr_periods(dst, s)) {
             release(original_ptr);
             return false;
         }
         s = char_idx + 1;
-        if(!s[0])
-        {
+        if (!s[0]) {
             release(original_ptr);
             return false;
         }
@@ -406,11 +387,10 @@ bool str_to_time_system(
     ... x time / ...
     */
     char_idx = strchr(s, '/');
-    if(char_idx != NULL)
+    if (char_idx != NULL)
         char_idx[0] = 0;
 
-    if(!_process_byo_yomi_time(dst, s))
-    {
+    if (!_process_byo_yomi_time(dst, s)) {
         release(original_ptr);
         return false;
     }
@@ -418,11 +398,9 @@ bool str_to_time_system(
     /*
     ... / number
     */
-    if(char_idx != NULL)
-    {
+    if (char_idx != NULL) {
         s = char_idx + 1;
-        if(!_process_period_stones(dst, s))
-        {
+        if (!_process_period_stones(dst, s)) {
             release(original_ptr);
             return false;
         }
@@ -430,9 +408,9 @@ bool str_to_time_system(
 
     release(original_ptr);
 
-    if(dst->byo_yomi_time == 0)
+    if (dst->byo_yomi_time == 0)
         return false;
-    if(dst->byo_yomi_stones == 0){
+    if (dst->byo_yomi_stones == 0) {
         /* infinite time */
         dst->main_time = 0;
         dst->byo_yomi_periods = 1;

@@ -79,32 +79,30 @@ combination of available message types. See flog.h for more information.
 */
 void flog_config_modes(
     u16 new_mode
-){
-    if(new_mode == log_mode)
+) {
+    if (new_mode == log_mode)
         return;
 
-    if(new_mode != 0)
-    {
-        if(log_file != -1)
-        {
+    if (new_mode != 0) {
+        if (log_file != -1) {
             log_mode = new_mode;
 
             char * s = alloc();
             u32 idx = 0;
             idx += snprintf(s + idx, MAX_PAGE_SIZ - idx, "log mask changed: ");
-            if(log_mode == 0)
+            if (log_mode == 0)
                 snprintf(s + idx, MAX_PAGE_SIZ - idx, "none");
             else
             {
-                if(log_mode & LOG_MODE_ERROR)
+                if (log_mode & LOG_MODE_ERROR)
                     idx += snprintf(s + idx, MAX_PAGE_SIZ - idx, "crit,");
-                if(log_mode & LOG_MODE_WARN)
+                if (log_mode & LOG_MODE_WARN)
                     idx += snprintf(s + idx, MAX_PAGE_SIZ - idx, "warn,");
-                if(log_mode & LOG_MODE_PROT)
+                if (log_mode & LOG_MODE_PROT)
                     idx += snprintf(s + idx, MAX_PAGE_SIZ - idx, "prot,");
-                if(log_mode & LOG_MODE_INFO)
+                if (log_mode & LOG_MODE_INFO)
                     idx += snprintf(s + idx, MAX_PAGE_SIZ - idx, "info,");
-                if(log_mode & LOG_MODE_DEBUG)
+                if (log_mode & LOG_MODE_DEBUG)
                     idx += snprintf(s + idx, MAX_PAGE_SIZ - idx, "dbug,");
                 s[idx - 1] = 0;
             }
@@ -112,11 +110,8 @@ void flog_config_modes(
             release(s);
             return;
         }
-    }
-    else
-    {
-        if(log_file != -1)
-        {
+    } else {
+        if (log_file != -1) {
             flog(NULL, NULL, "logging disabled");
             close(log_file);
         }
@@ -131,20 +126,20 @@ void flog_config_modes(
 */
 void flog_config_destinations(
     u16 new_dest
-){
+) {
     log_dest = new_dest;
 }
 
 static bool ends_in_new_line(
     const char * s
-){
+) {
     u32 l = strlen(s);
     return (l > 0) && (s[l - 1] == '\n');
 }
 
 static bool multiline(
     const char * s
-){
+) {
     char * t = strchr(s, '\n');
     return !(t == NULL || t == s + (strlen(s) - 1));
 }
@@ -153,8 +148,8 @@ static void flog(
     const char * restrict severity,
     const char * restrict context,
     const char * restrict msg
-){
-    if(!log_dest)
+) {
+    if (!log_dest)
         return;
 
     // Prepare payload
@@ -162,32 +157,27 @@ static void flog(
     char * ts = alloc();
     timestamp(ts);
 
-    if(severity == NULL)
+    if (severity == NULL)
         severity = "    ";
-    if(context == NULL)
+    if (context == NULL)
         context = "    ";
 
-    if(multiline(msg))
-    {
+    if (multiline(msg)) {
         snprintf(s, MAX_PAGE_SIZ, "%s | %4s | %4s | [\n%s%s]\n", ts, severity,
             context, msg, ends_in_new_line(msg) ? "" : "\n");
-    }
-    else
-    {
+    } else {
         snprintf(s, MAX_PAGE_SIZ, "%s | %4s | %4s | %s%s", ts, severity,
             context, msg, ends_in_new_line(msg) ? "" : "\n");
     }
 
-    if(log_dest & LOG_DEST_FILE)
-    {
+    if (log_dest & LOG_DEST_FILE) {
         open_log_file();
         u32 len = strlen(s);
         write(log_file, s, len);
         fsync(log_file);
     }
 
-    if(log_dest & LOG_DEST_STDF)
-    {
+    if (log_dest & LOG_DEST_STDF) {
         fprintf(stderr, "%s", s);
     }
 
@@ -195,15 +185,12 @@ static void flog(
     release(s);
 }
 
-static void open_log_file()
-{
-    if(log_file == -1)
-    {
+static void open_log_file() {
+    if (log_file == -1) {
         char * log_filename = alloc();
         log_file = create_and_open_file(log_filename, MAX_PAGE_SIZ, "matilda", "log");
         release(log_filename);
-        if(log_file == -1)
-        {
+        if (log_file == -1) {
             fprintf(stderr, "Failed to create log file.\n");
             log_dest &= ~LOG_DEST_FILE;
             return;
@@ -214,19 +201,19 @@ static void open_log_file()
         u32 idx = 0;
         idx += snprintf(s + idx, MAX_PAGE_SIZ - idx,
             "logging enabled with mask: ");
-        if(log_mode == 0)
+        if (log_mode == 0)
             snprintf(s + idx, MAX_PAGE_SIZ - idx, "none");
         else
         {
-            if(log_mode & LOG_MODE_ERROR)
+            if (log_mode & LOG_MODE_ERROR)
                 idx += snprintf(s + idx, MAX_PAGE_SIZ - idx, "crit,");
-            if(log_mode & LOG_MODE_WARN)
+            if (log_mode & LOG_MODE_WARN)
                 idx += snprintf(s + idx, MAX_PAGE_SIZ - idx, "warn,");
-            if(log_mode & LOG_MODE_PROT)
+            if (log_mode & LOG_MODE_PROT)
                 idx += snprintf(s + idx, MAX_PAGE_SIZ - idx, "prot,");
-            if(log_mode & LOG_MODE_INFO)
+            if (log_mode & LOG_MODE_INFO)
                 idx += snprintf(s + idx, MAX_PAGE_SIZ - idx, "info,");
-            if(log_mode & LOG_MODE_DEBUG)
+            if (log_mode & LOG_MODE_DEBUG)
                 idx += snprintf(s + idx, MAX_PAGE_SIZ - idx, "dbug,");
             s[idx - 1] = 0;
         }
@@ -244,11 +231,11 @@ RETURNS string with build information
 */
 void build_info(
     char * dst
-){
+) {
     u32 idx = 0;
     idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx,
         "Matilda build information\n");
-    if(MATILDA_RELEASE_MODE)
+    if (MATILDA_RELEASE_MODE)
         idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx,
             "Compiled for: release\n");
     else
@@ -275,7 +262,7 @@ void build_info(
 
     idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx, "Can stop MCTS early: %s\n",
         YN(UCT_CAN_STOP_EARLY));
-    if(UCT_CAN_STOP_EARLY)
+    if (UCT_CAN_STOP_EARLY)
         idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx, "  At win rate: %.2f\n",
             UCT_EARLY_WINRATE);
 
@@ -287,27 +274,26 @@ void build_info(
         "Transpositions table memory: %s\n", s);
     release(s);
 
-    if(pl_skip_saving)
+    if (pl_skip_saving)
         idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx,
             "  Chance of skipping save: %u/128\n", pl_skip_saving);
-    if(pl_skip_capture)
+    if (pl_skip_capture)
         idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx,
             "  Chance of skipping capture: %u/128\n", pl_skip_capture);
-    if(pl_skip_pattern)
+    if (pl_skip_pattern)
         idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx,
             "  Chance of skipping pattern: %u/128\n", pl_skip_pattern);
-    if(pl_skip_nakade)
+    if (pl_skip_nakade)
         idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx,
             "  Chance of skipping nakade: %u/128\n", pl_skip_nakade);
-    if(pl_ban_self_atari)
+    if (pl_ban_self_atari)
         idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx,
             "  Chance of prohibiting self-atari: %u/128\n", pl_ban_self_atari);
     idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx,
         "  Use pattern weights: %s\n", YN(USE_PATTERN_WEIGHTS));
     idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx,
         "Use AMAF/RAVE: %s\n", YN(USE_AMAF_RAVE));
-    if(USE_AMAF_RAVE)
-    {
+    if (USE_AMAF_RAVE) {
         idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx,
             "  MSE equiv: %.2f\n", rave_equiv);
         idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx,
@@ -356,7 +342,7 @@ void build_info(
     {
         num_threads = omp_get_num_threads();
     }
-    if(DEFAULT_NUM_THREADS == 0)
+    if (DEFAULT_NUM_THREADS == 0)
         idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx,
             "Default number of threads: automatic (%u)\n", num_threads);
     else
@@ -374,9 +360,8 @@ Log a message with verbosity level critical.
 void flog_crit(
     const char * restrict ctx,
     const char * restrict msg
-){
-    if((log_mode & LOG_MODE_ERROR) != 0)
-    {
+) {
+    if ((log_mode & LOG_MODE_ERROR) != 0) {
         flog("crit", ctx, msg);
         flog(NULL, NULL, "execution aborted due to program panic");
     }
@@ -393,8 +378,8 @@ Log a message with verbosity level warning.
 void flog_warn(
     const char * restrict ctx,
     const char * restrict msg
-){
-    if((log_mode & LOG_MODE_WARN) != 0)
+) {
+    if ((log_mode & LOG_MODE_WARN) != 0)
         flog("warn", ctx, msg);
 }
 
@@ -405,8 +390,8 @@ Log a message with verbosity level communication protocol.
 void flog_prot(
     const char * restrict ctx,
     const char * restrict msg
-){
-    if((log_mode & LOG_MODE_PROT) != 0)
+) {
+    if ((log_mode & LOG_MODE_PROT) != 0)
         flog("prot", ctx, msg);
 }
 
@@ -417,8 +402,8 @@ void flog_prot(
 void flog_info(
     const char * restrict ctx,
     const char * restrict msg
-){
-    if((log_mode & LOG_MODE_INFO) != 0)
+) {
+    if ((log_mode & LOG_MODE_INFO) != 0)
         flog("info", ctx, msg);
 }
 
@@ -429,7 +414,7 @@ void flog_info(
 void flog_debug(
     const char * restrict ctx,
     const char * restrict msg
-){
-    if((log_mode & LOG_MODE_DEBUG) != 0)
+) {
+    if ((log_mode & LOG_MODE_DEBUG) != 0)
         flog("dbug", ctx, msg);
 }

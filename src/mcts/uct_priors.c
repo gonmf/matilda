@@ -62,12 +62,11 @@ typedef struct __quality_pair_ {
 static u16 stones_in_manhattan_dst3(
     const cfg_board * cb,
     move m
-){
+) {
     u16 ret = 0;
-    for(u16 n = 0; n < nei_dst_3[m].count; ++n)
-    {
+    for (u16 n = 0; n < nei_dst_3[m].count; ++n) {
         move b = nei_dst_3[m].coord[n];
-        if(cb->p[b] != EMPTY)
+        if (cb->p[b] != EMPTY)
             ++ret;
     }
     return ret;
@@ -78,7 +77,7 @@ static void stats_add_play_tmp(
     move m,
     u32 mc_w, /* wins */
     u32 mc_v /* visits */
-){
+) {
     u32 idx = stats->plays_count++;
     stats->plays[idx].m = m;
     stats->plays[idx].mc_q = mc_w;
@@ -104,7 +103,7 @@ static void stats_add_play_final(
     move m,
     double mc_q, /* quality */
     u32 mc_v /* visits */
-){
+) {
     u32 idx = stats->plays_count++;
     stats->plays[idx].m = m;
     stats->plays[idx].amaf_q = stats->plays[idx].mc_q = mc_q;
@@ -124,7 +123,7 @@ static bool lib2_self_atari(
     cfg_board * cb,
     bool is_black,
     move m
-){
+) {
     cfg_board tmp;
     cfg_board_clone(&tmp, cb);
     just_play(&tmp, is_black, m);
@@ -147,9 +146,9 @@ void init_new_state(
     tt_stats * stats,
     cfg_board * cb,
     bool is_black
-){
+) {
     bool near_last_play[TOTAL_BOARD_SIZ];
-    if(is_board_move(cb->last_played))
+    if (is_board_move(cb->last_played))
         mark_near_pos(near_last_play, cb, cb->last_played);
     else
         memset(near_last_play, false, TOTAL_BOARD_SIZ);
@@ -174,20 +173,18 @@ void init_new_state(
     /*
     Tactical analysis of attack/defense of unsettled groups.
     */
-    for(u8 i = 0; i < cb->unique_groups_count; ++i)
-    {
+    for (u8 i = 0; i < cb->unique_groups_count; ++i) {
         group * g = cb->g[cb->unique_groups[i]];
-        if(g->eyes < 2)
-        {
+        if (g->eyes < 2) {
             move candidates[MAX_GROUPS];
             u16 candidates_count = 0;
 
-            if(g->is_black == is_black)
+            if (g->is_black == is_black)
             {
-                if(get_killing_play(cb, g) != NONE)
+                if (get_killing_play(cb, g) != NONE)
                 {
                     can_be_saved_all(cb, g, &candidates_count, candidates);
-                    for(u16 j = 0; j < candidates_count; ++j)
+                    for (u16 j = 0; j < candidates_count; ++j)
                         saving_play[candidates[j]] += g->stones.count +
                             g->liberties;
                 }
@@ -195,8 +192,8 @@ void init_new_state(
             else
             {
                 can_be_killed_all(cb, g, &candidates_count, candidates);
-                if(candidates_count > 0 && can_be_saved(cb, g))
-                    for(u16 j = 0; j < candidates_count; ++j)
+                if (candidates_count > 0 && can_be_saved(cb, g))
+                    for (u16 j = 0; j < candidates_count; ++j)
                         capturable[candidates[j]] += g->stones.count +
                             g->liberties;
             }
@@ -209,21 +206,20 @@ void init_new_state(
     move ko = get_ko_play(cb);
     stats->plays_count = 0;
 
-    for(move k = 0; k < cb->empty.count; ++k)
-    {
+    for (move k = 0; k < cb->empty.count; ++k) {
         move m = cb->empty.coord[k];
 
         /*
         Don't play intersections disqualified because of a better, nearby nakade
         or because they are eyes
         */
-        if(!viable[m])
+        if (!viable[m])
             continue;
 
         /*
         Ko violation
         */
-        if(ko == m)
+        if (ko == m)
             continue;
 
         move _ignored;
@@ -232,7 +228,7 @@ void init_new_state(
         /*
         Don't play suicides
         */
-        if(libs == 0)
+        if (libs == 0)
             continue;
 
         libs_after_playing[m] = libs;
@@ -246,34 +242,33 @@ void init_new_state(
         /*
         Avoid typically poor plays like eye shape
         */
-        if(!play_okay[m])
+        if (!play_okay[m])
             mc_v += prior_bad_play;
         else
         {
             /*
             Avoid safe tiger mouths.
             */
-            if(safe_tigers_mouth(cb, is_black, m))
+            if (safe_tigers_mouth(cb, is_black, m))
                 mc_v += prior_bad_play;
         }
 
-        if(out_neighbors4[m] == 2 && ((is_black && cb->white_neighbors8[m] == 0)
+        if (out_neighbors4[m] == 2 && ((is_black && cb->white_neighbors8[m] == 0)
             || (!is_black && cb->black_neighbors8[m] == 0)))
             mc_v += prior_bad_play;
 
         /*
         Prohibit self-ataris that don't contribute to killing an opponent group
         */
-        if(capturable[0] == 0 && (libs < 2 && lib2_self_atari(cb, is_black, m)))
+        if (capturable[0] == 0 && (libs < 2 && lib2_self_atari(cb, is_black, m)))
             mc_v += prior_self_atari;
 
         /*
         Nakade
         */
-        if(in_nakade[m] > 0)
-        {
+        if (in_nakade[m] > 0) {
             group * g = get_closest_group(cb, m);
-            if(g->eyes < 2) /* nakade eye shape is already an eye */
+            if (g->eyes < 2) /* nakade eye shape is already an eye */
             {
                 u16 b = (u16)powf(in_nakade[m], prior_stone_scale_factor);
                 mc_w += prior_nakade + b;
@@ -284,8 +279,7 @@ void init_new_state(
         /*
         Saving plays
         */
-        if(saving_play[m] > 0)
-        {
+        if (saving_play[m] > 0) {
             u16 b = (u16)powf(saving_play[m], prior_stone_scale_factor);
             mc_w += prior_defend + b;
             mc_v += prior_defend + b;
@@ -294,8 +288,7 @@ void init_new_state(
         /*
         Capturing plays
         */
-        if(capturable[m] > 0)
-        {
+        if (capturable[m] > 0) {
             u16 b = (u16)powf(capturable[m], prior_stone_scale_factor);
             mc_w += prior_attack + b;
             mc_v += prior_attack + b;
@@ -304,8 +297,7 @@ void init_new_state(
         /*
         3x3 patterns
         */
-        if(libs > 1 && pat3_find(cb->hash[m], is_black) != 0)
-        {
+        if (libs > 1 && pat3_find(cb->hash[m], is_black) != 0) {
             mc_w += prior_pat3;
             mc_v += prior_pat3;
         }
@@ -314,8 +306,7 @@ void init_new_state(
         /*
         Favor plays near to the last and its group liberties
         */
-        if(near_last_play[m])
-        {
+        if (near_last_play[m]) {
             mc_w += prior_near_last;
             mc_v += prior_near_last;
         }
@@ -324,8 +315,7 @@ void init_new_state(
         /*
         Bonuses based on line and empty parts of the board
         */
-        if(stones_in_manhattan_dst3(cb, m) == 0)
-        {
+        if (stones_in_manhattan_dst3(cb, m) == 0) {
             u8 dst_border = distances_to_border[m];
             switch(dst_border)
             {
@@ -344,7 +334,7 @@ void init_new_state(
                     mc_v += prior_empty;
             }
 
-            if(is_starting[m])
+            if (is_starting[m])
             {
                 mc_w += prior_starting_point;
                 mc_v += prior_starting_point;
@@ -355,8 +345,7 @@ void init_new_state(
         /*
         Corner of the board bonus
         */
-        if(out_neighbors4[m] == 2)
-        {
+        if (out_neighbors4[m] == 2) {
             mc_v += prior_corner;
         }
 
@@ -368,8 +357,7 @@ void init_new_state(
     Transform win/visits into quality/visits statistics and copy MC to
     AMAF/RAVE statistics
     */
-    for(u16 i = 0; i < stats->plays_count; ++i)
-    {
+    for (u16 i = 0; i < stats->plays_count; ++i) {
         tt_play * play = &stats->plays[i];
         play->amaf_q = play->mc_q = play->mc_q / play->mc_n;
         play->amaf_n = play->mc_n;
@@ -378,9 +366,8 @@ void init_new_state(
     /*
     Add pass simulation
     */
-    if(cb->empty.count < TOTAL_BOARD_SIZ / 2 ||
-        stats->plays_count < TOTAL_BOARD_SIZ / 8)
-    {
+    if (cb->empty.count < TOTAL_BOARD_SIZ / 2 ||
+        stats->plays_count < TOTAL_BOARD_SIZ / 8) {
         stats_add_play_final(stats, PASS, UCT_RESIGN_WINRATE, prior_pass);
     }
 }

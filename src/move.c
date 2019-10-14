@@ -33,7 +33,7 @@ RETURNS true if move is a stone play
 */
 bool is_board_move(
     move m
-){
+) {
     return m < TOTAL_BOARD_SIZ;
 }
 
@@ -45,7 +45,7 @@ RETURNS move
 move coord_to_move(
     u8 x,
     u8 y
-){
+) {
     assert(x < BOARD_SIZ && y < BOARD_SIZ);
     return (move)(y * BOARD_SIZ + x);
 }
@@ -57,7 +57,7 @@ void move_to_coord(
     move m,
     u8 * restrict x,
     u8 * restrict y
-){
+) {
     assert(is_board_move(m));
     *x = (u8)(m % BOARD_SIZ);
     *y = (u8)(m / BOARD_SIZ);
@@ -69,17 +69,17 @@ RETURNS the Manhattan distance between two points
 u8 coord_distance(
     const u8 p1[static 2],
     const u8 p2[static 2]
-){
+) {
     assert(p1[0] < BOARD_SIZ);
     assert(p2[0] < BOARD_SIZ);
 
     u8 ret;
-    if(p1[0] > p2[0])
+    if (p1[0] > p2[0])
         ret = p1[0] - p2[0];
     else
         ret = p2[0] - p1[0];
 
-    if(p1[1] > p2[1])
+    if (p1[1] > p2[1])
         ret += p1[1] - p2[1];
     else
         ret += p2[1] - p1[1];
@@ -94,7 +94,7 @@ RETURNS the Manhattan distance between two points
 u8 move_distance(
     move a,
     move b
-){
+) {
     assert(is_board_move(a));
     assert(is_board_move(b));
 
@@ -113,8 +113,8 @@ RETURNS move
 move reduce_move(
     move m,
     d8 method
-){
-    if(!is_board_move(m))
+) {
+    if (!is_board_move(m))
         return m;
 
     u8 x;
@@ -133,20 +133,20 @@ RETURNS move
 */
 move coord_parse_alpha_num(
     const char * s
-){
+) {
     u32 len = strlen(s);
-    if(len != 2 && len != 3)
+    if (len != 2 && len != 3)
         return NONE;
 
     char c1 = low_char(s[0]);
     u8 i1 = c1 > 'i' ? c1 - 'b' : c1 - 'a';
     u32 i2;
-    if(!parse_uint(&i2, s + 1))
+    if (!parse_uint(&i2, s + 1))
         return NONE;
 
     i2 = BOARD_SIZ - i2;
 
-    if(i1 >= BOARD_SIZ || i2 >= BOARD_SIZ)
+    if (i1 >= BOARD_SIZ || i2 >= BOARD_SIZ)
         return NONE;
 
     return coord_to_move(i1, i2);
@@ -159,9 +159,9 @@ RETURNS move
 */
 move coord_parse_alpha_alpha(
     const char * s
-){
+) {
     u32 len = strlen(s);
-    if(len != 2)
+    if (len != 2)
         return NONE;
 
     char c1 = low_char(s[0]);
@@ -170,7 +170,7 @@ move coord_parse_alpha_alpha(
     u8 i1 = c1 - 'a';
     u8 i2 = c2 - 'a';
 
-    if(i1 >= BOARD_SIZ || i2 >= BOARD_SIZ)
+    if (i1 >= BOARD_SIZ || i2 >= BOARD_SIZ)
         return NONE;
 
     return coord_to_move(i1, i2);
@@ -182,9 +182,9 @@ RETURNS move
 */
 move coord_parse_num_num(
     const char * s
-){
+) {
     u32 len = strlen(s);
-    if(len < 3 || len > 5)
+    if (len < 3 || len > 5)
         return NONE;
 
     char buf[8];
@@ -192,21 +192,21 @@ move coord_parse_num_num(
 
 
     char * c1 = strtok(buf, "-");
-    if(c1 == NULL)
+    if (c1 == NULL)
         return NONE;
     u32 i1;
-    if(!parse_uint(&i1, c1))
+    if (!parse_uint(&i1, c1))
         return NONE;
-    if(i1 < 1 || i1 > BOARD_SIZ)
+    if (i1 < 1 || i1 > BOARD_SIZ)
         return NONE;
 
     char * c2 = strtok(NULL, "-");
-    if(c2 == NULL)
+    if (c2 == NULL)
         return NONE;
     u32 i2;
-    if(!parse_uint(&i2, c2))
+    if (!parse_uint(&i2, c2))
         return NONE;
-    if(i2 < 1 || i2 > BOARD_SIZ)
+    if (i2 < 1 || i2 > BOARD_SIZ)
         return NONE;
 
     return coord_to_move(i1 - 1, i2 - 1);
@@ -218,7 +218,7 @@ Converts a move to a string representation, like 4-4.
 void coord_to_num_num(
     char * dst,
     move m
-){
+) {
     assert(is_board_move(m));
     u8 x;
     u8 y;
@@ -234,13 +234,13 @@ The value I is skipped.
 void coord_to_alpha_num(
     char * dst,
     move m
-){
+) {
     assert(is_board_move(m));
     u8 x;
     u8 y;
     move_to_coord(m, &x, &y);
     char c = x + 'A';
-    if(c >= 'I')
+    if (c >= 'I')
         ++c;
 
     snprintf(dst, 8, "%c%u", c,  BOARD_SIZ - y);
@@ -253,7 +253,7 @@ The character I is allowed.
 void coord_to_alpha_alpha(
     char * dst,
     move m
-){
+) {
     assert(is_board_move(m));
     u8 x;
     u8 y;
@@ -270,13 +270,12 @@ void init_moves_by_distance(
     move_seq neighbours[static TOTAL_BOARD_SIZ],
     u16 distance,
     bool include_own
-){
-    for(move a = 0; a < TOTAL_BOARD_SIZ; ++a)
-    {
+) {
+    for (move a = 0; a < TOTAL_BOARD_SIZ; ++a) {
         move c = 0;
-        for(move b = 0; b < TOTAL_BOARD_SIZ; ++b)
-            if(include_own || a != b)
-                if(move_distance(a, b) <= distance)
+        for (move b = 0; b < TOTAL_BOARD_SIZ; ++b)
+            if (include_own || a != b)
+                if (move_distance(a, b) <= distance)
                 {
                     neighbours[a].coord[c] = b;
                     ++c;
@@ -292,7 +291,7 @@ another
 void copy_moves(
     move_seq * restrict dst,
     const move_seq * restrict src
-){
+) {
     assert(dst->count + src->count < TOTAL_BOARD_SIZ);
     memcpy(dst->coord + dst->count, src->coord, src->count * sizeof(move));
     dst->count += src->count;
@@ -305,7 +304,7 @@ Does not test if move is not already present.
 void add_move(
     move_seq * ms,
     move m
-){
+) {
     ms->coord[ms->count] = m;
     ms->count++;
 }
@@ -317,10 +316,9 @@ Crashes if the move is not found.
 void rem_move(
     move_seq * ms,
     move m
-){
-    for(u16 i = 0; i < ms->count; ++i)
-        if(ms->coord[i] == m)
-        {
+) {
+    for (u16 i = 0; i < ms->count; ++i)
+        if (ms->coord[i] == m) {
             ms->count--;
             ms->coord[i] = ms->coord[ms->count];
             return;

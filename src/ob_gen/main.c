@@ -43,7 +43,7 @@ typedef struct __simple_state_transition_ {
 
 static u32 hash_function(
     void * o
-){
+) {
     simple_state_transition * s = (simple_state_transition *)o;
     return s->hash;
 }
@@ -51,7 +51,7 @@ static u32 hash_function(
 static int compare_function(
     const void * restrict o1,
     const void * restrict o2
-){
+) {
     simple_state_transition * s1 = (simple_state_transition *)o1;
     simple_state_transition * s2 = (simple_state_transition *)o2;
     return memcmp(s1->p, s2->p, PACKED_BOARD_SIZ);
@@ -61,9 +61,9 @@ static int compare_function(
 
 static u64 get_total_count(
     simple_state_transition * s
-){
+) {
     u32 ret = 0;
-    for(move i = 0; i < TOTAL_BOARD_SIZ; ++i)
+    for (move i = 0; i < TOTAL_BOARD_SIZ; ++i)
         ret += s->count[i];
     return ret;
 }
@@ -74,15 +74,14 @@ Exports internal OB table to simple OB format in file.
 static void export_table_as_ob(
     hash_table * table,
     u32 min_samples
-){
+) {
     char * str = alloc();
 
     snprintf(str, MAX_PAGE_SIZ, "%s%ux%u.ob.new", data_folder(),
         BOARD_SIZ, BOARD_SIZ);
 
     FILE * fp = fopen(str, "w");
-    if(fp == NULL)
-    {
+    if (fp == NULL) {
         fprintf(stderr,
             "error: failed to open opening book file for writing\n");
         release(str);
@@ -95,35 +94,31 @@ static void export_table_as_ob(
     simple_state_transition ** ssts =
         (simple_state_transition **)hash_table_export_to_array(table);
 
-    for(u32 idx = 0; ssts[idx]; ++idx)
-    {
+    for (u32 idx = 0; ssts[idx]; ++idx) {
         simple_state_transition * h = ssts[idx];
 
         u32 total_count = get_total_count(h);
-        if(total_count < min_samples)
-        {
+        if (total_count < min_samples) {
             ++skipped;
             continue;
         }
 
         u32 best_count = 0;
         move best = NONE;
-        for(move i = 0; i < TOTAL_BOARD_SIZ; ++i)
-            if(h->count[i] > best_count)
+        for (move i = 0; i < TOTAL_BOARD_SIZ; ++i)
+            if (h->count[i] > best_count)
             {
                 best_count = h->count[i];
                 best = i;
             }
 
-        if(best == NONE)
-        {
+        if (best == NONE) {
             fprintf(stderr, "error: unexpected absence of samples\n");
             release(str);
             exit(EXIT_FAILURE);
         }
 
-        if(best_count <= total_count / 2)
-        {
+        if (best_count <= total_count / 2) {
             ++skipped;
             continue;
         }
@@ -133,8 +128,7 @@ static void export_table_as_ob(
 
         board_to_ob_rule(str, p, best);
         size_t w = fwrite(str, strlen(str), 1, fp);
-        if(w != 1)
-        {
+        if (w != 1) {
             fprintf(stderr, "error: write failed\n");
             release(str);
             exit(EXIT_FAILURE);
@@ -145,8 +139,7 @@ static void export_table_as_ob(
 
     size_t w = fwrite(str, strlen(str), 1, fp);
     release(str);
-    if(w != 1)
-    {
+    if (w != 1) {
         fprintf(stderr, "error: write failed\n");
         exit(EXIT_FAILURE);
     }
@@ -159,39 +152,35 @@ es or majority representative\n", exported, skipped);
 int main(
     int argc,
     char * argv[]
-){
+) {
     bool no_print = false;
 
-    for(int i = 1; i < argc; ++i)
-    {
-        if(i < argc - 1 && strcmp(argv[i], "--max_depth") == 0)
-        {
+    for (int i = 1; i < argc; ++i) {
+        if (i < argc - 1 && strcmp(argv[i], "--max_depth") == 0) {
             d32 a;
-            if(!parse_int(&a, argv[i + 1]) || a < 1)
+            if (!parse_int(&a, argv[i + 1]) || a < 1)
                 goto lbl_usage;
             ++i;
             ob_depth = a;
             continue;
         }
-        if(i < argc - 1 && strcmp(argv[i], "--min_game_turns") == 0)
-        {
+        if (i < argc - 1 && strcmp(argv[i], "--min_game_turns") == 0) {
             d32 a;
-            if(!parse_int(&a, argv[i + 1]) || a < 1)
+            if (!parse_int(&a, argv[i + 1]) || a < 1)
                 goto lbl_usage;
             ++i;
             minimum_turns = a;
             continue;
         }
-        if(i < argc - 1 && strcmp(argv[i], "--min_samples") == 0)
-        {
+        if (i < argc - 1 && strcmp(argv[i], "--min_samples") == 0) {
             d32 a;
-            if(!parse_int(&a, argv[i + 1]) || a < 1)
+            if (!parse_int(&a, argv[i + 1]) || a < 1)
                 goto lbl_usage;
             ++i;
             minimum_samples = a;
             continue;
         }
-        if(strcmp(argv[i], "--no_print") == 0){
+        if (strcmp(argv[i], "--no_print") == 0) {
             no_print = true;
             continue;
         }
@@ -236,7 +225,7 @@ d. (default: %u)\n", minimum_samples);
     u32 filenames_found = recurse_find_files(data_folder(), ".sgf",
         filenames, MAX_FILES);
 
-    if(filenames_found == 0)
+    if (filenames_found == 0)
         printf("No SGF files found.\n");
     else
         printf("Found %u SGF files.\n", filenames_found);
@@ -247,36 +236,32 @@ d. (default: %u)\n", minimum_samples);
     char * buf = malloc(MAX_FILE_SIZ);
     game_record * gr = malloc(sizeof(game_record));
 
-    for(u32 fid = 0; fid < filenames_found; ++fid)
-    {
-        if(!no_print)
+    for (u32 fid = 0; fid < filenames_found; ++fid) {
+        if (!no_print)
             printf("%u/%u: %s", fid + 1, filenames_found, filenames[fid]);
 
-        if(!import_game_from_sgf2(gr, filenames[fid], buf, MAX_FILE_SIZ))
-        {
-            if(!no_print)
+        if (!import_game_from_sgf2(gr, filenames[fid], buf, MAX_FILE_SIZ)) {
+            if (!no_print)
                 printf(" skipped\n");
             continue;
         }
 
-        if(gr->turns < minimum_turns){
-            if(!no_print)
+        if (gr->turns < minimum_turns) {
+            if (!no_print)
                 printf(" skipped\n");
             continue;
         }
 
         /* Ignore handicap matches */
-        if(gr->handicap_stones.count > 0)
-        {
-            if(!no_print)
+        if (gr->handicap_stones.count > 0) {
+            if (!no_print)
                 printf(" skipped\n");
             continue;
         }
 
         /* Only use winner plays so ignore games without score */
-        if(gr->final_score == 0)
-        {
-            if(!no_print)
+        if (gr->final_score == 0) {
+            if (!no_print)
                 printf(" skipped\n");
             continue;
         }
@@ -285,28 +270,27 @@ d. (default: %u)\n", minimum_samples);
         clear_board(&b);
 
         ++games_used;
-        if(!no_print)
+        if (!no_print)
             printf(" (%u)\n", gr->turns);
 
         bool winner_is_black = gr->final_score > 0;
         bool is_black = false;
-        for(d16 k = 0; k < MIN(ob_depth, gr->turns); ++k)
-        {
+        for (d16 k = 0; k < MIN(ob_depth, gr->turns); ++k) {
             is_black = !is_black;
             move m = gr->moves[k];
 
             /* Stop at the first play that is a pass */
-            if(!is_board_move(m))
+            if (!is_board_move(m))
                 break;
 
             u16 caps;
             u8 libs = libs_after_play_slow(&b, is_black, m, &caps);
-            if(libs < 1 || caps > 0)
+            if (libs < 1 || caps > 0)
                 break;
 
-            if(is_black != winner_is_black)
+            if (is_black != winner_is_black)
             {
-                if(!attempt_play_slow(&b, is_black, m))
+                if (!attempt_play_slow(&b, is_black, m))
                 {
                     fprintf(stderr, "\rerror: file contains illegal plays\n");
                     exit(EXIT_FAILURE);
@@ -319,7 +303,7 @@ d. (default: %u)\n", minimum_samples);
             board b2;
             memcpy(&b2, &b, sizeof(board));
 
-            if(!attempt_play_slow(&b, is_black, m))
+            if (!attempt_play_slow(&b, is_black, m))
             {
                 fprintf(stderr, "\rerror: file contains illegal plays\n");
                 exit(EXIT_FAILURE);
@@ -336,11 +320,11 @@ d. (default: %u)\n", minimum_samples);
             simple_state_transition * entry =
                 (simple_state_transition *)hash_table_find(table, &stmp);
 
-            if(entry == NULL) /* new state */
+            if (entry == NULL) /* new state */
             {
                 simple_state_transition * entry = malloc(sizeof(
                     simple_state_transition));
-                if(entry == NULL)
+                if (entry == NULL)
                 {
                     fprintf(stderr, "\rerror: new sst: system out of memory\n");
                     exit(EXIT_FAILURE);
@@ -360,8 +344,7 @@ d. (default: %u)\n", minimum_samples);
 
     printf("\n\n");
 
-    if(ob_rules == 0)
-    {
+    if (ob_rules == 0) {
         printf("No rules found; nothing to do. Closing.\n");
         return EXIT_SUCCESS;
     }

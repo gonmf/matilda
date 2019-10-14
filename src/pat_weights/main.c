@@ -49,7 +49,7 @@ typedef struct __pat3t_ {
 
 static u32 pat3t_hash_function(
     void * a
-){
+) {
     pat3t * b = (pat3t *)a;
     return b->value;
 }
@@ -57,7 +57,7 @@ static u32 pat3t_hash_function(
 static int pat3t_compare_function(
     const void * restrict a,
     const void * restrict b
-){
+) {
     pat3t * f1 = (pat3t *)a;
     pat3t * f2 = (pat3t *)b;
     return ((d32)(f2->value)) - ((d32)(f1->value));
@@ -68,7 +68,7 @@ static char * filenames[MAX_FILES];
 static u16 get_pattern(
     cfg_board * cb,
     move m
-){
+) {
     u8 v[3][3];
     pat3_transpose(v, cb->p, m);
     pat3_reduce_auto(v);
@@ -78,12 +78,11 @@ static u16 get_pattern(
 int main(
     int argc,
     char * argv[]
-){
+) {
     bool no_print = false;
 
-    for(int i = 1; i < argc; ++i)
-    {
-        if(strcmp(argv[i], "--no_print") == 0){
+    for (int i = 1; i < argc; ++i) {
+        if (strcmp(argv[i], "--no_print") == 0) {
             no_print = true;
             continue;
         }
@@ -108,8 +107,7 @@ int main(
 
     u32 filenames_found = recurse_find_files(data_folder(), ".sgf",
         filenames, MAX_FILES);
-    if(filenames_found == 0)
-    {
+    if (filenames_found == 0) {
         timestamp(ts);
         fprintf(stderr, "%s: No SGF files found, exiting.\n", ts);
         release(ts);
@@ -130,33 +128,29 @@ int main(
     char  * buf = malloc(MAX_FILE_SIZ);
     game_record * gr = malloc(sizeof(game_record));
 
-    for(u32 fid = 0; fid < filenames_found; ++fid)
-    {
-        if(!no_print)
+    for (u32 fid = 0; fid < filenames_found; ++fid) {
+        if (!no_print)
             printf("%u/%u: %s", fid + 1, filenames_found, filenames[fid]);
 
-        if(!import_game_from_sgf2(gr, filenames[fid], buf, MAX_FILE_SIZ))
-        {
+        if (!import_game_from_sgf2(gr, filenames[fid], buf, MAX_FILE_SIZ)) {
             ++games_skipped;
-            if(!no_print)
+            if (!no_print)
                 printf(" skipped\n");
             continue;
         }
 
         /* Ignore handicap matches */
-        if(gr->handicap_stones.count > 0)
-        {
+        if (gr->handicap_stones.count > 0) {
             ++games_skipped;
-            if(!no_print)
+            if (!no_print)
                 printf(" skipped\n");
             continue;
         }
 
         /* Only use winner plays so ignore games without score */
-        if(gr->final_score == 0)
-        {
+        if (gr->final_score == 0) {
             ++games_skipped;
-            if(!no_print)
+            if (!no_print)
                 printf(" skipped\n");
             continue;
         }
@@ -165,7 +159,7 @@ int main(
         clear_board(&b);
 
         ++games_used;
-        if(!no_print)
+        if (!no_print)
             printf(" (%u)\n", gr->turns);
 
         bool winner_is_black = gr->final_score > 0;
@@ -173,33 +167,32 @@ int main(
 
         u16 total_turns = (gr->turns * 2) / 3;
 
-        for(d16 k = 0; k < total_turns; ++k)
-        {
+        for (d16 k = 0; k < total_turns; ++k) {
             is_black = !is_black;
             move m = gr->moves[k];
 
-            if(m == PASS)
+            if (m == PASS)
                 pass(&b);
             else
             {
-                if(is_black == winner_is_black)
+                if (is_black == winner_is_black)
                 {
                     cfg_board cb;
                     cfg_from_board(&cb, &b);
 
                     u16 winner_pattern = get_pattern(&cb, m);
 
-                    for(move n = 0; n < TOTAL_BOARD_SIZ; ++n)
+                    for (move n = 0; n < TOTAL_BOARD_SIZ; ++n)
                     {
-                        if(cb.p[n] != EMPTY)
+                        if (cb.p[n] != EMPTY)
                             continue;
 
-                        if(ko_violation(&cb, n))
+                        if (ko_violation(&cb, n))
                             continue;
 
                         u8 libs;
                         bool captures;
-                        if((libs = safe_to_play2(&cb, true, n, &captures))
+                        if ((libs = safe_to_play2(&cb, true, n, &captures))
                             == 0)
                             continue;
 
@@ -207,7 +200,7 @@ int main(
 
                         pat3t * found = hash_table_find(feature_table,
                             &pattern);
-                        if(found == NULL)
+                        if (found == NULL)
                         {
                             found = malloc(sizeof(pat3t));
                             found->value = pattern;
@@ -241,8 +234,7 @@ int main(
     snprintf(buf, MAX_PAGE_SIZ, "%s%ux%u.weights.new", data_folder(),
         BOARD_SIZ, BOARD_SIZ);
     FILE * fp = fopen(buf, "w");
-    if(fp == NULL)
-    {
+    if (fp == NULL) {
         fprintf(stderr, "error: couldn't open file for writing\n");
         exit(EXIT_FAILURE);
     }
@@ -251,8 +243,7 @@ int main(
     fprintf(fp, "# games used: %u skipped: %u\n# unique patterns: %u\n\n#Hex We\
 ight Count\n", games_used, games_skipped, unique_patterns);
 
-    while(*table != NULL)
-    {
+    while (*table != NULL) {
         pat3t * f = *table;
         ++table;
 
@@ -261,8 +252,7 @@ ight Count\n", games_used, games_skipped, unique_patterns);
         snprintf(buf, 256, "%04x %5u %u\n", f->value, (u32)weight,
             f->appearances);
         size_t w = fwrite(buf, strlen(buf), 1, fp);
-        if(w != 1)
-        {
+        if (w != 1) {
             fprintf(stderr, "error: write failed\n");
             exit(EXIT_FAILURE);
         }

@@ -41,10 +41,8 @@ static u16 concurrent_allocs = 0;
 /*
 Initiate the safe allocation functions.
 */
-void alloc_init()
-{
-    if(!queue_inited)
-    {
+void alloc_init() {
+    if (!queue_inited) {
         omp_init_lock(&queue_lock);
         queue_inited = true;
     }
@@ -54,40 +52,35 @@ void alloc_init()
 Allocate a block of exactly MAX_PAGE_SIZ.
 Thread-safe.
 */
-void * alloc()
-{
+void * alloc() {
     void * ret = NULL;
 
     omp_set_lock(&queue_lock);
 
 #if !MATILDA_RELEASE_MODE
     concurrent_allocs++;
-    if(concurrent_allocs >= WARN_CONCURRENT_ALLOCS)
-    {
+    if (concurrent_allocs >= WARN_CONCURRENT_ALLOCS) {
         fprintf(stderr, "alloc: suspicious memory allocations number (%u)\n",
             concurrent_allocs);
     }
 #endif
 
-    if(queue != NULL)
-    {
+    if (queue != NULL) {
         ret = queue;
         queue = queue->next;
     }
     omp_unset_lock(&queue_lock);
 
-    if(ret == NULL){
+    if (ret == NULL) {
 #if MATILDA_RELEASE_MODE
         ret = malloc(MAX_PAGE_SIZ);
-        if(ret == NULL)
-        {
+        if (ret == NULL) {
             fprintf(stderr, "alloc: out of memory exception\n");
             exit(EXIT_FAILURE);
         }
 #else
         u8 * buf = malloc(MAX_PAGE_SIZ + 2);
-        if(buf == NULL)
-        {
+        if (buf == NULL) {
             fprintf(stderr, "alloc: out of memory exception\n");
             exit(EXIT_FAILURE);
         }
@@ -105,8 +98,7 @@ void * alloc()
     returned.
     */
 #if !MATILDA_RELEASE_MODE
-    if(((u8 *)ret)[-1] != HEAD_FREE || ((u8 *)ret)[MAX_PAGE_SIZ] != TAIL_FREE)
-    {
+    if (((u8 *)ret)[-1] != HEAD_FREE || ((u8 *)ret)[MAX_PAGE_SIZ] != TAIL_FREE) {
         fprintf(stderr, "memory corruption detected; check for repeated release\
 s, rolling block releasing or writes past bounds (1)\n");
         exit(EXIT_FAILURE);
@@ -126,12 +118,11 @@ Thread-safe.
 */
 void release(
     void * ptr
-){
+) {
 #if !MATILDA_RELEASE_MODE
     /* canaries -- detection of out of bounds writes */
     u8 * s = (u8 *)ptr;
-    if(s[-1] != HEAD_USED || s[MAX_PAGE_SIZ] != TAIL_USED)
-    {
+    if (s[-1] != HEAD_USED || s[MAX_PAGE_SIZ] != TAIL_USED) {
         fprintf(stderr, "memory corruption detected; check for repeated release\
 s, rolling block releasing or writes past bounds (2)\n");
         exit(EXIT_FAILURE);

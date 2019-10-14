@@ -23,8 +23,7 @@ Returns a current time mark with millisecond precision. Will be monotonic if
 supported by the system. Is thread-safe.
 RETURNS time in milliseconds
 */
-u64 current_time_in_millis()
-{
+u64 current_time_in_millis() {
     struct timespec ts;
 
 #ifdef __MACH__
@@ -60,8 +59,7 @@ u64 current_time_in_millis()
 Returns the current nanoseconds count from the system clock. Is not monotonic.
 RETURNS nanoseconds
 */
-u64 current_nanoseconds()
-{
+u64 current_nanoseconds() {
     struct timespec ts;
 
 #ifdef __MACH__
@@ -96,7 +94,7 @@ Produces a textual timestamp based on the local timezone and system time.
 */
 void timestamp(
     char * buffer
-){
+) {
     time_t t = time(NULL);
     struct tm tm = *localtime(&t);
 

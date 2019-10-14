@@ -28,9 +28,9 @@ representation.
 void pack_matrix(
     u8 dst[static PACKED_BOARD_SIZ],
     const u8 src[static TOTAL_BOARD_SIZ]
-){
+) {
     memset(dst, 0, PACKED_BOARD_SIZ);
-    for(move m = 0; m < TOTAL_BOARD_SIZ; ++m)
+    for (move m = 0; m < TOTAL_BOARD_SIZ; ++m)
         dst[m / 4] |= src[m] << ((m % 4) * 2);
 }
 
@@ -41,8 +41,8 @@ representation.
 void unpack_matrix(
     u8 dst[static TOTAL_BOARD_SIZ],
     const u8 src[static PACKED_BOARD_SIZ]
-){
-    for(move m = 0; m < TOTAL_BOARD_SIZ; ++m)
+) {
+    for (move m = 0; m < TOTAL_BOARD_SIZ; ++m)
         dst[m] = (src[m / 4] >> ((m % 4) * 2)) & 0x3;
 }
 
@@ -54,7 +54,7 @@ RETURNS true if equal
 bool board_are_equal(
     board * restrict a,
     const board * restrict b
-){
+) {
     return memcmp(a->p, b->p, TOTAL_BOARD_SIZ) == 0 && a->last_played ==
         b->last_played && a->last_eaten == b->last_eaten;
 }
@@ -66,10 +66,10 @@ RETURNS stone count
 */
 u16 stone_count(
     const u8 p[static TOTAL_BOARD_SIZ]
-){
+) {
     u16 count = 0;
-    for(move m = 0; m < TOTAL_BOARD_SIZ; ++m)
-        if(p[m] != EMPTY)
+    for (move m = 0; m < TOTAL_BOARD_SIZ; ++m)
+        if (p[m] != EMPTY)
             ++count;
     return count;
 }
@@ -80,13 +80,13 @@ RETURNS difference in stone numbers, positive values for more black stones
 */
 d16 stone_diff(
     const u8 p[static TOTAL_BOARD_SIZ]
-){
+) {
     d16 diff = 0;
-    for(move m = 0; m < TOTAL_BOARD_SIZ; ++m)
-        if(p[m] == BLACK_STONE)
+    for (move m = 0; m < TOTAL_BOARD_SIZ; ++m)
+        if (p[m] == BLACK_STONE)
             ++diff;
         else
-            if(p[m] == WHITE_STONE)
+            if (p[m] == WHITE_STONE)
                 --diff;
     return diff;
 }
@@ -100,17 +100,16 @@ void stone_count_and_diff(
     const u8 p[static TOTAL_BOARD_SIZ],
     u16 * count,
     d16 * diff
-){
+) {
     d16 d = 0;
     u16 c = 0;
-    for(move m = 0; m < TOTAL_BOARD_SIZ; ++m)
-        if(p[m] == BLACK_STONE)
-        {
+    for (move m = 0; m < TOTAL_BOARD_SIZ; ++m)
+        if (p[m] == BLACK_STONE) {
             ++d;
             ++c;
         }
         else
-            if(p[m] == WHITE_STONE){
+            if (p[m] == WHITE_STONE) {
                 --d;
                 ++c;
             }
@@ -123,12 +122,12 @@ Inverts the color of the stones on the board.
 */
 void invert_color(
     u8 p[static TOTAL_BOARD_SIZ]
-){
-    for(move m = 0; m < TOTAL_BOARD_SIZ; ++m)
-        if(p[m] == BLACK_STONE)
+) {
+    for (move m = 0; m < TOTAL_BOARD_SIZ; ++m)
+        if (p[m] == BLACK_STONE)
             p[m] = WHITE_STONE;
         else
-            if(p[m] == WHITE_STONE)
+            if (p[m] == WHITE_STONE)
                 p[m] = BLACK_STONE;
 }
 
@@ -141,8 +140,8 @@ RETURNS reduction method that can be used to revert the reduction
 d8 reduce_auto(
     board * b,
     bool is_black
-){
-    if(!is_black)
+) {
+    if (!is_black)
         invert_color(b->p);
 
     u8 r1[TOTAL_BOARD_SIZ];
@@ -162,49 +161,41 @@ d8 reduce_auto(
 
     d8 reduction = NOREDUCE;
     void * champion = b->p;
-    if(memcmp(champion, r1, TOTAL_BOARD_SIZ) > 0)
-    {
+    if (memcmp(champion, r1, TOTAL_BOARD_SIZ) > 0) {
         champion = r1;
         reduction = ROTATE90;
     }
 
-    if(memcmp(champion, r2, TOTAL_BOARD_SIZ) > 0)
-    {
+    if (memcmp(champion, r2, TOTAL_BOARD_SIZ) > 0) {
         champion = r2;
         reduction = ROTATE180;
     }
 
-    if(memcmp(champion, r3, TOTAL_BOARD_SIZ) > 0)
-    {
+    if (memcmp(champion, r3, TOTAL_BOARD_SIZ) > 0) {
         champion = r3;
         reduction = ROTATE270;
     }
 
-    if(memcmp(champion, f0, TOTAL_BOARD_SIZ) > 0)
-    {
+    if (memcmp(champion, f0, TOTAL_BOARD_SIZ) > 0) {
         champion = f0;
         reduction = ROTFLIP0;
     }
 
-    if(memcmp(champion, f1, TOTAL_BOARD_SIZ) > 0)
-    {
+    if (memcmp(champion, f1, TOTAL_BOARD_SIZ) > 0) {
         champion = f1;
         reduction = ROTFLIP90;
     }
 
-    if(memcmp(champion, f2, TOTAL_BOARD_SIZ) > 0)
-    {
+    if (memcmp(champion, f2, TOTAL_BOARD_SIZ) > 0) {
         champion = f2;
         reduction = ROTFLIP180;
     }
 
-    if(memcmp(champion, f3, TOTAL_BOARD_SIZ) > 0)
-    {
+    if (memcmp(champion, f3, TOTAL_BOARD_SIZ) > 0) {
         reduction = ROTFLIP270;
     }
 
-    switch(reduction)
-    {
+    switch(reduction) {
         case ROTATE90:
             memcpy(b->p, r1, TOTAL_BOARD_SIZ);
             break;
@@ -240,20 +231,18 @@ Modifies the board according to a reduction method.
 void reduce_fixed(
     board * b,
     d8 method
-){
-    if(method < 0)
-    {
+) {
+    if (method < 0) {
         invert_color(b->p);
         method = method * -1;
     }
 
-    if(method == NOREDUCE)
+    if (method == NOREDUCE)
         return;
 
     u8 r[TOTAL_BOARD_SIZ];
     u8 f[TOTAL_BOARD_SIZ];
-    switch(method)
-    {
+    switch(method) {
         case ROTATE90:
             matrix_rotate(r, b->p, BOARD_SIZ, 1);
             break;
@@ -291,14 +280,13 @@ Performs the inverse operation of reduction of a given reduce code.
 void out_board_revert_reduce(
     out_board * b,
     d8 method
-){
-    if(method < 0)
+) {
+    if (method < 0)
         method = method * -1;
 
     out_board r;
     out_board f;
-    switch(method)
-    {
+    switch(method) {
         case ROTATE90:
             matrix_rotate2(&r, b, 3);
             break;

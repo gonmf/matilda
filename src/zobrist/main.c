@@ -26,18 +26,17 @@ working directory.
 
 static u8 count_bits(
     u64 v
-){
+) {
     u8 ret = 0;
-    while(v){
-        if(v & 1)
+    while (v) {
+        if (v & 1)
             ++ret;
         v /= 2;
     }
     return ret;
 }
 
-int main()
-{
+int main() {
     alloc_init();
 
     flog_config_modes(LOG_MODE_ERROR | LOG_MODE_WARN);
@@ -59,51 +58,49 @@ of the data.\nWhen you are satisfied press ENTER\n\n");
     fd_set readfs;
     memset(&readfs, 0, sizeof(fd_set));
 
-    while(best_variance > 0.0)
-    {
+    while (best_variance > 0.0) {
         rand_reinit();
-        for(u32 attempts = 0; attempts < 100; ++attempts)
-        {
-            for(u32 i = 0; i < table_size; ++i)
+        for (u32 attempts = 0; attempts < 100; ++attempts) {
+            for (u32 i = 0; i < table_size; ++i)
             {
                 do
                 {
                     table[i] = 0;
-                    for(u32 j = 0; j < 64; ++j)
+                    for (u32 j = 0; j < 64; ++j)
                         table[i] = (table[i] << 1) | rand_u16(2);
 
                     bool found = false;
-                    for(u32 j = 0; j < i; ++j)
-                        if(table[i] == table[j])
+                    for (u32 j = 0; j < i; ++j)
+                        if (table[i] == table[j])
                         {
                             found = true;
                             break;
                         }
-                    if(found)
+                    if (found)
                         continue;
                 }
-                while(count_bits(table[i]) != 32);
+                while (count_bits(table[i]) != 32);
             }
 
             memset(bits, 0, sizeof(u32) * 64);
-            for(u32 i = 0; i < table_size; ++i)
-                for(u32 b = 0; b < 64; ++b)
-                    if((table[i] >> b) & 1)
+            for (u32 i = 0; i < table_size; ++i)
+                for (u32 b = 0; b < 64; ++b)
+                    if ((table[i] >> b) & 1)
                         ++bits[b];
 
 
             u32 total = 0;
-            for(u32 b = 0; b < 64; ++b)
+            for (u32 b = 0; b < 64; ++b)
                 total += bits[b];
             double average = ((double)total) / ((double)64);
 
             double variance = 0.0;
-            for(u32 b = 0; b < 64; ++b)
+            for (u32 b = 0; b < 64; ++b)
                 variance += (((double)bits[b]) - average) * (((double)bits[b]) -
                     average);
             variance = variance / ((double)64);
 
-            if(variance < best_variance)
+            if (variance < best_variance)
             {
                 best_variance = variance;
                 memcpy(iv, table, sizeof(u64) * table_size);
@@ -119,7 +116,7 @@ of the data.\nWhen you are satisfied press ENTER\n\n");
         tm.tv_usec = 0;
 
         int ready = select(STDIN_FILENO + 1, &readfs, NULL, NULL, &tm);
-        if(ready > 0)
+        if (ready > 0)
             break;
     }
 
@@ -133,8 +130,7 @@ of the data.\nWhen you are satisfied press ENTER\n\n");
 
 
     FILE * h = fopen(filename, "wb");
-    if(h == NULL)
-    {
+    if (h == NULL) {
         fprintf(stderr, "Error: failed to open file %s for writing\n",
             filename);
         release(filename);
@@ -142,8 +138,7 @@ of the data.\nWhen you are satisfied press ENTER\n\n");
     }
 
     size_t w = fwrite(iv, sizeof(u64), TOTAL_BOARD_SIZ * 2, h);
-    if(w != TOTAL_BOARD_SIZ * 2)
-    {
+    if (w != TOTAL_BOARD_SIZ * 2) {
         fprintf(stderr, "Error: unexpected number of bytes written\n");
         release(filename);
         exit(EXIT_FAILURE);

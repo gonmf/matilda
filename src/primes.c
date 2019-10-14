@@ -10,16 +10,25 @@ Intended for initializing hash tables
 
 static bool primality_test(
     u32 v
-){
-    if(v < 2)
+) {
+    if (v < 2) {
         return false;
-    if(v < 4)
+    }
+
+    if (v < 4) {
         return true;
-    if((v % 2) == 0)
+    }
+
+    if ((v % 2) == 0) {
         return false;
-    for(u32 d = 3; d * d <= v; d += 2)
-        if((v % d) == 0)
+    }
+
+    for (u32 d = 3; d * d <= v; d += 2) {
+        if ((v % d) == 0) {
             return false;
+        }
+    }
+
     return true;
 }
 
@@ -29,8 +38,10 @@ RETURNS prime value
 */
 u32 get_prime_near(
     u32 v
-){
-    while(!primality_test(v))
+) {
+    while (!primality_test(v)) {
         ++v;
+    }
+
     return v;
 }
