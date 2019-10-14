@@ -338,8 +338,8 @@ d. (default: %u)\n", minimum_samples);
 
             if(entry == NULL) /* new state */
             {
-                simple_state_transition * entry = (simple_state_transition
-                    *)malloc(sizeof(simple_state_transition));
+                simple_state_transition * entry = malloc(sizeof(
+                    simple_state_transition));
                 if(entry == NULL)
                 {
                     fprintf(stderr, "\rerror: new sst: system out of memory\n");

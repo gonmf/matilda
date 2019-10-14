@@ -199,7 +199,7 @@ static void _recurse_find_files(
 
         if(!ends_in(entry->d_name, extension)) /* try following as if folder */
         {
-            char * path = (char *)malloc(strl);
+            char * path = malloc(strl);
             if(path == NULL)
                 flog_crit("file", "find files: system out of memory");
 
@@ -210,7 +210,7 @@ static void _recurse_find_files(
         else
         {
             allocated += strl;
-            filenames[filenames_found] = (char *)malloc(strl);
+            filenames[filenames_found] = malloc(strl);
             if(filenames[filenames_found] == NULL)
                 flog_crit("file", "find files: system out of memory");
 

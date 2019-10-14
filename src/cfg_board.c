@@ -64,7 +64,7 @@ static group * alloc_group()
     }
     else
     {
-        ret = (group *)malloc(sizeof(group));
+        ret = malloc(sizeof(group));
         if(ret == NULL)
             flog_crit("cfg", "system out of memory");
     }

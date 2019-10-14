@@ -89,15 +89,14 @@ u32 data_set_load2(
 
     ds_elems = MIN(ds_elems, max);
 
-    data_set = (training_example **)malloc(sizeof(training_example *) * ds_elems
-        * 8);
+    data_set = malloc(sizeof(training_example *) * ds_elems * 8);
     if(data_set == NULL)
         flog_crit("dset", "system out of memory\n");
 
     u32 insert = 0;
     u32 i;
     for(i = 0; i < ds_elems; ++i){
-        data_set[insert] = (training_example *)malloc(sizeof(training_example));
+        data_set[insert] = malloc(sizeof(training_example));
         if(data_set[insert] == NULL)
             flog_crit("dset", "system out of memory (1)\n");
 
@@ -124,8 +123,7 @@ u32 data_set_load2(
             if(repeated)
                 continue;
 
-            data_set[insert] = (training_example *)malloc(
-                sizeof(training_example));
+            data_set[insert] = malloc(sizeof(training_example));
             if(data_set[insert] == NULL)
                 flog_crit("dset", "system out of memory (2)\n");
 

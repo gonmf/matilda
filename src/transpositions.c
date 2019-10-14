@@ -65,13 +65,11 @@ void tt_init()
         max_allocated_states = mbs / sizeof(tt_stats);
         number_of_buckets = get_prime_near(max_allocated_states / 2);
 
-        b_stats_table = (tt_stats **)calloc(number_of_buckets,
-            sizeof(tt_stats *));
+        b_stats_table = calloc(number_of_buckets, sizeof(tt_stats *));
         if(b_stats_table == NULL)
             flog_crit("tt", "system out of memory");
 
-        w_stats_table = (tt_stats **)calloc(number_of_buckets,
-            sizeof(tt_stats *));
+        w_stats_table = calloc(number_of_buckets, sizeof(tt_stats *));
         if(w_stats_table == NULL)
             flog_crit("tt", "system out of memory");
 
@@ -165,7 +163,7 @@ static tt_stats * create_state(
 
     if(ret == NULL)
     {
-        ret = (tt_stats *)malloc(sizeof(tt_stats));
+        ret = malloc(sizeof(tt_stats));
         if(ret == NULL)
             flog_crit("tt", "create_state: system out of memory");
 

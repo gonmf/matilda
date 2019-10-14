@@ -516,7 +516,7 @@ void pat3_init()
         return;
     pat3_table_inited = true;
 
-    char * file_buf = (char *)malloc(MAX_FILE_SIZ);
+    char * file_buf = malloc(MAX_FILE_SIZ);
     if(file_buf == NULL)
         flog_crit("pat3", "system out of memory");
 

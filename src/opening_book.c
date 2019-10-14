@@ -201,7 +201,7 @@ void opening_book_init()
     /*
     Allocate O.B. hash table
     */
-    ob_trans_table = (ob_entry **)calloc(nr_buckets, sizeof(ob_entry *));
+    ob_trans_table = calloc(nr_buckets, sizeof(ob_entry *));
     if(ob_trans_table == NULL)
         flog_crit("ob", "system out of memory");
 

@@ -53,7 +53,7 @@ of the data.\nWhen you are satisfied press ENTER\n\n");
     memset(iv, 0, TOTAL_BOARD_SIZ * sizeof(u64));
 
     u32 table_size = TOTAL_BOARD_SIZ * 2;
-    u64 * table = (u64 *)malloc(sizeof(u64) * table_size);
+    u64 * table = malloc(sizeof(u64) * table_size);
     u32 bits[64];
     double best_variance = 999999.0;
     fd_set readfs;

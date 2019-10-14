@@ -30,14 +30,14 @@ hash_table * hash_table_create(
     assert(hash_function != NULL);
     assert(compare_function != NULL);
 
-    hash_table * ht = (hash_table *)malloc(sizeof(hash_table));
+    hash_table * ht = malloc(sizeof(hash_table));
     if(ht == NULL)
         flog_crit("ht", "could not allocate table memory");
 
     ht->number_of_buckets = get_prime_near(nr_buckets);
     ht->elem_size = elem_size;
     ht->elements = 0;
-    ht->table = (ht_node **)calloc(ht->number_of_buckets, sizeof(ht_node *));
+    ht->table = calloc(ht->number_of_buckets, sizeof(ht_node *));
     ht->hash_func = hash_function;
     ht->cmp_func = compare_function;
     return ht;
@@ -73,7 +73,7 @@ void hash_table_insert_unique(
         h = h->next;
     }
 
-    ht_node * node = (ht_node *)malloc(sizeof(ht_node));
+    ht_node * node = malloc(sizeof(ht_node));
     if(node == NULL)
         flog_crit("ht", "could not allocate node memory");
 
@@ -97,7 +97,7 @@ void hash_table_insert(
     u32 hash = ht->hash_func(elem);
     u32 bucket = fast_bucket(hash, ht->number_of_buckets);
 
-    ht_node * node = (ht_node *)malloc(sizeof(ht_node));
+    ht_node * node = malloc(sizeof(ht_node));
     node->data = elem;
     node->next = ht->table[bucket];
     ht->table[bucket] = node;
@@ -266,7 +266,7 @@ void ** hash_table_export_to_array(
 ){
     assert(ht != NULL);
 
-    void ** ret = (void *)malloc(sizeof(void *) * (ht->elements + 1));
+    void ** ret = malloc(sizeof(void *) * (ht->elements + 1));
     assert(ret != NULL);
 
     u32 curr_elem = 0;

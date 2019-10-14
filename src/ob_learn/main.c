@@ -213,8 +213,7 @@ n", secs_per_turn);
 
             if(entry == NULL) /* new state */
             {
-                entry = (simple_state_transition *)malloc(
-                    sizeof(simple_state_transition));
+                entry = malloc(sizeof(simple_state_transition));
                 if(entry == NULL){
                     fprintf(stderr, "\rerror: new sst: system out of memory\n");
                     exit(EXIT_FAILURE);
