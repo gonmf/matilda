@@ -55,7 +55,7 @@ static void clean_symbols(
     char * s;
     for (u8 i = 0; i < 3; ++i)
         for (u8 j = 0; j < 3; ++j)
-            switch(p[i][j])
+            switch (p[i][j])
             {
                 case SYMBOL_EMPTY:
                     p[i][j] = EMPTY;
@@ -122,7 +122,7 @@ static void rotate(
 ) {
     u8 i;
     u8 j;
-    switch(rotations) {
+    switch (rotations) {
         case 1:
             for (i = 0; i < 3; ++i)
                 for (j = 0; j < 3; ++j)
@@ -150,7 +150,7 @@ static void reduce_pattern(
 
     u8 r[3][3];
     u8 f[3][3];
-    switch(method) {
+    switch (method) {
         case ROTATE90:
             rotate((const u8 (*)[3])v, r, 1);
             break;
@@ -353,7 +353,7 @@ static void expand_pattern(
 
     for (u8 i = 0; i < 3; ++i)
         for (u8 j = 0; j < 3; ++j)
-            switch(p[i][j])
+            switch (p[i][j])
             {
                 case SYMBOL_OWN_OR_EMPTY:
                     p[i][j] = BLACK_STONE;

@@ -28,7 +28,7 @@ void matrix_rotate(
     u8 x;
     u8 y;
 
-    switch(rotations) {
+    switch (rotations) {
         case 0:
             memcpy(dst, src, side_len * side_len);
             break;
@@ -71,7 +71,7 @@ void matrix_rotate2(
     u8 x;
     u8 y;
 
-    switch(rotations) {
+    switch (rotations) {
         case 0:
             memcpy(dst->value, src->value, TOTAL_BOARD_SIZ *
                 sizeof(double));
@@ -165,7 +165,7 @@ void reduce_coord(
     u8 oy = *y;
     u8 ix;
     u8 iy;
-    switch(method) {
+    switch (method) {
         case ROTATE90:
             ox = *y;
             oy = side_len - 1 - *x;

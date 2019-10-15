@@ -60,8 +60,7 @@ void * alloc() {
 #if !MATILDA_RELEASE_MODE
     concurrent_allocs++;
     if (concurrent_allocs >= WARN_CONCURRENT_ALLOCS) {
-        fprintf(stderr, "alloc: suspicious memory allocations number (%u)\n",
-            concurrent_allocs);
+        fprintf(stderr, "alloc: suspicious memory allocations number (%u)\n", concurrent_allocs);
     }
 #endif
 
@@ -99,10 +98,10 @@ void * alloc() {
     */
 #if !MATILDA_RELEASE_MODE
     if (((u8 *)ret)[-1] != HEAD_FREE || ((u8 *)ret)[MAX_PAGE_SIZ] != TAIL_FREE) {
-        fprintf(stderr, "memory corruption detected; check for repeated release\
-s, rolling block releasing or writes past bounds (1)\n");
+        fprintf(stderr, "memory corruption detected; check for repeated releases, rolling block releasing or writes past bounds (1)\n");
         exit(EXIT_FAILURE);
     }
+
     /* change the canary */
     ((u8 *)ret)[-1] = HEAD_USED;
     ((u8 *)ret)[MAX_PAGE_SIZ] = TAIL_USED;
@@ -123,10 +122,10 @@ void release(
     /* canaries -- detection of out of bounds writes */
     u8 * s = (u8 *)ptr;
     if (s[-1] != HEAD_USED || s[MAX_PAGE_SIZ] != TAIL_USED) {
-        fprintf(stderr, "memory corruption detected; check for repeated release\
-s, rolling block releasing or writes past bounds (2)\n");
+        fprintf(stderr, "memory corruption detected; check for repeated releases, rolling block releasing or writes past bounds (2)\n");
         exit(EXIT_FAILURE);
     }
+
     s[-1] = HEAD_FREE;
     s[MAX_PAGE_SIZ] = TAIL_FREE;
 #endif
@@ -135,8 +134,10 @@ s, rolling block releasing or writes past bounds (2)\n");
     mem_link * l = (mem_link *)ptr;
     l->next = queue;
     queue = l;
+
 #if !MATILDA_RELEASE_MODE
     --concurrent_allocs;
 #endif
+
     omp_unset_lock(&queue_lock);
 }

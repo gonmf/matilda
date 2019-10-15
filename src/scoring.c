@@ -80,7 +80,7 @@ d16 score_stones_only(
 ) {
     d16 r = 0;
     for (move m = 0; m < TOTAL_BOARD_SIZ; ++m)
-        switch(p[m]) {
+        switch (p[m]) {
             case BLACK_STONE:
                 r += 2;
                 break;
@@ -103,7 +103,7 @@ d16 score_stones_and_eyes2(
     bool _ignored;
     d16 r = 0;
     for (move m = 0; m < TOTAL_BOARD_SIZ; ++m)
-        switch(cb->p[m]) {
+        switch (cb->p[m]) {
             case BLACK_STONE:
                 r += 2;
                 break;

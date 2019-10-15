@@ -66,8 +66,9 @@ static u16 stones_in_manhattan_dst3(
     u16 ret = 0;
     for (u16 n = 0; n < nei_dst_3[m].count; ++n) {
         move b = nei_dst_3[m].coord[n];
-        if (cb->p[b] != EMPTY)
+        if (cb->p[b] != EMPTY) {
             ++ret;
+        }
     }
     return ret;
 }
@@ -148,10 +149,11 @@ void init_new_state(
     bool is_black
 ) {
     bool near_last_play[TOTAL_BOARD_SIZ];
-    if (is_board_move(cb->last_played))
+    if (is_board_move(cb->last_played)) {
         mark_near_pos(near_last_play, cb, cb->last_played);
-    else
+    } else {
         memset(near_last_play, false, TOTAL_BOARD_SIZ);
+    }
 
     u8 in_nakade[TOTAL_BOARD_SIZ];
     memset(in_nakade, 0, TOTAL_BOARD_SIZ);
@@ -179,23 +181,22 @@ void init_new_state(
             move candidates[MAX_GROUPS];
             u16 candidates_count = 0;
 
-            if (g->is_black == is_black)
-            {
-                if (get_killing_play(cb, g) != NONE)
-                {
+            if (g->is_black == is_black) {
+                if (get_killing_play(cb, g) != NONE) {
                     can_be_saved_all(cb, g, &candidates_count, candidates);
-                    for (u16 j = 0; j < candidates_count; ++j)
-                        saving_play[candidates[j]] += g->stones.count +
-                            g->liberties;
+
+                    for (u16 j = 0; j < candidates_count; ++j) {
+                        saving_play[candidates[j]] += g->stones.count + g->liberties;
+                    }
                 }
-            }
-            else
-            {
+            } else {
                 can_be_killed_all(cb, g, &candidates_count, candidates);
-                if (candidates_count > 0 && can_be_saved(cb, g))
-                    for (u16 j = 0; j < candidates_count; ++j)
-                        capturable[candidates[j]] += g->stones.count +
-                            g->liberties;
+
+                if (candidates_count > 0 && can_be_saved(cb, g)) {
+                    for (u16 j = 0; j < candidates_count; ++j) {
+                        capturable[candidates[j]] += g->stones.count + g->liberties;
+                    }
+                }
             }
         }
     }
@@ -213,14 +214,16 @@ void init_new_state(
         Don't play intersections disqualified because of a better, nearby nakade
         or because they are eyes
         */
-        if (!viable[m])
+        if (!viable[m]) {
             continue;
+        }
 
         /*
         Ko violation
         */
-        if (ko == m)
+        if (ko == m) {
             continue;
+        }
 
         move _ignored;
         u8 libs = libs_after_play(cb, is_black, m, &_ignored);
@@ -228,8 +231,9 @@ void init_new_state(
         /*
         Don't play suicides
         */
-        if (libs == 0)
+        if (libs == 0) {
             continue;
+        }
 
         libs_after_playing[m] = libs;
 
@@ -242,34 +246,34 @@ void init_new_state(
         /*
         Avoid typically poor plays like eye shape
         */
-        if (!play_okay[m])
+        if (!play_okay[m]) {
             mc_v += prior_bad_play;
-        else
-        {
+        } else {
             /*
             Avoid safe tiger mouths.
             */
-            if (safe_tigers_mouth(cb, is_black, m))
+            if (safe_tigers_mouth(cb, is_black, m)) {
                 mc_v += prior_bad_play;
+            }
         }
 
-        if (out_neighbors4[m] == 2 && ((is_black && cb->white_neighbors8[m] == 0)
-            || (!is_black && cb->black_neighbors8[m] == 0)))
+        if (out_neighbors4[m] == 2 && ((is_black && cb->white_neighbors8[m] == 0) || (!is_black && cb->black_neighbors8[m] == 0))) {
             mc_v += prior_bad_play;
+        }
 
         /*
         Prohibit self-ataris that don't contribute to killing an opponent group
         */
-        if (capturable[0] == 0 && (libs < 2 && lib2_self_atari(cb, is_black, m)))
+        if (capturable[0] == 0 && (libs < 2 && lib2_self_atari(cb, is_black, m))) {
             mc_v += prior_self_atari;
+        }
 
         /*
         Nakade
         */
         if (in_nakade[m] > 0) {
             group * g = get_closest_group(cb, m);
-            if (g->eyes < 2) /* nakade eye shape is already an eye */
-            {
+            if (g->eyes < 2) { /* nakade eye shape is already an eye */
                 u16 b = (u16)powf(in_nakade[m], prior_stone_scale_factor);
                 mc_w += prior_nakade + b;
                 mc_v += prior_nakade + b;
@@ -317,8 +321,7 @@ void init_new_state(
         */
         if (stones_in_manhattan_dst3(cb, m) == 0) {
             u8 dst_border = distances_to_border[m];
-            switch(dst_border)
-            {
+            switch (dst_border) {
                 case 0:
                     // Do not play there at all
                     continue;
@@ -334,8 +337,7 @@ void init_new_state(
                     mc_v += prior_empty;
             }
 
-            if (is_starting[m])
-            {
+            if (is_starting[m]) {
                 mc_w += prior_starting_point;
                 mc_v += prior_starting_point;
             }
@@ -366,8 +368,7 @@ void init_new_state(
     /*
     Add pass simulation
     */
-    if (cb->empty.count < TOTAL_BOARD_SIZ / 2 ||
-        stats->plays_count < TOTAL_BOARD_SIZ / 8) {
+    if (cb->empty.count < TOTAL_BOARD_SIZ / 2 || stats->plays_count < TOTAL_BOARD_SIZ / 8) {
         stats_add_play_final(stats, PASS, UCT_RESIGN_WINRATE, prior_pass);
     }
 }

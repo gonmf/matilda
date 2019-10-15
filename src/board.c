@@ -30,8 +30,9 @@ void pack_matrix(
     const u8 src[static TOTAL_BOARD_SIZ]
 ) {
     memset(dst, 0, PACKED_BOARD_SIZ);
-    for (move m = 0; m < TOTAL_BOARD_SIZ; ++m)
+    for (move m = 0; m < TOTAL_BOARD_SIZ; ++m) {
         dst[m / 4] |= src[m] << ((m % 4) * 2);
+    }
 }
 
 /*
@@ -42,8 +43,9 @@ void unpack_matrix(
     u8 dst[static TOTAL_BOARD_SIZ],
     const u8 src[static PACKED_BOARD_SIZ]
 ) {
-    for (move m = 0; m < TOTAL_BOARD_SIZ; ++m)
+    for (move m = 0; m < TOTAL_BOARD_SIZ; ++m) {
         dst[m] = (src[m / 4] >> ((m % 4) * 2)) & 0x3;
+    }
 }
 
 
@@ -55,8 +57,7 @@ bool board_are_equal(
     board * restrict a,
     const board * restrict b
 ) {
-    return memcmp(a->p, b->p, TOTAL_BOARD_SIZ) == 0 && a->last_played ==
-        b->last_played && a->last_eaten == b->last_eaten;
+    return memcmp(a->p, b->p, TOTAL_BOARD_SIZ) == 0 && a->last_played == b->last_played && a->last_eaten == b->last_eaten;
 }
 
 
@@ -68,9 +69,11 @@ u16 stone_count(
     const u8 p[static TOTAL_BOARD_SIZ]
 ) {
     u16 count = 0;
-    for (move m = 0; m < TOTAL_BOARD_SIZ; ++m)
-        if (p[m] != EMPTY)
+    for (move m = 0; m < TOTAL_BOARD_SIZ; ++m) {
+        if (p[m] != EMPTY) {
             ++count;
+        }
+    }
     return count;
 }
 
@@ -82,12 +85,13 @@ d16 stone_diff(
     const u8 p[static TOTAL_BOARD_SIZ]
 ) {
     d16 diff = 0;
-    for (move m = 0; m < TOTAL_BOARD_SIZ; ++m)
-        if (p[m] == BLACK_STONE)
+    for (move m = 0; m < TOTAL_BOARD_SIZ; ++m) {
+        if (p[m] == BLACK_STONE) {
             ++diff;
-        else
-            if (p[m] == WHITE_STONE)
-                --diff;
+        } else if (p[m] == WHITE_STONE) {
+            --diff;
+        }
+    }
     return diff;
 }
 
@@ -103,16 +107,17 @@ void stone_count_and_diff(
 ) {
     d16 d = 0;
     u16 c = 0;
-    for (move m = 0; m < TOTAL_BOARD_SIZ; ++m)
+
+    for (move m = 0; m < TOTAL_BOARD_SIZ; ++m) {
         if (p[m] == BLACK_STONE) {
             ++d;
             ++c;
+        } else if (p[m] == WHITE_STONE) {
+            --d;
+            ++c;
         }
-        else
-            if (p[m] == WHITE_STONE) {
-                --d;
-                ++c;
-            }
+    }
+
     *count = c;
     *diff = d;
 }
@@ -123,12 +128,13 @@ Inverts the color of the stones on the board.
 void invert_color(
     u8 p[static TOTAL_BOARD_SIZ]
 ) {
-    for (move m = 0; m < TOTAL_BOARD_SIZ; ++m)
-        if (p[m] == BLACK_STONE)
+    for (move m = 0; m < TOTAL_BOARD_SIZ; ++m) {
+        if (p[m] == BLACK_STONE) {
             p[m] = WHITE_STONE;
-        else
-            if (p[m] == WHITE_STONE)
-                p[m] = BLACK_STONE;
+        } else if (p[m] == WHITE_STONE) {
+            p[m] = BLACK_STONE;
+        }
+    }
 }
 
 /*
@@ -141,8 +147,9 @@ d8 reduce_auto(
     board * b,
     bool is_black
 ) {
-    if (!is_black)
+    if (!is_black) {
         invert_color(b->p);
+    }
 
     u8 r1[TOTAL_BOARD_SIZ];
     u8 r2[TOTAL_BOARD_SIZ];
@@ -195,7 +202,7 @@ d8 reduce_auto(
         reduction = ROTFLIP270;
     }
 
-    switch(reduction) {
+    switch (reduction) {
         case ROTATE90:
             memcpy(b->p, r1, TOTAL_BOARD_SIZ);
             break;
@@ -216,7 +223,6 @@ d8 reduce_auto(
             break;
         case ROTFLIP270:
             memcpy(b->p, f3, TOTAL_BOARD_SIZ);
-            break;
     }
 
     b->last_played = reduce_move(b->last_played, reduction);
@@ -237,12 +243,13 @@ void reduce_fixed(
         method = method * -1;
     }
 
-    if (method == NOREDUCE)
+    if (method == NOREDUCE) {
         return;
+    }
 
     u8 r[TOTAL_BOARD_SIZ];
     u8 f[TOTAL_BOARD_SIZ];
-    switch(method) {
+    switch (method) {
         case ROTATE90:
             matrix_rotate(r, b->p, BOARD_SIZ, 1);
             break;
@@ -266,7 +273,6 @@ void reduce_fixed(
         case ROTFLIP270:
             matrix_rotate(f, b->p, BOARD_SIZ, 3);
             matrix_flip(r, f, BOARD_SIZ);
-            break;
     }
     memcpy(b->p, r, TOTAL_BOARD_SIZ);
 
@@ -281,12 +287,13 @@ void out_board_revert_reduce(
     out_board * b,
     d8 method
 ) {
-    if (method < 0)
+    if (method < 0) {
         method = method * -1;
+    }
 
     out_board r;
     out_board f;
-    switch(method) {
+    switch (method) {
         case ROTATE90:
             matrix_rotate2(&r, b, 3);
             break;
