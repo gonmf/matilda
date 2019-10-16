@@ -35,7 +35,7 @@ Take note that the real total memory used will be a few MiB more.
 
 EXPECTED: 10 to 64000
 */
-#define DEFAULT_UCT_MEMORY 7000
+#define DEFAULT_UCT_MEMORY 2000
 
 
 /*
