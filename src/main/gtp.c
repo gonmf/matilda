@@ -50,8 +50,7 @@ GTP_README.
 
 extern d16 komi;
 
-const char * supported_commands[] =
-{
+const char * supported_commands[] = {
     "boardsize",
     "clear_board",
     "clear_cache",

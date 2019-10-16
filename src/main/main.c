@@ -74,11 +74,7 @@ static u16 _dummy; /* used for testing CLOP */
 
 
 
-static double time_allot_factor; /* TODO: to remove after paper */
-
-
-const void * tunable[] =
-{
+const void * tunable[] = {
     "f", "prior_stone_scale_factor", &prior_stone_scale_factor,
     "i", "prior_even", &prior_even,
     "i", "prior_nakade", &prior_nakade,
@@ -102,9 +98,6 @@ const void * tunable[] =
     "i", "pl_ban_self_atari", &pl_ban_self_atari,
     "i", "expansion_delay", &expansion_delay,
     "i", "dummy", &_dummy,
-
-    "f", "time_allot_factor", &time_allot_factor, /* TODO: remove after paper */
-
     NULL
 };
 

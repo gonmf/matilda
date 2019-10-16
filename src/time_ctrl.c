@@ -16,9 +16,6 @@ say anything. All times are in milliseconds.
 #include "types.h"
 
 
-double time_allot_factor = TIME_ALLOT_FACTOR;
-
-
 /*
 Calculate the time available based on a Canadian byo-yomi time system. Also
 compensates for network latency.
@@ -39,7 +36,7 @@ u32 calc_time_to_play(
     /*
     Non-linear factor
     */
-    mtt *= time_allot_factor;
+    mtt *= TIME_ALLOT_FACTOR;
 
     double t_t;
     if (ts->byo_yomi_stones_remaining > 0) {
