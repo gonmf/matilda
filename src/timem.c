@@ -98,6 +98,5 @@ void timestamp(
     time_t t = time(NULL);
     struct tm tm = *localtime(&t);
 
-    snprintf(buffer, MAX_PAGE_SIZ, "%02u:%02u:%02u", tm.tm_hour, tm.tm_min,
-        tm.tm_sec);
+    snprintf(buffer, MAX_PAGE_SIZ, "%02u:%02u:%02u", tm.tm_hour, tm.tm_min, tm.tm_sec);
 }

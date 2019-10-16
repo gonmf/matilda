@@ -1727,7 +1727,7 @@ bool can_play_ignoring_ko(
         return false;
     }
 
-    if (cb->black_neighbors4[m] + cb->white_neighbors4[m] + out_neighbors4[m] < 4){
+    if (cb->black_neighbors4[m] + cb->white_neighbors4[m] + out_neighbors4[m] < 4) {
         return true;
     }
 

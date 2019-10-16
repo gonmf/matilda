@@ -23,12 +23,16 @@ RETURNS true if filename is valid
 bool validate_filename(
     const char * filename
 ) {
-    if (filename == NULL || strlen(filename) == 0)
+    if (filename == NULL || strlen(filename) == 0) {
         return false;
-    if (filename[0] == '/')
+    }
+    if (filename[0] == '/') {
         return false;
-    if (filename[0] == '-')
+    }
+    if (filename[0] == '-') {
         return false;
+    }
+
     return (strstr(filename, "..") == NULL);
 }
 
@@ -38,8 +42,7 @@ RETURNS true if char is whitespace
 bool is_white_space(
     char c
 ) {
-    return c == 0x09 || c == 0x0a || c == 0x0b || c == 0x0c || c == 0x0d || c ==
-        0x20;
+    return c == 0x09 || c == 0x0a || c == 0x0b || c == 0x0c || c == 0x0d || c == 0x20;
 }
 
 /*
@@ -65,12 +68,15 @@ char * trim(
     char * s
 ) {
     while (1) {
-        if (s[0] == 0)
+        if (s[0] == 0) {
             return NULL;
-        if (is_white_space(s[0]))
+        }
+
+        if (is_white_space(s[0])) {
             ++s;
-        else
+        } else {
             break;
+        }
     }
 
     d32 i = strlen(s) - 1;
@@ -79,8 +85,10 @@ char * trim(
             s[i + 1] = 0;
             break;
         }
+
         --i;
     }
+
     return s;
 }
 
@@ -90,8 +98,10 @@ Converts an ASCII char to lower case.
 char low_char(
     char c
 ) {
-    if (c >= 'A' && c <= 'Z')
+    if (c >= 'A' && c <= 'Z') {
         return c - 'A' + 'a';
+    }
+
     return c;
 }
 
@@ -122,6 +132,7 @@ void str_between(
         dst[0] = 0;
         return;
     }
+
     t += strlen(start);
 
     char * t2 = strstr(t, end);
@@ -144,10 +155,13 @@ bool starts_with(
 ) {
     u16 i = 0;
     while (h[i]) {
-        if (s[i] != h[i])
+        if (s[i] != h[i]) {
             return false;
+        }
+
         ++i;
     }
+
     return true;
 }
 
@@ -159,8 +173,10 @@ static bool char_match(
         if (c == *hay) {
             return true;
         }
+
         ++hay;
     }
+
     return false;
 }
 
@@ -169,10 +185,13 @@ static bool string_match(
     const char * restrict hay
 ) {
     while (*s) {
-        if (!char_match(*s, hay))
+        if (!char_match(*s, hay)) {
             return false;
+        }
+
         ++s;
     }
+
     return true;
 }
 
@@ -185,12 +204,11 @@ bool parse_int(
     const char * s
 ) {
     if (strlen(s) < 2) {
-        if (!string_match(s, "1234567890"))
+        if (!string_match(s, "1234567890")) {
             return false;
-    } else {
-        if (!char_match(*s, "+-1234567890") ||
-            !string_match(s + 1, "1234567890"))
-            return false;
+        }
+    } else if (!char_match(*s, "+-1234567890") || !string_match(s + 1, "1234567890")) {
+        return false;
     }
 
     errno = 0;
@@ -206,8 +224,9 @@ bool parse_uint(
     u32 * i,
     const char * s
 ) {
-    if (!string_match(s, "1234567890"))
+    if (!string_match(s, "1234567890")) {
         return false;
+    }
 
     errno = 0;
     *i = (u32)strtol(s, NULL, 0);
@@ -222,8 +241,9 @@ bool parse_float(
     double * d,
     const char * s
 ) {
-    if (!string_match(s, "1234567890,.Ee+-XxPp"))
+    if (!string_match(s, "1234567890,.Ee+-XxPp")) {
         return false;
+    }
 
     errno = 0;
     *d = strtod(s, NULL);
@@ -251,6 +271,7 @@ bool parse_color(
         *is_black = false;
         return true;
     }
+
     return false;
 }
 
@@ -265,8 +286,10 @@ bool parse_gtp_vertex(
 ) {
     char buf[8];
     strncpy(buf, s, 7);
-    if (strlen(buf) < 2)
+    if (strlen(buf) < 2) {
         return false;
+    }
+
     lower_case(buf);
 
     if (strcmp(buf, "pass") == 0) {
@@ -311,19 +334,22 @@ void format_mem_size(
 ) {
     char * suffix = "bytes";
     double fbytes = (double)bytes;
+
     if (fbytes > 800.0) {
         fbytes /= 1024.0;
         suffix = "KiB";
+
         if (fbytes > 800.0) {
             fbytes /= 1024.0;
             suffix = "MiB";
-            if (fbytes > 800.0)
-            {
+
+            if (fbytes > 800.0) {
                 fbytes /= 1024.0;
                 suffix = "GiB";
             }
         }
     }
+
     snprintf(dst, MAX_PAGE_SIZ, "%.1f %s", fbytes, suffix);
 }
 
@@ -341,22 +367,25 @@ void format_nr_millis(
 
     char * suffix = NULL;
     double fmillis = (double)millis;
+
     if (fmillis > 750.0) {
         fmillis /= 1000.0;
         suffix = "s";
+
         if (fmillis > 45.0) {
             fmillis /= 60.0;
             suffix = "m";
-            if (fmillis > 45.0)
-            {
+
+            if (fmillis > 45.0) {
                 fmillis /= 60.0;
                 suffix = "h";
             }
         }
+
         snprintf(dst, MAX_PAGE_SIZ, "%.1f%s", fmillis, suffix);
-    }
-    else
+    } else {
         snprintf(dst, MAX_PAGE_SIZ, "%.0fms", fmillis);
+    }
 }
 
 /*
@@ -370,18 +399,22 @@ u8 levenshtein_dst(
     u8 l1 = strlen(s1);
     u8 l2 = strlen(s2);
 
-    if (l1 == 0)
+    if (l1 == 0) {
         return l2;
-    if (l2 == 0)
+    }
+    if (l2 == 0) {
         return l1;
+    }
 
     u8 * v = alloc();
-    for (u8 i = 0; i <= l2; ++i)
+    for (u8 i = 0; i <= l2; ++i) {
         v[i] = i;
+    }
 
     u8 ret;
     for (u8 i = 0; i < l1; ++i) {
         u8 min = i + 1;
+
         for (u8 j = 0; j < l2; ++j) {
             u8 cost = !((s1[i] == s2[j]) || (i && j && (s1[i - 1] == s2[j]) &&
                 (s1[i] == s2[j - 1])));
@@ -389,8 +422,10 @@ u8 levenshtein_dst(
             v[j] = min;
             min = ret;
         }
+
         v[l2] = ret;
     }
+
     release(v);
     return ret;
 }

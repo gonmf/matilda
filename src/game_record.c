@@ -215,7 +215,7 @@ bool test_superko(
                 captured = true;
             }
 
-            if (captured && memcmp(tmp.p, current_state.p, TOTAL_BOARD_SIZ) == 0){
+            if (captured && memcmp(tmp.p, current_state.p, TOTAL_BOARD_SIZ) == 0) {
                 return true;
             }
         } else {
