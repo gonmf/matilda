@@ -38,14 +38,11 @@ extern u32 limit_by_playouts;
 
 static void update_names(
     bool human_is_black
-){
-    if(human_is_black)
-    {
+) {
+    if (human_is_black) {
         snprintf(current_game.black_name, MAX_PLAYER_NAME_SIZ, "human");
         snprintf(current_game.white_name, MAX_PLAYER_NAME_SIZ, "matilda");
-    }
-    else
-    {
+    } else {
         snprintf(current_game.black_name, MAX_PLAYER_NAME_SIZ, "matilda");
         snprintf(current_game.white_name, MAX_PLAYER_NAME_SIZ, "human");
     }
@@ -58,9 +55,8 @@ static bool text_play(
     const char * vertex,
     bool is_black,
     bool * passed
-){
-    if(strcmp(vertex, "pass") == 0)
-    {
+) {
+    if (strcmp(vertex, "pass") == 0) {
         add_play(&current_game, PASS);
         *passed = true;
         return false;
@@ -72,16 +68,14 @@ static bool text_play(
     move m = coord_parse_num_num(vertex);
 #endif
 
-    if(m == NONE)
-    {
+    if (m == NONE) {
         fprintf(stderr, "Play is malformed.\n");
         return true;
     }
 
     board current_state;
     current_game_state(&current_state, &current_game);
-    if(!can_play_slow(&current_state, is_black, m))
-    {
+    if (!can_play_slow(&current_state, is_black, m)) {
         fprintf(stderr, "Play is illegal.\n");
         return true;
     }
@@ -101,43 +95,45 @@ static void text_genmove(
     bool is_black,
     bool * restrict passed,
     bool * restrict resigned
-){
+) {
     out_board out_b;
     board current_state;
     current_game_state(&current_state, &current_game);
 
     u16 stones = stone_count(current_state.p);
     u32 milliseconds;
-    if(is_black)
+    if (is_black) {
         milliseconds = calc_time_to_play(&current_clock_black, stones);
-    else
+    } else {
         milliseconds = calc_time_to_play(&current_clock_white, stones);
+    }
 
     u64 curr_time = current_time_in_millis();
     u64 stop_time = curr_time + milliseconds;
     u64 early_stop_time = curr_time + (milliseconds / 4);
     bool has_play;
-    if(limit_by_playouts > 0)
-        has_play = evaluate_position_sims(&current_state, is_black, &out_b,
-            limit_by_playouts);
-    else
-        has_play = evaluate_position_timed(&current_state, is_black, &out_b,
-            stop_time, early_stop_time);
+    if (limit_by_playouts > 0) {
+        has_play = evaluate_position_sims(&current_state, is_black, &out_b,limit_by_playouts);
+    } else {
+        has_play = evaluate_position_timed(&current_state, is_black, &out_b,stop_time, early_stop_time);
+    }
 
-    if(!has_play)
-    {
-        if(pass_when_losing)
+    if (!has_play) {
+        if (pass_when_losing) {
             *resigned = true;
-        else
+        } else {
             *passed = true;
+        }
+
         return;
     }
 
     move m;
-    if(out_b.pass >= JUST_PASS_WINRATE)
+    if (out_b.pass >= JUST_PASS_WINRATE) {
         m = PASS;
-    else
+    } else {
         m = select_play(&out_b, is_black, &current_game);
+    }
 
     add_play(&current_game, m);
 
@@ -147,27 +143,27 @@ static void text_genmove(
 static void text_newgame(
     bool * restrict human_player_color,
     bool * restrict is_black
-){
-    if(save_all_games_to_file && current_game.turns > 0)
-    {
+) {
+    if (save_all_games_to_file && current_game.turns > 0) {
         char * filename = alloc();
-        if(export_game_as_sgf_auto_named(&current_game, filename))
+
+        if (export_game_as_sgf_auto_named(&current_game, filename)) {
             fprintf(stderr, "Game record written to %s.\n", filename);
-        else
-            fprintf(stderr, "Error encountered when attempting to write game re\
-cord to file.\n");
+        } else {
+            fprintf(stderr, "Error encountered when attempting to write game record to file.\n");
+        }
+
         release(filename);
     }
 
-    fprintf(stderr,
-        "Start new game?\nY - Yes\nN - No (quit)\nS - Yes but switch colors\n");
-    while(1)
-    {
+    fprintf(stderr, "Start new game?\nY - Yes\nN - No (quit)\nS - Yes but switch colors\n");
+
+    while (1) {
         fprintf(stderr, ">");
         fflush(stderr);
         char c = getchar();
-        if(c == 'y' || c == 'Y')
-        {
+
+        if (c == 'y' || c == 'Y') {
             getchar();
             *is_black = true;
             clear_game_record(&current_game);
@@ -175,13 +171,13 @@ cord to file.\n");
             update_names(*human_player_color);
             return;
         }
-        if(c == 'n' || c == 'N')
-        {
+
+        if (c == 'n' || c == 'N') {
             getchar();
             exit(EXIT_SUCCESS);
         }
-        if(c == 's' || c == 'S')
-        {
+
+        if (c == 's' || c == 'S') {
             getchar();
             *human_player_color = !(*human_player_color);
             *is_black = true;
@@ -194,8 +190,7 @@ cord to file.\n");
 
 }
 
-static void text_print_score()
-{
+static void text_print_score() {
     board current_state;
     current_game_state(&current_state, &current_game);
     d16 score = score_stones_and_area(current_state.p);
@@ -206,7 +201,7 @@ static void text_print_score()
     release(s);
 }
 
-void main_text(bool is_black){
+void main_text(bool is_black) {
     fclose(stdout);
 
     flog_info("gtp", "matilda now running over text interface");
@@ -215,10 +210,7 @@ void main_text(bool is_black){
     flog_info("gtp", s);
 
     komi_to_string(s, DEFAULT_KOMI);
-    fprintf(stderr, "Running in text mode. In this mode the options are limited\
- and no time limit is\nenforced. To run using GTP add the flag --mode gtp. Play\
-ing with Chinese rules\nwith %s komi; the game is over after two passes or a re\
-signation.\n\n", s);
+    fprintf(stderr, "Running in text mode. In this mode the options are limited and no time limit is\nenforced. To run using GTP add the flag --mode gtp. Playing with Chinese rules\nwith %s komi; the game is over after two passes or a resignation.\n\n", s);
     release(s);
 
     bool human_player_color = is_black;
@@ -236,16 +228,14 @@ signation.\n\n", s);
     update_names(human_player_color);
 
     char * buf = alloc();
-    while(1)
-    {
+    while (1) {
         passed = false;
         resigned = false;
 
         board current_state;
         current_game_state(&current_state, &current_game);
 
-        if(current_state.last_played == NONE)
-        {
+        if (current_state.last_played == NONE) {
             fprintf(stderr, "\n\"Have a good game.\"\n");
         }
 
@@ -258,29 +248,26 @@ signation.\n\n", s);
         /*
         Computer turn
         */
-        if(is_black != human_player_color)
-        {
+        if (is_black != human_player_color) {
             fprintf(stderr, "Computer thinking...\n");
             text_genmove(is_black, &passed, &resigned);
             fprintf(stderr, "\n");
 
-            if(resigned)
-            {
+            if (resigned) {
                 current_game.finished = true;
                 current_game.resignation = true;
                 fprintf(stderr, "\n\"I resign. Thank you for the game.\"\n\n");
 
-                fprintf(stderr, "%s (%c) wins by resignation.\n\n", is_black ?
-                    "White" : "Black", is_black ? WHITE_STONE_CHAR :
-                    BLACK_STONE_CHAR);
+                fprintf(stderr, "%s (%c) wins by resignation.\n\n",
+                    is_black ? "White" : "Black",
+                    is_black ? WHITE_STONE_CHAR : BLACK_STONE_CHAR);
+
                 text_newgame(&human_player_color, &is_black);
                 continue;
             }
 
-            if(passed)
-            {
-                if(last_played_pass)
-                {
+            if (passed) {
+                if (last_played_pass) {
                     current_game.finished = true;
                     fprintf(stderr, "Computer passes, game is over.\n");
                     text_print_score();
@@ -288,12 +275,12 @@ signation.\n\n", s);
                     last_played_pass = false;
                     text_newgame(&human_player_color, &is_black);
                     continue;
-                }
-                else
+                } else {
                     last_played_pass = true;
-            }
-            else
+                }
+            } else {
                 last_played_pass = false;
+            }
 
             is_black = !is_black;
             continue;
@@ -302,8 +289,7 @@ signation.\n\n", s);
         /*
         Human turn
         */
-        if(first_interactive_play)
-        {
+        if (first_interactive_play) {
             first_interactive_play = false;
             char * mstr = alloc();
 #if EUROPEAN_NOTATION
@@ -311,95 +297,96 @@ signation.\n\n", s);
 #else
             coord_to_num_num(mstr, coord_to_move(3, 3));
 #endif
-            fprintf(stderr, "(Type the board position, like %s, or undo/pass/re\
-sign/score/quit)\n", mstr);
+            fprintf(stderr, "(Type the board position, like %s, or undo/pass/resign/score/quit)\n", mstr);
             release(mstr);
         }
-        while(1)
-        {
+
+        while (1) {
             fprintf(stderr, "Your turn (%c): ", is_black ? BLACK_STONE_CHAR :
                 WHITE_STONE_CHAR);
             fflush(stderr);
 
             char * line = fgets(buf, MAX_PAGE_SIZ, stdin);
-            if(line == NULL)
+            if (line == NULL) {
                 flog_crit("text", "standard input file descriptor closed");
+            }
 
             line = trim(buf);
-            if(line == NULL)
+            if (line == NULL) {
                 continue;
+            }
 
             lower_case(line);
 
             flog_prot("text", line);
 
-            if(strcmp(line, "quit") == 0 || strcmp(line, "exit") == 0)
+            if (strcmp(line, "quit") == 0 || strcmp(line, "exit") == 0) {
                 exit(EXIT_SUCCESS);
+            }
 
-            if(strcmp(line, "resign") == 0)
-            {
+            if (strcmp(line, "resign") == 0) {
                 current_game.finished = true;
                 current_game.resignation = true;
-                fprintf(stderr, "%s (%c) wins by resignation.\n\n", is_black ?
-                    "White" : "Black", is_black ? WHITE_STONE_CHAR :
-                    BLACK_STONE_CHAR);
+
+                fprintf(stderr, "%s (%c) wins by resignation.\n\n",
+                    is_black ? "White" : "Black",
+                    is_black ? WHITE_STONE_CHAR : BLACK_STONE_CHAR);
+
                 text_newgame(&human_player_color, &is_black);
                 break;
             }
 
-            if(strcmp(line, "help") == 0)
-            {
+            if (strcmp(line, "help") == 0) {
                 char * mstr = alloc();
 #if EUROPEAN_NOTATION
                 coord_to_alpha_num(mstr, coord_to_move(3, 3));
 #else
                 coord_to_num_num(mstr, coord_to_move(3, 3));
 #endif
-                fprintf(stderr, "Type the board position, like %s, or undo/pass\
-/resign/score/quit\n\n", mstr);
+                fprintf(stderr, "Type the board position, like %s, or undo/pass/resign/score/quit\n\n", mstr);
                 release(mstr);
                 continue;
             }
 
-            if(strcmp(line, "score") == 0)
-            {
+            if (strcmp(line, "score") == 0) {
                 current_game_state(&current_state, &current_game);
                 d16 score = score_stones_and_area(current_state.p);
                 char * s = alloc();
                 score_to_string(s, score);
-                fprintf(stderr, "Score estimate with %s to play: %s\n\n",
-                    is_black ? "black" : "white", s);
+                fprintf(stderr, "Score estimate with %s to play: %s\n\n", is_black ? "black" : "white", s);
                 release(s);
                 continue;
             }
 
-            if(strcmp(line, "undo") == 0)
-            {
-                if(undo_last_play(&current_game))
-                {
+            if (strcmp(line, "undo") == 0) {
+                if (undo_last_play(&current_game)) {
                     is_black = !is_black;
-                    if(undo_last_play(&current_game))
+
+                    if (undo_last_play(&current_game)) {
                         is_black = !is_black;
+                    }
                 }
+
                 break;
             }
 
-            if(text_play(line, is_black, &passed))
+            if (text_play(line, is_black, &passed)) {
                 continue; /* Malformed command */
+            }
 
-            if(passed)
-            {
-                if(last_played_pass)
-                {
+            if (passed) {
+                if (last_played_pass) {
                     current_game.finished = true;
                     fprintf(stderr, "Two passes in a row, game is over.\n");
                     text_print_score();
                     fprintf(stderr, "\n");
                     text_newgame(&human_player_color, &is_black);
-                }else
+                } else {
                     last_played_pass = true;
-            }else
+                }
+            } else {
                 last_played_pass = false;
+            }
 
             is_black = !is_black;
             break;

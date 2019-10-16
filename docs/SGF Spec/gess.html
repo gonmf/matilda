@@ -1,0 +1,46 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD><TITLE>SGF - Gess (GM[20])</TITLE>
+</HEAD>
+<BODY alink="#FF0000" bgcolor="#FFFFFF" link="#0000FF" text="#000000" vlink="#FF0000">
+<A HREF="index.html"><IMG src="images/head.gif" ALT="[SGF FF[4] - Smart Game Format]" BORDER=0></A>
+
+<h1>Gess (GM[20])</h1>
+
+<P>For more information about this specification contact Tim Prime,
+<A HREF="mailto:tdprime@acm.org">tdprime@acm.org</A>.
+<P>For more information on the game see
+<A HREF="http://www.cam.ac.uk/societies/archim/eureka/gess/">Eureka</A>.
+
+<h2><A NAME="types">Point, Stone, and Move types</A></h2>
+
+<h3>Point and Stone</h3>
+<img src="TA2.gif">
+
+<p> Point and Stone are the same.  Gess uses the same coordinate system
+as Go GM[1], two lowercase letters.  The first letter is the horizontal
+dimension; the second is the vertical.
+
+<p> The "edges" of the Gess board are placed so that one row/column of
+points lays outside each edge.  The default board size is 20x20 (18x18
+inside the "edges").
+
+<h3>Move</h3>
+
+<p> A move is a pair of points, which are the centers of the "from"
+point, a colon ":", and the "to" point of the 3x3 piece being moved.
+It is illegal for either of these points to be on the parimeter
+(outside the "edge").
+
+<p> Viewers are responsible for checking the colour of the stones in
+the 3x3 region at the "from" point.  All stones must be the same colour,
+that of the player making the move.  Otherwise, the move is illegal.
+
+
+<h2><A NAME="properties">Properties</A></h2>
+
+<p> There are no additional Gess specific properties.
+</p>
+
+</body>
+</html>

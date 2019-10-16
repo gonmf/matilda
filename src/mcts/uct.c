@@ -64,10 +64,10 @@ static bool uct_inited = false;
 /*
 Initiate MCTS dependencies.
 */
-void mcts_init()
-{
-    if(uct_inited)
+void mcts_init() {
+    if (uct_inited) {
         return;
+    }
 
     rand_init();
     board_constants_init();
@@ -84,9 +84,8 @@ void mcts_init()
 static void select_play(
     tt_stats * stats,
     tt_play ** play
-){
-    if(*play != NULL && (*play)->lgrf1_reply != NULL)
-    {
+) {
+    if (*play != NULL && (*play)->lgrf1_reply != NULL) {
         *play = (*play)->lgrf1_reply;
         return;
     }
@@ -95,8 +94,7 @@ static void select_play(
     double best_q = -1.0;
     u16 equal_quality_plays = 0;
 
-    for(move k = 0; k < stats->plays_count; ++k)
-    {
+    for (move k = 0; k < stats->plays_count; ++k) {
 #if USE_AMAF_RAVE
         double play_q = uct1_rave(&stats->plays[k]);
 #else
@@ -104,27 +102,22 @@ static void select_play(
 #endif
 
         double uct_q = play_q;
-        if(uct_q > best_q){
+        if (uct_q > best_q) {
             best_plays[0] = &stats->plays[k];
             equal_quality_plays = 1;
             best_q = uct_q;
+        } else if (uct_q == best_q) {
+            best_plays[equal_quality_plays] = &stats->plays[k];
+            ++equal_quality_plays;
         }
-        else
-            if(uct_q == best_q)
-            {
-                best_plays[equal_quality_plays] = &stats->plays[k];
-                ++equal_quality_plays;
-            }
     }
 
-    if(equal_quality_plays == 1)
-    {
+    if (equal_quality_plays == 1) {
         *play = best_plays[0];
         return;
     }
 
-    if(equal_quality_plays > 1)
-    {
+    if (equal_quality_plays > 1) {
         u16 p = rand_u16(equal_quality_plays);
         *play = best_plays[p];
         return;
@@ -138,10 +131,13 @@ static d16 mcts_expansion(
     bool is_black,
     tt_stats * stats,
     u8 traversed[static TOTAL_BOARD_SIZ]
-){
+) {
     stats->expansion_delay--;
-    if(stats->expansion_delay == -1)
+
+    if (stats->expansion_delay == -1) {
         init_new_state(stats, cb, is_black);
+    }
+
     omp_unset_lock(&stats->lock);
     d16 outcome = playout_heavy_amaf(cb, is_black, traversed);
 
@@ -152,8 +148,7 @@ static d16 mcts_selection(
     cfg_board * cb,
     u64 zobrist_hash,
     bool is_black
-){
-
+) {
     d16 depth = 6;
     tt_stats * stats[MAX_UCT_DEPTH + 6];
     tt_play * plays[MAX_UCT_DEPTH + 7];
@@ -167,53 +162,43 @@ static d16 mcts_selection(
     tt_stats * curr_stats = NULL;
     tt_play * play = NULL;
 
-    while(1)
-    {
-        if(depth >= MAX_UCT_DEPTH + 6)
-        {
+    while (1) {
+        if (depth >= MAX_UCT_DEPTH + 6) {
             outcome = score_stones_and_area(cb->p);
             break;
         }
 
-        if(curr_stats == NULL)
-        {
+        if (curr_stats == NULL) {
             curr_stats = tt_lookup_null(cb, is_black, zobrist_hash);
 
-            if(curr_stats == NULL)
-            {
-                if(!ran_out_of_memory)
-                {
+            if (curr_stats == NULL) {
+                if (!ran_out_of_memory) {
                     ran_out_of_memory = true;
                     search_stop = true;
                 }
+
                 outcome = playout_heavy_amaf(cb, is_black, traversed);
                 break;
+            } else if (play != NULL) {
+                play->next_stats = curr_stats;
             }
-            else
-            {
-                if(play != NULL)
-                    play->next_stats = curr_stats;
-            }
-        }
-        else
+        } else {
             omp_set_lock(&curr_stats->lock);
+        }
 
         /* Positional superko detection */
-        if(is_board_move(cb->last_played) &&
-            (stats[depth - 2] == curr_stats ||
-            stats[depth - 3] == curr_stats ||
-            stats[depth - 4] == curr_stats ||
-            stats[depth - 5] == curr_stats ||
-            stats[depth - 6] == curr_stats))
-        {
+        if (is_board_move(cb->last_played) && (stats[depth - 2] == curr_stats ||
+                                               stats[depth - 3] == curr_stats ||
+                                               stats[depth - 4] == curr_stats ||
+                                               stats[depth - 5] == curr_stats ||
+                                               stats[depth - 6] == curr_stats)) {
             omp_unset_lock(&curr_stats->lock);
             /* loss for player that committed superko */
             outcome = is_black ? 1 : -1;
             break;
         }
 
-        if(curr_stats->expansion_delay >= 0)
-        {
+        if (curr_stats->expansion_delay >= 0) {
             /* already unsets lock */
             outcome = mcts_expansion(cb, is_black, curr_stats, traversed);
             break;
@@ -225,17 +210,14 @@ static d16 mcts_selection(
         play->mc_q -= play->mc_q / play->mc_n;
         omp_unset_lock(&curr_stats->lock);
 
-        if(play->m == PASS)
-        {
-            if(cb->last_played == PASS)
-            {
+        if (play->m == PASS) {
+            if (cb->last_played == PASS) {
                 outcome = score_stones_and_area(cb->p);
                 break;
             }
+
             just_pass(cb);
-        }
-        else
-        {
+        } else {
             just_play2(cb, is_black, play->m, &zobrist_hash);
         }
 
@@ -246,10 +228,8 @@ static d16 mcts_selection(
         is_black = !is_black;
     }
 
-    if(outcome == 0)
-    {
-        for(d16 k = depth - 1; k >= 6; --k)
-        {
+    if (outcome == 0) {
+        for (d16 k = depth - 1; k >= 6; --k) {
             is_black = !is_black;
             move m = plays[k]->m;
             omp_set_lock(&stats[k]->lock);
@@ -258,56 +238,55 @@ static d16 mcts_selection(
             plays[k]->lgrf1_reply = NULL;
 
             /* AMAF/RAVE */
-            if(m != PASS)
+            if (m != PASS) {
                 traversed[m] = is_black ? BLACK_STONE : WHITE_STONE;
+            }
             update_amaf_stats2(stats[k], traversed, is_black);
             omp_unset_lock(&stats[k]->lock);
         }
-    }
-    else
-    {
+    } else {
         plays[depth] = NULL;
-        for(d16 k = depth - 1; k >= 6; --k)
-        {
+
+        for (d16 k = depth - 1; k >= 6; --k) {
             is_black = !is_black;
             move m = plays[k]->m;
             double z = (is_black == (outcome > 0)) ? 1.0 : 0.0;
 
             omp_set_lock(&stats[k]->lock);
             /* MC sampling */
-            if(is_black == (outcome > 0))
+            if (is_black == (outcome > 0)) {
                 plays[k]->mc_q += 1.0 / plays[k]->mc_n;
+            }
 
             /* AMAF/RAVE */
-            if(m != PASS)
+            if (m != PASS) {
                 traversed[m] = is_black ? BLACK_STONE : WHITE_STONE;
+            }
             update_amaf_stats(stats[k], traversed, is_black, z);
 
             /* LGRF */
-            if(is_black == (outcome > 0))
+            if (is_black == (outcome > 0)) {
                 plays[k]->lgrf1_reply = NULL;
-            else
+            } else {
                 plays[k]->lgrf1_reply = plays[k + 1];
+            }
 
             /* Criticality */
-            if(m != PASS && cb->p[m] != EMPTY)
-            {
-                double winner_owns_coord = ((outcome > 0) == (cb->p[m] ==
-                    BLACK_STONE)) ? 1.0 : 0.0;
-                plays[k]->owner_winning += (winner_owns_coord -
-                    plays[k]->owner_winning) / plays[k]->mc_n;
-                double player_owns_coord = (is_black == (cb->p[m] ==
-                    BLACK_STONE)) ? 1.0 : 0.0;
-                plays[k]->color_owning += (player_owns_coord -
-                    plays[k]->color_owning) / plays[k]->mc_n;
+            if (m != PASS && cb->p[m] != EMPTY) {
+                double winner_owns_coord = ((outcome > 0) == (cb->p[m] == BLACK_STONE)) ? 1.0 : 0.0;
+                plays[k]->owner_winning += (winner_owns_coord - plays[k]->owner_winning) / plays[k]->mc_n;
+
+                double player_owns_coord = (is_black == (cb->p[m] == BLACK_STONE)) ? 1.0 : 0.0;
+                plays[k]->color_owning += (player_owns_coord - plays[k]->color_owning) / plays[k]->mc_n;
             }
 
             omp_unset_lock(&stats[k]->lock);
         }
     }
 
-    if(depth > max_depths[omp_get_thread_num()])
+    if (depth > max_depths[omp_get_thread_num()]) {
         max_depths[omp_get_thread_num()] = depth;
+    }
 
     return outcome;
 }
@@ -326,19 +305,17 @@ bool mcts_start_timed(
     bool is_black,
     u64 stop_time,
     u64 early_stop_time
-){
+) {
     mcts_init();
 
     u64 start_zobrist_hash = zobrist_new_hash(b);
-    tt_stats * stats = tt_lookup_create(b, is_black,
-        start_zobrist_hash);
+    tt_stats * stats = tt_lookup_create(b, is_black, start_zobrist_hash);
     omp_unset_lock(&stats->lock);
 
     cfg_board initial_cfg_board;
     cfg_from_board(&initial_cfg_board, b);
 
-    if(stats->expansion_delay != -1)
-    {
+    if (stats->expansion_delay != -1) {
         stats->expansion_delay = -1;
         init_new_state(stats, &initial_cfg_board, is_black);
     }
@@ -354,10 +331,8 @@ bool mcts_start_timed(
     bool stopped_early_by_wr = false;
 
     #pragma omp parallel for
-    for(u32 sim = 0; sim < INT32_MAX; ++sim)
-    {
-        if(search_stop)
-        {
+    for (u32 sim = 0; sim < INT32_MAX; ++sim) {
+        if (search_stop) {
             /* there is no way to simultaneously cancel all OMP threads */
             sim = INT32_MAX;
             continue;
@@ -367,57 +342,47 @@ bool mcts_start_timed(
         cfg_board_clone(&cb, &initial_cfg_board);
         d16 outcome = mcts_selection(&cb, start_zobrist_hash, is_black);
         cfg_board_free(&cb);
-        if(outcome == 0)
-        {
+        if (outcome == 0) {
             #pragma omp atomic
             draws++;
-        }
-        else
-        {
-            if((outcome > 0) == is_black)
-            {
-                #pragma omp atomic
-                wins++;
-            }
-            else
-            {
-                #pragma omp atomic
-                losses++;
-            }
+        } else if ((outcome > 0) == is_black) {
+            #pragma omp atomic
+            wins++;
+        } else {
+            #pragma omp atomic
+            losses++;
         }
 
-        if(omp_get_thread_num() == 0)
-        {
+        if (omp_get_thread_num() == 0) {
             u64 curr_time = current_time_in_millis();
 
 #if UCT_CAN_STOP_EARLY
-            if(curr_time >= early_stop_time)
-            {
-                if(curr_time >= stop_time)
+            if (curr_time >= early_stop_time) {
+                if (curr_time >= stop_time) {
                     search_stop = true;
-                else
-                {
+                } else {
                     double wr = ((double)wins) / ((double)(wins + losses));
-                    if(wr >= UCT_EARLY_WINRATE)
-                    {
+
+                    if (wr >= UCT_EARLY_WINRATE) {
                         stopped_early_by_wr = true;
                         search_stop = true;
                     }
                 }
             }
 #else
-            if(curr_time >= stop_time)
+            if (curr_time >= stop_time) {
                 search_stop = true;
+            }
 #endif
         }
     }
 
-    if(ran_out_of_memory)
+    if (ran_out_of_memory) {
         flog_warn("uct", "search ran out of memory");
+    }
 
     char * s = alloc();
-    if(stopped_early_by_wr)
-    {
+    if (stopped_early_by_wr) {
         d64 diff = stop_time - current_time_in_millis();
         char * s2 = alloc();
         format_nr_millis(s2, diff);
@@ -428,14 +393,10 @@ bool mcts_start_timed(
 
     clear_out_board(out_b);
     out_b->pass = UCT_RESIGN_WINRATE;
-    for(move k = 0; k < stats->plays_count; ++k)
-    {
-        if(stats->plays[k].m == PASS)
-        {
+    for (move k = 0; k < stats->plays_count; ++k) {
+        if (stats->plays[k].m == PASS) {
             out_b->pass = stats->plays[k].mc_q;
-        }
-        else
-        {
+        } else {
             out_b->tested[stats->plays[k].m] = true;
 #if USE_AMAF_RAVE
             out_b->value[stats->plays[k].m] = uct1_rave(&stats->plays[k]);
@@ -446,35 +407,33 @@ bool mcts_start_timed(
     }
 
     u16 max_depth = max_depths[0];
-    for(u16 k = 1; k < MAXIMUM_NUM_THREADS; ++k)
-        if(max_depths[k] > max_depth)
+    for (u16 k = 1; k < MAXIMUM_NUM_THREADS; ++k) {
+        if (max_depths[k] > max_depth) {
             max_depth = max_depths[k];
+        }
+    }
+
     max_depth -= 6;
 
     u32 simulations = wins + losses;
     double wr = ((double)wins) / ((double)simulations);
 
-    if(draws > 0)
-    {
+    if (draws > 0) {
         simulations += draws;
-        snprintf(s, MAX_PAGE_SIZ,
-            "search finished (sims=%u, depth=%u, wr=%.2f, draws=%u)\n",
-            simulations, max_depth, wr, draws);
+        snprintf(s, MAX_PAGE_SIZ, "search finished (sims=%u, depth=%u, wr=%.2f, draws=%u)\n", simulations, max_depth, wr, draws);
+    } else {
+        snprintf(s, MAX_PAGE_SIZ, "search finished (sims=%u, depth=%u, wr=%.2f)\n", simulations, max_depth, wr);
     }
-    else
-    {
-        snprintf(s, MAX_PAGE_SIZ,
-            "search finished (sims=%u, depth=%u, wr=%.2f)\n", simulations,
-            max_depth, wr);
-    }
+
     flog_info("uct", s);
 
     release(s);
     cfg_board_free(&initial_cfg_board);
 
     /* prevent resignation unless we have played very few simulations */
-    if(simulations >= UCT_RESIGN_PLAYOUTS && wr < UCT_RESIGN_WINRATE)
+    if (simulations >= UCT_RESIGN_PLAYOUTS && wr < UCT_RESIGN_WINRATE) {
         return false;
+    }
 
     return true;
 }
@@ -490,19 +449,17 @@ bool mcts_start_sims(
     const board * b,
     bool is_black,
     u32 simulations
-){
+) {
     mcts_init();
 
     u64 start_zobrist_hash = zobrist_new_hash(b);
-    tt_stats * stats = tt_lookup_create(b, is_black,
-        start_zobrist_hash);
+    tt_stats * stats = tt_lookup_create(b, is_black, start_zobrist_hash);
     omp_unset_lock(&stats->lock);
 
     cfg_board initial_cfg_board;
     cfg_from_board(&initial_cfg_board, b);
 
-    if(stats->expansion_delay != -1)
-    {
+    if (stats->expansion_delay != -1) {
         stats->expansion_delay = -1;
         init_new_state(stats, &initial_cfg_board, is_black);
     }
@@ -517,48 +474,37 @@ bool mcts_start_sims(
     search_stop = false;
 
     #pragma omp parallel for
-    for(u32 sim = 0; sim < simulations; ++sim)
-    {
+    for (u32 sim = 0; sim < simulations; ++sim) {
         cfg_board cb;
         cfg_board_clone(&cb, &initial_cfg_board);
         d16 outcome = mcts_selection(&cb, start_zobrist_hash, is_black);
         cfg_board_free(&cb);
-        if(outcome == 0)
-        {
+
+        if (outcome == 0) {
             #pragma omp atomic
             draws++;
-        }
-        else
-        {
-            if((outcome > 0) == is_black)
-            {
-                #pragma omp atomic
-                wins++;
-            }
-            else
-            {
-                #pragma omp atomic
-                losses++;
-            }
+        } else if ((outcome > 0) == is_black) {
+            #pragma omp atomic
+            wins++;
+        } else {
+            #pragma omp atomic
+            losses++;
         }
     }
 
 
-    if(ran_out_of_memory)
+    if (ran_out_of_memory) {
         flog_warn("uct", "search ran out of memory");
+    }
 
     char * s = alloc();
 
     clear_out_board(out_b);
     out_b->pass = UCT_RESIGN_WINRATE;
-    for(move k = 0; k < stats->plays_count; ++k)
-    {
-        if(stats->plays[k].m == PASS)
-        {
+    for (move k = 0; k < stats->plays_count; ++k) {
+        if (stats->plays[k].m == PASS) {
             out_b->pass = stats->plays[k].mc_q;
-        }
-        else
-        {
+        } else {
             out_b->tested[stats->plays[k].m] = true;
 #if USE_AMAF_RAVE
             out_b->value[stats->plays[k].m] = uct1_rave(&stats->plays[k]);
@@ -569,33 +515,30 @@ bool mcts_start_sims(
     }
 
     u16 max_depth = max_depths[0];
-    for(u16 k = 1; k < MAXIMUM_NUM_THREADS; ++k)
-        if(max_depths[k] > max_depth)
+    for (u16 k = 1; k < MAXIMUM_NUM_THREADS; ++k) {
+        if (max_depths[k] > max_depth) {
             max_depth = max_depths[k];
+        }
+    }
 
     double wr;
 
-    if(draws > 0)
-    {
+    if (draws > 0) {
         wr = ((double)wins) / ((double)(wins + losses));
-        snprintf(s, MAX_PAGE_SIZ,
-            "search finished (sims=%u, depth=%u, wr=%.2f, draws=%u)\n",
-            simulations, max_depth, wr, draws);
-    }
-    else
-    {
+        snprintf(s, MAX_PAGE_SIZ, "search finished (sims=%u, depth=%u, wr=%.2f, draws=%u)\n", simulations, max_depth, wr, draws);
+    } else {
         wr = ((double)wins) / ((double)simulations);
-        snprintf(s, MAX_PAGE_SIZ,
-            "search finished (sims=%u, depth=%u, wr=%.2f)\n", simulations,
-            max_depth, wr);
+        snprintf(s, MAX_PAGE_SIZ, "search finished (sims=%u, depth=%u, wr=%.2f)\n", simulations, max_depth, wr);
     }
+
     flog_info("uct", s);
 
     release(s);
     cfg_board_free(&initial_cfg_board);
 
-    if(wr < UCT_RESIGN_WINRATE)
+    if (wr < UCT_RESIGN_WINRATE) {
         return false;
+    }
 
     return true;
 }
@@ -604,8 +547,7 @@ bool mcts_start_sims(
 Reset whether MCTS can run in the background after a previous attempt may have
 run out of memory.
 */
-void reset_mcts_can_resume()
-{
+void reset_mcts_can_resume() {
     mcts_can_resume = true;
 }
 
@@ -615,9 +557,10 @@ Continue a previous MCTS.
 void mcts_resume(
     const board * b,
     bool is_black
-){
-    if(!mcts_can_resume)
+) {
+    if (!mcts_can_resume) {
         return;
+    }
 
     mcts_init();
 
@@ -631,10 +574,8 @@ void mcts_resume(
     cfg_from_board(&initial_cfg_board, b);
 
     #pragma omp parallel for
-    for(u32 sim = 0; sim < INT32_MAX; ++sim)
-    {
-        if(search_stop)
-        {
+    for (u32 sim = 0; sim < INT32_MAX; ++sim) {
+        if (search_stop) {
             /* there is no way to simultaneously cancel all OMP threads */
             sim = INT32_MAX;
             continue;
@@ -645,16 +586,17 @@ void mcts_resume(
         mcts_selection(&cb, start_zobrist_hash, is_black);
         cfg_board_free(&cb);
 
-        if(omp_get_thread_num() == 0)
-        {
+        if (omp_get_thread_num() == 0) {
             u64 curr_time = current_time_in_millis();
-            if(curr_time >= stop_time)
+            if (curr_time >= stop_time) {
                 search_stop = true;
+            }
         }
     }
 
-    if(ran_out_of_memory)
+    if (ran_out_of_memory) {
         mcts_can_resume = false;
+    }
 
     cfg_board_free(&initial_cfg_board);
 }
@@ -665,7 +607,7 @@ RETURNS simulations number
 */
 u32 mcts_benchmark(
     u32 time_available /* in milliseconds */
-){
+) {
     mcts_init();
     board b;
     clear_board(&b);
@@ -674,15 +616,13 @@ u32 mcts_benchmark(
     u64 stop_time = curr_time + time_available;
 
     u64 start_zobrist_hash = zobrist_new_hash(&b);
-    tt_stats * stats = tt_lookup_create(&b, true,
-        start_zobrist_hash);
+    tt_stats * stats = tt_lookup_create(&b, true, start_zobrist_hash);
     omp_unset_lock(&stats->lock);
 
     cfg_board initial_cfg_board;
     cfg_from_board(&initial_cfg_board, &b);
 
-    if(stats->expansion_delay != -1)
-    {
+    if (stats->expansion_delay != -1) {
         stats->expansion_delay = -1;
         init_new_state(stats, &initial_cfg_board, true);
     }
@@ -692,15 +632,13 @@ u32 mcts_benchmark(
     bool search_stop = false;
     u32 simulations = 0;
 
-    // TODO do a longer initial run to initialize state
+    /* TODO: do a longer initial run to initialize state */
     #pragma omp parallel for
-    for(u32 sim = 0; sim < INT32_MAX; ++sim)
-    {
-        if(search_stop)
-        {
+    for (u32 sim = 0; sim < INT32_MAX; ++sim) {
+        if (search_stop) {
             /* there is no way to simultaneously cancel all OMP threads */
             sim = INT32_MAX;
-            continue; // TODO change to break
+            continue; /* TODO: change to break */
         }
 
         cfg_board cb;
@@ -711,12 +649,12 @@ u32 mcts_benchmark(
         #pragma omp atomic
         simulations++;
 
-        if(omp_get_thread_num() == 0)
-        {
+        if (omp_get_thread_num() == 0) {
             u64 curr_time = current_time_in_millis();
 
-            if(curr_time >= stop_time)
+            if (curr_time >= stop_time) {
                 search_stop = true;
+            }
         }
     }
 

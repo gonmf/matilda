@@ -1,0 +1,107 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD><TITLE>SGF spec: Compatibility of FF[4]</TITLE>
+</HEAD>
+<BODY alink="#FF0000" bgcolor="#FFFFFF" link="#0000FF" text="#000000" vlink="#FF0000">
+<A HREF="index.html"><IMG src="images/head.gif" ALT="[SGF FF[4] - Smart Game Format]" BORDER=0></A>
+
+<H1>Compatibility of FF[4]</H1>
+
+The following list summarizes the compatibility problems
+of FF[4]. This is done both ways: problems for old (FF[3])
+applications when reading a FF[4] file (3 rd 4) and problems of converting
+FF[3] to FF[4] (3->4). <I>'np'</I> is used as abbreviation of
+<I>'no problem'</I> and <I>'nrp'</I> is used as abbreviation of
+<I>'not really a problem'</I>.
+<P>
+If you find some compatibility issues I've missed, please let me know.
+
+<h2>General & Types</h2>
+
+<UL>
+<LI><B>Verbose property names no longer exist.</B>
+	<UL><LI>3->4: np (delete all lowercase letters from IDs)
+	<LI>3 rd 4: np
+	</UL>
+<LI><B>Five property types are introduced (and thus 2 node types)</B>
+	<UL><LI>3->4: FF[3] files may have mixed setup and
+	move-properties in one node. In that case an application
+	should split that node into two nodes: all setup, root and game-
+	info properties and
+	the node name ('N[]') into the first node, all other properties
+	into the second.
+	<LI>3 rd 4: np
+	</UL>
+<LI><B>FF[3] text type is split into two types: SimpleText and Text.</B>
+	<UL><LI>3->4: np
+	<LI>3 rd 4: Soft linebreaks may be treated as hard linebreaks
+	</UL>
+<LI><B>Within the text types anything after a '\' is inserted verbatim.</B>
+	<UL><LI>3->4: np
+	<LI>3 rd 4: FF[3] only knows some 'escaped' chars. It's uncertain
+	what old applications will do (most likely their routines are
+	already coded in the newly specified way).
+	</UL>
+<LI><B>Recangular boards and boards >19x19 possible</B>
+	<UL><LI>3->4: np
+	<LI>3 rd 4: totally incompatible
+	</UL>
+<LI><B>Compressed point lists</B>
+	<UL><LI>3->4: np
+	<LI>3 rd 4: totally incompatible
+	</UL>
+<LI><B>Time values are in seconds</B>
+	<UL><LI>3->4: concerning server-games: np, otherwise wrong time
+	is displayed
+	<LI>3 rd 4: np
+	</UL>
+<LI><B>Used (default) charset defined</B>
+	<UL><LI>3->4: some files may contain a charset different
+	from the default. Text will then be unreadable (unless the
+	application allows to switch to another charset manually).
+	<LI>3 rd 4: nrp (as default charset is the one used in FF[3])
+	</UL>
+<LI><B>Pass move may be '[]' now (alternativ to '[tt]')</B>
+	<UL><LI>3->4: np
+	<LI>3 rd 4: '[]' pass may cause problems (at the least the move
+	will be ignored)
+	</UL>
+</UL>
+
+<H2>Properties</H2>
+
+<UL>
+<LI><B>Obsolete properties</B><BR>
+(CH, SI, SE, LT, ID, OM, OP, CI, OV, BS, WS, SC, RG)
+	<UL><LI>3->4: nrp (properties are treated as unkown properties
+	and are preserved. Information is no longer displayed, though.)
+	<LI>3 rd 4: np
+	</UL>
+<LI><B>New properties</B><BR>
+(AP, ST, AR, LN, SQ, OT, BO, WO, DD, VW, PM)
+	<UL><LI>3->4: np
+	<LI>3 rd 4: nrp (properties are treated as unkown properties.
+	Information is not displayed though. Some applications may
+	even strip these properties without displaying a warning)
+	</UL>
+<LI><B>LB may hold more than 4 chars now </B>
+	<UL><LI>3->4: np
+	<LI>3 rd 4: only 4 chars are displayed/saved (labels get cut)
+	</UL>
+<LI><B>SZ may hold rectangular boards now</B>
+	<UL><LI>3->4: np
+	<LI>3 rd 4: incompatible
+	</UL>
+<LI><B>Format of DT,RE and RU is specfied explicitly</B>
+	<UL><LI>3->4: unknown formats may appear - should be corrected if
+	possible
+	<LI>3 rd 4: np
+	</UL>
+<LI><B>FG may contain flags and diagram name</B>
+	<UL><LI>3->4: np
+	<LI>3 rd 4: nrp (information may get lost though)
+	</UL>
+</UL>
+
+</BODY>
+</HTML>

@@ -1,0 +1,44 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+<HEAD><TITLE>SGF FF[4]: DD & VW</TITLE>
+</HEAD>
+<BODY alink="#FF0000" bgcolor="#FFFFFF" link="#0000FF" text="#000000" vlink="#FF0000">
+<A HREF="index.html"><IMG src="images/head.gif" ALT="[SGF FF[4] - Smart Game Format]" BORDER=0></A>
+
+<H1>Dimmed Stones and View</H1>
+
+For more info on the properties have a look at:
+<UL>
+<LI><A HREF="sgf4.html#inherit">inherit</A> property attribute
+<LI><A HREF="properties.html#DD">DD</A> property
+<LI><A HREF="properties.html#VW">VW</A> property
+</UL>
+
+Suppose you have the following SGF-file:
+<PRE>
+(;GM[1]SZ[9]FF[4]
+  AB[ac][bc][cc][dc][ec][fc][gc][hc][ic]
+  AW[ae][be][ce][de][ee][fe][ge][he][ie]
+ ;DD[aa][ab][ac][ad][ae][af][ag][ah][ai][bi][bh][bg][bf]
+    [be][bd][bc][bb][ba][ca][cb][cc][cd][ce]
+  VW[aa:bi][ca:ee][ge:ie][ga:ia][gc:ic][gb][ib]
+)
+</PRE>
+
+The same file using compressed point lists for every property:
+<PRE>
+(;GM[1]SZ[9]FF[4]
+  AB[ac:ic]AW[ae:ie]
+ ;DD[aa:bi][ca:ce]
+  VW[aa:bi][ca:ee][ge:ie][ga:ia][gc:ic][gb][ib]
+)
+</PRE>
+
+<H2>Picture of node 0</H2>
+<IMG src="images/dim1.gif" ALT="[board: node 0 (dim1.gif)]">
+
+<H2>Picture of node 1</H2>
+<IMG src="images/dim2.gif" ALT="[board: node 1, using DD & VW (dim2.gif)]">
+
+</BODY>
+</HTML>

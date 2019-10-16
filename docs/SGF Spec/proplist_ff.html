@@ -1,0 +1,110 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD><TITLE>SGF: property-index of FF[1]-FF[4]</TITLE>
+</HEAD>
+<BODY alink="#FF0000" bgcolor="#FFFFFF" link="#0000FF" text="#000000" vlink="#FF0000">
+<A HREF="index.html"><IMG src="images/head.gif" ALT="[SGF FF[4] - Smart Game Format]" BORDER=0></A>
+
+<H1>Property index of FF[1]-FF[4]</H1>
+
+This is an alphabetical index to all properties defined in FF[1] (as in
+Kierulf's thesis), FF[3] (as on Martin's pages) and FF[4] (as in this
+spec).<BR>
+Note: FF[2] was never made public. It's more or less identical to FF[1] -
+the only changes known (to me) are that the BS/WS values had been redefined.
+
+<PRE>
+<B>ID   FF   Description     property type    property value
+--  ----  --------------  ---------------  ---------------------------------</B>
+AB  1234  Add Black       setup            list of stone
+AE  1234  Add Empty       setup            list of point
+AN  --34  Annotation      game-info        simpletext
+AP  ---4  Application     root             composed simpletext : simpletext
+AR  ---4  Arrow           -                list of composed point : point
+AS  ---4  Who adds stones - (LOA)          simpletext
+AW  1234  Add White       setup            list of stone
+B   1234  Black           move             move
+BL  1234  Black time left move             real
+BM  1234  Bad move        move             double
+BR  1234  Black rank      game-info        simpletext
+BS  123-  Black species   game-info        number
+BT  --34  Black team      game-info        simpletext
+C   1234  Comment         -                text
+CA  ---4  Charset         root             simpletext
+CH  123-  Check mark      -                double
+CP  --34  Copyright       game-info        simpletext
+CR  --34  Circle          -                list of point
+DD  ---4  Dim points      - (inherit)      elist of point
+DM  --34  Even position   -                double
+DO  --34  Doubtful        move             none
+DT  1234  Date            game-info        simpletext
+EL  12--  Eval. comp move -                number
+EV  1234  Event           game-info        simpletext
+EX  12--  Expected move   -                move
+FF  -234  Fileformat      root             number (range: 1-4)
+FG  1234  Figure          -                none | composed number : simpletext
+GB  1234  Good for Black  -                double
+GC  1234  Game comment    game-info        text
+GM  1234  Game            root             number (range: 1-5,7-16)
+GN  1234  Game name       game-info        simpletext
+GW  1234  Good for White  -                double
+HA  1234  Handicap        game-info (Go)   number
+HO  --34  Hotspot         -                double
+ID  --3-  Game identifier game-info        simpletext
+IP  ---4  Initial pos.    game-info (LOA)  simpletext
+IT  --34  Interesting     move             none
+IY  ---4  Invert Y-axis   game-info (LOA)  simpletext
+KM  1234  Komi            game-info (Go)   real
+KO  --34  Ko              move             none
+L   12--  Letters         -                list of point
+LB  --34  Label           -                list of composed point : simpletext
+LN  --34  Line            -                list of composed point : point
+LT  --3-  Lose on time    -                none
+M   12--  Simple markup   -                list of point
+MA  --34  Mark with X     -                list of point
+MN  --34  Set move number move             number
+N   1234  Nodename        -                simpletext
+OB  --34  OtStones Black  move             number
+OM  --3-  Moves/overtime  -                number
+ON  --34  Opening         game-info        simpletext
+OP  --3-  Overtime length -                real
+OT  ---4  Overtime        game-info        simpletext
+OV  --3-  Operator overhead -              real
+OW  --34  OtStones White  move             number
+PB  1234  Player Black    game-info        simpletext
+PC  1234  Place           game-info        simpletext
+PL  1234  Player to play  setup            color
+PM  ---4  Print move mode - (inherit)      number
+PW  1234  Player White    game-info        simpletext
+RE  1234  Result          game-info        simpletext
+RG  123-  Region          - (Go)           list of point
+RO  1234  Round           game-info        simpletext
+RU  --34  Rules           game-info        simpletext
+SC  123-  Secure stones   -                list of point
+SE  --3-  Selftest moves  -                list of point
+SE  ---4  Markup          - (LOA)          point
+SI  --3-  Sigma           -                double
+SL  1234  Selected        -                list of point
+SO  1234  Source          game-info        simpletext
+SQ  ---4  Square          -                list of point
+ST  ---4  Style           root             number (range: 0-3)
+SU  ---4  Setup type      game-info (LOA)  simpletext
+SZ  1234  Size            root             (number | composed number : number)
+TB  1234  Territory Black - (Go)           elist of point
+TC  --3-  Territory count - (Go)           number
+TE  1234  Tesuji          move             double
+TM  1234  Timelimit       game-info        real
+TR  --34  Triangle        -                list of point
+TW  1234  Territory White - (Go)           elist of point
+UC  --34  Unclear pos     -                double
+US  1234  User            game-info        simpletext
+V   1234  Value (score)   -                real
+VW  1234  View            - (inherit)      elist of point
+W   1234  White           move             move
+WL  1234  White time left move             real
+WR  1234  White rank      game-info        simpletext
+WS  123-  White species   game-info        number
+WT  --34  White team      game-info        simpletext
+</PRE>
+</BODY>
+</HTML>

@@ -55,25 +55,23 @@ static u8 maintenance_mark = 0;
 /*
 Initialize the transpositions table structures.
 */
-void tt_init()
-{
-    if(b_stats_table == NULL)
-    {
+void tt_init() {
+    if (b_stats_table == NULL) {
         u64 mbs = max_size_in_mbs;
         mbs *= 1048576;
 
         max_allocated_states = mbs / sizeof(tt_stats);
         number_of_buckets = get_prime_near(max_allocated_states / 2);
 
-        b_stats_table = (tt_stats **)calloc(number_of_buckets,
-            sizeof(tt_stats *));
-        if(b_stats_table == NULL)
+        b_stats_table = calloc(number_of_buckets, sizeof(tt_stats *));
+        if (b_stats_table == NULL) {
             flog_crit("tt", "system out of memory");
+        }
 
-        w_stats_table = (tt_stats **)calloc(number_of_buckets,
-            sizeof(tt_stats *));
-        if(w_stats_table == NULL)
+        w_stats_table = calloc(number_of_buckets, sizeof(tt_stats *));
+        if (w_stats_table == NULL) {
             flog_crit("tt", "system out of memory");
+        }
 
         omp_init_lock(&b_table_lock);
         omp_init_lock(&w_table_lock);
@@ -97,22 +95,23 @@ static tt_stats * find_state(
     u64 hash,
     const board * b,
     bool is_black
-){
+) {
     u32 key = fast_bucket(hash, number_of_buckets);
     tt_stats * p;
 
-    if(is_black)
+    if (is_black) {
         p = b_stats_table[key];
-    else
+    } else {
         p = w_stats_table[key];
+    }
 
     move last_eaten_passed = (b->last_played == PASS) ? PASS : b->last_eaten;
 
-    while(p != NULL)
-    {
-        if(p->zobrist_hash == hash && memcmp(p->p, b->p, TOTAL_BOARD_SIZ)
-            == 0 && p->last_eaten_passed == last_eaten_passed)
+    while (p != NULL) {
+        if (p->zobrist_hash == hash && memcmp(p->p, b->p, TOTAL_BOARD_SIZ) == 0 &&
+            p->last_eaten_passed == last_eaten_passed) {
             return p;
+        }
 
         p = p->next;
     }
@@ -124,22 +123,23 @@ static tt_stats * find_state2(
     u64 hash,
     const cfg_board * cb,
     bool is_black
-){
+) {
     u32 key = fast_bucket(hash, number_of_buckets);
     tt_stats * p;
 
-    if(is_black)
+    if (is_black) {
         p = b_stats_table[key];
-    else
+    } else {
         p = w_stats_table[key];
+    }
 
     move last_eaten_passed = (cb->last_played == PASS) ? PASS : cb->last_eaten;
 
-    while(p != NULL)
-    {
-        if(p->zobrist_hash == hash && memcmp(p->p, cb->p, TOTAL_BOARD_SIZ)
-            == 0 && p->last_eaten_passed == last_eaten_passed)
+    while (p != NULL) {
+        if (p->zobrist_hash == hash && memcmp(p->p, cb->p, TOTAL_BOARD_SIZ) == 0 &&
+            p->last_eaten_passed == last_eaten_passed) {
             return p;
+        }
 
         p = p->next;
     }
@@ -149,25 +149,27 @@ static tt_stats * find_state2(
 
 static tt_stats * create_state(
     u64 hash
-){
+) {
     tt_stats * ret = NULL;
 
     omp_set_lock(&freed_nodes_lock);
-    if(freed_nodes != NULL)
-    {
+
+    if (freed_nodes != NULL) {
         ret = freed_nodes;
         freed_nodes = freed_nodes->next;
-    }
-    else
+    } else {
         ++allocated_states;
+    }
+
     ++states_in_use;
     omp_unset_lock(&freed_nodes_lock);
 
-    if(ret == NULL)
-    {
-        ret = (tt_stats *)malloc(sizeof(tt_stats));
-        if(ret == NULL)
+    if (ret == NULL) {
+        ret = malloc(sizeof(tt_stats));
+
+        if (ret == NULL) {
             flog_crit("tt", "create_state: system out of memory");
+        }
 
         omp_init_lock(&ret->lock);
     }
@@ -182,39 +184,32 @@ static tt_stats * create_state(
 
 static void release_state(
     tt_stats * s
-){
+) {
     --states_in_use;
     s->next = freed_nodes;
     freed_nodes = s;
 }
 
-static void release_states_not_marked()
-{
-    for(u32 i = 0; i < number_of_buckets; ++i)
-    {
+static void release_states_not_marked() {
+    for (u32 i = 0; i < number_of_buckets; ++i) {
         /* black table */
-        while(b_stats_table[i] != NULL && b_stats_table[i]->maintenance_mark !=
-            maintenance_mark)
-        {
+        while (b_stats_table[i] != NULL && b_stats_table[i]->maintenance_mark != maintenance_mark) {
             tt_stats * tmp = b_stats_table[i]->next;
             release_state(b_stats_table[i]);
             b_stats_table[i] = tmp;
         }
-        if(b_stats_table[i] != NULL)
-        {
+
+        if (b_stats_table[i] != NULL) {
             tt_stats * prev = b_stats_table[i];
             tt_stats * curr = prev->next;
-            while(curr != NULL)
-            {
-                if(curr->maintenance_mark != maintenance_mark)
-                {
+
+            while (curr != NULL) {
+                if (curr->maintenance_mark != maintenance_mark) {
                     tt_stats * tmp = curr->next;
                     release_state(curr);
                     prev->next = tmp;
                     curr = tmp;
-                }
-                else
-                {
+                } else {
                     prev = curr;
                     curr = curr->next;
                 }
@@ -222,28 +217,24 @@ static void release_states_not_marked()
         }
 
         /* white table */
-        while(w_stats_table[i] != NULL && w_stats_table[i]->maintenance_mark !=
-            maintenance_mark)
-        {
+        while (w_stats_table[i] != NULL && w_stats_table[i]->maintenance_mark !=
+            maintenance_mark) {
             tt_stats * tmp = w_stats_table[i]->next;
             release_state(w_stats_table[i]);
             w_stats_table[i] = tmp;
         }
-        if(w_stats_table[i] != NULL)
-        {
+
+        if (w_stats_table[i] != NULL) {
             tt_stats * prev = w_stats_table[i];
             tt_stats * curr = prev->next;
-            while(curr != NULL)
-            {
-                if(curr->maintenance_mark != maintenance_mark)
-                {
+
+            while (curr != NULL) {
+                if (curr->maintenance_mark != maintenance_mark) {
                     tt_stats * tmp = curr->next;
                     release_state(curr);
                     prev->next = tmp;
                     curr = tmp;
-                }
-                else
-                {
+                } else {
                     prev = curr;
                     curr = curr->next;
                 }
@@ -254,13 +245,15 @@ static void release_states_not_marked()
 
 static void mark_states_for_keeping(
     tt_stats * s
-){
+) {
     s->maintenance_mark = maintenance_mark;
 
-    for(move i = 0; i < s->plays_count; ++i){
+    for (move i = 0; i < s->plays_count; ++i) {
         tt_stats * ns = s->plays[i].next_stats;
-        if(ns != NULL && ns->maintenance_mark != maintenance_mark)
+
+        if (ns != NULL && ns->maintenance_mark != maintenance_mark) {
             mark_states_for_keeping(ns);
+        }
     }
 }
 
@@ -271,14 +264,14 @@ RETURNS number of states freed.
 u32 tt_clean_unreachable(
     const board * b,
     bool is_black
-){
+) {
     u64 hash = zobrist_new_hash(b);
     u32 states_in_use_before = states_in_use;
     tt_stats * stats = find_state(hash, b, is_black);
-    if(stats == NULL) /* free all */
+
+    if (stats == NULL) { /* free all */
         tt_clean_all();
-    else
-    {
+    } else {
         /* free outside tree */
         ++maintenance_mark;
         mark_states_for_keeping(stats);
@@ -301,16 +294,15 @@ tt_stats * tt_lookup_create(
     const board * b,
     bool is_black,
     u64 hash
-){
+) {
     u32 key = fast_bucket(hash, number_of_buckets);
     omp_lock_t * bucket_lock = is_black ? &b_table_lock : &w_table_lock;
+
     omp_set_lock(bucket_lock);
 
     tt_stats * ret = find_state(hash, b, is_black);
-    if(ret == NULL) /* doesnt exist */
-    {
-        if(states_in_use >= max_allocated_states)
-        {
+    if (ret == NULL) { /* doesnt exist */
+        if (states_in_use >= max_allocated_states) {
             /*
             It is possible in theory for a complex ko to produce a situation
             where freeing the game tree that is not reachable doesn't free any
@@ -326,24 +318,20 @@ tt_stats * tt_lookup_create(
 
         ret = create_state(hash);
         memcpy(ret->p, b->p, TOTAL_BOARD_SIZ);
-        ret->last_eaten_passed =
-            (b->last_played == PASS) ? PASS : b->last_eaten;
+        ret->last_eaten_passed = (b->last_played == PASS) ? PASS : b->last_eaten;
+
         omp_set_lock(&ret->lock);
 
-        if(is_black)
-        {
+        if (is_black) {
             ret->next = b_stats_table[key];
             b_stats_table[key] = ret;
-        }
-        else
-        {
+        } else {
             ret->next = w_stats_table[key];
             w_stats_table[key] = ret;
         }
+
         omp_unset_lock(bucket_lock);
-    }
-    else /* update */
-    {
+    } else { /* update */
         omp_set_lock(&ret->lock);
         omp_unset_lock(bucket_lock);
     }
@@ -362,40 +350,35 @@ tt_stats * tt_lookup_null(
     const cfg_board * cb,
     bool is_black,
     u64 hash
-){
+) {
     u32 key = fast_bucket(hash, number_of_buckets);
     omp_lock_t * bucket_lock = is_black ? &b_table_lock : &w_table_lock;
+
     omp_set_lock(bucket_lock);
 
     tt_stats * ret = find_state2(hash, cb, is_black);
-    if(ret == NULL) /* doesnt exist */
-    {
-        if(states_in_use >= max_allocated_states)
-        {
+    if (ret == NULL) { /* doesnt exist */
+        if (states_in_use >= max_allocated_states) {
             omp_unset_lock(bucket_lock);
             return NULL;
         }
 
         ret = create_state(hash);
         memcpy(ret->p, cb->p, TOTAL_BOARD_SIZ);
-        ret->last_eaten_passed =
-            (cb->last_played == PASS) ? PASS : cb->last_eaten;
+        ret->last_eaten_passed = (cb->last_played == PASS) ? PASS : cb->last_eaten;
         omp_set_lock(&ret->lock);
 
-        if(is_black)
-        {
+        if (is_black) {
             ret->next = b_stats_table[key];
             b_stats_table[key] = ret;
-        }
-        else
-        {
+        } else {
             ret->next = w_stats_table[key];
             w_stats_table[key] = ret;
         }
+
         omp_unset_lock(bucket_lock);
-    }
-    else /* update */
-    {
+    } else { /* update */
+
         omp_set_lock(&ret->lock);
         omp_unset_lock(bucket_lock);
     }
@@ -406,23 +389,20 @@ tt_stats * tt_lookup_null(
 /*
 Frees all game states and resets counters.
 */
-u32 tt_clean_all()
-{
+u32 tt_clean_all() {
     u32 states_in_use_before = states_in_use;
     maintenance_mark = 0;
 
-    for(u32 i = 0; i < number_of_buckets; ++i)
-    {
+    for (u32 i = 0; i < number_of_buckets; ++i) {
         /* black table */
-        while(b_stats_table[i] != NULL)
-        {
+        while (b_stats_table[i] != NULL) {
             tt_stats * tmp = b_stats_table[i]->next;
             release_state(b_stats_table[i]);
             b_stats_table[i] = tmp;
         }
+
         /* white table */
-        while(w_stats_table[i] != NULL)
-        {
+        while (w_stats_table[i] != NULL) {
             tt_stats * tmp = w_stats_table[i]->next;
             release_state(w_stats_table[i]);
             w_stats_table[i] = tmp;
@@ -438,25 +418,16 @@ u32 tt_clean_all()
 Mostly for debugging -- log the current memory status of the transpositions
 table to stderr and log file.
 */
-void tt_log_status()
-{
+void tt_log_status() {
     char * buf = alloc();
-    u32 idx = snprintf(buf, MAX_PAGE_SIZ,
-        "\n*** Transpositions table trace start ***\n\n");
-    idx += snprintf(buf + idx, MAX_PAGE_SIZ - idx, "Max size in MiB: %" PRIu64
-        "\n", max_size_in_mbs);
-    idx += snprintf(buf + idx, MAX_PAGE_SIZ - idx, "Max allocated states: %u\n",
-        max_allocated_states);
-    idx += snprintf(buf + idx, MAX_PAGE_SIZ - idx, "Allocated states: %u\n",
-        allocated_states);
-    idx += snprintf(buf + idx, MAX_PAGE_SIZ - idx, "States in use: %u\n",
-        states_in_use);
-    idx += snprintf(buf + idx, MAX_PAGE_SIZ - idx, "Number of buckets: %u\n",
-        number_of_buckets);
-    snprintf(buf + idx, MAX_PAGE_SIZ - idx, "Maintenance mark: %u\n",
-        maintenance_mark);
+    u32 idx = snprintf(buf, MAX_PAGE_SIZ, "\n*** Transpositions table trace start ***\n\n");
+    idx += snprintf(buf + idx, MAX_PAGE_SIZ - idx, "Max size in MiB: %" PRIu64 "\n", max_size_in_mbs);
+    idx += snprintf(buf + idx, MAX_PAGE_SIZ - idx, "Max allocated states: %u\n", max_allocated_states);
+    idx += snprintf(buf + idx, MAX_PAGE_SIZ - idx, "Allocated states: %u\n", allocated_states);
+    idx += snprintf(buf + idx, MAX_PAGE_SIZ - idx, "States in use: %u\n", states_in_use);
+    idx += snprintf(buf + idx, MAX_PAGE_SIZ - idx, "Number of buckets: %u\n", number_of_buckets);
+    snprintf(buf + idx, MAX_PAGE_SIZ - idx, "Maintenance mark: %u\n", maintenance_mark);
 
     flog_warn("tt", buf);
     release(buf);
 }
-

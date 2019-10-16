@@ -23,8 +23,8 @@ Matilda is agressive in its use of the available memory: It will cache game
 state information instead of freeing it, so do not be surprised to see the
 memory used always go up.
 
-Other settings may also be configured for testing by mistake, so please
-understand what each setting does and set them correctly.
+Other settings may also be configured for a widely different setting than your
+own, so please try to take a look at the options meant for editing.
 
 
 COMPILATION

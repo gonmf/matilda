@@ -54,7 +54,7 @@ typedef struct __simple_state_transition_ {
 
 static u32 hash_function(
     void * o
-){
+) {
     simple_state_transition * s = (simple_state_transition *)o;
     return s->hash;
 }
@@ -62,7 +62,7 @@ static u32 hash_function(
 static int compare_function(
     const void * restrict o1,
     const void * restrict o2
-){
+) {
     simple_state_transition * s1 = (simple_state_transition *)o1;
     simple_state_transition * s2 = (simple_state_transition *)o2;
     return memcmp(s1->p, s2->p, PACKED_BOARD_SIZ);
@@ -71,33 +71,39 @@ static int compare_function(
 static int sort_cmp_function(
     const void * restrict o1,
     const void * restrict o2
-){
+) {
     simple_state_transition ** s1 = (simple_state_transition **)o1;
     simple_state_transition ** s2 = (simple_state_transition **)o2;
     return ((int)(*s2)->popularity) - ((int)(*s1)->popularity);
 }
 
 
-int main(int argc, char * argv[]){
+int main(int argc, char * argv[]) {
     bool no_print = false;
 
-    for(int i = 1; i < argc; ++i){
-        if(i < argc - 1 && strcmp(argv[i], "--time") == 0){
+    for (int i = 1; i < argc; ++i) {
+        if (i < argc - 1 && strcmp(argv[i], "--time") == 0) {
             u32 a;
-            if(!parse_uint(&a, argv[i + 1]) || a < 1)
+            if (!parse_uint(&a, argv[i + 1]) || a < 1) {
                 goto lbl_usage;
+            }
+
             ++i;
             secs_per_turn = a;
             continue;
         }
-        if(strcmp(argv[i], "--no_print") == 0){
+
+        if (strcmp(argv[i], "--no_print") == 0) {
             no_print = true;
             continue;
         }
-        if(i < argc - 1 && strcmp(argv[i], "--max_depth") == 0){
+
+        if (i < argc - 1 && strcmp(argv[i], "--max_depth") == 0) {
             u32 a;
-            if(!parse_uint(&a, argv[i + 1]) || a < 1)
+            if (!parse_uint(&a, argv[i + 1]) || a < 1) {
                 goto lbl_usage;
+            }
+
             ++i;
             ob_depth = a;
             continue;
@@ -106,11 +112,9 @@ int main(int argc, char * argv[]){
 lbl_usage:
         printf("Usage: %s [options]\n", argv[0]);
         printf("Options:\n");
-        printf("--max_depth number - Maximum turn depth of the openings. (defau\
-lt: %u)\n", ob_depth);
+        printf("--max_depth number - Maximum turn depth of the openings. (default: %u)\n", ob_depth);
         printf("--no_print - Do not print SGF filenames.\n");
-        printf("--time number - Time spent per rule, in seconds. (default: %u)\\
-n", secs_per_turn);
+        printf("--time number - Time spent per rule, in seconds. (default: %u)\n", secs_per_turn);
         exit(EXIT_SUCCESS);
     }
 
@@ -129,21 +133,19 @@ n", secs_per_turn);
     char * ts = alloc();
     timestamp(ts);
     printf("%s: Creating table...\n", ts);
-    hash_table * table = hash_table_create(TABLE_BUCKETS,
-        sizeof(simple_state_transition), hash_function, compare_function);
+    hash_table * table = hash_table_create(TABLE_BUCKETS, sizeof(simple_state_transition), hash_function, compare_function);
 
     u32 games_used = 0;
     u32 unique_states = 0;
 
     timestamp(ts);
-    printf("%s: Searching game record files (%s*.sgf)...\n", ts,
-        data_folder());
-    u32 filenames_found = recurse_find_files(data_folder(), ".sgf",
-        filenames, MAX_FILES);
-    if(filenames_found == 0)
+    printf("%s: Searching game record files (%s*.sgf)...\n", ts, data_folder());
+    u32 filenames_found = recurse_find_files(data_folder(), ".sgf", filenames, MAX_FILES);
+    if (filenames_found == 0) {
         printf("No SGF files found.\n");
-    else
+    } else {
         printf("Found %u SGF files.\n", filenames_found);
+    }
 
     timestamp(ts);
     printf("%s: Loading game states\n", ts);
@@ -151,23 +153,23 @@ n", secs_per_turn);
     char * buf = malloc(MAX_FILE_SIZ);
     game_record * gr = malloc(sizeof(game_record));
 
-    for(u32 fid = 0; fid < filenames_found; ++fid)
-    {
-        if(!no_print)
+    for (u32 fid = 0; fid < filenames_found; ++fid) {
+        if (!no_print) {
             printf("%u/%u: %s", fid + 1, filenames_found, filenames[fid]);
+        }
 
-        if(!import_game_from_sgf2(gr, filenames[fid], buf, MAX_FILE_SIZ))
-        {
-            if(!no_print)
+        if (!import_game_from_sgf2(gr, filenames[fid], buf, MAX_FILE_SIZ)) {
+            if (!no_print) {
                 printf(" skipped\n");
+            }
             continue;
         }
 
         /* Ignore handicap matches */
-        if(gr->handicap_stones.count > 0)
-        {
-            if(!no_print)
+        if (gr->handicap_stones.count > 0) {
+            if (!no_print) {
                 printf(" skipped\n");
+            }
             continue;
         }
 
@@ -176,28 +178,29 @@ n", secs_per_turn);
         bool is_black = true;
 
         ++games_used;
-        if(!no_print)
+        if (!no_print) {
             printf(" (%u)\n", gr->turns);
+        }
 
         d16 k;
-        for(k = 0; k < MIN(ob_depth, gr->turns); ++k)
-        {
+        for (k = 0; k < MIN(ob_depth, gr->turns); ++k) {
             move m = gr->moves[k];
 
             /* Stop at the first play that is either a capture or pass */
-            if(!is_board_move(m))
+            if (!is_board_move(m)) {
                 break;
+            }
 
             u16 caps;
             u8 libs = libs_after_play_slow(&b, is_black, m, &caps);
-            if(libs < 1 || caps > 0)
+            if (libs < 1 || caps > 0) {
                 break;
+            }
 
             board b2;
             memcpy(&b2, &b, sizeof(board));
 
-            if(!attempt_play_slow(&b, is_black, m))
-            {
+            if (!attempt_play_slow(&b, is_black, m)) {
                 fprintf(stderr, "\rerror: file contains illegal plays\n");
                 exit(EXIT_FAILURE);
             }
@@ -208,14 +211,11 @@ n", secs_per_turn);
             memset(&stmp, 0, sizeof(simple_state_transition));
             pack_matrix(stmp.p, b2.p);
             stmp.hash = crc32(stmp.p, PACKED_BOARD_SIZ);
-            simple_state_transition * entry =
-                (simple_state_transition *)hash_table_find(table, &stmp);
+            simple_state_transition * entry = (simple_state_transition *)hash_table_find(table, &stmp);
 
-            if(entry == NULL) /* new state */
-            {
-                entry = (simple_state_transition *)malloc(
-                    sizeof(simple_state_transition));
-                if(entry == NULL){
+            if (entry == NULL) { /* new state */
+                entry = malloc(sizeof(simple_state_transition));
+                if (entry == NULL) {
                     fprintf(stderr, "\rerror: new sst: system out of memory\n");
                     exit(EXIT_FAILURE);
                 }
@@ -226,19 +226,17 @@ n", secs_per_turn);
 
                 hash_table_insert(table, entry);
                 ++unique_states;
-            }
-            else
+            } else {
                 entry->popularity++;
+            }
 
             is_black = !is_black;
         }
     }
 
 
-    printf("\nFound %u unique game states from %u games.\n", unique_states,
-        games_used);
-    if(unique_states == 0)
-    {
+    printf("\nFound %u unique game states from %u games.\n", unique_states, games_used);
+    if (unique_states == 0) {
         release(ts);
         return EXIT_SUCCESS;
     }
@@ -246,18 +244,15 @@ n", secs_per_turn);
     printf("\nSorting by number of occurrences\n");
 
 
-    simple_state_transition ** ssts =
-        (simple_state_transition **)hash_table_export_to_array(table);
+    simple_state_transition ** ssts = (simple_state_transition **)hash_table_export_to_array(table);
 
-    qsort(ssts, unique_states, sizeof(simple_state_transition *),
-        sort_cmp_function);
+    qsort(ssts, unique_states, sizeof(simple_state_transition *), sort_cmp_function);
 
     printf("\nEvaluating game states and saving best play\n");
 
     char * log_filename = alloc();
     int fd = create_and_open_file(log_filename, MAX_PAGE_SIZ, "matilda", "ob");
-    if(fd == -1)
-    {
+    if (fd == -1) {
         timestamp(ts);
         printf("%s: Failed to create output file %s\n", ts, log_filename);
         exit(EXIT_FAILURE);
@@ -274,8 +269,7 @@ n", secs_per_turn);
     u32 evaluated = 0;
     sync();
 
-    for(u32 idx = 0; ssts[idx]; ++idx)
-    {
+    for (u32 idx = 0; ssts[idx]; ++idx) {
         simple_state_transition * sst = ssts[idx];
 
 
@@ -285,8 +279,7 @@ n", secs_per_turn);
         evaluated++;
         unpack_matrix(b.p, sst->p);
         b.last_eaten = b.last_played = NONE;
-        if(opening_book(&out_b, &b))
-        {
+        if (opening_book(&out_b, &b)) {
             timestamp(ts);
             printf("%s: State already present in opening books.\n", ts);
             continue;
@@ -301,8 +294,7 @@ n", secs_per_turn);
         out_b.pass = -1.0;
         move best = select_play_fast(&out_b);
 
-        if(!is_board_move(best))
-        {
+        if (!is_board_move(best)) {
             timestamp(ts);
             printf("%s: Best play is a pass.\n", ts);
             continue;
@@ -315,8 +307,7 @@ n", secs_per_turn);
         printf("%s", str);
 
         ssize_t w = write(fd, str, strlen(str));
-        if(w == -1)
-        {
+        if (w == -1) {
             fprintf(stderr, "error: write failed\n");
             exit(EXIT_FAILURE);
         }

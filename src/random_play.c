@@ -20,26 +20,22 @@ Select random legal play.
 move random_play(
     cfg_board * cb,
     bool is_black
-){
+) {
     bool _ignored;
 
     move playable[TOTAL_BOARD_SIZ];
     u16 playable_count = 0;
 
-    for(u16 k = 0; k < cb->empty.count; ++k)
-    {
+    for (u16 k = 0; k < cb->empty.count; ++k) {
         move m = cb->empty.coord[k];
 
-        if(!ko_violation(cb, m) &&
-            safe_to_play2(cb, is_black, m, &_ignored) > 0)
-        {
+        if (!ko_violation(cb, m) && safe_to_play2(cb, is_black, m, &_ignored) > 0) {
             playable[playable_count] = m;
             ++playable_count;
         }
     }
 
-    if(playable_count > 0)
-    {
+    if (playable_count > 0) {
         u16 p = rand_u16(playable_count);
         return playable[p];
     }
@@ -53,7 +49,7 @@ Select random legal play.
 move random_play2(
     board * b,
     bool is_black
-){
+) {
     cfg_board cb;
     cfg_from_board(&cb, b);
     move ret = random_play(&cb, is_black);

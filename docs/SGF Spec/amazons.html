@@ -1,0 +1,59 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD><TITLE>SGF - Amazons (GM[18])</TITLE>
+</HEAD>
+<BODY alink="#FF0000" bgcolor="#FFFFFF" link="#0000FF" text="#000000" vlink="#FF0000">
+<A HREF="index.html"><IMG src="images/head.gif" ALT="[SGF FF[4] - Smart Game Format]" BORDER=0></A>
+
+<H1>Amazons (GM[18])</H1>
+
+For more information about Amazons contact
+<A HREF="mailto:mueller@etl.go.jp">Martin Mueller</A> or have a look at
+<A HREF="http://www.gamerz.net/pbmserv/amazons.html">gamerz.net</A>.
+A strong Amazons program for Windows can be freely downloaded from
+<A HREF="http://plaza15.mbn.or.jp/~yss/index.html">Hiroshi Yamashita's page</A>.
+
+<H2>Defaults</h2>
+
+The default board size for Amazons is SZ[10].
+<BR>The default start position for two player games is
+<TT>AB[dj][gj][ag][jg]AW[da][ga][ad][jd]</TT>,
+unless there are setup properties in the root node (AB/AW/AE/AA).
+Then the start position is as described by those setup properties.
+
+<H2><A NAME="types">Point and Move types</A></H2>
+
+<H3>Point</H3>
+The point type is specified by two lowercase letters.
+<P>
+<IMG src="images/TA2.gif" ALT="[coordinates (TA2.gif)]">
+Coordinate system for points and moves
+<P>
+The first letter designates the column (left to right), the second the row
+(top to bottom). The upper left part of the board is used for smaller
+boards, e.g. letters "a"-"m" for 13*13.
+<P>
+In FF[4] it is possible to specify board sizes upto 52x52.
+In this case uppercase letters are used to represent points from 27-52,
+i.e. 'a'=1 ... 'z'=26 , 'A'=27 ... 'Z'=52
+
+<H3>Move</H3>
+A move is defined by three points.
+<OL><LI>from - where to move from
+<LI>to - where to move to
+<LI>arrow - where to shoot the arrow
+</OL>
+The point strings are concatenated in the property value.
+<BR>Example: ;B[djddgd];W[addgad];B[gjehea]
+
+<H2><A NAME="properties">Properties</A></H2>
+
+<PRE>
+<A NAME="AA"><B>Property:</B>	AA</A>
+<B>Propvalue:</B>	list of point
+<B>Propertytype:</B>	setup
+<B>Function:</B>	Adding arrows to the board. This can be used to set up
+		positions or problems.
+</PRE>
+</BODY>
+</HTML>

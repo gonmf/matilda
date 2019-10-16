@@ -1,0 +1,123 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+<HEAD><TITLE>SGF file format FF[4]</TITLE>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1"> 
+</HEAD>
+<BODY alink="#FF0000" bgcolor="#FFFFFF" link="#0000FF" text="#000000" vlink="#FF0000">
+<TABLE WIDTH="100%">
+<TR><TD><A HREF="index.html"><IMG src="images/head.gif" ALT="[SGF FF[4] - Smart Game Format]" BORDER=0></A>
+<TD ALIGN=RIGHT><a href="http://validator.w3.org/check/referer"><img border=0
+        src="http://validator.w3.org/images/vh40"
+        alt="Valid HTML 4.0!" height=31 width=88></a>
+</TABLE>
+
+<H1>SGF File Format FF[4]</H1>
+<P>
+<B>This is the official specification of the SGF FF[4] standard.</B>
+<P>
+SGF is the abbreviation of 'Smart Game Format'. The file format is
+designed to store game records of board games for two players.
+It's a text only, tree based format. Therefore games stored in this
+format can easily be emailed, posted or processed with text-based tools.
+<BR>
+The main purposes of SGF are to store records of played games and to
+provide features for storing annotated and analyzed games (e.g. board 
+markup, variations).
+<P>
+Last updated: 2001-08-12
+<BR>See <A HREF=history.htm>history</A> for changes.
+<P>
+<TABLE BORDER CELLPADDING=5>
+<TR><TH BGCOLOR="#ff0000"><FONT COLOR="#ffffff"><BIG>For users</BIG></FONT>
+<TH BGCOLOR="#0000ff">&nbsp;
+<TR><TH><A HREF="user_guide/index.html">Users guide</A><TD>An user
+orientated introduction to SGF files
+<TR><TH><A HREF="http://www.linkclub.or.jp/~namanama/SGFnote.html">Japanese version</A>
+<TD>Japanese version of the spec by Teruo Namatame.
+
+<TR><TH BGCOLOR="#ff0000"><FONT COLOR="#ffffff"><BIG>Tools and examples</BIG></FONT><TH BGCOLOR="#0000ff">&nbsp;
+<TR><TH><A HREF="sgfc/index.html">SGFC</A>
+<TD>SGF Syntax Checker &amp; Converter
+<BR><A HREF="sgfc/munch.html">Web interface</A> to SGFC
+<TR><TH><A HREF="examples/">Example file</A>
+<TD>An example SGF file plus pictures to show the basic and sophisticated
+features of SGF
+
+<TR><TH BGCOLOR="#ff0000"><FONT COLOR="#ffffff"><BIG>For developers</BIG></FONT>
+<TH BGCOLOR="#0000ff"><FONT COLOR="#ffffff"><BIG>SGF Specification</BIG></FONT>
+<TR><TH>Basics
+<TD><UL><LI><A HREF="sgf4.html">Basic definition and types</A>
+<LI>Additional <A HREF="var.htm">examples for variations</A>.
+<LI>Game specific definitions and types
+<UL>
+<LI><A HREF="go.html">Go (GM[1])</A>
+<LI><A HREF="backgammon.html">Backgammon (GM[6])</A>
+<LI><A HREF="loa.html">Lines of Action (GM[9])</A>
+<LI><A HREF="hex.html">Hex (GM[11])</A>
+<LI><A HREF="amazons.html">Amazons (GM[18])</A>
+<LI><A HREF="octi.html">Octi (GM[19])</A>
+<LI><A HREF="gess.html">Gess (GM[20])</A>
+</UL></UL>
+
+<TR><TH>Properties<TD>
+<UL>
+<LI><A HREF="properties.html">General properties</A>
+<LI>Game specific properties:
+&nbsp;<A HREF="go.html#properties">Go (GM[1])</A>,
+&nbsp;<A HREF="backgammon.html#properties">Backgammon (GM[6])</A>,
+&nbsp;<A HREF="loa.html#properties">Lines of Action (GM[9])</A>,
+&nbsp;<A HREF="hex.html#properties">Hex (GM[11])</A>
+<LI><A HREF="proplist.html">Short index of all properties</A> (alphabetical)
+<LI><A HREF="proplist_t.html">Short index of all properties</A>
+(sorted by property type & game)
+</UL>
+<TR><TH>Archives<TD>
+<A HREF="sgf_spec.tar.gz">Tar-archive (gzip)</A> of all <B>HTML</B>
+files (excluding discussion, FF4 example, FF[1], FF[3] and SGF syntax
+checker)
+<TR><TH>Future<TD><UL>
+<LI><A HREF="ff5/ff5.htm">Discussion of SGF FF[5]</A> - not too active right now
+<LI><A HREF="xml/">XGF</A> - proposal for an XML format to replace SGF
+</UL>
+<TR><TH>&nbsp;<TH BGCOLOR="#0000ff"><FONT COLOR="#ffffff"><BIG>Specification Supplements</BIG></FONT>
+<TR><TH><A HREF="changes.html">Changes to FF[3]</A>
+    <TD>To get a quick overview of what's new in FF[4] have a look at the
+changes from FF[3].
+<TR><TH><A HREF="compatibility.html">Compatibility</A><TD>Compatibility issues
+<TR><TH><A HREF="converting.html">Converting</A><TD>Converting old files to FF[4]
+<TR><TH><A HREF="proplist_ff.html">Index of properties</A><TD>Index of all FF[1]-FF[4] properties (alphabetical)
+
+<TR><TH>&nbsp;
+<TH BGCOLOR="#0000ff"><FONT COLOR="#ffffff"><BIG>Old specifications</BIG></FONT>
+<TR><TH><A HREF="ff1_3/ff1.html">FF[1]</A><TD>Specification of FF[1] by Anders Kierulf
+<TR><TH><A HREF="ff1_3/ff3.html">FF[3]</A><TD>Specification of FF[3] by Martin M&uuml;ller
+<TR><TH><A HREF="ff1_3/style.html">Style guide</A><TD>Style guide by Martin M&uuml;ller (old but still valid)
+<TR><TH><A HREF="ff1_3/ff13.tar.gz">Archive</A><TD>Tar archive (gzip) of old specifications
+
+<TR><TH>&nbsp;<TH BGCOLOR="#0000ff"><FONT COLOR="#ffffff"><BIG>Email list</BIG></FONT>
+<TR><TH><A HREF="email_list.html">Email list</A><TD>A short description and how to subscribe
+<TR><TH><A HREF="discussion/">Archive</A><TD>Archive of the email list
+</TABLE>
+<P>
+<B>Note:</B> Many Go (WeiQi) terms are used throughout
+the specification, e.g. point is used instead of field or square.
+<P>
+<B>Note:</B> Please pay attention to the difference of <I>mandatory</I>
+(has to be, must not, ...) and <I>recommended</I> (suggested, should have,
+shouldn't ...).
+Mandatory topics HAVE TO be done exactly this way, otherwise it's illegal.
+Recommended topics should but don't have to be followed. If the application
+doesn't obey those suggestions then the 'only' consequence is bad style.
+<P>
+<HR noshade>
+<TABLE WIDTH="97%"><TR><TD VALIGN=TOP>
+Arno Hollosi<BR>
+<A 
+HREF="mailto:ahollosi@xmp.net">ahollosi@xmp.net</A><BR>
+<TD VALIGN=BOTTOM ALIGN=RIGHT>Hosted at
+<A HREF="http://www.red-bean.com/"><IMG src="images/bean-sm.jpg" ALT="[bean]" BORDER=0> Red Bean</A>
+<BR><small>Virtual solutions for virtual people</small>
+</TABLE>
+
+</BODY>
+</HTML>

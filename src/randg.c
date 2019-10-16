@@ -22,30 +22,31 @@ static bool rand_inited = false;
 /*
 Initiate the seeds for the different thread RNG, again.
 */
-void rand_reinit()
-{
+void rand_reinit() {
     char * buf = alloc();
 
     u16 idx = 0;
     idx += snprintf(buf + idx, MAX_PAGE_SIZ - idx, "RNG seed vector:\n");
 
-    for(u16 i = 0; i < MAXIMUM_NUM_THREADS; )
-    {
+    for (u16 i = 0; i < MAXIMUM_NUM_THREADS;) {
         state[i] = (u32)current_nanoseconds();
         bool found = false;
-        for(u16 j = 0; j < i; ++j)
-            if(state[j] == state[i])
-            {
+
+        for (u16 j = 0; j < i; ++j) {
+            if (state[j] == state[i]) {
                 found = true;
                 break;
             }
+        }
 
-        if(!found && state[i] > 0)
+        if (!found && state[i] > 0) {
             ++i;
+        }
     }
 
-    for(u16 i = 0; i < MAXIMUM_NUM_THREADS; ++i)
+    for (u16 i = 0; i < MAXIMUM_NUM_THREADS; ++i) {
         idx += snprintf(buf + idx, MAX_PAGE_SIZ - idx, "%u: %x\n", i, state[i]);
+    }
 
     flog_debug("rand", buf);
     release(buf);
@@ -56,10 +57,8 @@ void rand_reinit()
 /*
 Initiate the seeds for the different thread RNG.
 */
-void rand_init()
-{
-    if(!rand_inited)
-    {
+void rand_init() {
+    if (!rand_inited) {
         alloc_init();
         rand_reinit();
     }
@@ -71,7 +70,7 @@ RETURNS pseudo random 16-bit number
 */
 u16 rand_u16(
     u16 max /* exclusive */
-){
+) {
     u32 s = state[omp_get_thread_num()];
     state[omp_get_thread_num()] = ((s * 1103515245) + 12345) & 0x7fffffff;
     return ((s & 0xffff) * ((u32)max)) >> 16;
@@ -83,7 +82,7 @@ RETURNS pseudo random 32-bit number
 */
 u32 rand_u32(
     u32 max /* exclusive */
-){
+) {
     double gen = (double)rand_r(&state[omp_get_thread_num()]);
     return (gen * ((double)max)) / ((double)RAND_MAX);
 }
@@ -94,7 +93,7 @@ RETURNS pseudo random IEEE 754 floating point
 */
 float rand_float(
     float max /* inclusive */
-){
+) {
     /*
     Adapted from the method used in Pachi (GPLv2), which is itself based on the
     method described in www.rgba.org/articles/sfrand/sfrand.htm (proprietary

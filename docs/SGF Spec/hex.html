@@ -1,0 +1,99 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD><TITLE>SGF - Hex (GM[11])</TITLE>
+</HEAD>
+<BODY alink="#FF0000" bgcolor="#FFFFFF" link="#0000FF" text="#000000" vlink="#FF0000">
+<A HREF="index.html"><IMG src="images/head.gif" ALT="[SGF FF[4] - Smart Game Format]" BORDER=0></A>
+
+<H1>Hex (GM[11])</H1>
+
+<H2>Implementation of SGF FF[4] for Hex</H2>
+For more information about Hex, implementation of SGF FF[4] for Hex
+and sample code see
+<A HREF="http://homepages.enterprise.net/drking/hexagons/hex/">this page</A>
+or email
+<A HREF="mailto:drking@enterprise.net">David King</A>.
+<P>
+All (game-specific) property values are case insensitive.<BR>
+<P>
+The default board size is 11 x 11. The minimum size for a row or a column
+is 3, and the maximum 26. If a board is asymmetric, the SZ[]
+property should specify [number_of_columns : number_of_rows]
+in line with the SGF FF[4] specification.
+<P>
+Black tries to connect the top and bottom of the board; White tries to
+connect the left and right sides.
+<P>
+The default first player is Black.
+
+<H2><A NAME="types">Point and Move types</A></H2>
+
+<H3>Point</H3>
+<CENTER><IMG src="images/hexboard.gif" ALT="[ board ]"></CENTER>
+Cells on the board are labeled with letters for the columns and numbers
+for the rows, as shown. A cell is identified by the letter of its column,
+followed by the number of its row. Examples: [a1], [G5], [D11], [j10]. 
+
+<H3>Move</H3>
+Normal moves specify the cell, as defined by
+point type above. Moves should be legal; there is no
+defined behaviour upon reading an illegal move, except to display an
+error message.
+<P>
+Example normal moves: B[e4], W[F9]. 
+<P>
+The following moves are special:
+<UL>
+<LI>swap-sides - the player elects to swap sides with his opponent; if
+he was playing Black he now plays White, and vice versa.
+<LI>swap-pieces - the player elects to swap pieces with his opponent - 
+all of Black's pieces are coloured White, and White's pieces are coloured
+Black. Then the entire board is reflected in the long diagonal axis.
+(Example: ;B[c1] ;W[swap-pieces] - a3 is now white; Black to play).
+<LI>resign - the player resigns. Applications should allow play beyond the
+node of resignation, to allow subsequent exploration of the game.
+<LI>forfeit - the player loses by forfeiture, perhaps because of time spent.
+Applications should allow play beyond the node of forfeiture, to
+allow subsequent exploration of the game.
+</UL>
+Both swap methods are equivalent in play terms. A swap move may occur at
+any node, although normally it is restricted to the second move. The
+rules agreed for a game may be defined using the RU[] property.
+<P>
+Example special moves: B[resign], W[swap-pieces], B[forfeit].
+
+
+<H2><A NAME="properties">Properties</A></H2>
+
+<PRE>
+<A NAME="IS"><B>Property:</B>	IS</A>
+<B>Propvalue:</B>	list of composed <A HREF="sgf4.html#simpletext">SimpleText</A> ':' SimpleText
+<B>Propertytype:</B>	root
+<B>Function:</B>	This property allows applications to store and read
+		an initial viewer setting. The property value is a list of
+		"keyword followed by ':' followed by either 'on' or 'off'".
+		Valid keywords are:
+		  'tried' - identify future moves that have been tried?
+		  'marked' - show good/bad move markings?
+		  'lastmove' - identify the last cell played?
+		  'headings' - display column/row headings (a b.., 1 2..)?
+		  'lock' - lock the game against new moves (for analysis)?
+		This property is allowed in the root node only.
+		Example: IS[tried:on][lock:off][marked:off]
+
+<A NAME="IP"><B>Property:</B>	IP</A>
+<B>Propvalue:</B>	<A HREF="sgf4.html#simpletext">SimpleText</A>
+<B>Propertytype:</B>	game-info
+<B>Function:</B>	Designates the initial position that the viewer
+		should display. It will most frequently indicate the
+		current position of play in the game. This is necessary 
+		because future possible moves may have been explored,
+		and the user must be able to distinguish real moves
+		actually made from exploratory moves. More than one IP[]
+		property in a game is illegal, and the behaviour undefined.
+		The property value should be empty (""); it is specified
+		as SimpleText for compatibility.
+
+</PRE>
+</BODY>
+</HTML>

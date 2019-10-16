@@ -1,0 +1,85 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+<HEAD><TITLE>SGF - Go (GM[1])</TITLE></HEAD>
+<BODY alink="#FF0000" bgcolor="#FFFFFF" link="#0000FF" text="#000000" vlink="#FF0000">
+<A HREF="index.html"><IMG src="images/head.gif" ALT="[SGF FF[4] - Smart Game Format]" BORDER=0></A>
+
+<H1>Go (GM[1])</H1>
+
+
+<H2><A NAME="types">Move, Point & Stone type</A></H2>
+
+In Go the Stone becomes Point and<BR>
+the Move and Point type are the same: two lowercase letters.
+<P>
+<IMG src="images/TA2.gif" ALT="[coordinates (TA2.gif)]">
+Coordinate system for points and moves
+<P>
+The first letter designates the column (left to right), the second the row
+(top to bottom). The upper left part of the board is used for smaller
+boards, e.g. letters "a"-"m" for 13*13.<BR>
+A pass move is shown as '[]' or alternatively as '[tt]' (only for
+boards <= 19x19), i.e. applications should be able to deal with both
+representations. '[tt]' is kept for compatibility with FF[3].<BR>
+Using lowercase letters only the maximum board size is 26x26.
+<P>
+In FF[4] it is possible to specify board sizes upto 52x52.
+In this case uppercase letters are used to represent points from 27-52,
+i.e. 'a'=1 ... 'z'=26 , 'A'=27 ... 'Z'=52
+
+<H3><A NAME="execute move">How to execute a move</A></H3>
+
+When a B (resp. W) property is encountered, a stone of that color is placed
+on the given position (no matter what was there before).<BR>
+Then the application should check any W (resp. B) groups that are adjacent
+to the stone just placed. If they have no liberties they should be
+removed and the prisoner count increased accordingly.<BR>
+Lastly, the B (resp. W) group that the newest stone belongs to should be
+checked for liberties, and if it has no liberties, it should be removed
+(suicide) and the prisoner count increased accordingly.
+
+<p>
+<b>See also:</b> <a href="ff5/m_vs_ax.htm">extensive explanation with examples</a>
+(should leave no question unanswered; is part of FF5 discussion but valid for FF4 as well).
+
+<H2><A NAME="properties">Properties</A></H2>
+
+TW and TB points must be unique, i.e. it's illegal to list the same point
+in TB and TW within the same node.
+
+<PRE>
+<A NAME="HA"><B>Property:</B>	HA</A>
+<B>Propvalue:</B>	<A HREF="sgf4.html#types">number</A>
+<B>Propertytype:</B>	game-info
+<B>Function:</B>	Defines the number of handicap stones (>=2).
+		If there is a handicap, the position should be set up with
+		<A HREF="#AB">AB</A> within the same node.
+		HA itself doesn't add any stones to the board, nor does
+		it imply any particular way of placing the handicap stones.
+<B>Related:</B>	<A HREF="#KM">KM</A>, <A HREF="properties.html#RE">RE</A>, <A HREF="properties.html#RU">RU</A>
+
+<A NAME="KM"><B>Property:</B>	KM</A>
+<B>Propvalue:</B>	<A HREF="sgf4.html#types">real</A>
+<B>Propertytype:</B>	game-info
+<B>Function:</B>	Defines the komi.
+<B>Related:</B>	<A HREF="#HA">HA</A>, <A HREF="properties.html#RE">RE</A>, <A HREF="properties.html#RU">RU</A>
+
+<A NAME="TB"><B>Property:</B>	TB</A>
+<B>Propvalue:</B>	elist of <A HREF="sgf4.html#move/pos">point</A>
+<B>Propertytype:</B>	-
+<B>Function:</B>	Specifies the black territory or area (depends on
+		rule set used).
+		Points must be unique.
+<B>Related:</B>	<A HREF="#TW">TW</A>
+
+<A NAME="TW"><B>Property:</B>	TW</A>
+<B>Propvalue:</B>	elist of <A HREF="sgf4.html#move/pos">point</A>
+<B>Propertytype:</B>	-
+<B>Function:</B>	Specifies the white territory or area (depends on
+		rule set used).
+		Points must be unique.
+<B>Related:</B>	<A HREF="#TB">TB</A>
+
+</PRE>
+</BODY>
+</HTML>

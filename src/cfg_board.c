@@ -53,27 +53,27 @@ extern u16 initial_3x3_hash[TOTAL_BOARD_SIZ];
 
 static group * saved_nodes[MAXIMUM_NUM_THREADS];
 
-static group * alloc_group()
-{
+static group * alloc_group() {
     int thread = omp_get_thread_num();
     group * ret;
-    if(saved_nodes[thread] != NULL)
-    {
+
+    if (saved_nodes[thread] != NULL) {
         ret = saved_nodes[thread];
         saved_nodes[thread] = saved_nodes[thread]->next;
-    }
-    else
-    {
-        ret = (group *)malloc(sizeof(group));
-        if(ret == NULL)
+    } else {
+        ret = malloc(sizeof(group));
+
+        if (ret == NULL) {
             flog_crit("cfg", "system out of memory");
+        }
     }
+
     return ret;
 }
 
 static void just_delloc_group(
     group * g
-){
+) {
     int thread = omp_get_thread_num();
     g->next = saved_nodes[thread];
     saved_nodes[thread] = g;
@@ -82,15 +82,12 @@ static void just_delloc_group(
 static void delloc_group(
     cfg_board * cb,
     group * g
-){
+) {
     cb->unique_groups_count--;
 
-    if(g->unique_groups_idx < cb->unique_groups_count)
-    {
-        cb->unique_groups[g->unique_groups_idx] =
-            cb->unique_groups[cb->unique_groups_count];
-        cb->g[cb->unique_groups[g->unique_groups_idx]]->unique_groups_idx =
-            g->unique_groups_idx;
+    if (g->unique_groups_idx < cb->unique_groups_count) {
+        cb->unique_groups[g->unique_groups_idx] = cb->unique_groups[cb->unique_groups_count];
+        cb->g[cb->unique_groups[g->unique_groups_idx]]->unique_groups_idx = g->unique_groups_idx;
     }
 
     int thread = omp_get_thread_num();
@@ -102,41 +99,37 @@ static void pos_set_occupied(
     cfg_board * cb,
     bool is_black,
     move m
-){
+) {
     assert(neighbors_side[m].count < 5);
     assert(neighbors_diag[m].count < 5);
     assert(cb->p[m] > 0);
+
     u8 idx = cb->p[m] - 1;
-    if(is_black)
-    {
-        for(u8 k = 0; k < neighbors_side[m].count; ++k)
-        {
+    if (is_black) {
+        for (u8 k = 0; k < neighbors_side[m].count; ++k) {
             move n = neighbors_side[m].coord[k];
             cb->black_neighbors4[n]++;
             cb->black_neighbors8[n]++;
 
             cb->hash[n] += iv_3x3[n][m][idx];
         }
-        for(u8 k = 0; k < neighbors_diag[m].count; ++k)
-        {
+
+        for (u8 k = 0; k < neighbors_diag[m].count; ++k) {
             move n = neighbors_diag[m].coord[k];
             cb->black_neighbors8[n]++;
 
             cb->hash[n] += iv_3x3[n][m][idx];
         }
-    }
-    else
-    {
-        for(u8 k = 0; k < neighbors_side[m].count; ++k)
-        {
+    } else {
+        for (u8 k = 0; k < neighbors_side[m].count; ++k) {
             move n = neighbors_side[m].coord[k];
             cb->white_neighbors4[n]++;
             cb->white_neighbors8[n]++;
 
             cb->hash[n] += iv_3x3[n][m][idx];
         }
-        for(u8 k = 0; k < neighbors_diag[m].count; ++k)
-        {
+
+        for (u8 k = 0; k < neighbors_diag[m].count; ++k) {
             move n = neighbors_diag[m].coord[k];
             cb->white_neighbors8[n]++;
 
@@ -149,40 +142,36 @@ static void pos_set_free(
     cfg_board * cb,
     move m,
     bool is_black
-){
+) {
     assert(neighbors_side[m].count < 5);
     assert(neighbors_diag[m].count < 5);
     assert(cb->p[m] > 0);
-    if(is_black)
-    {
-        for(u8 k = 0; k < neighbors_side[m].count; ++k)
-        {
+
+    if (is_black) {
+        for (u8 k = 0; k < neighbors_side[m].count; ++k) {
             move n = neighbors_side[m].coord[k];
             cb->black_neighbors4[n]--;
             cb->black_neighbors8[n]--;
 
             cb->hash[n] ^= iv_3x3[n][m][cb->p[m] - 1];
         }
-        for(u8 k = 0; k < neighbors_diag[m].count; ++k)
-        {
+
+        for (u8 k = 0; k < neighbors_diag[m].count; ++k) {
             move n = neighbors_diag[m].coord[k];
             cb->black_neighbors8[n]--;
 
             cb->hash[n] ^= iv_3x3[n][m][cb->p[m] - 1];
         }
-    }
-    else
-    {
-        for(u8 k = 0; k < neighbors_side[m].count; ++k)
-        {
+    } else {
+        for (u8 k = 0; k < neighbors_side[m].count; ++k) {
             move n = neighbors_side[m].coord[k];
             cb->white_neighbors4[n]--;
             cb->white_neighbors8[n]--;
 
             cb->hash[n] ^= iv_3x3[n][m][cb->p[m] - 1];
         }
-        for(u8 k = 0; k < neighbors_diag[m].count; ++k)
-        {
+
+        for (u8 k = 0; k < neighbors_diag[m].count; ++k) {
             move n = neighbors_diag[m].coord[k];
             cb->white_neighbors8[n]--;
 
@@ -194,10 +183,13 @@ static void pos_set_free(
 static void add_neighbor(
     group * restrict g,
     group * restrict n
-){
-    for(u8 i = 0; i < g->neighbors_count; ++i)
-        if(g->neighbors[i] == n->stones.coord[0])
+) {
+    for (u8 i = 0; i < g->neighbors_count; ++i) {
+        if (g->neighbors[i] == n->stones.coord[0]) {
             return;
+        }
+    }
+
     g->neighbors[g->neighbors_count++] = n->stones.coord[0];
     n->neighbors[n->neighbors_count++] = g->stones.coord[0];
 }
@@ -205,32 +197,36 @@ static void add_neighbor(
 static void add_liberty(
     group * g,
     move m
-){
+) {
     u8 mask = (1 << (m % 8));
-    if((g->ls[m / 8] & mask) == 0)
-    {
+
+    if ((g->ls[m / 8] & mask) == 0) {
         g->ls[m / 8] |= mask;
         g->liberties++;
-        if(m < g->liberties_min_coord)
+
+        if (m < g->liberties_min_coord) {
             g->liberties_min_coord = m;
+        }
     }
 }
 
 static void add_liberty_unchecked(
     group * g,
     move m
-){
+) {
     u8 mask = (1 << (m % 8));
     g->ls[m / 8] |= mask;
     g->liberties++;
-    if(m < g->liberties_min_coord)
+
+    if (m < g->liberties_min_coord) {
         g->liberties_min_coord = m;
+    }
 }
 
 static void rem_liberty_unchecked(
     group * g,
     move m
-){
+) {
     u8 mask = (1 << (m % 8));
     g->ls[m / 8] &= ~mask;
     g->liberties--;
@@ -239,14 +235,14 @@ static void rem_liberty_unchecked(
 static void rem_neighbor(
     group * restrict g,
     const group * restrict to_remove
-){
-    for(u8 j = 0; j < g->neighbors_count; ++j)
-        if(g->neighbors[j] == to_remove->stones.coord[0])
-        {
+) {
+    for (u8 j = 0; j < g->neighbors_count; ++j) {
+        if (g->neighbors[j] == to_remove->stones.coord[0]) {
             g->neighbors[j] = g->neighbors[g->neighbors_count - 1];
             g->neighbors_count--;
             return;
         }
+    }
 
     flog_crit("cfg", "CFG group neighbor not found");
 }
@@ -255,40 +251,36 @@ static void unite_groups(
     cfg_board * cb,
     group * restrict to_keep,
     group * restrict to_replace
-){
+) {
     assert(to_keep != to_replace);
     assert(to_keep->is_black == to_replace->is_black);
 
     copy_moves(&to_keep->stones, &to_replace->stones);
 
-    for(move i = 0; i < to_replace->stones.count; ++i)
-    {
+    for (move i = 0; i < to_replace->stones.count; ++i) {
         move m = to_replace->stones.coord[i];
         assert(cb->g[m] == to_replace);
         cb->g[m] = to_keep;
     }
 
-    for(u8 i = 0; i < to_replace->neighbors_count; ++i)
-    {
+    for (u8 i = 0; i < to_replace->neighbors_count; ++i) {
         add_neighbor(to_keep, cb->g[to_replace->neighbors[i]]);
         rem_neighbor(cb->g[to_replace->neighbors[i]], to_replace);
     }
 
-    if(to_replace->liberties == 0)
-    {
+    if (to_replace->liberties == 0) {
         delloc_group(cb, to_replace);
         return;
     }
 
     u8 new_lib_count = 0;
-    for(u8 i = 0; i < LIB_BITMAP_SIZ; ++i)
-    {
+    for (u8 i = 0; i < LIB_BITMAP_SIZ; ++i) {
         to_keep->ls[i] |= to_replace->ls[i];
         new_lib_count += active_bits_in_byte[to_keep->ls[i]];
     }
     to_keep->liberties = new_lib_count;
 
-    if(to_replace->liberties_min_coord < to_keep->liberties_min_coord)
+    if (to_replace->liberties_min_coord < to_keep->liberties_min_coord)
         to_keep->liberties_min_coord = to_replace->liberties_min_coord;
     delloc_group(cb, to_replace);
 }
@@ -301,7 +293,7 @@ static void add_stone(
     cfg_board * cb,
     bool is_black,
     move m
-){
+) {
     /* Create new stone group */
     assert(cb->g[m] == NULL);
 
@@ -321,16 +313,19 @@ static void add_stone(
     /* Update neighbor stone counts */
     pos_set_occupied(cb, is_black, m);
 
-    if(cb->black_neighbors4[m] + cb->white_neighbors4[m] == 0)
-    {
-        if(!border_left[m])
+    if (cb->black_neighbors4[m] + cb->white_neighbors4[m] == 0) {
+        if (!border_left[m]) {
             add_liberty(cb->g[m], m + LEFT);
-        if(!border_right[m])
+        }
+        if (!border_right[m]) {
             add_liberty(cb->g[m], m + RIGHT);
-        if(!border_top[m])
+        }
+        if (!border_top[m]) {
             add_liberty(cb->g[m], m + TOP);
-        if(!border_bottom[m])
+        }
+        if (!border_bottom[m]) {
             add_liberty(cb->g[m], m + BOTTOM);
+        }
         return;
     }
 
@@ -338,92 +333,92 @@ static void add_stone(
     group * neighbors[4];
     u8 neighbors_n = 0;
 
-    if(!border_left[m])
-    {
-        if((n = cb->g[m + LEFT]) == NULL)
+    if (!border_left[m]) {
+        if ((n = cb->g[m + LEFT]) == NULL) {
             add_liberty(cb->g[m], m + LEFT);
-        else
-        {
+        } else {
             neighbors[neighbors_n++] = n;
             rem_liberty_unchecked(n, m);
-            if(n->is_black == is_black)
+
+            if (n->is_black == is_black) {
                 unite_groups(cb, n, cb->g[m]);
-            else
+            } else {
                 add_neighbor(cb->g[m], n);
+            }
         }
     }
 
-    if(!border_right[m])
-    {
-        if((n = cb->g[m + RIGHT]) == NULL)
+    if (!border_right[m]) {
+        if ((n = cb->g[m + RIGHT]) == NULL) {
             add_liberty(cb->g[m], m + RIGHT);
-        else
-        {
+        } else {
             bool found = false;
-            for(u8 i = 0; i < neighbors_n; ++i)
-                if(neighbors[i] == n)
-                {
+            for (u8 i = 0; i < neighbors_n; ++i) {
+                if (neighbors[i] == n) {
                     found = true;
                     break;
                 }
-            if(!found)
-            {
+            }
+
+            if (!found) {
                 neighbors[neighbors_n++] = n;
                 rem_liberty_unchecked(n, m);
-                if(n->is_black == is_black)
+
+                if (n->is_black == is_black) {
                     unite_groups(cb, n, cb->g[m]);
-                else
+                } else {
                     add_neighbor(cb->g[m], n);
+                }
             }
         }
     }
 
-    if(!border_top[m])
-    {
-        if((n = cb->g[m + TOP]) == NULL)
+    if (!border_top[m]) {
+        if ((n = cb->g[m + TOP]) == NULL) {
             add_liberty(cb->g[m], m + TOP);
-        else
-        {
+        } else {
             bool found = false;
-            for(u8 i = 0; i < neighbors_n; ++i)
-                if(neighbors[i] == n)
-                {
+            for (u8 i = 0; i < neighbors_n; ++i) {
+                if (neighbors[i] == n) {
                     found = true;
                     break;
                 }
-            if(!found)
-            {
+            }
+
+            if (!found) {
                 neighbors[neighbors_n++] = n;
                 rem_liberty_unchecked(n, m);
-                if(n->is_black == is_black)
+
+                if (n->is_black == is_black) {
                     unite_groups(cb, n, cb->g[m]);
-                else
+                } else {
                     add_neighbor(cb->g[m], n);
+                }
             }
         }
     }
 
-    if(!border_bottom[m])
-    {
-        if((n = cb->g[m + BOTTOM]) == NULL)
+    if (!border_bottom[m]) {
+        if ((n = cb->g[m + BOTTOM]) == NULL) {
             add_liberty(cb->g[m], m + BOTTOM);
-        else
-        {
+        } else {
             bool found = false;
-            for(u8 i = 0; i < neighbors_n; ++i)
-                if(neighbors[i] == n)
-                {
+            for (u8 i = 0; i < neighbors_n; ++i) {
+                if (neighbors[i] == n) {
                     found = true;
                     break;
                 }
-            if(!found)
-            {
+            }
+
+            if (!found) {
                 neighbors[neighbors_n++] = n;
                 rem_liberty_unchecked(n, m);
-                if(n->is_black == is_black)
+
+                if (n->is_black == is_black) {
                     unite_groups(cb, n, cb->g[m]);
-                else
+                } else {
                     add_neighbor(cb->g[m], n);
+                }
             }
         }
     }
@@ -436,9 +431,9 @@ RETURNS true if the structures are equal in board contents
 bool cfg_board_are_equal(
     cfg_board * restrict a,
     const board * restrict b
-){
-    return memcmp(a->p, b->p, TOTAL_BOARD_SIZ) == 0 && a->last_played ==
-    b->last_played && a->last_eaten == b->last_eaten;
+) {
+    return memcmp(a->p, b->p, TOTAL_BOARD_SIZ) == 0 && a->last_played == b->last_played &&
+        a->last_eaten == b->last_eaten;
 }
 
 /*
@@ -446,7 +441,7 @@ Initiliazes the data pointed to cb, to hold a valid (but empty) board.
 */
 void cfg_init_board(
     cfg_board * cb
-){
+) {
     memset(cb->p, EMPTY, TOTAL_BOARD_SIZ);
     cb->last_played = cb->last_eaten = NONE;
 
@@ -459,8 +454,7 @@ void cfg_init_board(
     cb->empty.count = 0;
     cb->unique_groups_count = 0;
 
-    for(move m = 0; m < TOTAL_BOARD_SIZ; ++m)
-    {
+    for (move m = 0; m < TOTAL_BOARD_SIZ; ++m) {
         cb->empty.coord[cb->empty.count] = m;
         cb->empty.count++;
     }
@@ -475,7 +469,7 @@ changing one will not modify the other.
 void cfg_from_board(
     cfg_board * restrict dst,
     const board * restrict src
-){
+) {
     memcpy(dst, src, sizeof(board));
     memcpy(dst->hash, initial_3x3_hash, TOTAL_BOARD_SIZ * sizeof(u16));
     memset(dst->black_neighbors4, 0, TOTAL_BOARD_SIZ);
@@ -486,13 +480,14 @@ void cfg_from_board(
     dst->empty.count = 0;
     dst->unique_groups_count = 0;
 
-    for(move m = 0; m < TOTAL_BOARD_SIZ; ++m)
-        if(src->p[m] == EMPTY)
-        {
+    for (move m = 0; m < TOTAL_BOARD_SIZ; ++m) {
+        if (src->p[m] == EMPTY) {
             dst->empty.coord[dst->empty.count] = m;
             dst->empty.count++;
-        }else
+        } else {
             add_stone(dst, src->p[m] == BLACK_STONE, m);
+        }
+    }
 
     assert(cfg_board_are_equal(dst, src));
     assert(verify_cfg_board(dst));
@@ -504,22 +499,20 @@ Clones a CFG board into another, independent, instance.
 void cfg_board_clone(
     cfg_board * restrict dst,
     const cfg_board * restrict src
-){
+) {
     /* copy most of the structure */
-    memcpy(dst, src, sizeof(cfg_board) - (TOTAL_BOARD_SIZ * sizeof(group
-        *)));
+    memcpy(dst, src, sizeof(cfg_board) - (TOTAL_BOARD_SIZ * sizeof(group *)));
     memset(dst->g, 0, TOTAL_BOARD_SIZ * sizeof(group *));
 
-    for(u8 i = 0; i < src->unique_groups_count; ++i)
-    {
+    for (u8 i = 0; i < src->unique_groups_count; ++i) {
         /* copy group information */
         group * g = alloc_group();
         group * s = src->g[src->unique_groups[i]];
         assert(s->unique_groups_idx == i);
         memcpy(g, s, ((char *)&s->neighbors[s->neighbors_count]) - ((char *)s));
+
         /* replace hard links to group information */
-        for(move j = 0; j < g->stones.count; ++j)
-        {
+        for (move j = 0; j < g->stones.count; ++j) {
             move m = g->stones.coord[j];
             dst->g[m] = g;
         }
@@ -533,29 +526,32 @@ static void add_liberties_to_neighbors(
     cfg_board * cb,
     move m,
     u8 own
-){
-    if(!border_left[m] && cb->p[m + LEFT] == own)
+) {
+    if (!border_left[m] && cb->p[m + LEFT] == own) {
         add_liberty(cb->g[m + LEFT], m);
+    }
 
-    if(!border_right[m] && cb->p[m + RIGHT] == own)
+    if (!border_right[m] && cb->p[m + RIGHT] == own) {
         add_liberty(cb->g[m + RIGHT], m);
+    }
 
-    if(!border_top[m] && cb->p[m + TOP] == own)
+    if (!border_top[m] && cb->p[m + TOP] == own) {
         add_liberty(cb->g[m + TOP], m);
+    }
 
-    if(!border_bottom[m] && cb->p[m + BOTTOM] == own)
+    if (!border_bottom[m] && cb->p[m + BOTTOM] == own) {
         add_liberty(cb->g[m + BOTTOM], m);
+    }
 }
 
 static void cfg_board_kill_group(
     cfg_board * cb,
     group * g,
     u8 own
-){
+) {
     move id = g->stones.coord[0];
 
-    for(move i = 0; i < g->stones.count; ++i)
-    {
+    for (move i = 0; i < g->stones.count; ++i) {
         move m = g->stones.coord[i];
 
         pos_set_free(cb, m, g->is_black);
@@ -567,16 +563,16 @@ static void cfg_board_kill_group(
         cb->empty.count++;
     }
 
-    for(u8 i = 0; i < g->neighbors_count; ++i)
-    {
+    for (u8 i = 0; i < g->neighbors_count; ++i) {
         group * nei = cb->g[g->neighbors[i]];
-        for(u8 j = 0; j < nei->neighbors_count; ++j)
-            if(nei->neighbors[j] == id)
-            {
+
+        for (u8 j = 0; j < nei->neighbors_count; ++j) {
+            if (nei->neighbors[j] == id) {
                 nei->neighbors_count--;
                 nei->neighbors[j] = nei->neighbors[nei->neighbors_count];
                 break;
             }
+        }
     }
 
     delloc_group(cb, g);
@@ -587,11 +583,10 @@ static void cfg_board_kill_group2(
     group * g,
     u8 own,
     u64 * zobrist_hash
-){
+) {
     move id = g->stones.coord[0];
 
-    for(move i = 0; i < g->stones.count; ++i)
-    {
+    for (move i = 0; i < g->stones.count; ++i) {
         move m = g->stones.coord[i];
 
         zobrist_update_hash(zobrist_hash, m, cb->p[m]);
@@ -604,16 +599,16 @@ static void cfg_board_kill_group2(
         cb->empty.count++;
     }
 
-    for(u8 i = 0; i < g->neighbors_count; ++i)
-    {
+    for (u8 i = 0; i < g->neighbors_count; ++i) {
         group * nei = cb->g[g->neighbors[i]];
-        for(u8 j = 0; j < nei->neighbors_count; ++j)
-            if(nei->neighbors[j] == id)
-            {
+
+        for (u8 j = 0; j < nei->neighbors_count; ++j) {
+            if (nei->neighbors[j] == id) {
                 nei->neighbors_count--;
                 nei->neighbors[j] = nei->neighbors[nei->neighbors_count];
                 break;
             }
+        }
     }
 
     delloc_group(cb, g);
@@ -625,11 +620,10 @@ static void cfg_board_kill_group3(
     u8 own,
     bool stones_removed[static TOTAL_BOARD_SIZ],
     u8 rem_nei_libs[static LIB_BITMAP_SIZ]
-){
+) {
     move id = g->stones.coord[0];
 
-    for(move i = 0; i < g->stones.count; ++i)
-    {
+    for (move i = 0; i < g->stones.count; ++i) {
         move m = g->stones.coord[i];
         assert(cb->p[m] != EMPTY);
         pos_set_free(cb, m, g->is_black);
@@ -642,18 +636,20 @@ static void cfg_board_kill_group3(
         cb->empty.count++;
     }
 
-    for(u8 i = 0; i < g->neighbors_count; ++i)
-    {
+    for (u8 i = 0; i < g->neighbors_count; ++i) {
         group * nei = cb->g[g->neighbors[i]];
-        for(u8 i = 0; i < LIB_BITMAP_SIZ; ++i)
+
+        for (u8 i = 0; i < LIB_BITMAP_SIZ; ++i) {
             rem_nei_libs[i] |= nei->ls[i];
-        for(u8 j = 0; j < nei->neighbors_count; ++j)
-            if(nei->neighbors[j] == id)
-            {
+        }
+
+        for (u8 j = 0; j < nei->neighbors_count; ++j) {
+            if (nei->neighbors[j] == id) {
                 nei->neighbors_count--;
                 nei->neighbors[j] = nei->neighbors[nei->neighbors_count];
                 break;
             }
+        }
     }
 
     delloc_group(cb, g);
@@ -664,7 +660,7 @@ Apply a passing turn.
 */
 void just_pass(
     cfg_board * cb
-){
+) {
     cb->last_played = PASS;
     cb->last_eaten = NONE;
 }
@@ -677,7 +673,7 @@ void just_play(
     cfg_board * cb,
     bool is_black,
     move m
-){
+) {
     assert(verify_cfg_board(cb));
     assert(is_board_move(m));
     assert(cb->p[m] == EMPTY);
@@ -693,43 +689,41 @@ void just_play(
     add_stone(cb, is_black, m);
 
     u8 n8 = is_black ? cb->white_neighbors4[m] : cb->black_neighbors4[m];
-    if(n8 > 0)
-    {
-        if(!border_left[m])
-        {
+    if (n8 > 0) {
+        if (!border_left[m]) {
             n = cb->g[m + LEFT];
-            if(n != NULL && n->is_black != is_black && n->liberties == 0)
-            {
+
+            if (n != NULL && n->is_black != is_black && n->liberties == 0) {
                 captures += n->stones.count;
                 cfg_board_kill_group(cb, n, own);
                 one_stone_captured = m + LEFT;
             }
         }
-        if(!border_right[m])
-        {
+
+        if (!border_right[m]) {
             n = cb->g[m + RIGHT];
-            if(n != NULL && n->is_black != is_black && n->liberties == 0)
-            {
+
+            if (n != NULL && n->is_black != is_black && n->liberties == 0) {
                 captures += n->stones.count;
                 cfg_board_kill_group(cb, n, own);
                 one_stone_captured = m + RIGHT;
             }
         }
-        if(!border_top[m])
-        {
+
+        if (!border_top[m]) {
             n = cb->g[m + TOP];
-            if(n != NULL && n->is_black != is_black && n->liberties == 0)
-            {
+
+            if (n != NULL && n->is_black != is_black && n->liberties == 0) {
                 captures += n->stones.count;
                 cfg_board_kill_group(cb, n, own);
                 one_stone_captured = m + TOP;
             }
         }
-        if(!border_bottom[m])
-        {
+
+        if (!border_bottom[m]) {
             n = cb->g[m + BOTTOM];
-            if(n != NULL && n->is_black != is_black && n->liberties == 0)
-            {
+
+            if (n != NULL && n->is_black != is_black && n->liberties == 0) {
                 captures += n->stones.count;
                 cfg_board_kill_group(cb, n, own);
                 one_stone_captured = m + BOTTOM;
@@ -737,20 +731,22 @@ void just_play(
         }
     }
 
-    if(captures == 1)
+    if (captures == 1) {
         cb->last_eaten = one_stone_captured;
-    else
+    } else {
         cb->last_eaten = NONE;
+    }
+
     cb->last_played = m;
 
     /* Remove position from list of empty intersections */
-    for(move k = 0; k < cb->empty.count; ++k)
-        if(cb->empty.coord[k] == m)
-        {
+    for (move k = 0; k < cb->empty.count; ++k) {
+        if (cb->empty.coord[k] == m) {
             cb->empty.count--;
             cb->empty.coord[k] = cb->empty.coord[cb->empty.count];
             break;
         }
+    }
 }
 
 /*
@@ -763,7 +759,7 @@ void just_play2(
     bool is_black,
     move m,
     u64 * zobrist_hash
-){
+) {
     assert(verify_cfg_board(cb));
     assert(is_board_move(m));
     assert(cb->p[m] == EMPTY);
@@ -780,43 +776,41 @@ void just_play2(
     zobrist_update_hash(zobrist_hash, m, own);
 
     u8 n8 = is_black ? cb->white_neighbors4[m] : cb->black_neighbors4[m];
-    if(n8 > 0)
-    {
-        if(!border_left[m])
-        {
+    if (n8 > 0) {
+        if (!border_left[m]) {
             n = cb->g[m + LEFT];
-            if(n != NULL && n->is_black != is_black && n->liberties == 0)
-            {
+
+            if (n != NULL && n->is_black != is_black && n->liberties == 0) {
                 captures += n->stones.count;
                 cfg_board_kill_group2(cb, n, own, zobrist_hash);
                 one_stone_captured = m + LEFT;
             }
         }
-        if(!border_right[m])
-        {
+
+        if (!border_right[m]) {
             n = cb->g[m + RIGHT];
-            if(n != NULL && n->is_black != is_black && n->liberties == 0)
-            {
+
+            if (n != NULL && n->is_black != is_black && n->liberties == 0) {
                 captures += n->stones.count;
                 cfg_board_kill_group2(cb, n, own, zobrist_hash);
                 one_stone_captured = m + RIGHT;
             }
         }
-        if(!border_top[m])
-        {
+
+        if (!border_top[m]) {
             n = cb->g[m + TOP];
-            if(n != NULL && n->is_black != is_black && n->liberties == 0)
-            {
+
+            if (n != NULL && n->is_black != is_black && n->liberties == 0) {
                 captures += n->stones.count;
                 cfg_board_kill_group2(cb, n, own, zobrist_hash);
                 one_stone_captured = m + TOP;
             }
         }
-        if(!border_bottom[m])
-        {
+
+        if (!border_bottom[m]) {
             n = cb->g[m + BOTTOM];
-            if(n != NULL && n->is_black != is_black && n->liberties == 0)
-            {
+
+            if (n != NULL && n->is_black != is_black && n->liberties == 0) {
                 captures += n->stones.count;
                 cfg_board_kill_group2(cb, n, own, zobrist_hash);
                 one_stone_captured = m + BOTTOM;
@@ -824,20 +818,22 @@ void just_play2(
         }
     }
 
-    if(captures == 1)
+    if (captures == 1) {
         cb->last_eaten = one_stone_captured;
-    else
+    } else {
         cb->last_eaten = NONE;
+    }
+
     cb->last_played = m;
 
     /* Remove position from list of empty intersections */
-    for(move k = 0; k < cb->empty.count; ++k)
-        if(cb->empty.coord[k] == m)
-        {
+    for (move k = 0; k < cb->empty.count; ++k) {
+        if (cb->empty.coord[k] == m) {
             cb->empty.count--;
             cb->empty.coord[k] = cb->empty.coord[cb->empty.count];
             break;
         }
+    }
 }
 
 /*
@@ -853,7 +849,7 @@ void just_play3(
     d16 * stone_difference,
     bool stones_removed[static TOTAL_BOARD_SIZ],
     u8 rem_nei_libs[static LIB_BITMAP_SIZ]
-){
+) {
     assert(verify_cfg_board(cb));
     assert(is_board_move(m));
     assert(cb->p[m] == EMPTY);
@@ -869,43 +865,41 @@ void just_play3(
     add_stone(cb, is_black, m);
 
     u8 n8 = is_black ? cb->white_neighbors4[m] : cb->black_neighbors4[m];
-    if(n8 > 0)
-    {
-        if(!border_left[m])
-        {
+    if (n8 > 0) {
+        if (!border_left[m]) {
             n = cb->g[m + LEFT];
-            if(n != NULL && n->is_black != is_black && n->liberties == 0)
-            {
+
+            if (n != NULL && n->is_black != is_black && n->liberties == 0) {
                 captures += n->stones.count;
                 cfg_board_kill_group3(cb, n, own, stones_removed, rem_nei_libs);
                 one_stone_captured = m + LEFT;
             }
         }
-        if(!border_right[m])
-        {
+
+        if (!border_right[m]) {
             n = cb->g[m + RIGHT];
-            if(n != NULL && n->is_black != is_black && n->liberties == 0)
-            {
+
+            if (n != NULL && n->is_black != is_black && n->liberties == 0) {
                 captures += n->stones.count;
                 cfg_board_kill_group3(cb, n, own, stones_removed, rem_nei_libs);
                 one_stone_captured = m + RIGHT;
             }
         }
-        if(!border_top[m])
-        {
+
+        if (!border_top[m]) {
             n = cb->g[m + TOP];
-            if(n != NULL && n->is_black != is_black && n->liberties == 0)
-            {
+
+            if (n != NULL && n->is_black != is_black && n->liberties == 0) {
                 captures += n->stones.count;
                 cfg_board_kill_group3(cb, n, own, stones_removed, rem_nei_libs);
                 one_stone_captured = m + TOP;
             }
         }
-        if(!border_bottom[m])
-        {
+
+        if (!border_bottom[m]) {
             n = cb->g[m + BOTTOM];
-            if(n != NULL && n->is_black != is_black && n->liberties == 0)
-            {
+
+            if (n != NULL && n->is_black != is_black && n->liberties == 0) {
                 captures += n->stones.count;
                 cfg_board_kill_group3(cb, n, own, stones_removed, rem_nei_libs);
                 one_stone_captured = m + BOTTOM;
@@ -913,36 +907,40 @@ void just_play3(
         }
     }
 
-    if(captures == 1)
+    if (captures == 1) {
         cb->last_eaten = one_stone_captured;
-    else
+    } else {
         cb->last_eaten = NONE;
+    }
+
     cb->last_played = m;
 
     d16 stone_diff = 1 + captures;
     *stone_difference += is_black ? stone_diff : -stone_diff;
 
     /* Remove position from list of empty intersections */
-    for(move k = 0; k < cb->empty.count; ++k)
-        if(cb->empty.coord[k] == m)
-        {
+    for (move k = 0; k < cb->empty.count; ++k) {
+        if (cb->empty.coord[k] == m) {
             cb->empty.count--;
             cb->empty.coord[k] = cb->empty.coord[cb->empty.count];
             break;
         }
+    }
+
     assert(verify_cfg_board(cb));
 }
 
 static void add_group_liberties(
     group * restrict dst,
     const group * restrict src
-){
+) {
     u8 new_lib_count = 0;
-    for(u8 i = 0; i < LIB_BITMAP_SIZ; ++i)
-    {
+
+    for (u8 i = 0; i < LIB_BITMAP_SIZ; ++i) {
         dst->ls[i] |= src->ls[i];
         new_lib_count += active_bits_in_byte[dst->ls[i]];
     }
+
     dst->liberties = new_lib_count;
 }
 
@@ -951,14 +949,17 @@ static bool are_neighbors(
     group * g,
     group ** neighbors,
     u8 neighbors_n
-){
-    for(u8 i = 0; i < g->neighbors_count; ++i)
-    {
+) {
+    for (u8 i = 0; i < g->neighbors_count; ++i) {
         group * nei = cb->g[g->neighbors[i]];
-        for(u8 k = 0; k < neighbors_n; ++k)
-            if(neighbors[k] == nei)
+
+        for (u8 k = 0; k < neighbors_n; ++k) {
+            if (neighbors[k] == nei) {
                 return true;
+            }
+        }
     }
+
     return false;
 }
 
@@ -967,24 +968,26 @@ static void cfg_board_give_neighbors_libs(
     group * g,
     group ** neighbors,
     u8 neighbors_n
-){
-    for(move i = 0; i < g->stones.count; ++i)
-    {
+) {
+    for (move i = 0; i < g->stones.count; ++i) {
         move m = g->stones.coord[i];
 
-        for(u8 k = 0; k < neighbors_n; ++k)
-        {
-            if(!border_left[m] && cb->g[m + LEFT] == neighbors[k])
+        for (u8 k = 0; k < neighbors_n; ++k) {
+            if (!border_left[m] && cb->g[m + LEFT] == neighbors[k]) {
                 add_liberty(cb->g[m + LEFT], m);
+            }
 
-            if(!border_right[m] && cb->g[m + RIGHT] == neighbors[k])
+            if (!border_right[m] && cb->g[m + RIGHT] == neighbors[k]) {
                 add_liberty(cb->g[m + RIGHT], m);
+            }
 
-            if(!border_top[m] && cb->g[m + TOP] == neighbors[k])
+            if (!border_top[m] && cb->g[m + TOP] == neighbors[k]) {
                 add_liberty(cb->g[m + TOP], m);
+            }
 
-            if(!border_bottom[m] && cb->g[m + BOTTOM] == neighbors[k])
+            if (!border_bottom[m] && cb->g[m + BOTTOM] == neighbors[k]) {
                 add_liberty(cb->g[m + BOTTOM], m);
+            }
         }
     }
 }
@@ -998,11 +1001,12 @@ RETURNS true if play is illegal due to ko
 bool ko_violation(
     const cfg_board * cb,
     move m
-){
+) {
     assert(verify_cfg_board(cb));
     assert(is_board_move(m));
-    return (cb->last_eaten == m && cb->g[cb->last_played]->stones.count == 1 &&
-        cb->g[cb->last_played]->liberties == 1);
+
+    return cb->last_eaten == m && cb->g[cb->last_played]->stones.count == 1 &&
+        cb->g[cb->last_played]->liberties == 1;
 }
 
 /*
@@ -1011,10 +1015,12 @@ RETURNS position in ko, or NONE
 */
 move get_ko_play(
     const cfg_board * cb
-){
-    if(is_board_move(cb->last_eaten) && cb->g[cb->last_played]->stones.count ==
-        1 && cb->g[cb->last_played]->liberties == 1)
+) {
+    if (is_board_move(cb->last_eaten) && cb->g[cb->last_played]->stones.count == 1 &&
+        cb->g[cb->last_played]->liberties == 1) {
         return cb->last_eaten;
+    }
+
     return NONE;
 }
 
@@ -1028,13 +1034,12 @@ u8 libs_after_play(
     bool is_black,
     move m,
     move * caps
-){
+) {
     assert(verify_cfg_board(cb));
     assert(cb->p[m] == EMPTY);
     assert(cb->g[m] == NULL);
 
-    if(cb->black_neighbors4[m] + cb->white_neighbors4[m] == 0)
-    {
+    if (cb->black_neighbors4[m] + cb->white_neighbors4[m] == 0) {
         *caps = false;
         return 4 - out_neighbors4[m];
     }
@@ -1051,82 +1056,77 @@ u8 libs_after_play(
     group * neighbors[4];
     u8 neighbors_n = 0;
 
-    if(!border_left[m])
-    {
+    if (!border_left[m]) {
         n = cb->g[m + LEFT];
-        if(n == NULL)
+        if (n == NULL) {
             add_liberty_unchecked(&g, m + LEFT);
-        else
-            if(n->is_black == is_black)
-                neighbors[neighbors_n++] = n;
+        } else if (n->is_black == is_black) {
+            neighbors[neighbors_n++] = n;
+        }
     }
 
-    if(!border_right[m])
-    {
+    if (!border_right[m]) {
         n = cb->g[m + RIGHT];
-        if(n == NULL)
+        if (n == NULL) {
             add_liberty_unchecked(&g, m + RIGHT);
-        else
-            if(n->is_black == is_black)
-            {
-                bool found = false;
-                for(u8 k = 0; k < neighbors_n; ++k)
-                    if(neighbors[k] == n)
-                    {
-                        found = true;
-                        break;
-                    }
-                if(!found)
-                    neighbors[neighbors_n++] = n;
+        } else if (n->is_black == is_black) {
+            bool found = false;
+            for (u8 k = 0; k < neighbors_n; ++k) {
+                if (neighbors[k] == n) {
+                    found = true;
+                    break;
+                }
             }
+
+            if (!found) {
+                neighbors[neighbors_n++] = n;
+            }
+        }
     }
 
-    if(!border_top[m])
-    {
+    if (!border_top[m]) {
         n = cb->g[m + TOP];
-        if(n == NULL)
+        if (n == NULL) {
             add_liberty_unchecked(&g, m + TOP);
-        else
-            if(n->is_black == is_black)
-            {
-                bool found = false;
-                for(u8 k = 0; k < neighbors_n; ++k)
-                    if(neighbors[k] == n)
-                    {
-                        found = true;
-                        break;
-                    }
-                if(!found)
-                    neighbors[neighbors_n++] = n;
+        } else if (n->is_black == is_black) {
+            bool found = false;
+            for (u8 k = 0; k < neighbors_n; ++k)
+                if (neighbors[k] == n) {
+                    found = true;
+                    break;
+                }
+
+            if (!found) {
+                neighbors[neighbors_n++] = n;
             }
+        }
     }
 
-    if(!border_bottom[m])
-    {
+    if (!border_bottom[m]) {
         n = cb->g[m + BOTTOM];
-        if(n == NULL)
+        if (n == NULL) {
             add_liberty_unchecked(&g, m + BOTTOM);
-        else
-            if(n->is_black == is_black)
-            {
-                bool found = false;
-                for(u8 k = 0; k < neighbors_n; ++k)
-                    if(neighbors[k] == n)
-                    {
-                        found = true;
-                        break;
-                    }
-                if(!found)
-                    neighbors[neighbors_n++] = n;
+        } else if (n->is_black == is_black) {
+            bool found = false;
+            for (u8 k = 0; k < neighbors_n; ++k)
+                if (neighbors[k] == n) {
+                    found = true;
+                    break;
+                }
+
+            if (!found) {
+                neighbors[neighbors_n++] = n;
             }
+        }
     }
 
     u8 on4 = is_black ? cb->white_neighbors4[m] : cb->black_neighbors4[m];
-    if(on4 == 0)
-    {
+    if (on4 == 0) {
         *caps = false;
-        for(u8 k = 0; k < neighbors_n; ++k)
+        for (u8 k = 0; k < neighbors_n; ++k) {
             add_group_liberties(&g, neighbors[k]);
+        }
+
         return g.liberties - 1;
     }
 
@@ -1135,8 +1135,7 @@ u8 libs_after_play(
     */
     u8 neighbor_bak_ls[4][LIB_BITMAP_SIZ];
     u8 neighbor_bak_libs[4];
-    for(u8 k = 0; k < neighbors_n; ++k)
-    {
+    for (u8 k = 0; k < neighbors_n; ++k) {
         memcpy(neighbor_bak_ls[k], neighbors[k]->ls, LIB_BITMAP_SIZ);
         neighbor_bak_libs[k] = neighbors[k]->liberties;
     }
@@ -1149,11 +1148,10 @@ u8 libs_after_play(
     group * opt_neighbors[4];
     u8 opt_neighbors_n = 0;
 
-    if(!border_left[m])
-    {
+    if (!border_left[m]) {
         n = cb->g[m + LEFT];
-        if(n != NULL && n->is_black != is_black && n->liberties == 1)
-        {
+
+        if (n != NULL && n->is_black != is_black && n->liberties == 1) {
             add_liberty_unchecked(&g, m + LEFT);
             opt_neighbors[opt_neighbors_n++] = n;
             cfg_board_give_neighbors_libs(cb, n, neighbors, neighbors_n);
@@ -1161,21 +1159,21 @@ u8 libs_after_play(
         }
     }
 
-    if(!border_right[m])
-    {
+    if (!border_right[m]) {
         n = cb->g[m + RIGHT];
-        if(n != NULL && n->is_black != is_black && n->liberties == 1)
-        {
+
+        if (n != NULL && n->is_black != is_black && n->liberties == 1) {
             add_liberty_unchecked(&g, m + RIGHT);
+
             bool found = false;
-            for(u8 k = 0; k < opt_neighbors_n; ++k)
-                if(opt_neighbors[k] == n)
-                {
+            for (u8 k = 0; k < opt_neighbors_n; ++k) {
+                if (opt_neighbors[k] == n) {
                     found = true;
                     break;
                 }
-            if(!found)
-            {
+            }
+
+            if (!found) {
                 opt_neighbors[opt_neighbors_n++] = n;
                 cfg_board_give_neighbors_libs(cb, n, neighbors, neighbors_n);
                 captured += n->stones.count;
@@ -1183,21 +1181,21 @@ u8 libs_after_play(
         }
     }
 
-    if(!border_top[m])
-    {
+    if (!border_top[m]) {
         n = cb->g[m + TOP];
-        if(n != NULL && n->is_black != is_black && n->liberties == 1)
-        {
+
+        if (n != NULL && n->is_black != is_black && n->liberties == 1) {
             add_liberty_unchecked(&g, m + TOP);
+
             bool found = false;
-            for(u8 k = 0; k < opt_neighbors_n; ++k)
-                if(opt_neighbors[k] == n)
-                {
+            for (u8 k = 0; k < opt_neighbors_n; ++k) {
+                if (opt_neighbors[k] == n) {
                     found = true;
                     break;
                 }
-            if(!found)
-            {
+            }
+
+            if (!found) {
                 opt_neighbors[opt_neighbors_n++] = n;
                 cfg_board_give_neighbors_libs(cb, n, neighbors, neighbors_n);
                 captured += n->stones.count;
@@ -1205,21 +1203,21 @@ u8 libs_after_play(
         }
     }
 
-    if(!border_bottom[m])
-    {
+    if (!border_bottom[m]) {
         n = cb->g[m + BOTTOM];
-        if(n != NULL && n->is_black != is_black && n->liberties == 1)
-        {
+
+        if (n != NULL && n->is_black != is_black && n->liberties == 1) {
             add_liberty_unchecked(&g, m + BOTTOM);
+
             bool found = false;
-            for(u8 k = 0; k < opt_neighbors_n; ++k)
-                if(opt_neighbors[k] == n)
-                {
+            for (u8 k = 0; k < opt_neighbors_n; ++k) {
+                if (opt_neighbors[k] == n) {
                     found = true;
                     break;
                 }
-            if(!found)
-            {
+            }
+
+            if (!found) {
                 opt_neighbors[opt_neighbors_n++] = n;
                 cfg_board_give_neighbors_libs(cb, n, neighbors, neighbors_n);
                 captured += n->stones.count;
@@ -1231,8 +1229,7 @@ u8 libs_after_play(
     Now with updated liberty counts, count liberties and restore group liberty
     states
     */
-    for(u8 k = 0; k < neighbors_n; ++k)
-    {
+    for (u8 k = 0; k < neighbors_n; ++k) {
         add_group_liberties(&g, neighbors[k]);
         memcpy(neighbors[k]->ls, neighbor_bak_ls[k], LIB_BITMAP_SIZ);
         neighbors[k]->liberties = neighbor_bak_libs[k];
@@ -1253,14 +1250,12 @@ u8 safe_to_play2(
     bool is_black,
     move m,
     bool * caps
-){
+) {
     assert(verify_cfg_board(cb));
     assert(cb->p[m] == EMPTY);
     assert(cb->g[m] == NULL);
 
-    if(cb->white_neighbors8[m] + cb->black_neighbors8[m] + out_neighbors8[m] <
-        3)
-    {
+    if (cb->white_neighbors8[m] + cb->black_neighbors8[m] + out_neighbors8[m] < 3) {
         *caps = false;
         return 2;
     }
@@ -1280,155 +1275,147 @@ u8 safe_to_play2(
     group * neighbors[4];
     u8 neighbors_n = 0;
 
-    if(!border_left[m])
-    {
+    if (!border_left[m]) {
         n = cb->g[m + LEFT];
-        if(n == NULL)
+
+        if (n == NULL) {
             add_liberty_unchecked(&g, m + LEFT);
-        else
-            if(n->is_black == is_black)
-            {
+        } else if (n->is_black == is_black) {
+            neighbors[neighbors_n++] = n;
+            add_group_liberties(&g, n);
+        } else if (n->liberties == 1) {
+            add_liberty_unchecked(&g, m + LEFT);
+            *caps = true;
+
+            if (n->stones.count > 1) {
+                opt_neighbors[opt_neighbors_n++] = n;
+            }
+        }
+    }
+
+    if (!border_right[m]) {
+        n = cb->g[m + RIGHT];
+
+        if (n == NULL) {
+            add_liberty(&g, m + RIGHT);
+        } else  if (n->is_black == is_black) {
+            bool found = false;
+            for (u8 k = 0; k < neighbors_n; ++k) {
+                if (neighbors[k] == n) {
+                    found = true;
+                    break;
+                }
+            }
+
+            if (!found) {
                 neighbors[neighbors_n++] = n;
                 add_group_liberties(&g, n);
             }
-            else
-                if(n->liberties == 1)
-                {
-                    add_liberty_unchecked(&g, m + LEFT);
-                    *caps = true;
-                    if(n->stones.count > 1)
-                        opt_neighbors[opt_neighbors_n++] = n;
-                }
-    }
+        } else if (n->liberties == 1) {
+            add_liberty_unchecked(&g, m + RIGHT);
+            *caps = true;
 
-    if(!border_right[m])
-    {
-        n = cb->g[m + RIGHT];
-        if(n == NULL)
-            add_liberty(&g, m + RIGHT);
-        else
-            if(n->is_black == is_black)
-            {
+            if (n->stones.count > 1) {
                 bool found = false;
-                for(u8 k = 0; k < neighbors_n; ++k)
-                    if(neighbors[k] == n)
-                    {
+                for (u8 k = 0; k < opt_neighbors_n; ++k) {
+                    if (opt_neighbors[k] == n) {
                         found = true;
                         break;
                     }
-                if(!found)
-                {
-                    neighbors[neighbors_n++] = n;
-                    add_group_liberties(&g, n);
+                }
+
+                if (!found) {
+                    opt_neighbors[opt_neighbors_n++] = n;
                 }
             }
-            else
-                if(n->liberties == 1)
-                {
-                    add_liberty_unchecked(&g, m + RIGHT);
-                    *caps = true;
-                    if(n->stones.count > 1)
-                    {
-                        bool found = false;
-                        for(u8 k = 0; k < opt_neighbors_n; ++k)
-                            if(opt_neighbors[k] == n)
-                            {
-                                found = true;
-                                break;
-                            }
-                        if(!found)
-                            opt_neighbors[opt_neighbors_n++] = n;
-                    }
-                }
+        }
     }
 
-    if(!border_top[m])
-    {
+    if (!border_top[m]) {
         n = cb->g[m + TOP];
-        if(n == NULL)
+
+        if (n == NULL) {
             add_liberty(&g, m + TOP);
-        else
-            if(n->is_black == is_black)
-            {
-                bool found = false;
-                for(u8 k = 0; k < neighbors_n; ++k)
-                    if(neighbors[k] == n)
-                    {
-                        found = true;
-                        break;
-                    }
-                if(!found)
-                {
-                    neighbors[neighbors_n++] = n;
-                    add_group_liberties(&g, n);
+        } else if (n->is_black == is_black) {
+            bool found = false;
+            for (u8 k = 0; k < neighbors_n; ++k) {
+                if (neighbors[k] == n) {
+                    found = true;
+                    break;
                 }
             }
-            else
-                if(n->liberties == 1)
-                {
-                    add_liberty_unchecked(&g, m + TOP);
-                    *caps = true;
-                    if(n->stones.count > 1)
-                    {
-                        bool found = false;
-                        for(u8 k = 0; k < opt_neighbors_n; ++k)
-                            if(opt_neighbors[k] == n)
-                            {
-                                found = true;
-                                break;
-                            }
-                        if(!found)
-                            opt_neighbors[opt_neighbors_n++] = n;
-                    }
-                }
-    }
 
-    if(!border_bottom[m])
-    {
-        n = cb->g[m + BOTTOM];
-        if(n == NULL)
-            add_liberty(&g, m + BOTTOM);
-        else
-            if(n->is_black == is_black)
-            {
+            if (!found) {
+                neighbors[neighbors_n++] = n;
+                add_group_liberties(&g, n);
+            }
+        } else if (n->liberties == 1) {
+            add_liberty_unchecked(&g, m + TOP);
+            *caps = true;
+
+            if (n->stones.count > 1) {
                 bool found = false;
-                for(u8 k = 0; k < neighbors_n; ++k)
-                    if(neighbors[k] == n)
-                    {
+                for (u8 k = 0; k < opt_neighbors_n; ++k) {
+                    if (opt_neighbors[k] == n) {
                         found = true;
                         break;
                     }
-                if(!found)
-                {
-                    neighbors[neighbors_n++] = n;
-                    add_group_liberties(&g, n);
                 }
-            }else
-                if(n->liberties == 1)
-                {
-                    add_liberty_unchecked(&g, m + BOTTOM);
-                    *caps = true;
-                    if(n->stones.count > 1)
-                    {
-                        bool found = false;
-                        for(u8 k = 0; k < opt_neighbors_n; ++k)
-                            if(opt_neighbors[k] == n)
-                            {
-                                found = true;
-                                break;
-                            }
-                        if(!found)
-                            opt_neighbors[opt_neighbors_n++] = n;
-                    }
+
+                if (!found) {
+                    opt_neighbors[opt_neighbors_n++] = n;
                 }
+            }
+        }
     }
 
-    if(g.liberties > 2)
-        return 2;
+    if (!border_bottom[m]) {
+        n = cb->g[m + BOTTOM];
 
-    for(u8 i = 0; i < opt_neighbors_n; ++i)
-        if(are_neighbors(cb, opt_neighbors[i], neighbors, neighbors_n))
+        if (n == NULL) {
+            add_liberty(&g, m + BOTTOM);
+        } else if (n->is_black == is_black) {
+            bool found = false;
+            for (u8 k = 0; k < neighbors_n; ++k) {
+                if (neighbors[k] == n) {
+                    found = true;
+                    break;
+                }
+            }
+
+            if (!found) {
+                neighbors[neighbors_n++] = n;
+                add_group_liberties(&g, n);
+            }
+        } else if (n->liberties == 1) {
+            add_liberty_unchecked(&g, m + BOTTOM);
+            *caps = true;
+
+            if (n->stones.count > 1) {
+                bool found = false;
+                for (u8 k = 0; k < opt_neighbors_n; ++k) {
+                    if (opt_neighbors[k] == n) {
+                        found = true;
+                        break;
+                    }
+                }
+
+                if (!found) {
+                    opt_neighbors[opt_neighbors_n++] = n;
+                }
+            }
+        }
+    }
+
+    if (g.liberties > 2) {
+        return 2;
+    }
+
+    for (u8 i = 0; i < opt_neighbors_n; ++i) {
+        if (are_neighbors(cb, opt_neighbors[i], neighbors, neighbors_n)) {
             ++probable_libs;
+        }
+    }
 
     u8 libs = probable_libs + g.liberties - 1;
     return MIN(libs, 2);
@@ -1443,14 +1430,14 @@ u8 safe_to_play(
     cfg_board * cb,
     bool is_black,
     move m
-){
+) {
     assert(verify_cfg_board(cb));
     assert(cb->p[m] == EMPTY);
     assert(cb->g[m] == NULL);
 
-    if(cb->white_neighbors4[m] + cb->black_neighbors4[m] + out_neighbors4[m] <
-        3)
+    if (cb->white_neighbors4[m] + cb->black_neighbors4[m] + out_neighbors4[m] < 3) {
         return 2;
+    }
 
     group * n;
     /* warning: some fields are not initialized because they're not used */
@@ -1466,151 +1453,143 @@ u8 safe_to_play(
     group * neighbors[4];
     u8 neighbors_n = 0;
 
-    if(!border_left[m])
-    {
+    if (!border_left[m]) {
         n = cb->g[m + LEFT];
-        if(n == NULL)
+
+        if (n == NULL) {
             add_liberty_unchecked(&g, m + LEFT);
-        else
-            if(n->is_black == is_black)
-            {
+        } else if (n->is_black == is_black) {
+            neighbors[neighbors_n++] = n;
+            add_group_liberties(&g, n);
+        } else if (n->liberties == 1) {
+            add_liberty_unchecked(&g, m + LEFT);
+
+            if (n->stones.count > 1) {
+                opt_neighbors[opt_neighbors_n++] = n;
+            }
+        }
+    }
+
+    if (!border_right[m]) {
+        n = cb->g[m + RIGHT];
+
+        if (n == NULL) {
+            add_liberty(&g, m + RIGHT);
+        } else if (n->is_black == is_black) {
+            bool found = false;
+            for (u8 k = 0; k < neighbors_n; ++k) {
+                if (neighbors[k] == n) {
+                    found = true;
+                    break;
+                }
+            }
+
+            if (!found) {
                 neighbors[neighbors_n++] = n;
                 add_group_liberties(&g, n);
             }
-            else
-                if(n->liberties == 1)
-                {
-                    add_liberty_unchecked(&g, m + LEFT);
-                    if(n->stones.count > 1)
-                        opt_neighbors[opt_neighbors_n++] = n;
-                }
-    }
+        } else if (n->liberties == 1) {
+            add_liberty_unchecked(&g, m + RIGHT);
 
-    if(!border_right[m])
-    {
-        n = cb->g[m + RIGHT];
-        if(n == NULL)
-            add_liberty(&g, m + RIGHT);
-        else
-            if(n->is_black == is_black)
-            {
+            if (n->stones.count > 1) {
                 bool found = false;
-                for(u8 k = 0; k < neighbors_n; ++k)
-                    if(neighbors[k] == n)
-                    {
+                for (u8 k = 0; k < opt_neighbors_n; ++k) {
+                    if (opt_neighbors[k] == n) {
                         found = true;
                         break;
                     }
-                if(!found)
-                {
-                    neighbors[neighbors_n++] = n;
-                    add_group_liberties(&g, n);
+                }
+
+                if (!found) {
+                    opt_neighbors[opt_neighbors_n++] = n;
                 }
             }
-            else
-                if(n->liberties == 1)
-                {
-                    add_liberty_unchecked(&g, m + RIGHT);
-                    if(n->stones.count > 1)
-                    {
-                        bool found = false;
-                        for(u8 k = 0; k < opt_neighbors_n; ++k)
-                            if(opt_neighbors[k] == n)
-                            {
-                                found = true;
-                                break;
-                            }
-                        if(!found)
-                            opt_neighbors[opt_neighbors_n++] = n;
-                    }
-                }
+        }
     }
 
-    if(!border_top[m])
-    {
+    if (!border_top[m]) {
         n = cb->g[m + TOP];
-        if(n == NULL)
+
+        if (n == NULL) {
             add_liberty(&g, m + TOP);
-        else
-            if(n->is_black == is_black)
-            {
-                bool found = false;
-                for(u8 k = 0; k < neighbors_n; ++k)
-                    if(neighbors[k] == n)
-                    {
-                        found = true;
-                        break;
-                    }
-                if(!found)
-                {
-                    neighbors[neighbors_n++] = n;
-                    add_group_liberties(&g, n);
+        } else if (n->is_black == is_black) {
+            bool found = false;
+            for (u8 k = 0; k < neighbors_n; ++k) {
+                if (neighbors[k] == n) {
+                    found = true;
+                    break;
                 }
             }
-            else
-                if(n->liberties == 1)
-                {
-                    add_liberty_unchecked(&g, m + TOP);
-                    if(n->stones.count > 1)
-                    {
-                        bool found = false;
-                        for(u8 k = 0; k < opt_neighbors_n; ++k)
-                            if(opt_neighbors[k] == n)
-                            {
-                                found = true;
-                                break;
-                            }
-                        if(!found)
-                            opt_neighbors[opt_neighbors_n++] = n;
-                    }
-                }
-    }
 
-    if(!border_bottom[m])
-    {
-        n = cb->g[m + BOTTOM];
-        if(n == NULL)
-            add_liberty(&g, m + BOTTOM);
-        else
-            if(n->is_black == is_black)
-            {
+            if (!found) {
+                neighbors[neighbors_n++] = n;
+                add_group_liberties(&g, n);
+            }
+        } else if (n->liberties == 1) {
+            add_liberty_unchecked(&g, m + TOP);
+
+            if (n->stones.count > 1) {
                 bool found = false;
-                for(u8 k = 0; k < neighbors_n; ++k)
-                    if(neighbors[k] == n)
-                    {
+                for (u8 k = 0; k < opt_neighbors_n; ++k) {
+                    if (opt_neighbors[k] == n) {
                         found = true;
                         break;
                     }
-                if(!found)
-                {
-                    neighbors[neighbors_n++] = n;
-                    add_group_liberties(&g, n);
                 }
-            }else
-                if(n->liberties == 1)
-                {
-                    add_liberty_unchecked(&g, m + BOTTOM);
-                    if(n->stones.count > 1)
-                    {
-                        bool found = false;
-                        for(u8 k = 0; k < opt_neighbors_n; ++k)
-                            if(opt_neighbors[k] == n)
-                            {
-                                found = true;
-                                break;
-                            }
-                        if(!found)
-                            opt_neighbors[opt_neighbors_n++] = n;
-                    }
+
+                if (!found) {
+                    opt_neighbors[opt_neighbors_n++] = n;
                 }
+            }
+        }
     }
 
-    if(g.liberties > 2)
-        return 2;
+    if (!border_bottom[m]) {
+        n = cb->g[m + BOTTOM];
 
-    for(u8 i = 0; i < opt_neighbors_n; ++i)
-        if(are_neighbors(cb, opt_neighbors[i], neighbors, neighbors_n))
+        if (n == NULL) {
+            add_liberty(&g, m + BOTTOM);
+        } else if (n->is_black == is_black) {
+            bool found = false;
+            for (u8 k = 0; k < neighbors_n; ++k) {
+                if (neighbors[k] == n) {
+                    found = true;
+                    break;
+                }
+            }
+
+            if (!found) {
+                neighbors[neighbors_n++] = n;
+                add_group_liberties(&g, n);
+            }
+        } else if (n->liberties == 1) {
+            add_liberty_unchecked(&g, m + BOTTOM);
+
+            if (n->stones.count > 1) {
+                bool found = false;
+                for (u8 k = 0; k < opt_neighbors_n; ++k) {
+                    if (opt_neighbors[k] == n) {
+                        found = true;
+                        break;
+                    }
+                }
+
+                if (!found) {
+                    opt_neighbors[opt_neighbors_n++] = n;
+                }
+            }
+        }
+    }
+
+    if (g.liberties > 2) {
+        return 2;
+    }
+
+    for (u8 i = 0; i < opt_neighbors_n; ++i) {
+        if (are_neighbors(cb, opt_neighbors[i], neighbors, neighbors_n)) {
             ++probable_libs;
+        }
+    }
 
     u8 libs = probable_libs + g.liberties - 1;
     return MIN(libs, 2);
@@ -1624,32 +1603,30 @@ bool caps_after_play(
     const cfg_board * cb,
     bool is_black,
     move m
-){
+) {
     assert(verify_cfg_board(cb));
     assert(cb->p[m] == EMPTY);
     assert(cb->g[m] == NULL);
 
     u8 on4 = is_black ? cb->white_neighbors4[m] : cb->black_neighbors4[m];
-    if(on4 == 0)
+    if (on4 == 0) {
         return false;
+    }
 
     group * n;
 
-    if(!border_left[m] && (n = cb->g[m + LEFT]) != NULL && n->is_black !=
-        is_black && n->liberties == 1)
+    if (!border_left[m] && (n = cb->g[m + LEFT]) != NULL && n->is_black != is_black && n->liberties == 1) {
         return true;
-
-    if(!border_right[m] && (n = cb->g[m + RIGHT]) != NULL && n->is_black !=
-        is_black && n->liberties == 1)
+    }
+    if (!border_right[m] && (n = cb->g[m + RIGHT]) != NULL && n->is_black != is_black && n->liberties == 1) {
         return true;
-
-    if(!border_top[m] && (n = cb->g[m + TOP]) != NULL && n->is_black != is_black
-        && n->liberties == 1)
+    }
+    if (!border_top[m] && (n = cb->g[m + TOP]) != NULL && n->is_black != is_black && n->liberties == 1) {
         return true;
-
-    if(!border_bottom[m] && (n = cb->g[m + BOTTOM]) != NULL && n->is_black !=
-        is_black && n->liberties == 1)
+    }
+    if (!border_bottom[m] && (n = cb->g[m + BOTTOM]) != NULL && n->is_black != is_black && n->liberties == 1) {
         return true;
+    }
 
     return false;
 }
@@ -1661,91 +1638,77 @@ bool can_play(
     const cfg_board * cb,
     bool is_black,
     move m
-){
+) {
     assert(verify_cfg_board(cb));
-    if(cb->p[m] != EMPTY)
+    if (cb->p[m] != EMPTY) {
         return false;
+    }
 
-    if(cb->black_neighbors4[m] + cb->white_neighbors4[m] + out_neighbors4[m] <
-        4)
+    if (cb->black_neighbors4[m] + cb->white_neighbors4[m] + out_neighbors4[m] < 4) {
         return true;
+    }
 
-    if(ko_violation(cb, m))
+    if (ko_violation(cb, m)) {
         return false;
+    }
 
     assert(cb->g[m] == NULL);
     group * n;
 
-    if(!border_left[m])
-    {
+    if (!border_left[m]) {
         n = cb->g[m + LEFT];
-        if(n == NULL)
+
+        if (n == NULL) {
             return true;
-        else
-            if(n->is_black == is_black)
-            {
-                if(n->liberties != 1)
-                    return true;
+        } else if (n->is_black == is_black) {
+            if (n->liberties != 1) {
+                return true;
             }
-            else
-            {
-                if(n->liberties == 1)
-                    return true;
-            }
+        } else if (n->liberties == 1) {
+            return true;
+        }
     }
 
-    if(!border_right[m])
-    {
+    if (!border_right[m]) {
         n = cb->g[m + RIGHT];
-        if(n == NULL)
+
+        if (n == NULL) {
             return true;
-        else
-            if(n->is_black == is_black)
-            {
-                if(n->liberties != 1)
-                    return true;
+        } else if (n->is_black == is_black) {
+            if (n->liberties != 1) {
+                return true;
             }
-            else
-            {
-                if(n->liberties == 1)
-                    return true;
-            }
+        } else if (n->liberties == 1) {
+            return true;
+        }
     }
 
-    if(!border_top[m])
-    {
+    if (!border_top[m]) {
         n = cb->g[m + TOP];
-        if(n == NULL)
+
+        if (n == NULL) {
             return true;
-        else
-            if(n->is_black == is_black)
-            {
-                if(n->liberties != 1)
-                    return true;
+        } else if (n->is_black == is_black) {
+            if (n->liberties != 1) {
+                return true;
             }
-            else
-            {
-                if(n->liberties == 1)
-                    return true;
-            }
+        } else if (n->liberties == 1) {
+            return true;
+        }
     }
 
-    if(!border_bottom[m])
-    {
+    if (!border_bottom[m]) {
         n = cb->g[m + BOTTOM];
-        if(n == NULL)
+
+        if (n == NULL) {
             return true;
-        else
-            if(n->is_black == is_black)
-            {
-                if(n->liberties != 1)
-                    return true;
+        } else if (n->is_black == is_black) {
+            if (n->liberties != 1) {
+                return true;
             }
-            else
-            {
-                if(n->liberties == 1)
-                    return true;
-            }
+        } else if (n->liberties == 1) {
+            return true;
+        }
     }
 
     return false;
@@ -1758,86 +1721,81 @@ bool can_play_ignoring_ko(
     const cfg_board * cb,
     bool is_black,
     move m
-){
+) {
     assert(verify_cfg_board(cb));
-    if(cb->p[m] != EMPTY)
+    if (cb->p[m] != EMPTY) {
         return false;
+    }
 
-    if(cb->black_neighbors4[m] + cb->white_neighbors4[m] + out_neighbors4[m] <
-        4)
+    if (cb->black_neighbors4[m] + cb->white_neighbors4[m] + out_neighbors4[m] < 4) {
         return true;
+    }
 
     assert(cb->g[m] == NULL);
     group * n;
 
-    if(!border_left[m])
-    {
+    if (!border_left[m]) {
         n = cb->g[m + LEFT];
-        if(n == NULL)
+
+        if (n == NULL) {
             return true;
-        else
-            if(n->is_black == is_black)
-            {
-                if(n->liberties != 1)
-                    return true;
+        } else if (n->is_black == is_black) {
+            if (n->liberties != 1) {
+                return true;
             }
-            else
-            {
-                if(n->liberties == 1)
-                    return true;
+        } else {
+            if (n->liberties == 1) {
+                return true;
             }
+        }
     }
 
-    if(!border_right[m])
-    {
+    if (!border_right[m]) {
         n = cb->g[m + RIGHT];
-        if(n == NULL)
+
+        if (n == NULL) {
             return true;
-        else
-            if(n->is_black == is_black)
-            {
-                if(n->liberties != 1)
-                    return true;
+        } else if (n->is_black == is_black) {
+            if (n->liberties != 1) {
+                return true;
             }
-            else
-            {
-                if(n->liberties == 1)
-                    return true;
+        } else {
+            if (n->liberties == 1) {
+                return true;
             }
+        }
     }
 
-    if(!border_top[m])
-    {
+    if (!border_top[m]) {
         n = cb->g[m + TOP];
-        if(n == NULL)
+
+        if (n == NULL) {
             return true;
-        else
-            if(n->is_black == is_black)
-            {
-                if(n->liberties != 1)
-                    return true;
-            }else{
-                if(n->liberties == 1)
-                    return true;
+        } else if (n->is_black == is_black) {
+            if (n->liberties != 1) {
+                return true;
             }
+        } else {
+            if (n->liberties == 1) {
+                return true;
+            }
+        }
     }
 
-    if(!border_bottom[m])
-    {
+    if (!border_bottom[m]) {
         n = cb->g[m + BOTTOM];
-        if(n == NULL)
+
+        if (n == NULL) {
             return true;
-        else
-            if(n->is_black == is_black)
-            {
-                if(n->liberties != 1)
+        } else if (n->is_black == is_black) {
+            if (n->liberties != 1) {
                 return true;
             }
-            else
-            {
-                if(n->liberties == 1)
+        } else {
+            if (n->liberties == 1) {
                 return true;
             }
+        }
     }
 
     return false;
@@ -1850,11 +1808,12 @@ structure).
 */
 void cfg_board_free(
     cfg_board * cb
-){
+) {
     assert(verify_cfg_board(cb));
 
-    for(u8 i = 0; i < cb->unique_groups_count; ++i)
+    for (u8 i = 0; i < cb->unique_groups_count; ++i) {
         just_delloc_group(cb->g[cb->unique_groups[i]]);
+    }
 }
 
 /*
@@ -1863,51 +1822,58 @@ Print structure information for debugging.
 void fprint_cfg_board(
     FILE * fp,
     const cfg_board * cb
-){
+) {
     char * s = alloc();
     board_to_string(s, cb->p, cb->last_played, cb->last_eaten);
     fprintf(fp, "\nBOARD\n%s", s);
     release(s);
 
     fprintf(fp, "\nSTONES\n");
-    for(move m = 0; m < TOTAL_BOARD_SIZ; ++m)
-    {
-        if(cb->g[m] == NULL)
+    for (move m = 0; m < TOTAL_BOARD_SIZ; ++m) {
+        if (cb->g[m] == NULL) {
             fprintf(fp, "   %c", EMPTY_STONE_CHAR);
-        else
+        } else {
             fprintf(fp, " %3u", cb->g[m]->stones.count);
-        if(((m + 1) % BOARD_SIZ) == 0)
+        }
+
+        if (((m + 1) % BOARD_SIZ) == 0) {
             fprintf(fp, "\n");
+        }
     }
 
     fprintf(fp, "\nLIBERTIES\n");
-    for(move m = 0; m < TOTAL_BOARD_SIZ; ++m)
-    {
-        if(cb->g[m] == NULL)
+    for (move m = 0; m < TOTAL_BOARD_SIZ; ++m) {
+        if (cb->g[m] == NULL) {
             fprintf(fp, "   %c", EMPTY_STONE_CHAR);
-        else
+        } else {
             fprintf(fp, " %3u", cb->g[m]->liberties);
-        if(((m + 1) % BOARD_SIZ) == 0)
+        }
+
+        if (((m + 1) % BOARD_SIZ) == 0) {
             fprintf(fp, "\n");
+        }
     }
 
     fprintf(fp, "\nUNIQUES %u\n", cb->unique_groups_count);
-    for(move m = 0; m < TOTAL_BOARD_SIZ; ++m)
-    {
-        if(cb->g[m] == NULL)
+    for (move m = 0; m < TOTAL_BOARD_SIZ; ++m) {
+        if (cb->g[m] == NULL) {
             fprintf(fp, "   %c", EMPTY_STONE_CHAR);
-        else
+        } else {
             fprintf(fp, " %3u", cb->g[m]->unique_groups_idx);
-        if(((m + 1) % BOARD_SIZ) == 0)
+        }
+
+        if (((m + 1) % BOARD_SIZ) == 0) {
             fprintf(fp, "\n");
+        }
     }
 
     fprintf(fp, "\nHASHES %u\n", cb->unique_groups_count);
-    for(move m = 0; m < TOTAL_BOARD_SIZ; ++m)
-    {
+    for (move m = 0; m < TOTAL_BOARD_SIZ; ++m) {
         fprintf(fp, " %04x", cb->hash[m]);
-        if(((m + 1) % BOARD_SIZ) == 0)
+
+        if (((m + 1) % BOARD_SIZ) == 0) {
             fprintf(fp, "\n");
+        }
     }
 }
 
@@ -1917,189 +1883,142 @@ Verify the integrity of a CFG board structure.
 */
 bool verify_cfg_board(
     const cfg_board * cb
-){
-    if(cb == NULL)
-    {
+) {
+    if (cb == NULL) {
         fprintf(stderr, "error: verify_cfg_board: null reference\n");
         return false;
     }
-    for(move m = 0; m < TOTAL_BOARD_SIZ; ++m)
-    {
-        if(cb->p[m] != EMPTY && cb->p[m] != BLACK_STONE && cb->p[m] !=
-            WHITE_STONE)
-        {
-            fprintf(stderr,
-                "error: verify_cfg_board: illegal intersection color\n");
+
+    for (move m = 0; m < TOTAL_BOARD_SIZ; ++m) {
+        if (cb->p[m] != EMPTY && cb->p[m] != BLACK_STONE && cb->p[m] != WHITE_STONE) {
+            fprintf(stderr, "error: verify_cfg_board: illegal intersection color\n");
             return false;
         }
 
-        if(cb->black_neighbors4[m] > 4)
-        {
-            fprintf(stderr,
-                "error: verify_cfg_board: illegal neighbor count (1)\n");
+        if (cb->black_neighbors4[m] > 4) {
+            fprintf(stderr, "error: verify_cfg_board: illegal neighbor count (1)\n");
             return false;
         }
 
-        if(cb->white_neighbors4[m] > 4)
-        {
-            fprintf(stderr,
-                "error: verify_cfg_board: illegal neighbor count (2)\n");
+        if (cb->white_neighbors4[m] > 4) {
+            fprintf(stderr, "error: verify_cfg_board: illegal neighbor count (2)\n");
             return false;
         }
 
-        if(cb->black_neighbors8[m] > 8)
-        {
-            fprintf(stderr,
-                "error: verify_cfg_board: illegal neighbor count (3)\n");
+        if (cb->black_neighbors8[m] > 8) {
+            fprintf(stderr, "error: verify_cfg_board: illegal neighbor count (3)\n");
             return false;
         }
 
-        if(cb->white_neighbors8[m] > 8)
-        {
-            fprintf(stderr,
-                "error: verify_cfg_board: illegal neighbor count (4)\n");
+        if (cb->white_neighbors8[m] > 8) {
+            fprintf(stderr, "error: verify_cfg_board: illegal neighbor count (4)\n");
             return false;
         }
 
-        if(cb->black_neighbors4[m] + cb->white_neighbors4[m] + out_neighbors4[m]
-            > 4)
-        {
-            fprintf(stderr,
-                "error: verify_cfg_board: illegal total neighbor count (1)\n");
+        if (cb->black_neighbors4[m] + cb->white_neighbors4[m] + out_neighbors4[m] > 4) {
+            fprintf(stderr, "error: verify_cfg_board: illegal total neighbor count (1)\n");
             return false;
         }
 
-        if(cb->black_neighbors8[m] + cb->white_neighbors8[m] + out_neighbors8[m]
-            > 8)
-        {
-            fprintf(stderr,
-                "error: verify_cfg_board: illegal total neighbor count (2)\n");
+        if (cb->black_neighbors8[m] + cb->white_neighbors8[m] + out_neighbors8[m] > 8) {
+            fprintf(stderr, "error: verify_cfg_board: illegal total neighbor count (2)\n");
             return false;
         }
 
-        if((cb->p[m] == EMPTY) != (cb->g[m] == NULL))
-        {
-            fprintf(stderr,
-                "error: verify_cfg_board: mismatch between board and group\n");
+        if ((cb->p[m] == EMPTY) != (cb->g[m] == NULL)) {
+            fprintf(stderr, "error: verify_cfg_board: mismatch between board and group\n");
             return false;
         }
 
-        if(cb->g[m] != NULL)
-        {
+        if (cb->g[m] != NULL) {
             group * g = cb->g[m];
-            if(g->is_black != (cb->p[m] == BLACK_STONE))
-            {
-                fprintf(stderr,
-                    "error: verify_cfg_board: group color mismatch\n");
+
+            if (g->is_black != (cb->p[m] == BLACK_STONE)) {
+                fprintf(stderr, "error: verify_cfg_board: group color mismatch\n");
                 return false;
             }
 
-            if(g->liberties == 0)
-            {
-                fprintf(stderr,
-                    "error: verify_cfg_board: zero number of liberties\n");
+            if (g->liberties == 0) {
+                fprintf(stderr, "error: verify_cfg_board: zero number of liberties\n");
                 return false;
             }
 
-            if(cb->unique_groups[g->unique_groups_idx] != g->stones.coord[0])
-            {
-                fprintf(stderr,
-                    "error: verify_cfg_board: unique groups linking error\n");
+            if (cb->unique_groups[g->unique_groups_idx] != g->stones.coord[0]) {
+                fprintf(stderr, "error: verify_cfg_board: unique groups linking error\n");
                 return false;
             }
 
-            if(g->liberties > 0 && g->liberties_min_coord >= BOARD_SIZ *
-                BOARD_SIZ)
-            {
-                fprintf(stderr,
-                    "error: verify_cfg_board: illegal value of 1st liberty\n");
+            if (g->liberties > 0 && g->liberties_min_coord >= BOARD_SIZ * BOARD_SIZ) {
+                fprintf(stderr, "error: verify_cfg_board: illegal value of 1st liberty\n");
                 return false;
             }
 
-            if(g->stones.count == 0)
-            {
-                fprintf(stderr,
-                    "error: verify_cfg_board: illegal number of stones (0)\n");
+            if (g->stones.count == 0) {
+                fprintf(stderr, "error: verify_cfg_board: illegal number of stones (0)\n");
                 return false;
             }
 
-            if(g->stones.count > TOTAL_BOARD_SIZ)
-            {
-                fprintf(stderr,
-                    "error: verify_cfg_board: illegal number of stones\n");
+            if (g->stones.count > TOTAL_BOARD_SIZ) {
+                fprintf(stderr, "error: verify_cfg_board: illegal number of stones\n");
                 return false;
             }
 
-            for(move n = 0; n < g->stones.count; ++n)
-            {
+            for (move n = 0; n < g->stones.count; ++n) {
                 move s = g->stones.coord[n];
-                if(cb->p[s] == EMPTY)
-                {
-                    fprintf(stderr,
-                        "error: verify_cfg_board: group actually empty\n");
+
+                if (cb->p[s] == EMPTY) {
+                    fprintf(stderr, "error: verify_cfg_board: group actually empty\n");
                     return false;
                 }
 
-                if(g->is_black != (cb->p[s] == BLACK_STONE))
-                {
-                    fprintf(stderr,
-                        "error: verify_cfg_board: stone color mismatch\n");
+                if (g->is_black != (cb->p[s] == BLACK_STONE)) {
+                    fprintf(stderr, "error: verify_cfg_board: stone color mismatch\n");
                     return false;
                 }
 
-                if(g != cb->g[s])
-                {
-                    fprintf(stderr,
-                        "error: verify_cfg_board: stone and links mismatch\n");
+                if (g != cb->g[s]) {
+                    fprintf(stderr, "error: verify_cfg_board: stone and links mismatch\n");
                     return false;
                 }
             }
 
-            if(g->neighbors_count > MAX_NEIGHBORS)
-            {
-                fprintf(stderr,
-                    "error: verify_cfg_board: illegal number of neighbors\n");
+            if (g->neighbors_count > MAX_NEIGHBORS) {
+                fprintf(stderr, "error: verify_cfg_board: illegal number of neighbors\n");
                 return false;
             }
 
-            for(u8 n = 0; n < g->neighbors_count; ++n)
-                for(u8 k = 0; k < n; ++k)
-                    if(g->neighbors[k] == g->neighbors[n])
-                    {
-                        fprintf(stderr,
-                            "error: verify_cfg_board: neighbor mismatch\n");
+            for (u8 n = 0; n < g->neighbors_count; ++n) {
+                for (u8 k = 0; k < n; ++k) {
+                    if (g->neighbors[k] == g->neighbors[n]) {
+                        fprintf(stderr, "error: verify_cfg_board: neighbor mismatch\n");
                         return false;
                     }
+                }
+            }
         }
     }
-    if(!is_board_move(cb->last_eaten) && cb->last_eaten != NONE)
-    {
+
+    if (!is_board_move(cb->last_eaten) && cb->last_eaten != NONE) {
         fprintf(stderr, "error: verify_cfg_board: illegal last eaten value\n");
         return false;
     }
 
-    if(!is_board_move(cb->last_played) && cb->last_played != NONE &&
-        cb->last_played != PASS)
-    {
+    if (!is_board_move(cb->last_played) && cb->last_played != NONE && cb->last_played != PASS) {
         fprintf(stderr, "error: verify_cfg_board: illegal last played value\n");
         return false;
     }
 
-    if(cb->empty.count > TOTAL_BOARD_SIZ)
-    {
-        fprintf(stderr,
-            "error: verify_cfg_board: illegal number of empty points (%u)\n",
-            cb->empty.count);
+    if (cb->empty.count > TOTAL_BOARD_SIZ) {
+        fprintf(stderr, "error: verify_cfg_board: illegal number of empty points (%u)\n", cb->empty.count);
         return false;
     }
 
-    for(move m = 0; m < cb->empty.count; ++m)
-        if(!is_board_move(m))
-        {
-            fprintf(stderr,
-                "error: verify_cfg_board: illegal empty intersection value\n");
+    for (move m = 0; m < cb->empty.count; ++m) {
+        if (!is_board_move(m)) {
+            fprintf(stderr, "error: verify_cfg_board: illegal empty intersection value\n");
             return false;
         }
+    }
 
     return true;
 }

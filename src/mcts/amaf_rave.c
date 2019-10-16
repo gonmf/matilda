@@ -26,31 +26,27 @@ RETURNS overall value of play (x,y)
 */
 double uct1_rave(
     const tt_play * play
-){
+) {
     u32 n_amaf_s_a;
     double q_amaf_s_a;
 
-    if(CRITICALITY_THRESHOLD > 0 && play->mc_n >= CRITICALITY_THRESHOLD)
-    {
-        double c_pachi = play->owner_winning - (2.0 * play->color_owning *
-            play->mc_q - play->color_owning - play->mc_q + 1.0);
+    if (CRITICALITY_THRESHOLD > 0 && play->mc_n >= CRITICALITY_THRESHOLD) {
+        double c_pachi = play->owner_winning - (2.0 * play->color_owning * play->mc_q - play->color_owning - play->mc_q + 1.0);
         double crit_n = fabs(c_pachi) * play->amaf_n;
 
         n_amaf_s_a = play->amaf_n + crit_n;
-        if(c_pachi <= 0.0)
+        if (c_pachi <= 0.0) {
             q_amaf_s_a = play->amaf_q;
-        else
+        } else {
             q_amaf_s_a = ((play->amaf_q * play->amaf_n) + crit_n) / n_amaf_s_a;
-    }
-    else
-    {
+        }
+    } else {
         n_amaf_s_a = play->amaf_n;
         q_amaf_s_a = play->amaf_q;
     }
 
     /* RAVE minimum MSE schedule */
-    double b = n_amaf_s_a / (play->mc_n + n_amaf_s_a + (play->mc_n *
-        n_amaf_s_a) / rave_equiv);
+    double b = n_amaf_s_a / (play->mc_n + n_amaf_s_a + (play->mc_n * n_amaf_s_a) / rave_equiv);
 
     return (1.0 - b) * play->mc_q + b * q_amaf_s_a;
 }
@@ -64,15 +60,14 @@ void update_amaf_stats(
     const u8 traversed[static TOTAL_BOARD_SIZ],
     bool is_black,
     double z
-){
-    for(u16 k = 0; k < stats->plays_count; ++k)
-        if(stats->plays[k].m != PASS && traversed[stats->plays[k].m] != EMPTY &&
-            (traversed[stats->plays[k].m] == BLACK_STONE) == is_black)
-        {
+) {
+    for (u16 k = 0; k < stats->plays_count; ++k) {
+        if (stats->plays[k].m != PASS && traversed[stats->plays[k].m] != EMPTY && (traversed[stats->plays[k].m] == BLACK_STONE) == is_black) {
             stats->plays[k].amaf_n++;
-            stats->plays[k].amaf_q += ((z - stats->plays[k].amaf_q) /
-                stats->plays[k].amaf_n);
+
+            stats->plays[k].amaf_q += ((z - stats->plays[k].amaf_q) / stats->plays[k].amaf_n);
         }
+    }
 }
 
 /*
@@ -84,13 +79,12 @@ void update_amaf_stats2(
     tt_stats * stats,
     const u8 traversed[static TOTAL_BOARD_SIZ],
     bool is_black
-){
-    for(u16 k = 0; k < stats->plays_count; ++k)
-        if(stats->plays[k].m != PASS && traversed[stats->plays[k].m] != EMPTY &&
-            (traversed[stats->plays[k].m] == BLACK_STONE) == is_black)
-        {
+) {
+    for (u16 k = 0; k < stats->plays_count; ++k) {
+        if (stats->plays[k].m != PASS && traversed[stats->plays[k].m] != EMPTY && (traversed[stats->plays[k].m] == BLACK_STONE) == is_black) {
             stats->plays[k].amaf_n++;
-            stats->plays[k].amaf_q -= (stats->plays[k].amaf_q /
-                stats->plays[k].amaf_n);
+
+            stats->plays[k].amaf_q -= (stats->plays[k].amaf_q / stats->plays[k].amaf_n);
         }
+    }
 }

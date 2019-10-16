@@ -35,14 +35,17 @@ static u32 nr_buckets = 0;
 static move ob_get_play(
     u32 hash,
     const u8 p[static PACKED_BOARD_SIZ]
-){
+) {
     ob_entry * h = ob_trans_table[hash % nr_buckets];
-    while(h != NULL)
-    {
-        if(h->hash == hash && memcmp(&h->p, p, PACKED_BOARD_SIZ) == 0)
+
+    while (h != NULL) {
+        if (h->hash == hash && memcmp(&h->p, p, PACKED_BOARD_SIZ) == 0) {
             return h->play;
+        }
+
         h = h->next;
     }
+
     return NONE;
 }
 
@@ -56,7 +59,7 @@ void board_to_ob_rule(
     char * dst,
     u8 p[static TOTAL_BOARD_SIZ],
     move play
-){
+) {
     u32 idx = snprintf(dst, MAX_PAGE_SIZ, "%u ", BOARD_SIZ);
     move m1 = 0;
     move m2 = 0;
@@ -64,40 +67,39 @@ void board_to_ob_rule(
     char * mstr = alloc();
 
     bool found;
-    do
-    {
+    do {
         found = false;
-        if(is_black)
-        {
-            for(; m1 < TOTAL_BOARD_SIZ; ++m1)
-                if(p[m1] == BLACK_STONE)
-                {
+
+        if (is_black) {
+            for (; m1 < TOTAL_BOARD_SIZ; ++m1) {
+                if (p[m1] == BLACK_STONE) {
                     coord_to_alpha_num(mstr, m1);
                     idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx, "%s ", mstr);
                     found = true;
                     ++m1;
                     break;
                 }
-        }
-        else
-        {
-            for(; m2 < TOTAL_BOARD_SIZ; ++m2)
-                if(p[m2] == WHITE_STONE)
-                {
+            }
+        } else {
+            for (; m2 < TOTAL_BOARD_SIZ; ++m2) {
+                if (p[m2] == WHITE_STONE) {
                     coord_to_alpha_num(mstr, m2);
                     idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx, "%s ", mstr);
                     found = true;
                     ++m2;
                     break;
                 }
+            }
         }
         is_black = !is_black;
-    }while(found);
+    } while(found);
 
     /* Verify we were able to codify every play */
-    for(u16 i = MAX(m1, m2); i < TOTAL_BOARD_SIZ; ++i)
-        if(p[i] != EMPTY)
+    for (u16 i = MAX(m1, m2); i < TOTAL_BOARD_SIZ; ++i) {
+        if (p[i] != EMPTY) {
             flog_crit("ob", "game position cannot be codified as O.B. rule");
+        }
+    }
 
     coord_to_alpha_num(mstr, play);
     snprintf(dst + idx, MAX_PAGE_SIZ - idx, "| %s\n", mstr);
@@ -106,36 +108,37 @@ void board_to_ob_rule(
 
 static void ob_simple_insert(
     ob_entry * e
-){
+) {
     e->next = ob_trans_table[e->hash % nr_buckets];
     ob_trans_table[e->hash % nr_buckets] = e;
 }
 
 static bool process_opening_book_line(
     char * s
-){
+) {
     char * saveptr = NULL;
     char * word;
 
-    if((word = strtok_r(s, " ", &saveptr)) == NULL)
+    if ((word = strtok_r(s, " ", &saveptr)) == NULL) {
         return false;
+    }
 
-    if(strcmp(word, BOARD_SIZ_AS_STR) != 0)
+    if (strcmp(word, BOARD_SIZ_AS_STR) != 0) {
         return false;
+    }
 
     u16 tokens_read = 0;
     char tokens[MAX_RULE_TOKENS][4];
 
-    while(tokens_read < MAX_RULE_TOKENS && (word = strtok_r(NULL, " ",
-        &saveptr)) != NULL)
-    {
-        if(word[0] == '#')
+    while (tokens_read < MAX_RULE_TOKENS && (word = strtok_r(NULL, " ", &saveptr)) != NULL) {
+        if (word[0] == '#') {
             break;
+        }
+
         strncpy(tokens[tokens_read++], word, 4);
     }
 
-    if(tokens_read < 2 || tokens_read == MAX_RULE_TOKENS)
-    {
+    if (tokens_read < 2 || tokens_read == MAX_RULE_TOKENS) {
         flog_crit("ob", "illegal opening book rule: size");
     }
 
@@ -144,16 +147,19 @@ static bool process_opening_book_line(
     bool is_black = true;
 
     u16 t = 0;
-    for(; t < tokens_read - 2; ++t)
-    {
-        if(strcmp(tokens[t], "|") == 0)
+    for (; t < tokens_read - 2; ++t) {
+        if (strcmp(tokens[t], "|") == 0) {
             break;
-        move m = coord_parse_alpha_num(tokens[t]);
-        if(!is_board_move(m))
-            flog_crit("ob", "illegal opening book rule: play string format");
+        }
 
-        if(!attempt_play_slow(&b, is_black, m))
+        move m = coord_parse_alpha_num(tokens[t]);
+        if (!is_board_move(m)) {
+            flog_crit("ob", "illegal opening book rule: play string format");
+        }
+
+        if (!attempt_play_slow(&b, is_black, m)) {
             flog_crit("ob", "illegal opening book rule: play sequence");
+        }
 
         is_black = !is_black;
     }
@@ -161,8 +167,9 @@ static bool process_opening_book_line(
     b.last_played = b.last_eaten = NONE;
 
     move m = coord_parse_alpha_num(tokens[t + 1]);
-    if(!is_board_move(m))
+    if (!is_board_move(m)) {
         flog_crit("ob", "illegal opening book rule: response play");
+    }
 
     d8 reduction = reduce_auto(&b, true);
     m = reduce_move(m, reduction);
@@ -172,12 +179,14 @@ static bool process_opening_book_line(
     u32 hash = crc32(packed_board, PACKED_BOARD_SIZ);
 
     move mt = ob_get_play(hash, packed_board);
-    if(mt != NONE)
+    if (mt != NONE) {
         return false;
+    }
 
     ob_entry * obe = malloc(sizeof(ob_entry));
-    if(obe == NULL)
+    if (obe == NULL) {
         flog_crit("ob", "system out of memory");
+    }
 
     obe->hash = hash;
     memcpy(obe->p, packed_board, PACKED_BOARD_SIZ);
@@ -189,10 +198,10 @@ static bool process_opening_book_line(
 /*
 Discover and read opening book files.
 */
-void opening_book_init()
-{
-    if(attempted_discover_ob)
+void opening_book_init() {
+    if (attempted_discover_ob) {
         return;
+    }
 
     attempted_discover_ob = true;
 
@@ -201,24 +210,24 @@ void opening_book_init()
     /*
     Allocate O.B. hash table
     */
-    ob_trans_table = (ob_entry **)calloc(nr_buckets, sizeof(ob_entry *));
-    if(ob_trans_table == NULL)
+    ob_trans_table = calloc(nr_buckets, sizeof(ob_entry *));
+    if (ob_trans_table == NULL) {
         flog_crit("ob", "system out of memory");
+    }
 
     /*
     Read .ob file
     */
     char * filename = alloc();
-    snprintf(filename, MAX_PAGE_SIZ, "%s%ux%u.ob", data_folder(), BOARD_SIZ,
-        BOARD_SIZ);
+    snprintf(filename, MAX_PAGE_SIZ, "%s%ux%u.ob", data_folder(), BOARD_SIZ, BOARD_SIZ);
 
     char * buffer = malloc(MAX_FILE_SIZ);
-    if(buffer == NULL)
+    if (buffer == NULL) {
         flog_crit("ob", "system out of memory");
+    }
 
     d32 chars_read = read_ascii_file(buffer, MAX_FILE_SIZ, filename);
-    if(chars_read < 0)
-    {
+    if (chars_read < 0) {
         char * s = alloc();
         snprintf(s, MAX_PAGE_SIZ, "could not read %s", filename);
         flog_warn("ob", s);
@@ -232,12 +241,13 @@ void opening_book_init()
     char * saveptr = NULL;
     char * tmp = buffer;
     char * line;
-    while((line = strtok_r(tmp, "\r\n", &saveptr)) != NULL)
-    {
+    while ((line = strtok_r(tmp, "\r\n", &saveptr)) != NULL) {
         tmp = NULL;
 
-        if(process_opening_book_line(line))
+        if (process_opening_book_line(line)) {
             ++rules_saved;
+        }
+
         ++rules_found;
     }
 
@@ -258,31 +268,34 @@ RETURNS true if rule found
 bool opening_book(
     out_board * out_b,
     board * state
-){
+) {
     opening_book_init();
 
     clear_out_board(out_b);
 
-    if(ob_rules == 0)
+    if (ob_rules == 0) {
         return false;
-    if(state->last_eaten != NONE)
+    }
+    if (state->last_eaten != NONE) {
         return false;
+    }
 
     u8 packed_board[PACKED_BOARD_SIZ];
     pack_matrix(packed_board, state->p);
     u32 hash = crc32(packed_board, PACKED_BOARD_SIZ);
 
     move m = ob_get_play(hash, packed_board);
-    if(m == NONE)
+    if (m == NONE) {
         return false;
+    }
 
     /*
     Since the O.B. do not include last eaten information, they may
     suggest a play that is illegal by ko. Prevent this.
     */
-    if(is_board_move(state->last_played) &&
-        test_ko(state, m, state->p[state->last_played]))
+    if (is_board_move(state->last_played) && test_ko(state, m, state->p[state->last_played])) {
         return false;
+    }
 
     flog_info("ob", "transition rule found");
 

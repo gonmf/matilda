@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="application/xhtml+xml;charset=UTF-8"/><meta language="pt-BR"/><link href="/kgsMain.css" rel="stylesheet" type="text/css"/><title>KGS:  Time Systems</title><meta http-equiv="Content-Style-Type" content="text/css"/><link rel="SHORTCUT ICON" href="//files.gokgs.com/images/favicon.ico"/></head><body><div class="helpIndex"><div class="box"><a href="/help/index.html">Main Help Page</a></div><div style="text-align: center" class="box">Translations Available (click a flag to view):<br/><a href="/help/timesystems.html?helpLocale=de_DE"><img alt="German (Germany)" height="40" width="60" src="http://files.gokgs.com/images/de_DE.png"/> </a><a href="/help/timesystems.html?helpLocale=en_US"><img alt="English (United States)" height="40" width="60" src="http://files.gokgs.com/images/en_US.png"/> </a><a href="/help/timesystems.html?helpLocale=fr_FR"><img alt="French (France)" height="40" width="60" src="http://files.gokgs.com/images/fr_FR.png"/> </a><a href="/help/timesystems.html?helpLocale=ja_JP"><img alt="Japanese (Japan)" height="40" width="60" src="http://files.gokgs.com/images/ja_JP.png"/> </a><a href="/help/timesystems.html?helpLocale=ru_RU"><img alt="Russian (Russia)" height="40" width="60" src="http://files.gokgs.com/images/ru_RU.png"/> </a><a href="/help/timesystems.html?helpLocale=tr_TR"><img alt="Turkish (Turkey)" height="40" width="60" src="http://files.gokgs.com/images/tr_TR.png"/> </a></div></div><h1>Supported Time Systems</h1>
+
+<!--
+Choices
+//-->
+
+<table>
+<tr>
+<td style="font-family:serif">
+<p><img src="http://files.gokgs.com/images/help/ts0-en_US.gif" alt="0th image of the time system selection menu" /></p>
+</td>
+<td style="font-family:serif">
+<p>KGS allows four different time systems, 
+<a href="#non">None</a>, <a href="#abs">Absolute</a>,
+<a href="#byo">Byo-Yomi</a>, and <a href="#can">Canadian</a>. You can choose which to use with the list box at the top of the "Time System" section.</p>
+<p>The four systems are all described below.</p>
+<p>On KGS, the time settings apply equally to both players. It is not possible for the two players to have different time settings. You can give your opponent extra time in a game with the "Add 1 Minute" and "Add 5 Minutes" commands found under the "Option" button.</p>
+</td>
+</tr>
+</table>
+
+<!--
+None
+//-->
+
+
+<table>
+<tr>
+<td style="font-family:serif">
+<p><a name="none"><strong>None</strong></a></p>
+<p>There are no time limits in the game. Both players may take as long as they want to make a move. This could be used for friendly games and games when network problems cause large delays in player's moves.</p>
+<p>It is possible to load the game and make a move even when your opponent is not present. This way you can use this time system to play in "correspondence mode."  This is also known as "play by mail" or "turn-based." <em>It is best, but not required, that these types of games be unranked,</em> as the <a href="/help/faq/escapers.html">escaper</a> system applies to ranked games. </p>
+<p>All three input values are grayed out, and irrelevant.</p>
+</td>
+<td style="font-family:serif">
+<p><img src="http://files.gokgs.com/images/help/ts1-en_US.gif" alt="1st image of the time system selection menu" /></p>
+</td>
+</tr>
+
+
+<!--
+Absolute
+//-->
+
+<tr>
+<td style="font-family:serif">
+<p><a name="absolute"><strong>Absolute</strong></a></p>
+<p>An absolute time limit gives each player a fixed amount of time at the start of the game. If a player's time runs out, then the player loses. No extra time is given to the player. </p>
+<p>Only the first input value is relevant, the other two are grayed out. In the example on the right, it is set to one hour, 0 minutes, and 0 seconds each.</p>
+</td>
+<td style="font-family:serif">
+<p><img src="http://files.gokgs.com/images/help/ts2-en_US.gif" alt="2nd image of the time system selection menu" /></p>
+</td>
+</tr>
+
+<!--
+Byo-Yomi
+//-->
+
+<tr>
+<td style="font-family:serif">
+<p><a name="byo"><strong>Byo-Yomi</strong></a></p>
+<p>In the byo-yomi time system, each player is given a specified amount of "main time" at the start of the game. Once this time is exhausted the game enters the byo-yomi stage of the game. Each player has a limited number of "byo-yomi periods" of length "byo-yomi time", for example 5 lots of 30 seconds. If you make your move before the 30 seconds has elapsed then that byo-yomi period is not used up, and is still all there for your next move. However, if the timer reaches 0 then that single byo-yomi period is used up and you enter the next of the 5 byo-yomi periods. You lose if you run out of your byo-yomi periods, in other words make 5 moves that each take longer than 30 seconds.</p>
+<p>All three input values should be supplied. If the values shown on the right are used, each player has 30 minutes of main time, and 5 byo-yomi periods each of 30 seconds.</p>
+</td>
+<td style="font-family:serif">
+<p><img src="http://files.gokgs.com/images/help/ts3-en_US.gif" alt="3rd image of the time system selection menu" /></p>
+</td>
+</tr>
+
+<!--
+Canadian
+//-->
+
+<tr>
+<td style="font-family:serif">
+<p><a name="can"><strong>Canadian</strong></a></p>
+<p>In Canadian byo-yomi, players are given a specific amount of time at the start of the game. Once that time is used up, they enter byo-yomi time. In this mode, they have to make a certain number of moves within their byo-yomi period, or else they will lose. If they manage to make all the moves required in their byo-yomi time period, then they are given a new byo-yomi period. This is the time system used on the IGS server.</p>
+<p>All three input values should be supplied. If the values shown on the right are used, each player has ten minutes of main time, and then has unlimited periods of eight minutes, in each of which he must make twenty moves.</p>
+</td>
+<td style="font-family:serif">
+<p><img src="http://files.gokgs.com/images/help/ts4-en_US.gif" alt="4th image of the time system selection menu" /></p>
+</td>
+</tr>
+
+</table>
+
+<!--
+Related Links  
+//-->
+
+<h4 style="margin-bottom:0"><a name="relatedlinks">Related Links</a></h4>
+<p style="margin-top:0; margin-bottom:0; line-height:.5"><br/></p>
+<ul style="margin-top:0">
+<li><a href="/help/rulesets.html">Supported Rule Sets</a></li>
+</ul>
+
+
+<p>
+
+<!--
+Up One Level Link
+//-->
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+<strong>
+<a href="/help/newGameWin.html#timesystem">Up One Level</a>
+</strong>
+&nbsp; &nbsp;&mdash;>&nbsp; &nbsp; "New Game" Window &nbsp;&ndash;>&nbsp; Time System
+<br/>
+
+<!--
+Site Map Link
+//-->
+
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+&nbsp; &nbsp;
+<strong>
+<a href="/help/siteMap.html#newgamewindowtwo">Site Map</a>
+</strong>
+&nbsp; &nbsp; &nbsp; &nbsp;&mdash;>&nbsp; &nbsp; "New Game" Window &nbsp;&ndash;>&nbsp; Supported Time Systems
+<br/>
+
+<!--
+Link to Top of Page
+//-->
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+&nbsp; &nbsp; &nbsp; &nbsp;
+<strong>
+<a href="/help/timesystems.html">Top</a>
+</strong>
+</p>
+
+<!--
+Change note horizontal line
+<hr/>
+//--><hr style="clear: both"/><p><a href="/help/timesystems.html?edit=e&amp;amp;allLocales=n&amp;amp;allChanges=n">Edit this page (requires admin or translator privilege)</a></p><div><hr style="clear: both"/><p class="block"><a href="/"><img alt="KGS" src="https://files.gokgs.com/images/kgsIcon.png" height="31" width="88"/></a></p></div></body></html>
