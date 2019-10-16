@@ -35,23 +35,25 @@ int create_and_open_file(
     struct tm tm = *localtime(&t);
 
     while (1) {
-        if (attempt == 1)
-            snprintf(filename, filename_size, "%s%s_%02u%02u%02u%02u%02u.%s",
-                data_folder(), prefix, tm.tm_year % 100, tm.tm_mon, tm.tm_mday,
-                tm.tm_hour, tm.tm_min, extension);
-        else
-            snprintf(filename, filename_size, "%s%s_%02u%02u%02u%02u%02u_%u.%s",
-                data_folder(), prefix, tm.tm_year % 100, tm.tm_mon, tm.tm_mday,
-                tm.tm_hour, tm.tm_min, attempt, extension);
+        if (attempt == 1) {
+            snprintf(filename, filename_size, "%s%s_%02u%02u%02u%02u%02u.%s", data_folder(), prefix,
+                     tm.tm_year % 100, tm.tm_mon, tm.tm_mday, tm.tm_hour, tm.tm_min, extension);
+        } else {
+            snprintf(filename, filename_size, "%s%s_%02u%02u%02u%02u%02u_%u.%s", data_folder(), prefix,
+                     tm.tm_year % 100, tm.tm_mon, tm.tm_mday, tm.tm_hour, tm.tm_min, attempt, extension);
+        }
 
         int fd = open(filename, O_WRONLY | O_CREAT | O_EXCL, S_IRUSR | S_IWUSR);
+
         /* File created */
-        if (fd != -1)
+        if (fd != -1) {
             return fd;
+        }
 
         /* We will never be able to create the file */
-        if (errno != EEXIST)
+        if (errno != EEXIST) {
             return -1;
+        }
 
         ++attempt;
     }
@@ -66,26 +68,25 @@ d32 read_binary_file(
     const char * filename
 ) {
     FILE * h = fopen(filename, "rb");
-    if (h == NULL)
+    if (h == NULL) {
         return -1;
+    }
 
     u32 total_read = 0;
 
     char * dst_buf2 = (char *)dst_buf;
     bool file_unfinished;
 
-    do
-    {
+    do {
         size_t rd = fread(dst_buf2 + total_read, 1, buf_len - total_read, h);
+
         if (ferror(h) != 0) {
             fclose(h);
             return -1;
         }
 
         total_read += rd;
-
-    }
-    while (buf_len > total_read && (file_unfinished = (feof(h) == 0)));
+    } while (buf_len > total_read && (file_unfinished = (feof(h) == 0)));
 
     char tmp[2];
     fread(tmp, 1, 1, h);
@@ -95,8 +96,7 @@ d32 read_binary_file(
 
     if (file_unfinished) {
         char * s = alloc();
-        snprintf(s, MAX_PAGE_SIZ,
-            "file %s longer than buffer available for reading\n", filename);
+        snprintf(s, MAX_PAGE_SIZ, "file %s longer than buffer available for reading\n", filename);
         flog_crit("file", s);
         release(s);
     }
@@ -113,15 +113,16 @@ d32 read_ascii_file(
     const char * restrict filename
 ) {
     FILE * h = fopen(filename, "r"); /* text file, hopefully ASCII */
-    if (h == NULL)
+    if (h == NULL) {
         return -1;
+    }
 
     u32 total_read = 0;
     bool file_unfinished;
 
-    do
-    {
+    do {
         size_t rd = fread(dst_buf + total_read, 1, buf_len - total_read, h);
+
         if (ferror(h) != 0) {
             char * s = alloc();
             snprintf(s, MAX_PAGE_SIZ, "%s: %s", filename, strerror(errno));
@@ -133,8 +134,7 @@ d32 read_ascii_file(
 
         total_read += rd;
 
-    }
-    while (buf_len > total_read && (file_unfinished = (feof(h) == 0)));
+    } while (buf_len > total_read && (file_unfinished = (feof(h) == 0)));
 
     char tmp[2];
     fread(tmp, 1, 1, h);
@@ -160,13 +160,19 @@ static bool ends_in(
 ) {
     size_t len_a = strlen(a);
     size_t len_b = strlen(b);
-    if (len_a <= len_b)
+
+    if (len_a <= len_b) {
         return false;
+    }
+
     size_t offset = len_a - len_b;
 
-    for (u16 i = 0; i < len_b; ++i)
-        if (a[offset + i] != b[i])
+    for (u16 i = 0; i < len_b; ++i) {
+        if (a[offset + i] != b[i]) {
             return false;
+        }
+    }
+
     return true;
 }
 
@@ -182,40 +188,45 @@ static void _recurse_find_files(
 ) {
     DIR * dir;
     struct dirent * entry;
-    if (!(dir = opendir(root)))
-        return;
-    while (filenames_found <= _max_files && (entry = readdir(dir)) != NULL) {
-        if (entry->d_name[0] == '.') /* ignore special and hidden files */
-            continue;
-        u32 strl = strlen(root) + strlen(entry->d_name) + 2;
-        if (strl >= MAX_PATH_SIZ)
-            flog_crit("file", "path too long");
 
-        if (!ends_in(entry->d_name, extension)) /* try following as if folder */
-        {
+    if (!(dir = opendir(root))) {
+        return;
+    }
+
+    while (filenames_found <= _max_files && (entry = readdir(dir)) != NULL) {
+        if (entry->d_name[0] == '.') { /* ignore special and hidden files */
+            continue;
+        }
+
+        u32 strl = strlen(root) + strlen(entry->d_name) + 2;
+        if (strl >= MAX_PATH_SIZ) {
+            flog_crit("file", "path too long");
+        }
+
+        if (!ends_in(entry->d_name, extension)) { /* try following as if folder */
             char * path = malloc(strl);
-            if (path == NULL)
+
+            if (path == NULL) {
                 flog_crit("file", "find files: system out of memory");
+            }
 
             snprintf(path, strl, "%s%s/", root, entry->d_name);
             _recurse_find_files(path, extension, filenames);
             free(path);
-        }
-        else
-        {
+        } else {
             allocated += strl;
             filenames[filenames_found] = malloc(strl);
-            if (filenames[filenames_found] == NULL)
-                flog_crit("file", "find files: system out of memory");
 
-            snprintf(filenames[filenames_found], strl, "%s%s", root,
-                entry->d_name);
+            if (filenames[filenames_found] == NULL) {
+                flog_crit("file", "find files: system out of memory");
+            }
+
+            snprintf(filenames[filenames_found], strl, "%s%s", root, entry->d_name);
             filenames_found++;
-            if (filenames_found > _max_files)
-            {
+
+            if (filenames_found > _max_files) {
                 char * s = alloc();
-                snprintf(s, MAX_PAGE_SIZ,
-                    "maximum number of files (%u) reached", _max_files);
+                snprintf(s, MAX_PAGE_SIZ, "maximum number of files (%u) reached", _max_files);
                 flog_crit("file", s);
                 release(s);
             }

@@ -31,8 +31,9 @@ hash_table * hash_table_create(
     assert(compare_function != NULL);
 
     hash_table * ht = malloc(sizeof(hash_table));
-    if (ht == NULL)
+    if (ht == NULL) {
         flog_crit("ht", "could not allocate table memory");
+    }
 
     ht->number_of_buckets = get_prime_near(nr_buckets);
     ht->elem_size = elem_size;
@@ -67,14 +68,17 @@ void hash_table_insert_unique(
 
     ht_node * h = ht->table[bucket];
     while (h != NULL) {
-        if (ht->cmp_func(h->data, elem) == 0)
+        if (ht->cmp_func(h->data, elem) == 0) {
             return;
+        }
+
         h = h->next;
     }
 
     ht_node * node = malloc(sizeof(ht_node));
-    if (node == NULL)
+    if (node == NULL) {
         flog_crit("ht", "could not allocate node memory");
+    }
 
     node->data = elem;
     node->next = ht->table[bucket];
@@ -120,8 +124,10 @@ bool hash_table_exists(
 
     ht_node * h = ht->table[bucket];
     while (h != NULL) {
-        if (ht->cmp_func(h->data, elem) == 0)
+        if (ht->cmp_func(h->data, elem) == 0) {
             return true;
+        }
+
         h = h->next;
     }
     return false;
@@ -143,8 +149,10 @@ void * hash_table_find(
 
     ht_node * h = ht->table[bucket];
     while (h != NULL) {
-        if (ht->cmp_func(h->data, elem) == 0)
+        if (ht->cmp_func(h->data, elem) == 0) {
             return h->data;
+        }
+
         h = h->next;
     }
     return NULL;
@@ -154,11 +162,16 @@ static void recursive_free(
     ht_node * n,
     bool free_data_too
 ) {
-    if (n == NULL)
+    if (n == NULL) {
         return;
+    }
+
     recursive_free(n->next, free_data_too);
-    if (free_data_too)
+
+    if (free_data_too) {
         free(n->data);
+    }
+
     free(n);
 }
 
@@ -172,8 +185,9 @@ void hash_table_destroy(
 ) {
     assert(ht != NULL);
 
-    for (u32 bucket = 0; bucket < ht->number_of_buckets; ++bucket)
+    for (u32 bucket = 0; bucket < ht->number_of_buckets; ++bucket) {
         recursive_free(ht->table[bucket], free_data_too);
+    }
 
     free(ht->table);
     free(ht);
@@ -192,15 +206,18 @@ void hash_table_export_to_file(
     u32 written = 0;
 
     FILE * fp = fopen(filename, "wb");
-    if (fp == NULL)
+    if (fp == NULL) {
         flog_crit("ht", "couldn't open file for writing");
+    }
 
     for (u32 bucket = 0; bucket < ht->number_of_buckets; ++bucket) {
         ht_node * h = ht->table[bucket];
+
         while (h != NULL) {
             size_t w = fwrite(h->data, ht->elem_size, 1, fp);
-            if (w != 1)
+            if (w != 1) {
                 flog_crit("ht", "write failed");
+            }
 
             ++written;
             h = h->next;
@@ -209,8 +226,9 @@ void hash_table_export_to_file(
 
     fclose(fp);
 
-    if (ht->elements != written)
+    if (ht->elements != written) {
         flog_crit("ht", "wrong number of hash table elements written");
+    }
 
     fprintf(stderr, "ht: wrote %u elements to file %s\n", written, filename);
 }
@@ -227,8 +245,9 @@ bool hash_table_import_from_file(
     assert(filename != NULL);
 
     FILE * fp = fopen(filename, "rb");
-    if (fp == NULL)
+    if (fp == NULL) {
         return false;
+    }
 
     void * data = malloc(ht->elem_size);
     assert(data != NULL);
@@ -238,6 +257,7 @@ bool hash_table_import_from_file(
         size_t r = fread(data, ht->elem_size, 1, fp);
         if (r < 1)
             break;
+
         ++elems_read;
         hash_table_insert(ht, data);
         data = malloc(ht->elem_size);
@@ -271,10 +291,12 @@ void ** hash_table_export_to_array(
             h = h->next;
         }
     }
+
     ret[curr_elem] = NULL;
 
-    if (curr_elem != ht->elements)
+    if (curr_elem != ht->elements) {
         flog_crit("ht", "unexpected number of elements exported");
+    }
 
     return ret;
 }

@@ -323,7 +323,7 @@ void init_new_state(
             u8 dst_border = distances_to_border[m];
             switch (dst_border) {
                 case 0:
-                    // Do not play there at all
+                    /* Do not play there at all */
                     continue;
                 case 1:
                     mc_v += prior_line2;

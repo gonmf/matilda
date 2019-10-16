@@ -37,10 +37,11 @@ void version_string(
     char * dst
 ) {
 #ifdef COMMITN
-    if (strlen(COMMITN))
+    if (strlen(COMMITN)) {
         snprintf(dst, MAX_PAGE_SIZ, "%s (%s)", MATILDA_VERSION, COMMITN);
-    else
+    } else {
         snprintf(dst, MAX_PAGE_SIZ, "%s", MATILDA_VERSION);
+    }
 #else
     snprintf(dst, MAX_PAGE_SIZ, "%s", MATILDA_VERSION);
 #endif
@@ -63,10 +64,12 @@ bool folder_exists(
     const char * filename
 ) {
     DIR * dir = opendir(filename);
+
     if (dir != NULL) {
         closedir(dir);
         return false;
     }
+
     return true;
 }
 
@@ -79,16 +82,20 @@ bool set_data_folder(
     const char * s
 ) {
     u32 l = strlen(s);
-    if (l < 2 || l >= MAX_PATH_SIZ - 2)
-        return false;
 
-    if (folder_exists(s))
+    if (l < 2 || l >= MAX_PATH_SIZ - 2) {
         return false;
+    }
 
-    if (s[l - 1] == '/')
+    if (folder_exists(s)) {
+        return false;
+    }
+
+    if (s[l - 1] == '/') {
         snprintf(_data_folder, MAX_PATH_SIZ, "%s", s);
-    else
+    } else {
         snprintf(_data_folder, MAX_PATH_SIZ, "%s/", s);
+    }
 
     return true;
 }
@@ -118,6 +125,7 @@ bool evaluate_position_timed(
         board tmp;
         memcpy(&tmp, b, sizeof(board));
         d8 reduction = reduce_auto(&tmp, true);
+
         if (opening_book(out_b, &tmp)) {
             out_board_revert_reduce(out_b, reduction);
             return true;
@@ -143,6 +151,7 @@ bool evaluate_position_sims(
         board tmp;
         memcpy(&tmp, b, sizeof(board));
         d8 reduction = reduce_auto(&tmp, is_black);
+
         if (opening_book(out_b, &tmp)) {
             out_board_revert_reduce(out_b, reduction);
             return true;
@@ -169,8 +178,9 @@ void evaluate_in_background(
 static void freed_mem_message(
     u32 states
 ) {
-    if (states == 0)
+    if (states == 0) {
         return;
+    }
 
     char * s = alloc();
     char * s2 = alloc();
@@ -215,14 +225,15 @@ doesn't.
 */
 void assert_data_folder_exists() {
     DIR * dir = opendir(data_folder());
+
     if (dir == NULL) {
         char * s = alloc();
-        snprintf(s, MAX_PAGE_SIZ, "data folder %s does not exist or is unavaila\
-ble\n", data_folder());
+        snprintf(s, MAX_PAGE_SIZ, "data folder %s does not exist or is unavailable\n", data_folder());
         flog_crit("data", s);
         release(s);
-    } else
+    } else {
         closedir(dir);
+    }
 }
 
 

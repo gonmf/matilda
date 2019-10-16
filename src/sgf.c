@@ -277,8 +277,7 @@ bool import_game_from_sgf2(
         u8 board_size = guess_board_size(buf);
         if (board_size == 0 && !board_size_cant_be_guessed_warned) {
             board_size_cant_be_guessed_warned = true;
-            flog_warn("sgff", "board size can not be guessed from play coordina\
-tes");
+            flog_warn("sgff", "board size can not be guessed from play coordinates");
         }
         if (board_size != BOARD_SIZ && board_size + 1 != BOARD_SIZ) {
             if (!wrong_board_size_warned) {

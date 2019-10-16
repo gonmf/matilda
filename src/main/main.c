@@ -74,7 +74,7 @@ static u16 _dummy; /* used for testing CLOP */
 
 
 
-static double time_allot_factor; // TODO to remove after paper, E
+static double time_allot_factor; /* TODO: to remove after paper */
 
 
 const void * tunable[] =
@@ -103,7 +103,7 @@ const void * tunable[] =
     "i", "expansion_delay", &expansion_delay,
     "i", "dummy", &_dummy,
 
-    "f", "time_allot_factor", &time_allot_factor, // TODO remove after paper
+    "f", "time_allot_factor", &time_allot_factor, /* TODO: remove after paper */
 
     NULL
 };
@@ -288,7 +288,7 @@ int main(
     alloc_init();
 
     flog_config_modes(DEFAULT_LOG_MODES);
-    flog_config_destinations(LOG_DEST_FILE); // default for text mode
+    flog_config_destinations(LOG_DEST_FILE); /* default for text mode */
     bool flog_dest_set = false;
 
     bool use_gtp = pass_when_losing = (isatty(STDIN_FILENO) == 0);

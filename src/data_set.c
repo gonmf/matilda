@@ -72,31 +72,38 @@ u32 data_set_load2(
     assert(data_set == NULL);
 
     char * filename = alloc();
-    snprintf(filename, MAX_PAGE_SIZ, "%s%dx%d.ds", data_folder(), BOARD_SIZ,
-        BOARD_SIZ);
+    snprintf(filename, MAX_PAGE_SIZ, "%s%dx%d.ds", data_folder(), BOARD_SIZ, BOARD_SIZ);
     FILE * fp = fopen(filename, "rb");
     release(filename);
-    if (fp == NULL)
+
+    if (fp == NULL) {
         flog_crit("dset", "could not open file for reading\n");
+    }
 
     u32 ds_elems;
     size_t r = fread(&ds_elems, sizeof(u32), 1, fp);
-    if (r != 1)
+
+    if (r != 1) {
         flog_crit("dset", "communication failure\n");
+    }
+
     assert(ds_elems > 0);
 
     ds_elems = MIN(ds_elems, max);
 
     data_set = malloc(sizeof(training_example *) * ds_elems * 8);
-    if (data_set == NULL)
+    if (data_set == NULL) {
         flog_crit("dset", "system out of memory\n");
+    }
 
     u32 insert = 0;
     u32 i;
     for (i = 0; i < ds_elems; ++i) {
         data_set[insert] = malloc(sizeof(training_example));
-        if (data_set[insert] == NULL)
+
+        if (data_set[insert] == NULL) {
             flog_crit("dset", "system out of memory (1)\n");
+        }
 
         r = fread(data_set[insert], sizeof(training_example), 1, fp);
         assert(r == 1);
@@ -113,17 +120,21 @@ u32 data_set_load2(
             reduce_fixed(&tmp, r);
 
             bool repeated = false;
-            for (u32 j = base_insert; j < insert; ++j)
+            for (u32 j = base_insert; j < insert; ++j) {
                 if (memcmp(&tmp.p, &data_set[j]->p, TOTAL_BOARD_SIZ) == 0) {
                     repeated = true;
                     break;
                 }
-            if (repeated)
+            }
+
+            if (repeated) {
                 continue;
+            }
 
             data_set[insert] = malloc(sizeof(training_example));
-            if (data_set[insert] == NULL)
+            if (data_set[insert] == NULL) {
                 flog_crit("dset", "system out of memory (2)\n");
+            }
 
             memcpy(&data_set[insert]->p, &tmp.p, TOTAL_BOARD_SIZ);
 
@@ -140,9 +151,7 @@ u32 data_set_load2(
     data_set_shuffle_all();
 
     char * s = alloc();
-    snprintf(s, MAX_PAGE_SIZ,
-        "Data set loaded with %u examples, yielding %u examples\n", ds_elems,
-        data_set_size);
+    snprintf(s, MAX_PAGE_SIZ, "Data set loaded with %u examples, yielding %u examples\n", ds_elems, data_set_size);
     flog_info("dset", s);
     release(s);
     return data_set_size;

@@ -592,7 +592,7 @@ static void generic_genmove(
         } else {
             m = select_play(&out_b, is_black, &current_game);
         }
-    } else if (pass_when_losing) { // The game is lost, a resign or pass is suggested.
+    } else if (pass_when_losing) { /* The game is lost, a resign or pass is suggested. */
         m = PASS;
     } else {
         gtp_answer(fp, id, "resign");

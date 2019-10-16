@@ -53,10 +53,10 @@ static void clean_symbols(
     u8 p[static 3][3]
 ) {
     char * s;
-    for (u8 i = 0; i < 3; ++i)
-        for (u8 j = 0; j < 3; ++j)
-            switch (p[i][j])
-            {
+
+    for (u8 i = 0; i < 3; ++i) {
+        for (u8 j = 0; j < 3; ++j) {
+            switch (p[i][j]) {
                 case SYMBOL_EMPTY:
                     p[i][j] = EMPTY;
                     break;
@@ -75,12 +75,12 @@ static void clean_symbols(
                     break;
                 default:
                     s = alloc();
-                    snprintf(s, MAX_PAGE_SIZ,
-                        "pattern file format error; unknown symbol: '%c', %u\n",
-                        p[i][j], p[i][j]);
+                    snprintf(s, MAX_PAGE_SIZ, "pattern file format error; unknown symbol: '%c', %u\n", p[i][j], p[i][j]);
                     flog_crit("pat3", s);
                     release(s);
             }
+        }
+    }
 }
 
 static void pat3_insert(
@@ -110,9 +110,11 @@ static void flip(
     const u8 src[static 3][3],
     u8 dst[static 3][3]
 ) {
-    for (u8 i = 0; i < 3; ++i)
-        for (u8 j = 0; j < 3; ++j)
+    for (u8 i = 0; i < 3; ++i) {
+        for (u8 j = 0; j < 3; ++j) {
             dst[i][j] = src[2 - i][j];
+        }
+    }
 }
 
 static void rotate(
@@ -124,20 +126,25 @@ static void rotate(
     u8 j;
     switch (rotations) {
         case 1:
-            for (i = 0; i < 3; ++i)
-                for (j = 0; j < 3; ++j)
+            for (i = 0; i < 3; ++i) {
+                for (j = 0; j < 3; ++j) {
                     dst[i][j] = src[2 - j][i];
+                }
+            }
             break;
         case 2:
-            for (i = 0; i < 3; ++i)
-                for (j = 0; j < 3; ++j)
+            for (i = 0; i < 3; ++i) {
+                for (j = 0; j < 3; ++j) {
                     dst[i][j] = src[2 - i][2 - j];
+                }
+            }
             break;
         case 3:
-            for (i = 0; i < 3; ++i)
-                for (j = 0; j < 3; ++j)
+            for (i = 0; i < 3; ++i) {
+                for (j = 0; j < 3; ++j) {
                     dst[i][j] = src[j][2 - i];
-            break;
+                }
+            }
     }
 }
 
@@ -145,9 +152,6 @@ static void reduce_pattern(
     u8 v[static 3][3],
     u8 method
 ) {
-    if (method == NOREDUCE)
-        return;
-
     u8 r[3][3];
     u8 f[3][3];
     switch (method) {
@@ -175,9 +179,10 @@ static void reduce_pattern(
             rotate((const u8 (*)[3])v, f, 3);
             flip((const u8 (*)[3])f, r);
             break;
-        default:
+        default: /* NOREDUCE */
             return;
     }
+
     memcpy(v, r, 3 * 3);
 }
 
@@ -193,8 +198,10 @@ void pat3_reduce_auto(
     for (u8 reduction = ROTATE90; reduction <= ROTFLIP270; ++reduction) {
         memcpy(b, v, 3 * 3);
         reduce_pattern(b, ROTATE90);
-        if (memcmp(b, v, 3 * 3) < 0)
+
+        if (memcmp(b, v, 3 * 3) < 0) {
             memcpy(v, b, 3 * 3);
+        }
     }
 }
 
@@ -209,21 +216,26 @@ void pat3_transpose(
 ) {
     assert(is_board_move(m));
     assert(p[m] == EMPTY);
+
     d8 x;
     d8 y;
     move_to_coord(m, (u8 *)&x, (u8 *)&y);
+
     d8 i;
     d8 j;
     d8 ki;
     d8 kj;
-    for (j = y - 1, kj = 0; j <= y + 1; ++j, ++kj)
-        for (i = x - 1, ki = 0; i <= x + 1; ++i, ++ki)
-            if (i >= 0 && j >= 0 && i < BOARD_SIZ && j < BOARD_SIZ)
-            {
+
+    for (j = y - 1, kj = 0; j <= y + 1; ++j, ++kj) {
+        for (i = x - 1, ki = 0; i <= x + 1; ++i, ++ki) {
+            if (i >= 0 && j >= 0 && i < BOARD_SIZ && j < BOARD_SIZ) {
                 move n = coord_to_move(i, j);
                 dst[ki][kj] = p[n];
-            } else
+            } else {
                 dst[ki][kj] = ILLEGAL; /* edge of the board */
+            }
+        }
+    }
 }
 
 /*
@@ -275,10 +287,15 @@ static u8 _count_stones(
     const u8 p[static 3][3]
 ) {
     u8 ret = 0;
-    for (u8 i = 0; i < 3; ++i)
-        for (u8 j = 0; j < 3; ++j)
-            if (p[i][j] == WHITE_STONE || p[i][j] == BLACK_STONE)
+
+    for (u8 i = 0; i < 3; ++i) {
+        for (u8 j = 0; j < 3; ++j) {
+            if (p[i][j] == WHITE_STONE || p[i][j] == BLACK_STONE) {
                 ++ret;
+            }
+        }
+    }
+
     return ret;
 }
 
@@ -288,13 +305,15 @@ Invert stone colors.
 void pat3_invert(
     u8 p[static 3][3]
 ) {
-    for (u8 i = 0; i < 3; ++i)
-        for (u8 j = 0; j < 3; ++j)
-            if (p[i][j] == BLACK_STONE)
+    for (u8 i = 0; i < 3; ++i) {
+        for (u8 j = 0; j < 3; ++j) {
+            if (p[i][j] == BLACK_STONE) {
                 p[i][j] = WHITE_STONE;
-            else
-                if (p[i][j] == WHITE_STONE)
-                    p[i][j] = BLACK_STONE;
+            } else if (p[i][j] == WHITE_STONE) {
+                p[i][j] = BLACK_STONE;
+            }
+        }
+    }
 }
 
 static void multiply_and_store(
@@ -311,12 +330,11 @@ static void multiply_and_store(
         pat3 tmp;
         tmp.value = pattern;
         pat3 * tmp2 = (pat3 *)hash_table_find(weights_table, &tmp);
+
         if (tmp2 == NULL) {
             weight = (65535 / WEIGHT_SCALE);
             weights_not_found++;
-        }
-        else
-        {
+        } else {
             weight = tmp2->weight;
             weights_found++;
         }
@@ -327,6 +345,7 @@ static void multiply_and_store(
         memcpy(p, pat, 3 * 3);
         reduce_pattern(p, r);
         u16 value = pat3_to_string((const u8 (*)[3])p);
+
         if (pat3_find(value, true) == 0) {
             memcpy(p_inv, p, 3 * 3);
             pat3_invert(p_inv);
@@ -351,10 +370,9 @@ static void expand_pattern(
     u8 p[3][3];
     memcpy(p, pat, 3 * 3);
 
-    for (u8 i = 0; i < 3; ++i)
-        for (u8 j = 0; j < 3; ++j)
-            switch (p[i][j])
-            {
+    for (u8 i = 0; i < 3; ++i) {
+        for (u8 j = 0; j < 3; ++j) {
+            switch (p[i][j]) {
                 case SYMBOL_OWN_OR_EMPTY:
                     p[i][j] = BLACK_STONE;
                     expand_pattern((const u8 (*)[3])p);
@@ -376,9 +394,12 @@ static void expand_pattern(
                     expand_pattern((const u8 (*)[3])p);
                     return;
             }
-    if (_count_stones((const u8 (*)[3])p) < 2)
-        flog_crit("pat3", "failed to open and expand patterns because the expan\
-sion would create patterns with a single stone or less");
+        }
+    }
+
+    if (_count_stones((const u8 (*)[3])p) < 2) {
+        flog_crit("pat3", "failed to open and expand patterns because the expansion would create patterns with a single stone or less");
+    }
 
     /* invert color, rotate and flip to generate equivalent pattern
     configurations */
@@ -391,8 +412,9 @@ static u32 read_pat3_file(
     char * restrict buffer
 ) {
     d32 chars_read = read_ascii_file(buffer, MAX_FILE_SIZ, filename);
-    if (chars_read < 0)
+    if (chars_read < 0) {
         flog_crit("pat3", "couldn't open file for reading");
+    }
 
     u8 pat[3][3];
     u8 pat_pos = 0;
@@ -405,12 +427,16 @@ static u32 read_pat3_file(
         init_str = NULL;
 
         line_cut_before(line, '#');
+
         line = trim(line);
-        if (line == NULL)
+        if (line == NULL) {
             continue;
+        }
+
         u16 len = strlen(line);
-        if (len == 0)
+        if (len == 0) {
             continue;
+        }
 
         if (len == 3) {
             pat[pat_pos][0] = line[0];
@@ -437,6 +463,7 @@ static u32 pat3_hash_function(
     void * a
 ) {
     pat3 * b = (pat3 *)a;
+
     return b->value;
 }
 
@@ -446,14 +473,14 @@ static int pat3_compare_function(
 ) {
     pat3 * f1 = (pat3 *)a;
     pat3 * f2 = (pat3 *)b;
+
     return ((d32)(f2->value)) - ((d32)(f1->value));
 }
 
 static u32 read_patern_weights(
     char * buffer
 ) {
-    weights_table = hash_table_create(1543, sizeof(pat3), pat3_hash_function,
-        pat3_compare_function);
+    weights_table = hash_table_create(1543, sizeof(pat3), pat3_hash_function, pat3_compare_function);
 
     char * line;
     char * init_str = buffer;
@@ -462,25 +489,33 @@ static u32 read_patern_weights(
         init_str = NULL;
 
         line_cut_before(line, '#');
+
         line = trim(line);
-        if (line == NULL)
+        if (line == NULL) {
             continue;
+        }
+
         u16 len = strlen(line);
-        if (len == 0)
+        if (len == 0) {
             continue;
+        }
 
         char * save_ptr2;
         char * word1 = strtok_r(line, " ", &save_ptr2);
-        if (word1 == NULL)
+        if (word1 == NULL) {
             continue;
+        }
+
         char * word2 = strtok_r(NULL, " ", &save_ptr2);
-        if (word2 == NULL)
+        if (word2 == NULL) {
             continue;
+        }
 
         long int tmp1 = strtol(word1, NULL, 16);
         long int tmp2 = strtol(word2, NULL, 10);
-        if (tmp1 > 65535 || tmp2 > 65535)
+        if (tmp1 > 65535 || tmp2 > 65535) {
             continue;
+        }
 
         u16 pattern = (u16)tmp1;
         /* Weight scaling for totals to fit in 16 bit and not having 0s */
@@ -490,8 +525,10 @@ static u32 read_patern_weights(
         pat3 * p = malloc(sizeof(pat3));
         p->value = pattern;
         p->weight = weight;
-        if (!hash_table_exists(weights_table, p))
+
+        if (!hash_table_exists(weights_table, p)) {
             hash_table_insert_unique(weights_table, p);
+        }
     }
 
     return weights_table->elements;
@@ -502,13 +539,16 @@ Reads a .pat3 patterns file and expands all patterns into all possible and
 patternable configurations.
 */
 void pat3_init() {
-    if (pat3_table_inited)
+    if (pat3_table_inited) {
         return;
+    }
+
     pat3_table_inited = true;
 
     char * file_buf = malloc(MAX_FILE_SIZ);
-    if (file_buf == NULL)
+    if (file_buf == NULL) {
         flog_crit("pat3", "system out of memory");
+    }
 
     char * buf = alloc();
 
@@ -517,8 +557,7 @@ void pat3_init() {
         Read pattern weights file
         */
         char * filename = alloc();
-        snprintf(filename, MAX_PAGE_SIZ, "%s%ux%u.weights", data_folder(),
-            BOARD_SIZ, BOARD_SIZ);
+        snprintf(filename, MAX_PAGE_SIZ, "%s%ux%u.weights", data_folder(), BOARD_SIZ, BOARD_SIZ);
 
         d32 chars_read = read_ascii_file(file_buf, MAX_FILE_SIZ, filename);
         if (chars_read < 0) {
@@ -526,15 +565,13 @@ void pat3_init() {
             snprintf(s, MAX_PAGE_SIZ, "could not read %s", filename);
             flog_warn("pat3", s);
             release(s);
-        }
-        else
-        {
+        } else {
             u32 weights = read_patern_weights(file_buf);
 
-            snprintf(buf, MAX_PAGE_SIZ, "read %s (%u weights)", filename,
-                weights);
+            snprintf(buf, MAX_PAGE_SIZ, "read %s (%u weights)", filename, weights);
             flog_info("pat3", buf);
         }
+
         release(filename);
     }
 
@@ -542,8 +579,7 @@ void pat3_init() {
     Discover .pat3 files
     */
     char * pat3_filenames[128];
-    u32 files_found = recurse_find_files(data_folder(), ".pat3",
-        pat3_filenames, 128);
+    u32 files_found = recurse_find_files(data_folder(), ".pat3", pat3_filenames, 128);
 
     snprintf(buf, MAX_PAGE_SIZ, "found %u 3x3 pattern files", files_found);
     flog_info("pat3", buf);
@@ -560,8 +596,7 @@ void pat3_init() {
     free(file_buf);
 
     if (USE_PATTERN_WEIGHTS && weights_table != NULL) {
-        snprintf(buf, MAX_PAGE_SIZ, "%u/%u expanded patterns weighted", weights_found,
-            weights_found + weights_not_found);
+        snprintf(buf, MAX_PAGE_SIZ, "%u/%u expanded patterns weighted", weights_found, weights_found + weights_not_found);
         flog_info("pat3", buf);
 
         hash_table_destroy(weights_table, true);
