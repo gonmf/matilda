@@ -57,27 +57,27 @@ static void clean_symbols(
     for (u8 i = 0; i < 3; ++i) {
         for (u8 j = 0; j < 3; ++j) {
             switch (p[i][j]) {
-                case SYMBOL_EMPTY:
-                    p[i][j] = EMPTY;
-                    break;
-                case SYMBOL_BORDER:
-                    p[i][j] = ILLEGAL;
-                    break;
-                case SYMBOL_OWN_STONE:
-                    p[i][j] = BLACK_STONE;
-                    break;
-                case SYMBOL_OPT_STONE:
-                    p[i][j] = WHITE_STONE;
-                    break;
-                case SYMBOL_OWN_OR_EMPTY:
-                case SYMBOL_OPT_OR_EMPTY:
-                case SYMBOL_STONE_OR_EMPTY:
-                    break;
-                default:
-                    s = alloc();
-                    snprintf(s, MAX_PAGE_SIZ, "pattern file format error; unknown symbol: '%c', %u\n", p[i][j], p[i][j]);
-                    flog_crit("pat3", s);
-                    release(s);
+            case SYMBOL_EMPTY:
+                p[i][j] = EMPTY;
+                break;
+            case SYMBOL_BORDER:
+                p[i][j] = ILLEGAL;
+                break;
+            case SYMBOL_OWN_STONE:
+                p[i][j] = BLACK_STONE;
+                break;
+            case SYMBOL_OPT_STONE:
+                p[i][j] = WHITE_STONE;
+                break;
+            case SYMBOL_OWN_OR_EMPTY:
+            case SYMBOL_OPT_OR_EMPTY:
+            case SYMBOL_STONE_OR_EMPTY:
+                break;
+            default:
+                s = alloc();
+                snprintf(s, MAX_PAGE_SIZ, "pattern file format error; unknown symbol: '%c', %u\n", p[i][j], p[i][j]);
+                flog_crit("pat3", s);
+                release(s);
             }
         }
     }
@@ -125,26 +125,26 @@ static void rotate(
     u8 i;
     u8 j;
     switch (rotations) {
-        case 1:
-            for (i = 0; i < 3; ++i) {
-                for (j = 0; j < 3; ++j) {
-                    dst[i][j] = src[2 - j][i];
-                }
+    case 1:
+        for (i = 0; i < 3; ++i) {
+            for (j = 0; j < 3; ++j) {
+                dst[i][j] = src[2 - j][i];
             }
-            break;
-        case 2:
-            for (i = 0; i < 3; ++i) {
-                for (j = 0; j < 3; ++j) {
-                    dst[i][j] = src[2 - i][2 - j];
-                }
+        }
+        break;
+    case 2:
+        for (i = 0; i < 3; ++i) {
+            for (j = 0; j < 3; ++j) {
+                dst[i][j] = src[2 - i][2 - j];
             }
-            break;
-        case 3:
-            for (i = 0; i < 3; ++i) {
-                for (j = 0; j < 3; ++j) {
-                    dst[i][j] = src[j][2 - i];
-                }
+        }
+        break;
+    case 3:
+        for (i = 0; i < 3; ++i) {
+            for (j = 0; j < 3; ++j) {
+                dst[i][j] = src[j][2 - i];
             }
+        }
     }
 }
 
@@ -155,32 +155,32 @@ static void reduce_pattern(
     u8 r[3][3];
     u8 f[3][3];
     switch (method) {
-        case ROTATE90:
-            rotate((const u8 (*)[3])v, r, 1);
-            break;
-        case ROTATE180:
-            rotate((const u8 (*)[3])v, r, 2);
-            break;
-        case ROTATE270:
-            rotate((const u8 (*)[3])v, r, 3);
-            break;
-        case ROTFLIP0:
-            flip((const u8 (*)[3])v, r);
-            break;
-        case ROTFLIP90:
-            rotate((const u8 (*)[3])v, f, 1);
-            flip((const u8 (*)[3])f, r);
-            break;
-        case ROTFLIP180:
-            rotate((const u8 (*)[3])v, f, 2);
-            flip((const u8 (*)[3])f, r);
-            break;
-        case ROTFLIP270:
-            rotate((const u8 (*)[3])v, f, 3);
-            flip((const u8 (*)[3])f, r);
-            break;
-        default: /* NOREDUCE */
-            return;
+    case ROTATE90:
+        rotate((const u8 (*)[3])v, r, 1);
+        break;
+    case ROTATE180:
+        rotate((const u8 (*)[3])v, r, 2);
+        break;
+    case ROTATE270:
+        rotate((const u8 (*)[3])v, r, 3);
+        break;
+    case ROTFLIP0:
+        flip((const u8 (*)[3])v, r);
+        break;
+    case ROTFLIP90:
+        rotate((const u8 (*)[3])v, f, 1);
+        flip((const u8 (*)[3])f, r);
+        break;
+    case ROTFLIP180:
+        rotate((const u8 (*)[3])v, f, 2);
+        flip((const u8 (*)[3])f, r);
+        break;
+    case ROTFLIP270:
+        rotate((const u8 (*)[3])v, f, 3);
+        flip((const u8 (*)[3])f, r);
+        break;
+    default: /* NOREDUCE */
+        return;
     }
 
     memcpy(v, r, 3 * 3);
@@ -373,26 +373,26 @@ static void expand_pattern(
     for (u8 i = 0; i < 3; ++i) {
         for (u8 j = 0; j < 3; ++j) {
             switch (p[i][j]) {
-                case SYMBOL_OWN_OR_EMPTY:
-                    p[i][j] = BLACK_STONE;
-                    expand_pattern((const u8 (*)[3])p);
-                    p[i][j] = EMPTY;
-                    expand_pattern((const u8 (*)[3])p);
-                    return;
-                case SYMBOL_OPT_OR_EMPTY:
-                    p[i][j] = WHITE_STONE;
-                    expand_pattern((const u8 (*)[3])p);
-                    p[i][j] = EMPTY;
-                    expand_pattern((const u8 (*)[3])p);
-                    return;
-                case SYMBOL_STONE_OR_EMPTY:
-                    p[i][j] = BLACK_STONE;
-                    expand_pattern((const u8 (*)[3])p);
-                    p[i][j] = WHITE_STONE;
-                    expand_pattern((const u8 (*)[3])p);
-                    p[i][j] = EMPTY;
-                    expand_pattern((const u8 (*)[3])p);
-                    return;
+            case SYMBOL_OWN_OR_EMPTY:
+                p[i][j] = BLACK_STONE;
+                expand_pattern((const u8 (*)[3])p);
+                p[i][j] = EMPTY;
+                expand_pattern((const u8 (*)[3])p);
+                return;
+            case SYMBOL_OPT_OR_EMPTY:
+                p[i][j] = WHITE_STONE;
+                expand_pattern((const u8 (*)[3])p);
+                p[i][j] = EMPTY;
+                expand_pattern((const u8 (*)[3])p);
+                return;
+            case SYMBOL_STONE_OR_EMPTY:
+                p[i][j] = BLACK_STONE;
+                expand_pattern((const u8 (*)[3])p);
+                p[i][j] = WHITE_STONE;
+                expand_pattern((const u8 (*)[3])p);
+                p[i][j] = EMPTY;
+                expand_pattern((const u8 (*)[3])p);
+                return;
             }
         }
     }

@@ -97,7 +97,9 @@ Project conventions/guidelines
     restricted but please be reasonable. Pointers are typed appart from symbols.
     Function declarations should have parameter lists NT kernel style, except if
     they have no parameters. An if that follows an else can omit the braces and
-    indentation. Following are several examples.
+    indentation. Comments always use /* */ instead of //. The case keywords of
+    switch statements is aligned with the switch keyword.
+    Following are several examples.
 
 #define IMPORTANT_STUFF 1
 #define IMPORTANT_STUFF_ALIGNED  3
@@ -115,7 +117,8 @@ static void long_method_definition(
 
 static void _main() {
     /* example of function without parameters */
-    fprintf(stderr, "Example of string literal that is very long. Notice how the string is not cut short but the next parameters are alaigned in the next line.",
+    fprintf(stderr, "Example of string literal that is very long. Notice how
+the string is not cut short but the next parameters are aligned in the next line.",
         BOARD_SIZ);
 }
 

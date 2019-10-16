@@ -203,26 +203,26 @@ d8 reduce_auto(
     }
 
     switch (reduction) {
-        case ROTATE90:
-            memcpy(b->p, r1, TOTAL_BOARD_SIZ);
-            break;
-        case ROTATE180:
-            memcpy(b->p, r2, TOTAL_BOARD_SIZ);
-            break;
-        case ROTATE270:
-            memcpy(b->p, r3, TOTAL_BOARD_SIZ);
-            break;
-        case ROTFLIP0:
-            memcpy(b->p, f0, TOTAL_BOARD_SIZ);
-            break;
-        case ROTFLIP90:
-            memcpy(b->p, f1, TOTAL_BOARD_SIZ);
-            break;
-        case ROTFLIP180:
-            memcpy(b->p, f2, TOTAL_BOARD_SIZ);
-            break;
-        case ROTFLIP270:
-            memcpy(b->p, f3, TOTAL_BOARD_SIZ);
+    case ROTATE90:
+        memcpy(b->p, r1, TOTAL_BOARD_SIZ);
+        break;
+    case ROTATE180:
+        memcpy(b->p, r2, TOTAL_BOARD_SIZ);
+        break;
+    case ROTATE270:
+        memcpy(b->p, r3, TOTAL_BOARD_SIZ);
+        break;
+    case ROTFLIP0:
+        memcpy(b->p, f0, TOTAL_BOARD_SIZ);
+        break;
+    case ROTFLIP90:
+        memcpy(b->p, f1, TOTAL_BOARD_SIZ);
+        break;
+    case ROTFLIP180:
+        memcpy(b->p, f2, TOTAL_BOARD_SIZ);
+        break;
+    case ROTFLIP270:
+        memcpy(b->p, f3, TOTAL_BOARD_SIZ);
     }
 
     b->last_played = reduce_move(b->last_played, reduction);
@@ -250,29 +250,29 @@ void reduce_fixed(
     u8 r[TOTAL_BOARD_SIZ];
     u8 f[TOTAL_BOARD_SIZ];
     switch (method) {
-        case ROTATE90:
-            matrix_rotate(r, b->p, BOARD_SIZ, 1);
-            break;
-        case ROTATE180:
-            matrix_rotate(r, b->p, BOARD_SIZ, 2);
-            break;
-        case ROTATE270:
-            matrix_rotate(r, b->p, BOARD_SIZ, 3);
-            break;
-        case ROTFLIP0:
-            matrix_flip(r, b->p, BOARD_SIZ);
-            break;
-        case ROTFLIP90:
-            matrix_rotate(f, b->p, BOARD_SIZ, 1);
-            matrix_flip(r, f, BOARD_SIZ);
-            break;
-        case ROTFLIP180:
-            matrix_rotate(f, b->p, BOARD_SIZ, 2);
-            matrix_flip(r, f, BOARD_SIZ);
-            break;
-        case ROTFLIP270:
-            matrix_rotate(f, b->p, BOARD_SIZ, 3);
-            matrix_flip(r, f, BOARD_SIZ);
+    case ROTATE90:
+        matrix_rotate(r, b->p, BOARD_SIZ, 1);
+        break;
+    case ROTATE180:
+        matrix_rotate(r, b->p, BOARD_SIZ, 2);
+        break;
+    case ROTATE270:
+        matrix_rotate(r, b->p, BOARD_SIZ, 3);
+        break;
+    case ROTFLIP0:
+        matrix_flip(r, b->p, BOARD_SIZ);
+        break;
+    case ROTFLIP90:
+        matrix_rotate(f, b->p, BOARD_SIZ, 1);
+        matrix_flip(r, f, BOARD_SIZ);
+        break;
+    case ROTFLIP180:
+        matrix_rotate(f, b->p, BOARD_SIZ, 2);
+        matrix_flip(r, f, BOARD_SIZ);
+        break;
+    case ROTFLIP270:
+        matrix_rotate(f, b->p, BOARD_SIZ, 3);
+        matrix_flip(r, f, BOARD_SIZ);
     }
     memcpy(b->p, r, TOTAL_BOARD_SIZ);
 
@@ -294,32 +294,32 @@ void out_board_revert_reduce(
     out_board r;
     out_board f;
     switch (method) {
-        case ROTATE90:
-            matrix_rotate2(&r, b, 3);
-            break;
-        case ROTATE180:
-            matrix_rotate2(&r, b, 2);
-            break;
-        case ROTATE270:
-            matrix_rotate2(&r, b, 1);
-            break;
-        case ROTFLIP0:
-            matrix_flip2(&r, b);
-            break;
-        case ROTFLIP90:
-            matrix_flip2(&f, b);
-            matrix_rotate2(&r, &f, 3);
-            break;
-        case ROTFLIP180:
-            matrix_flip2(&f, b);
-            matrix_rotate2(&r, &f, 2);
-            break;
-        case ROTFLIP270:
-            matrix_flip2(&f, b);
-            matrix_rotate2(&r, &f, 1);
-            break;
-        default:
-            return;
+    case ROTATE90:
+        matrix_rotate2(&r, b, 3);
+        break;
+    case ROTATE180:
+        matrix_rotate2(&r, b, 2);
+        break;
+    case ROTATE270:
+        matrix_rotate2(&r, b, 1);
+        break;
+    case ROTFLIP0:
+        matrix_flip2(&r, b);
+        break;
+    case ROTFLIP90:
+        matrix_flip2(&f, b);
+        matrix_rotate2(&r, &f, 3);
+        break;
+    case ROTFLIP180:
+        matrix_flip2(&f, b);
+        matrix_rotate2(&r, &f, 2);
+        break;
+    case ROTFLIP270:
+        matrix_flip2(&f, b);
+        matrix_rotate2(&r, &f, 1);
+        break;
+    default:
+        return;
     }
     memcpy(b, &r, sizeof(out_board));
 }

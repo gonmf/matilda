@@ -81,12 +81,11 @@ d16 score_stones_only(
     d16 r = 0;
     for (move m = 0; m < TOTAL_BOARD_SIZ; ++m)
         switch (p[m]) {
-            case BLACK_STONE:
-                r += 2;
-                break;
-            case WHITE_STONE:
-                r -= 2;
-                break;
+        case BLACK_STONE:
+            r += 2;
+            break;
+        case WHITE_STONE:
+            r -= 2;
         }
 
     return r - komi;
@@ -104,45 +103,45 @@ d16 score_stones_and_eyes2(
     d16 r = 0;
     for (move m = 0; m < TOTAL_BOARD_SIZ; ++m)
         switch (cb->p[m]) {
-            case BLACK_STONE:
+        case BLACK_STONE:
+            r += 2;
+            break;
+        case WHITE_STONE:
+            r -= 2;
+            break;
+        case EMPTY:
+            if (is_4pt_eye(cb, true, m, &_ignored))
+            {
+                r += 8;
+                ++m;
+                break;
+            }
+            if (is_4pt_eye(cb, false, m, &_ignored))
+            {
+                r -= 8;
+                ++m;
+                break;
+            }
+            if (is_2pt_eye(cb, true, m, &_ignored))
+            {
+                r += 4;
+                break;
+            }
+            if (is_2pt_eye(cb, false, m, &_ignored))
+            {
+                r -= 4;
+                break;
+            }
+            if (is_eye(cb, true, m))
+            {
                 r += 2;
                 break;
-            case WHITE_STONE:
+            }
+            if (is_eye(cb, false, m))
+            {
                 r -= 2;
                 break;
-            case EMPTY:
-                if (is_4pt_eye(cb, true, m, &_ignored))
-                {
-                    r += 8;
-                    ++m;
-                    break;
-                }
-                if (is_4pt_eye(cb, false, m, &_ignored))
-                {
-                    r -= 8;
-                    ++m;
-                    break;
-                }
-                if (is_2pt_eye(cb, true, m, &_ignored))
-                {
-                    r += 4;
-                    break;
-                }
-                if (is_2pt_eye(cb, false, m, &_ignored))
-                {
-                    r -= 4;
-                    break;
-                }
-                if (is_eye(cb, true, m))
-                {
-                    r += 2;
-                    break;
-                }
-                if (is_eye(cb, false, m))
-                {
-                    r -= 2;
-                    break;
-                }
+            }
         }
 
     return r - komi;

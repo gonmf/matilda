@@ -169,23 +169,23 @@ void board_to_string(
         char last_play_indicator = (m == last_played) ? '(' : ((m == last_played + 1 && x > 0) ? ')' : ' ');
 
         switch (p[m]) {
-            case EMPTY:
-                if (m == ko_pos) {
-                    idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx, "%c!", last_play_indicator);
-                } else if (is_hoshi[m]) {
-                    idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx, "%c+", last_play_indicator);
-                } else {
-                    idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx, "%c%c", last_play_indicator, EMPTY_STONE_CHAR);
-                }
-                break;
-            case BLACK_STONE:
-                idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx, "%c%c", last_play_indicator, BLACK_STONE_CHAR);
-                break;
-            case WHITE_STONE:
-                idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx, "%c%c", last_play_indicator, WHITE_STONE_CHAR);
-                break;
-            default:
-                idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx, "%c?", last_play_indicator);
+        case EMPTY:
+            if (m == ko_pos) {
+                idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx, "%c!", last_play_indicator);
+            } else if (is_hoshi[m]) {
+                idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx, "%c+", last_play_indicator);
+            } else {
+                idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx, "%c%c", last_play_indicator, EMPTY_STONE_CHAR);
+            }
+            break;
+        case BLACK_STONE:
+            idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx, "%c%c", last_play_indicator, BLACK_STONE_CHAR);
+            break;
+        case WHITE_STONE:
+            idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx, "%c%c", last_play_indicator, WHITE_STONE_CHAR);
+            break;
+        default:
+            idx += snprintf(dst + idx, MAX_PAGE_SIZ - idx, "%c?", last_play_indicator);
         }
 
         if (x == BOARD_SIZ - 1) {

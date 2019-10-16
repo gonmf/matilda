@@ -322,19 +322,19 @@ void init_new_state(
         if (stones_in_manhattan_dst3(cb, m) == 0) {
             u8 dst_border = distances_to_border[m];
             switch (dst_border) {
-                case 0:
-                    /* Do not play there at all */
-                    continue;
-                case 1:
-                    mc_v += prior_line2;
-                    break;
-                case 2:
-                    mc_w += prior_line3;
-                    mc_v += prior_line3;
-                    break;
-                default:
-                    mc_w += prior_empty;
-                    mc_v += prior_empty;
+            case 0:
+                /* Do not play there at all */
+                continue;
+            case 1:
+                mc_v += prior_line2;
+                break;
+            case 2:
+                mc_w += prior_line3;
+                mc_v += prior_line3;
+                break;
+            default:
+                mc_w += prior_empty;
+                mc_v += prior_empty;
             }
 
             if (is_starting[m]) {
