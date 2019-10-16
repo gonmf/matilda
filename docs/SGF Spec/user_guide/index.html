@@ -1,0 +1,518 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+<HEAD><TITLE>SGF Users Guide</TITLE>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+</HEAD>
+<BODY alink="#FF0000" bgcolor="#FFFFFF" link="#0000FF" text="#000000" vlink="#FF0000">
+<TABLE WIDTH="100%">
+<TR><TD><A HREF="../index.html"><IMG SRC="../images/head.gif" ALT="[SGF FF[4] - Smart Game Format]" BORDER=0></A>
+<I>last updated: 1999-12-12</I>
+<TD ALIGN=RIGHT><a href="http://validator.w3.org/check/referer"><img border=0
+        src="http://validator.w3.org/images/vh40"
+        alt="Valid HTML 4.0!" height=31 width=88></a>
+</TABLE>
+
+<P><HR noshade>
+
+<H1 ALIGN=CENTER>SGF User Guide</H1>
+<P ALIGN=CENTER>Version: 1.2</P>
+&nbsp;
+<HR noshade>
+<TABLE WIDTH="97%">
+<TR><TD>
+Author: Arno Hollosi <I><A HREF="mailto:ahollosi@xmp.net">&lt;ahollosi@xmp.net&gt;</A></I><BR>
+Feedback welcome!<BR>
+Published under the <A HREF="http://www.opencontent.org/opl.shtml">OpenContent License</A>.
+<TD ALIGN=RIGHT><BIG>Still unanswered questions?
+<BR>Go to the <A HREF="http://gtl.jeudego.org/phorum/list.php3?num=2">Discussion Forum</A></BIG>
+</TD></TABLE>
+
+<A NAME="toc">
+<HR noshade>
+</A>
+<DL><DT><BIG>Basics</BIG>
+<DD><OL>
+<LI><A HREF="#what"><BIG>What is SGF?</BIG></A>
+<LI><A HREF="#general"><BIG>General Concepts</BIG></A>
+<LI><A HREF="#move_vs_place"><BIG>`Make a Move' vs. `Place a Stone'</BIG></A>
+<LI><A HREF="#style"><BIG>Style</BIG></A><BR>&nbsp;
+</OL>
+<DT><BIG>More details</BIG>
+<DD><OL START=5>
+<LI><A HREF="#variations"><BIG>Variations</BIG></A>
+<LI><A HREF="#markup"><BIG>Board markup</BIG></A>
+<LI><A HREF="#annotations"><BIG>Comments and annotations</BIG></A>
+<LI><A HREF="#gameinfo"><BIG>Game Information</BIG></A><BR>&nbsp;
+</OL>
+<DT><BIG>Troubleshooting</BIG>
+<DD><OL START=9>
+<LI><BIG>will follow someday</BIG>
+</OL>
+</DL>
+<HR noshade>
+
+<H1><A NAME="what">1. What is SGF?</A></H1>
+
+SGF is short for <B>Smart Game Format</B>.
+<P>
+SGF is a file format used to store game records of two player board games.
+It is a text-only tree based format, i.e. it doesn't contain binary
+data and thus can easily be emailed or posted to newsgroups.
+Tree based means, that starting from a root one can follow a main path
+or switch to variations (or variations of variations).
+<P>
+SGF provides many features such as board markup, comments, game information,
+setup positions etc. In order to create a good SGF file one should
+have some knowledge of the internal structure of SGF.
+
+<H2>Versions</H2>
+SGF was invented by Anders Kierulf in 1987 and became more and more popular.
+Since then SGF has undergone 2 major revisions.
+<UL>
+<LI><B>FF[1]</B> is the original specification by Anders Kierulf. This 
+specification is the core of all later versions. Some
+applications still use this dated version of SGF - e.g. MGT (MS-DOS version) 
+which had become quite popular before Windows became en vogue.
+<LI><B>FF[3]</B> was written by Martin M&uuml;ller in 1993 and was a first 
+step towards a clean specification of the SGF standard. By then SGF was 
+an accepted standard for Go games on the Internet. FF[3] defined a lot
+of new properties, e.g. many game information properties and some
+markup properties.
+<LI><B>FF[4]</B> was written by Arno Hollosi in 1997 with help from many
+SGF applications programmers. FF[4] carried on the spirit of FF[3] and
+provides a clean, unambiguous definition of SGF. New features such as 
+arrows, lines, boards of any size and rectangular boards have been 
+introduced. However as this standard is very young, it isn't widely 
+adopted. This will (hopefully) change in the future.
+</UL>
+<h2>What does an SGF file look like?</h2>
+
+Here's a short example:
+<PRE>
+(;FF[4]GM[1]SZ[19]AP[SGFC:1.13b]
+
+PB[troy]BR[12k*]
+PW[john]WR[11k*]
+KM[0.5]RE[W+12.5]
+DT[1998-06-15]
+TM[600]
+
+;B[pd];W[dp];B[pq];W[dd];B[qk];W[jd];B[fq];W[dj];B[jp];W[jj]
+;B[cn]LB[dn:A][po:B]C[dada: other ideas are 'A' (d6) or 'B' (q5)]
+;W[eo](;B[dl]C[dada: hm - looks troublesome.
+Usually B plays the 3,3 invasion - see variation];W[qo];B[qp]
+<B>...</B>
+;W[sr];B[sk];W[sg];B[pa];W[gc];B[pi];W[ph];B[de];W[ed];B[kn]
+;W[dh];B[eh];W[se];B[sd];W[af];B[ie];W[id];B[hf];W[hd];B[if]
+;W[fp];B[gq];W[qj];B[sj];W[rh];B[sn];W[so];B[sm];W[ep];B[mn])
+<B>...</B>
+(;W[dq]N[wrong direction];B[qo];W[qp]))
+</PRE>
+
+
+<H2>SGF applications</H2>
+SGF applications are available for all platforms. Most of them are freeware,
+some are shareware. Have a look at the
+<A HREF="ftp://igs.nuri.net/Go/">Go FTP Archive</A>.
+<P>
+As no program is perfect and SGF is evolving it's strongly recommended
+to update one's favorite SGF application at least once a year.
+Right now many people still use applications that are over five years old
+which causes a lot of trouble.
+<P>
+<BIG><B>Update your application on a regular basis!</B></BIG>
+<BR>&nbsp;
+
+<P ALIGN=RIGHT><A HREF="#toc">back to top</A>
+<HR noshade>
+
+<H1><A NAME="general">2. General Concepts</A></H1>
+
+SGF consists of nodes which are structured in a tree, i.e. a node has
+exactly one predecessor called parent, but may have one <I>or more</I>
+successors called children. Thus SGF can store game records (a list of moves)
+and variations of the actual line of play.
+<P>
+<B>A node is the smallest unit visible to the user</B>,
+i.e. the user steps through
+the tree node-wise (forward [down the tree], backward [up the tree], etc.).
+<P>
+<B>A node consists of properties.</B> These properties contain a certain kind
+of information, e.g. the <I>B[]</I> property describes a black move made,
+the <I>C[]</I> property contains a comment text (don't worry: you don't
+have to remember the property names :-).
+<P>
+For example: if you step forward and see a new move on the board and a
+comment in the comment window plus some markup on the board then all this
+information is represented by <B>different</B> properties which are parts
+of the <B>same</B> node.
+<P>
+Thus editing is done in two levels: adding/deleting nodes and adding
+or deleting properties.<BR>
+To make it clear: a move is part of a node and not the node part of the
+move. A move is represented by <I>one</I> property but a node may contain
+<I>more than one</I> property.
+
+<P ALIGN=RIGHT><A HREF="#toc">back to top</A>
+<HR noshade>
+
+<H1><A NAME="move_vs_place">3. `Make a Move' vs. `Place a Stone'</A></H1>
+
+SGF provides two ways to add new stones to the board:
+<UL>
+<LI>make a move
+<LI>place a stone
+</UL>
+
+<B>Making a move</B> is like making a move in a real game,
+i.e. you can only make
+moves on empty intersections, you can only make one move per turn
+(here: per node) and you may take some prisoners by making a move.
+In most applications the current move is highlighted.
+<P>
+<B>Placing a stone</B> on the board is like setting up a position, e.g.
+handicap stones, setting up a problem or analysis of positions ("this
+would work if the position over there would look like this...").
+Thus one can place <I>more than one</I> stone, stones of different colors,
+remove stones, replace stones with that of the opposite color
+all in <I>one</I> node.<BR>
+But: there are no prisoners made as these are not regular moves!
+
+<H2>Restrictions</H2>
+
+It is good style (and is required since FF[4]) to
+distinguish between a move and the position arrived at by this move.
+<P>
+Therefore it's <B>illegal</B> to mix setup properties and move
+properties within the same node.
+<P>
+<B>Move properties</B> are properties such as a black or white move, 
+annotations on a move (bad move, interesting move, etc.) or how
+much time a player had left after the current move was made.<BR>
+<B>Setup properties</B> are properties used to set up or describe a position
+such as place black/white stones on the board or who's turn it is to play.
+<P>
+A <A HREF="../proplist_t.html">detailed list</A> of setup and move
+properties is available.
+<P>
+Unfortunately many applications allow mixing setup and move properties, so
+it's up to the user to create a good SGF file.
+
+
+<P ALIGN=RIGHT><A HREF="#toc">back to top</A>
+<HR noshade>
+
+<H1><A NAME="style">4. Style</A></H1>
+
+<UL>
+<LI>The <B>first</B> branch (variation `A' or `1') is the <B>main</B> branch.
+<BR>Variation `A' should always follow the real game.
+Consider yourself viewing a game where you have to press `b' then `c'
+and then `b' again just to follow the real game - disturbing.<BR>&nbsp;
+
+<LI>Don't imitate sibling-style variations. Use a sibling-style application
+instead. Have a look at <A HREF="#variations">definition and reason</A>.
+<BR>&nbsp;
+
+<LI>Omit extra pass plays and empty nodes at the end of the game.<BR>
+The last node of the game should contain the last move on the board.
+Do not put game information such as `Black wins and connects Ko' into
+the comment field, rather add another move to the game which connects
+the Ko.<BR>&nbsp;
+
+<LI>Never substitute moves with placing stones.<BR>
+Never substitute a regular move with placing (setting up) a stone.
+Some applications
+rely on regular moves for sophisticated functions. Furthermore applications
+that show the position of the next move can't display the position of the
+setup stone.
+Have a look at the <A HREF="#move_vs_place">difference</A> between a real
+move and setting up a stone.
+<BR>&nbsp;
+
+<LI>Length of labels<BR>
+Since FF[4] it's possible to use labels of any size. But some (old)
+applications have problems displaying labels longer than 2 chars.
+Use long labels with care!<BR>&nbsp;
+
+<LI>Don't store game information such as who's black/white etc. into
+the first comment - use game information properties instead.
+Here's the <A HREF="#why_gameinfo">reason</A> why.
+<BR>&nbsp;
+
+<LI>Use annotations for standard situations (e.g bad move).<BR>
+Annotations are represented by extra SGF-properties and thus can be
+treated in a <A HREF="#annotations">special way</A>.
+<BR>&nbsp;
+</UL>
+
+<P ALIGN=RIGHT><A HREF="#toc">back to top</A>
+<HR noshade>
+
+<H1><A NAME="variations">5. Variations</A></H1>
+
+<IMG SRC="VARI.GIF" ALT="[ Variation tree ]" ALIGN=RIGHT>
+SGF allows you to store variations of the main path of play, which
+is useful for analyzing different lines of play. The picture to the right
+illustrates this concept.
+Variations are usually assigned letters starting with 'A' where 'A' is
+the continuation of the current line of play. That's why some applications
+refer to the next move as 'A'.
+<P>
+Applications show variations as either siblings or children.
+<B>Showing variations as children</B> means,
+that if the applications is currently at move #3 (like in the
+picture) it provides you the choice of 'A' through 'C' which are all move #4.
+That is, by selecting a variation, you step forward in the tree.
+<P>
+<B>Showing variations as siblings</B> means,
+that the application provides the variation choice
+at move #4. In this case, selecting a variation selects between moves at the
+same tree level (here: #4 moves). This method is perceived as alternatives to
+the current move and by e.g. selecting variation 'B' move #4 'A' is removed
+from the board and move #4 'B' is shown.
+<P>
+The differences between this two styles may cause confusion when the variations
+ are accompanied by comments.
+For example, imagine the comment saying something like: "This is bad. See
+variation 'B' instead." If the author used a children-style application this
+comment is stored together with move #3. If readers use a sibling-style
+application, they see the comment on move #3, but no variations: they appear
+with the next move. The other case (author: sibling style, reader: children
+style) has similar implications. Users who read the comment at move #4 have
+to go back one move and select the variation there.
+<P>
+Most people prefer the sibling style as it seems more natural. They even 
+imitate the sibling style in children-style applications. This is done
+by removing the previous move and making a new move in the same (first) node
+of the variation. This is <B>bad style</B>. Since FF[4] it's illegal
+syntax too. If you have a look at the picture you see that all alternative
+moves are at the same level (that is, all #4's are in one column, all #7's are
+in one column). By imitating the sibling-style in chlidren-style applications
+this is no longer the case, as the #4 moves of variation 'B' and 'C' would
+appear under move #5 of variation 'A'. Furthermore those
+files cannot be converted to other fileformats easily. If you like sibling-style
+variations then use a sibling-style application!
+<BR CLEAR=ALL>
+
+
+<P ALIGN=RIGHT><A HREF="#toc">back to top</A>
+<HR noshade>
+
+<H1><A NAME="markup">6. Board markup</A></H1>
+
+SGF provides a wide selection of board markup. Almost every markup
+you see in magazines or books is available in SGF too. However some
+applications are not able to handle certain types of markup. 
+Here's a short list of markup types available:<BR>
+<SMALL>Snapshots taken from <B>cgoban</B> by W.M. Shubert</SMALL>
+<P><DIV ALIGN=CENTER>
+<TABLE BORDER>
+<TR><TH>Markup<TH>Property<TH>Notes
+<TR><TD ALIGN=CENTER><IMG SRC="MA.gif" ALT="[ MA ]"><TD ALIGN=CENTER>MA[]
+<TD>Very common<BR>(introduced in FF[3])
+<TR><TD ALIGN=CENTER><IMG SRC="TR.gif" ALT="[ TR ]"><TD ALIGN=CENTER>TR[]
+<TD>Very common<BR>(introduced in FF[3])
+<TR><TD ALIGN=CENTER>simple markup<TD ALIGN=CENTER>M[]
+<TD>old (FF[1]), very common<BR>
+This markup  has been superceeded by MA[] and  TR[], however very old 
+applications still use M[] and don't understand MA[] and TR[].
+<TR><TD ALIGN=CENTER><IMG SRC="CR.gif" ALT="[ CR ]"><TD ALIGN=CENTER>CR[]
+<TD>common (introduced in FF[3])
+<TR><TD ALIGN=CENTER><IMG SRC="SQ.gif" ALT="[ SQ ]"><TD ALIGN=CENTER>SQ[]
+<TD>common (introduced in FF[4])
+<TR><TD ALIGN=CENTER><IMG SRC="LB.gif" ALT="[ LB ]"><TD ALIGN=CENTER>LB[]
+<TD>common (introduced in FF[3])<BR>
+Old applications can't display it (e.g. MS-DOS MGT) Note that long labels 
+consisting of multiple chars are possible. However many applications only 
+display the first 2 or 3 characters - use long labels with care.
+<TR><TD ALIGN=CENTER>letters<TD ALIGN=CENTER>L[]
+<TD>old (FF[1]), very common<BR>This markup has been
+superceeded by LB[], however very old applications (e.g. MS-DOS MGT)
+still use L[] and don't understand LB[]
+<TR><TD ALIGN=CENTER><IMG SRC="SL.gif" ALT="[ SL ]"><TD ALIGN=CENTER>SL[]
+<TD>old, uncommon
+<TR><TD ALIGN=CENTER><IMG SRC="DD.gif" ALT="[ DD ]"><TD ALIGN=CENTER>DD[]
+<TD>new (FF[4]), very uncommon<BR>(may become more common in the future)
+<TR><TD ALIGN=CENTER><IMG SRC="AR.gif" ALT="[ AR ]"><TD ALIGN=CENTER>AR[]
+<TD>new (FF[4]), very uncommon<BR>(may become more common in the future)
+<TR><TD ALIGN=CENTER><IMG SRC="LN.gif" ALT="[ LN ]"><TD ALIGN=CENTER>LN[]
+<TD>new (FF[4]), very uncommon<BR>(may become more common in the future)
+</TABLE>
+</DIV>
+&nbsp;
+
+<P ALIGN=RIGHT><A HREF="#toc">back to top</A>
+<HR noshade>
+
+<H1><A NAME="annotations">7. Comments and annotations</A></H1>
+
+In order to comment on a move or position SGF allows to store text
+in each node, which usually gets displayed in the comment window of your
+SGF application. Text is easy to edit, but has some disadvantages too:
+<UL><LI>language - if you don't understand the language you can't
+understand the comment
+<LI>applications can't use the text to provide more sophisticated
+functions (such as searching for bad moves or tesujis)
+<LI>computer players can't utilize the text information
+</UL>
+
+Therefore SGF provides a set of so-called annotation properties. These
+properties are encoded differently in the file. They are not stored as
+readable text, but as tokens, which have a special meaning. Thus the
+SGF application reading the file knows their meaning and can provide
+the following:
+<UL><LI>multi-lingual support - the application displays the message
+in the selected language.
+<LI>search or other database functions
+<LI>computer players can use annotations in their fuseki- or joseki-library
+to determine the best move or good alternatives.
+</UL>
+
+There are three types of annotation properties: <I>general annotations</I>,
+<I>move annotations</I> and <I>annotations on positions</I>. Have a look
+at the following table:
+<P>
+<TABLE BORDER CELLPADDING=5 >
+<TR><TH>Annotation<TH>Property<TH>Type<TH>may be emphasized?<TH>Meaning
+<TR><TD>Good for Black<TD>GB<TD>General<TD>yes<TD>Something good for black
+<TR><TD>Good for White<TD>GW<TD>General<TD>yes<TD>Something good for white
+<TR><TD>Even position<TD>DM<TD>General<TD>yes<TD>The position is even
+<TR><TD>Unclear position<TD>UC<TD>General<TD>yes<TD>The position is unclear
+<TR><TD>Hot spot<TD>HO<TD>General<TD>yes<TD>An important node (e.g. game
+deciding move)
+
+<TR><TD>Tesuji<TD>TE<TD>Move<TD>yes<TD>The move played is (locally) a good move
+<TR><TD>Bad move<TD>BM<TD>Move<TD>yes<TD>The move played is bad
+<TR><TD>Doubtful move<TD>DO<TD>Move<TD>no<TD>The move played is doubtful
+<TR><TD>Interesting move <TD>IT<TD>Move<TD>no<TD>The move played is interesting
+
+<TR><TD>Black to play<TD>PL<TD>Position<TD>no<TD>It's black turn to play
+<TR><TD>White to play<TD>PL<TD>Position<TD>no<TD>It's white turn to play
+</TABLE>
+<P>
+Unfortunately not many applications support these properties yet. This will
+hopefully change in the future. Consider using annotation properties
+whenever possible. They have many advantages despite their simplicity.
+
+<P ALIGN=RIGHT><A HREF="#toc">back to top</A><HR noshade>
+
+<H1><A NAME="gameinfo">8. Game Information</A></H1>
+
+SGF provides a wide range of properties to store so called game information.
+Usually applications provide a dialog or extra window to type in game
+information.
+<P>
+Note that some entries have a <B>mandatory format</B>. Why?<BR>
+Because standard compliant entries can easily be parsed by applications 
+and therefore can be searched in game collections or displayed in your 
+favorite (customized) scheme. Unfortunately many applications allow the 
+user to enter illegal information - so it's up to you to create correct 
+entries - please take care!
+<P>
+E.g. consider that you've got a game collection of about 5000 pro games
+and want to look for games played by Cho Chikun in March 1996.
+Now if dates are stored as e.g. DT[5th March 1996], DT[11/3/96], DT[1996/3/7],
+DT[1996 6 8] - do you really know which of these games were played in March?
+<P>
+
+<H2><A NAME="why_gameinfo">Why should you use game information?</A></H2>
+Sometimes you see a SGF file which has all the information stored into
+the first comment.<BR>This is bad style!<BR>
+If the information is stored into a comment it's almost impossible for a
+computer program to find the relevant data - searching becomes impossible.
+Therefore store the game information at the proper place - it'll save
+you much time in the future and makes your database more usable.
+It makes converting or interchanging of games much more easier too.
+
+<H2>List of game information properties</H2>
+Here's a complete list with a short description of each item.
+If this list doesn't answer all your questions have a look at the
+<A HREF="../properties.html#AN">official, detailed specification</A>.
+<BR>Note: recommended is not mandatory! But you should use the recommended
+format whenever possible.
+<P>
+<TABLE BORDER>
+<TR><TH>Name<TH>Property<TH>Notes
+<TR><TD>Black/white name <TD>PB[]/PW[] 
+<TD>Name of the player who played black/white<BR>
+Try to be consistent in using names - for professional players it's
+suggested to use the same names as Jan van der Steen in his
+<A HREF="http://www.cwi.nl/~jansteen/go/games/games-3.html">database</A>.
+
+<TR><TD>Black/white rank <TD>BR[]/WR[]
+<TD>Strength of the player who played black/white<BR>Recommended format:
+<PRE>"10k" or "10 kyu" for a kyu player
+"3d"  or "3 dan" for a dan player
+Go servers usually add a `*' (certain rating)
+or `?' (uncertain rating) e.g. "10k*"</PRE>
+
+<TR><TD>Black/white team <TD>BT[]/WT[]
+<TD>Name of the team (for games played in team events)
+
+
+<TR><TD>Result <TD>RE[]
+<TD>Final result of the game<BR><B>Mandatory format:</B>
+<PRE>"0" (zero) for a draw (jigo)
+"B+score" for a black win and
+"W+score" for a white win, e.g. "B+2.5", "W+64" or "B+0.5"
+"B+R"/"B+Resign" and "W+R"/"W+Resign" for a win by resignation.
+<B>You MUST NOT write "Black resigns"</B></PRE>
+A more <A HREF="../propertie.htmls#RE">detailed description</A> is available.
+
+<TR><TD>Komi <TD>KO[]
+<TD>Score adjustment (points added to White's score)<BR><B>Mandatory format:</B>
+<PRE>Use real values, e.g. "5.5", "0", "0.5" or "-10," etc.
+Don't use: "5 points", "half a point", "5 1/2", etc.</PRE>
+
+<TR><TD>Handicap <TD>HA[]
+<TD>Number of handicap stones<BR><B>Mandatory format:</B>
+<PRE>Use integer values greater zero, e.g. "1", "5" or "9"
+Don't use: "2 stones", "three"</PRE>
+
+<TR><TD>Time <TD>TM[]
+<TD>Regular playing time for each side<BR><B>Mandatory format:</B>
+<PRE>Time is given in seconds as a real value, e.g. "4600", "300"
+Don't use: "1 hour"</PRE>
+It's a little bit awkward if your application doesn't transform
+the real value into a somewhat more human-readable form. But please use
+real values!
+
+<TR><TD>Date <TD>DT[]
+<TD>Date when game was played<BR><B>Mandatory format:</B>
+<PRE>Use the ISO-standard format "YYYY-MM-DD"
+Do not use other separators such as "/" or " " or ".".
+Example: a game played on the 5th March 1997
+         would be encoded as: 1997-03-05</PRE>
+A more <A HREF="../properties.html#DT">detailed description</A> is available.
+
+<TR><TD>Event <TD>EV[]
+<TD>Name of event (e.g. tournament name)
+<TR><TD>Round <TD>RO[]
+<TD>Number of tournament round
+<TR><TD>Place <TD>PC[]
+<TD>Name of place (e.g. city, country) where game took place
+<TR><TD>Rules <TD>RU[]
+<TD>Name of rule set used (e.g. Japanese, Chinese, AGA, GOE, etc.)
+<TR><TD>Game name <TD>GN[]
+<TD>Name of the game
+<TR><TD>Opening <TD>ON[]
+<TD>Describes the opening played (e.g. san-ren-sei)
+<TR><TD>Game comment <TD>GC[]
+<TD>General comment about the game
+<TR><TD>Source <TD>SO[]
+<TD>Name of the source (e.g. book, journal, etc.)
+<TR><TD>User <TD>US[]
+<TD>Name of user (or program) who entered the game record
+<TR><TD>Annotation <TD>AN[]
+<TD>Name of the person who made the annotations
+<TR><TD>Copyright <TD>CP[]
+<TD>Any copyright information
+</TABLE>
+<P>&nbsp;
+<P ALIGN=RIGHT><A HREF="#toc">back to top</A>
+<HR noshade>
+
+
+</BODY>
+</HTML>

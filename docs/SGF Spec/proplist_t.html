@@ -1,0 +1,113 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD><TITLE>SGF FF[4]: property-index</TITLE>
+</HEAD>
+<BODY alink="#FF0000" bgcolor="#FFFFFF" link="#0000FF" text="#000000" vlink="#FF0000">
+<A HREF="index.html"><IMG src="images/head.gif" ALT="[SGF FF[4] - Smart Game Format]" BORDER=0></A>
+
+<H1>FF[4] property index</H1>
+
+This is an alphabetical index to all properties defined in FF[4] sorted
+by property type.<BR>
+New properties are marked with '*', changed properties are marked with '!'.
+
+<H2>General properties</H2>
+
+<PRE><B>ID   Description     property type    property value
+---- --------------- ---------------  --------------------------------------</B>
+B    Black           move             move
+BL   Black time left move             real
+BM   Bad move        move             double
+DO   Doubtful        move             none
+IT   Interesting     move             none
+KO   Ko              move             none
+MN   set MoveNumber  move             number
+OB   OtStones Black  move             number
+OW   OtStones White  move             number
+TE   Tesuji          move             double
+W    White           move             move
+WL   White time left move             real
+
+AB   Add Black       setup            list of stone
+AE   Add Empty       setup            list of point
+AW   Add White       setup            list of stone
+PL   Player to play  setup            color
+
+*AR  Arrow           -                list of composed point ':' point
+C    Comment         -                text
+CR   Circle          -                list of point
+*DD  Dim points      - (inherit)      elist of point
+DM   Even position   -                double
+!FG  Figure          -                none | composed number ":" simpletext
+GB   Good for Black  -                double
+GW   Good for White  -                double
+HO   Hotspot         -                double
+!LB  Label           -                list of composed point ':' simpletext
+*LN  Line            -                list of composed point ':' point
+MA   Mark            -                list of point
+N    Nodename        -                simpletext
+*PM  Print move mode - (inherit)      number
+SL   Selected        -                list of point
+*SQ  Square          -                list of point
+TR   Triangle        -                list of point
+UC   Unclear pos     -                double
+V    Value           -                real
+*VW  View            - (inherit)      elist of point
+
+*AP  Application     root	      composed simpletext ':' number
+*CA  Charset         root	      simpletext
+FF   Fileformat      root	      number (range: 1-4)
+GM   Game            root	      number (range: 1-5,7-17)
+*ST  Style           root	      number (range: 0-3)
+!SZ  Size            root	      (number | composed number ':' number)
+
+AN   Annotation      game-info        simpletext
+BR   Black rank      game-info        simpletext
+BT   Black team      game-info        simpletext
+CP   Copyright       game-info        simpletext
+!DT  Date            game-info        simpletext
+EV   Event           game-info        simpletext
+GC   Game comment    game-info        text
+GN   Game name       game-info        simpletext
+ON   Opening         game-info        simpletext
+*OT  Overtime        game-info        simpletext
+PB   Player Black    game-info        simpletext
+PC   Place           game-info        simpletext
+PW   Player White    game-info        simpletext
+!RE  Result          game-info        simpletext
+RO   Round           game-info        simpletext
+!RU  Rules           game-info        simpletext
+SO   Source          game-info        simpletext
+TM   Timelimit       game-info        real
+US   User            game-info        simpletext
+WR   White rank      game-info        simpletext
+WT   White team      game-info        simpletext
+
+</PRE>
+
+<H2>Go (GM[1]) specific properties</H2>
+
+<PRE><B>ID   Description     property type    property value
+---- --------------- ---------------  --------------------------------------</B>
+TB   Territory Black -                elist of point
+TW   Territory White -                elist of point
+
+HA   Handicap        game-info        number
+KM   Komi            game-info        real
+
+</PRE>
+
+<H2>Lines of Action (GM[9]) specific properties</H2>
+
+<PRE><B>ID   Description     property type    property value
+---- --------------- ---------------  --------------------------------------</B>
+*AS  Who adds stones -                simpletext
+*IP  Initial pos.    game-info        simpletext
+*IY  Invert Y-axis   game-info        simpletext
+*SE  Markup          -                point
+*SU  Setup type      game-info        simpletext
+
+</PRE>
+
+</BODY>
+</HTML>

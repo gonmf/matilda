@@ -1,0 +1,94 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD><TITLE>SGF FF[4]: Converting old SGF files to FF[4]</TITLE>
+</HEAD>
+<BODY alink="#FF0000" bgcolor="#FFFFFF" link="#0000FF" text="#000000" vlink="#FF0000">
+<A HREF="index.html"><IMG src="images/head.gif" ALT="[SGF FF[4] - Smart Game Format]" BORDER=0></A>
+
+<H1>Converting old SGF files to FF[4]</H1>
+
+<H2>Converting properties</H2>
+
+This is a short list of properties that frequently occur in old SGF
+files and how they should be converted to FF[4].
+
+<PRE>
+<A NAME="M"><B>Property:</B>	M</A>
+<B>Propvalue:</B>	list of point
+<B>Function:</B>	Simple board markup
+<B>Conversion:</B>	M should be converted to <A HREF="properties.html#MA">MA</A> if used on empty board points
+		and to <A HREF="properties.html#TR">TR</A> if used on stones.
+
+<A NAME="L"><B>Property:</B>	L</A>
+<B>Propvalue:</B>	list of point
+<B>Function:</B>	Label the given points with uppercase letters.
+<B>Conversion:</B>	L should be converted to <A HREF="properties.html#LB">LB</A>.
+		Example: L[fg][es][jk] -> LB[fg:A][es:B][jk:C]
+
+<A NAME="TE-BM"><B>Property:</B>	TE then BM within a node</A>
+<B>Propvalue:</B>	double
+<B>Function:</B>	Move annotation
+<B>Conversion:</B>	Should be converted to <A HREF="properties.html#IT">IT</A>.
+
+<A NAME="BM-TE"><B>Property:</B>	BM then TE within a node</A>
+<B>Propvalue:</B>	double
+<B>Function:</B>	Move annotation
+<B>Conversion:</B>	Should be converted to <A HREF="properties.html#DO">DO</A>.
+
+
+<A NAME="VW"><B>Property:</B>	VW</A>
+<B>Propvalue:</B>	point, point
+<B>Function:</B>	Restrict view (just like in FF[4]).
+		<A HREF="properties.html#VW">VW</A> wasn't an official property in FF[3] but was used by two
+		applications (SGB & xgoban)
+<B>Conversion:</B>	In FF[3] the two given points specified the upper
+		left and the lower right corner. To convert it to FF[4] either
+		make a compose type value out of it or write the uncompressed
+		point list.
+		Example: VW[ba][db] -> VW[ba:db]
+			        or  -> VW[ba][ca][da][bb][cb][db]
+</PRE>
+
+<H2>Other conversion issues</H2>
+
+<H3>Property identifiers</H3>
+
+In FF[1]-FF[3] lowercase letters where allowed in property identifiers, but
+in FF[4] only uppercase letters are allowed. I.e. the application <B>has to</B> remove all 
+lowercase letters from the file. <P>
+Example: <I>Black[qd];thisisaWhitemove[kk]bbrWyryrerwLerreoi[10.3]  --> B[qd];W[kk]WL[10.3]</I>
+
+<H3>Property types move & setup</H3>
+
+The old fileformats didn't make this distinction, i.e. these files may have mixed
+setup and move-properties in one node.<BR>
+In that case an application should split that node into two nodes: all setup,
+root and game-info properties and the node name ('N[]') into the first 
+node, all other properties
+into the second. The node name should be in the first node because the node
+to be split might be the start of a variation.
+
+<H3>Illegal & errornous files</H3>
+
+There are a lot of corrupt files out there. If you want to write a robust
+application you should be able to deal with the following cases:
+<UL>
+<LI>Line breaks & whitespaces within moves or values: just remove all whitespaces
+in property values except in text values.
+<LI>Empty values e.g. 'DT[]N[]': remove those properties
+<LI>Properties without values e.g. 'LB B[aa]': remove the property identifiers
+<LI>Properties with too many values e.g. 'B[aa][bb]': this one is critical because
+it might be caused by a missing ']' e.g. 'B[aa LB[aa][bb]'
+<LI>Empty variations e.g. '()': such a construct is illegal because a variation
+has to have at least one node - remove '()'
+<LI>Files not starting with '(;' e.g. the ';' is missing - this one is tricky if
+you want to skip junk in front of the SGF file.
+<LI>Faulty game-info values (e.g. RE, DT): the application should correct
+those values if possible, otherwise leave them as they are.
+</UL>
+
+These are just some frequent errors that occur.<BR>
+Have a look at the <A HREF="sgfc/index.html">SGF Syntax Checker &
+Converter</A> for more sophisticated errors and how to handle them.
+</BODY>
+</HTML>

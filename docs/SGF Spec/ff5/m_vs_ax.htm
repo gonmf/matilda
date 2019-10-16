@@ -1,0 +1,171 @@
+<HTML>
+<HEAD><TITLE>SGF FF[5] - Move vs. Adding Stones</TITLE>
+</HEAD>
+<BODY alink="#FF0000" bgcolor="#FFFFFF" link="#0000FF" text="#000000" vlink="#FF0000">
+<TABLE CELLPADDING=5><TR>
+<TD BGCOLOR=#0000ff><A HREF="ff5.htm"><FONT COLOR=WHITE SIZE=-1><B>SGF file format FF[5]</B></FONT></A>
+<TD>last updated: 1999-03-19
+</TABLE>
+
+<H1>`Move' vs. `Add Stones'</H1>
+
+SGF provides two ways to add new stones to the board: 
+<UL>
+<LI>make a move 
+<LI>add a stone 
+</UL>
+
+We are going to have a closer look at both and explain the definition
+using examples.
+
+<h2>How to execute `Add Stone'</h2>
+From the specification:
+<TABLE BORDER=1><TR><TD BGCOLOR=#ffe8d8><TT>
+Add (resp. clear) black/white stones to the board. This can be used
+to set up positions or problems. Adding (resp. clearing) is done by
+'overwriting' the given point with black/white/empty stones. It
+doesn't matter what was there before. Adding a stone must not
+trigger any rule specific actions, e.g. in Go GM[1]: no prisoners
+nor any other captures (e.g. suicide). Thus it's possible to create
+illegal board positions.
+</TT></TABLE>
+<P>
+Note: Illegal positions remain on the board. I.e. when stepping to the
+next node breathless stones remain on the board. Unless, of course, they
+get captured by an adjacent move, or overwritten by another `Add Stone'
+command.
+<P>
+If your application can't handle illegal positions (e.g. a computer player
+or scoring algorithm) then it should
+display a message to the user. The message could state, that from now on
+(due to the illegal position) certain features (e.g. scoring) are no longer
+available. Or it could state, that it had to stop at the node before.
+Your application <B>must not</B> remove breathless stones automatically.
+
+<h2>How to execute a move</H2>
+
+From the specification for GO GM[1] (The different steps are numbered):
+<TABLE BORDER=1><TR><TD BGCOLOR=#ffe8d8>
+<TT>
+<B>How to execute a move</B>
+<OL>
+<LI>When a B (resp. W) property is encountered, a stone of that
+   color is placed on the given position (no matter what was there
+   before).
+<LI>Then the application should check any W (resp. B) groups that are
+   adjacent to the stone just placed. If they have no liberties they
+   should be removed and the prisoner count increased accordingly.
+<LI>Then, the B (resp. W) group that the played stone belongs to
+   should be checked for liberties, and if it has no liberties, it
+   should be removed (suicide) and the prisoner count increased
+   accordingly. 
+<LI>Lastely, the move number should be increased by one.
+</OL></TT></TABLE>
+<P>
+Ad 2): Only adjacent points are checked. Other breathless stones are
+<B>not</B> removed.
+
+<h2>Examples</h2>
+
+<TABLE BORDER=1 CELLPADDING=5>
+<TR ALIGN=MIDDLE><TH>Phase<TD>B move at D3<TD>B move at D4<TD>W move at d4
+<TR ALIGN=MIDDLE><TH>0<P>Initial position<TD><IMG SRC="images/cap01.gif"><TD><IMG SRC="images/cap06.gif"><TD><IMG SRC="images/cap11.gif">
+<TR ALIGN=MIDDLE><TH>1<P>Overwrite<TD><IMG SRC="images/cap02.gif"><TD><IMG SRC="images/cap07.gif"><TD><IMG SRC="images/cap12.gif">
+<TR ALIGN=MIDDLE><TH>2<P>Check for capture<TD><IMG SRC="images/cap03.gif"><TD><IMG SRC="images/cap08.gif"><TD><IMG SRC="images/cap13.gif">
+<TR ALIGN=MIDDLE><TH>3<P>Check for suicide<TD><IMG SRC="images/cap04.gif"><TD><IMG SRC="images/cap09.gif"><TD><IMG SRC="images/cap14.gif">
+<TR ALIGN=MIDDLE><TH>4<P>Final position
+<TD><IMG SRC="images/cap05.gif"><BR>One W stone captured
+<TD><IMG SRC="images/cap10.gif"><BR>One W stone captured
+<TD><IMG SRC="images/cap15.gif"><BR>Two W stones captured
+
+<TR><TD COLSPAN=4>
+Note: In the above examples only empty points were overwritten in phase one.
+As the specification says, the point gets overwritten, no matter what was
+there before. Therefore, the following initial positions would have <B>exactly
+the same</B> outcome.
+
+<TR ALIGN=MIDDLE><TH>Phase<TD>B move at D3<TD>B move at D4<TD>W move at d4
+<TR ALIGN=MIDDLE><TH ALIGN=MIDDLE>0<P>Initial position<TD><IMG SRC="images/cap16.gif"><TD><IMG SRC="images/cap17.gif"><TD><IMG SRC="images/cap12.gif">
+<TR ALIGN=MIDDLE><TH ALIGN=MIDDLE>1<P>Overwrite
+<TD><IMG SRC="images/cap02.gif"><BR>B move overwrites W stone (no prisoners taken)
+<TD><IMG SRC="images/cap07.gif"><BR>B move overwrites W stone (no prisoners taken)
+<TD><IMG SRC="images/cap12.gif"><BR>W move overwrites W stone (no prisoners taken)
+</TABLE>
+
+<h2>More Examples</h2>
+
+Let's have a look at the following SGF file:
+<BR>Note: AB[bb:ee] is the compressed form of
+AB[bb][bc][bd][be][cb][cc][cd][ce][db][dc][dd][de][eb][ec][ed][ee]
+
+<PRE>
+(;FF[5]GM[1]SZ[6]
+  AB[bb:ee]
+ ;AW[bb][ee][dc][cd]
+ ;AW[cb][bc][be][eb][ed][de]
+ ;AE[dc][cd]
+)
+</PRE>
+
+<P><TABLE BORDER=1>
+<TR><TH>Node 0<TH>Node 1<TH>Node 2<TH>Node 3
+<TR ALIGN=MIDDLE><TD>AB[bb:ee]<TD>AW[bb][ee][dc][cd]
+<TD>AW[cb][bc][be][eb][ed][de]<TD>AE[dc][cd]
+<TR ALIGN=MIDDLE><TD><IMG SRC="images/add01.gif">
+<TD><IMG SRC="images/add02.gif">
+<TD><IMG SRC="images/add03.gif">
+<TD><IMG SRC="images/add04.gif">
+<TR><TD>Black stones are added to the board
+<TD>White stones are added to the board. Note: no captures.
+This creates an illegal position.
+<TD>White stones are added to the board. Note: no captures.
+The illegal position from the previous node remains on the board.
+<TD>Stones are cleared from the board. Note: no prisoners taken.
+</TABLE>
+<P>
+Another example:
+<PRE>
+(;FF[5]GM[1]SZ[6]
+  AB[bb:ee]AW[bb][ee][dc][cd][cb][bc][be][eb][ed][de]
+ ;B[dd]
+)
+</PRE>
+<TABLE BORDER=1>
+<TR><TH>Node 0<BR>Node 1 phase 1<TH>Node 1 phase 2<TH>Node 1 phase 3
+<TH>Node 1 phase 4
+<TR><TD><IMG SRC="images/add03.gif">
+<TD><IMG SRC="images/add05.gif">
+<TD><IMG SRC="images/add06.gif">
+<TD><IMG SRC="images/add04.gif">
+<TR><TD>B and W stones are added to the board. No captures. This
+creates an illegal position. Phase 1 of executing <TT>B[dd]</TT>:
+overwrite position.
+<TD>Check for capture. Two W stones are captured.
+<TD>Check for suicide.
+<TD>Final position. Two W prisoners taken.
+</TABLE>
+<P>
+Another example:
+<PRE>
+(;FF[5]GM[1]SZ[6]
+  AB[cb][bc][cc][dc][cd]
+ ;W[cc]
+)
+</PRE>
+<TABLE BORDER=1>
+<TR><TH>Node 0<TH>Node 1 phase 1<TH>Node 1 phase 2<TH>Node 1 phase 3
+<TH>Node 1 phase 4
+<TR><TD><IMG SRC="images/suicide1.gif">
+<TD><IMG SRC="images/suicide2.gif">
+<TD><IMG SRC="images/suicide3.gif">
+<TD><IMG SRC="images/suicide4.gif">
+<TD><IMG SRC="images/suicide5.gif">
+<TR><TD>B stones are added to the board. 
+<TD>Overwrite position. No prisoners taken.
+<TD>Check for capture.
+<TD>Check for suicide. One W stone captured.
+<TD>Final position. One W prisoners taken.
+</TABLE>
+
+</BODY>
+</HTML>

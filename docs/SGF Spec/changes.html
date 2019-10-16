@@ -1,0 +1,70 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD><TITLE>SGF spec: from FF[3] to FF[4]</TITLE>
+</HEAD>
+<BODY alink="#FF0000" bgcolor="#FFFFFF" link="#0000FF" text="#000000" vlink="#FF0000">
+<A HREF="index.html"><IMG src="images/head.gif" ALT="[SGF FF[4] - Smart Game Format]" BORDER=0></A>
+
+<H1>From FF[3] to FF[4]</H1>
+
+
+<H2>General</H2>
+
+<UL>
+<LI> Specification is more complete now
+<LI> Property identifiers consist only of uppercase
+(no lowercase in between allowed)
+<LI> Go-move/position defined for board sizes upto 52x52
+<LI> Rectangular boards possible.
+<LI> Compressed point lists for "list of point" PropValues
+<LI> Pass move may be specified as '[]'
+<LI> Text has been divided into two types: simpletext (basically a string)
+and text, which can be formatted (hard & soft linebreaks).
+<LI> Types for properties defined (move, setup, root, gameinfo, none).
+Therefore nodes can be divided into two types too: move / setup.
+<LI> Defined used charset (us-ascii) for property-identifiers and values.
+For SimpleText and Text charset is specified using CA property
+(default: ISO-latin-1)
+<LI> Property attribute 'inherit' defined.
+<LI> Time values are given in seconds
+<LI> Handling of unknown and illegal properties defined.
+</UL>
+
+<H2>Properties no longer part of FF[4]</H2>
+
+<UL>
+<LI> CH (checkmark), SI (sigma), SE (moves in selftest),
+LT (lose on time), BS, WS, TC: are considered private to SGB
+<LI> ID (game-id) : serves no purpose (see specification of EV, RO instead)
+<LI> OM (#moves per overtime), OP (length of overtime)
+<LI> CI (chinese handicap) : not needed (HA doesn't imply fixed placement of
+handicap stones)
+<LI> OV (computer type property)
+<LI> RG, SC (obsolete markup)
+</UL>
+
+<H2>New properties</H2>
+
+<UL>
+<LI> AP (application) : defines writer application
+<LI> ST (style) : for handling of comments and variations
+<LI> AR (arrow), LN (line), SQ (square) : new board markup
+<LI> OT (overtime) : gameinfo to describe byo-yomi rules
+<LI> CA (charset) : defines used charset for Text & SimpleText types
+<LI> DD (dimmed positons) : grey out the listed positions
+<LI> VW (view) : restrict view
+<LI> PM (print move) : defines how move numbers should be printed
+</UL>
+
+<H2>Changed properties</H2>
+
+<UL>
+<LI> LB (label) may have more than 4 chars now (actually unlimited length)
+<LI> SZ (size) changed (rectangular boards possible now)
+<LI> Format of DT and RE is mandatory now (no longer just recommended)
+<LI> Some rule names are mandatory now.
+<LI> FG may contain some flags and a diagram name
+</UL>
+
+</BODY>
+</HTML>

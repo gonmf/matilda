@@ -1,0 +1,99 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD><TITLE>SGF - Lines of Action (GM[9])</TITLE>
+</HEAD>
+<BODY alink="#FF0000" bgcolor="#FFFFFF" link="#0000FF" text="#000000" vlink="#FF0000">
+<A HREF="index.html"><IMG src="images/head.gif" ALT="[SGF FF[4] - Smart Game Format]" BORDER=0></A>
+
+<H1>Lines of Action (GM[9])</H1>
+
+<H2>Some notes</H2>
+For more information about LOA contact
+<A HREF="mailto:ddyer@netcom.com">Dave Dyer</A> or have a look at his
+<A HREF="http://www.andromeda.com/people/ddyer/loa/loa.html">LOA pages</A>.
+<P>
+<B>All (game-specific) property values are case insenstive!</B>
+<P>
+The default board size is 8.<BR>
+The default first player is black.
+
+<H2><A NAME="types">Point and Move types</A></H2>
+
+<H3>Point</H3>
+A board position is specified by one letter and one number, letters are always
+displayed left-to-right across the screen. Numbers are normally displayed
+1-n from bottom to top of the screen.
+<BR>Examples: [a5], [C8], [d4]
+
+<H3>Move</H3>
+For normal moves specify the source and destination squares, as specified by
+point type. The two points may be seperated by either '-' or ':'
+(to identify a capturing move) and may be followed by a trailing
+commentary such as '+' and '!'.
+Applications don't need to interpret or preserve these move annotations - 
+they are optional and intended for human readability.
+<P>
+The following unusual moves specifiers are also used when appropriate
+<UL>
+<LI>'Pass'
+<LI>'Resign'
+<LI>'Forfeit'
+<LI>'Escape' - used only in Gemma variation
+</UL>
+
+Examples: B[e1-e3];W[C2:C5++];W[c5-c6];B[resign]
+
+
+<H2><A NAME="properties">Properties</A></H2>
+
+<PRE>
+<A NAME="AS"><B>Property:</B>	AS</A>
+<B>Propvalue:</B>	SimpleText
+<B>Propertytype:</B>	-
+<B>Function:</B>	Adding stones - the color of the player who is adding
+		stones to the board. The valid strings are <I>'Black', 'White'
+		or 'None'</I>. The puropse of this property is to define a
+		board position where the human is expected to continue placing
+		stones on the board through some user interface.
+
+<A NAME="IP"><B>Property:</B>	IP</A>
+<B>Propvalue:</B>	SimpleText
+<B>Propertytype:</B>	game-info
+<B>Function:</B>	Designates the initial position in the game to be
+		displayed by the viewer.
+		The only value currently supported is <i>'End'</i>, which causes
+		the viewer to initially display the final position of the game.
+		The default is to display the position after setup but before
+		any moves.
+
+<A NAME="IY"><B>Property:</B>	IY</A>
+<B>Propvalue:</B>	SimpleText
+<B>Propertytype:</B>	game-info
+<B>Function:</B>	Invert Y axis.  Values are <I>'true' or 'false'</I>.
+		If 'true', the board should be displayed with numbers
+		increasing in value from bottom to top of the screen.
+		Default: 'false'
+
+<A NAME="SE"><B>Property:</B>	SE</A>
+<B>Propvalue:</B>	point
+<B>Propertytype:</B>	-
+<B>Function:</B>	Mark the given point and up to 8 additional points,
+		depending on where the provided point (stone) could legally
+		move.
+
+<A NAME="SU"><B>Property:</B>	SU</A>
+<B>Propvalue:</B>	SimpleText
+<B>Propertytype:</B>	game-info
+<B>Function:</B>	Setup type - designates the intial placement of pieces,
+		and also the implicitly the variation on the basic rules to be
+		employed. The currently valid values include the following
+		strings:
+		<I>'Standard', 'Scrambled-eggs', 'Parachute', 'Gemma' and 'Custom'</I>
+		(the initial board is empty, AB and AW properties
+		will be used to establish the starting position).
+		Default: 'Standard'
+                For details on the setups and rule variations, consult the
+		LOA home pages.
+</PRE>
+</BODY>
+</HTML>

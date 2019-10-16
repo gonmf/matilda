@@ -1,0 +1,143 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<script LANGUAGE="JavaScript" src="../tail.js"></script>
+<title>Superko in KGS Computer Go Tournaments</title>
+<style type="text/css">
+  <!-- @import url(../c.css); -->
+  div.quote { background-color: rgb(255,255,255); margin: 0.2em 1em; padding: 0.2em 0.5em; border: 1px solid rgb(55,55,55); }
+  b.emp { color: rgb(153,0,0); }
+</style>
+</head>
+
+<body>
+
+<h1>Superko in KGS Computer Go Tournaments</h1>
+
+<p>
+In over a thousand games played in computer Go tournaments on KGS, ten 
+have been ended by the Superko rule. In four of these ten cases, the 
+effect of the rule effectively decided the result of the game.
+</p>
+
+<h3>Forms of Superko rule.</h3>
+
+<p>
+There are four forms of superko rule:
+</p><p>
+<table border=1 cellpadding=4 cellspacing=0>
+<tr><th>PSK
+<td><b>P</b>ositional <b>S</b>uper<b>K</b>o<td>
+A player may not play a stone so as to create a previous board which
+existed previously in the game.
+<td>
+Creation refers to the position just after the play and consequent removals.
+<tr><th>SSK
+<td><b>S</b>ituational <b>S</b>uper<b>K</b>o<td>
+A player may not play a stone so as to create a board position which
+existed previously in the game, and in which it was the opponent's turn to move next.
+<td>
+Creation refers to the position just after the play and consequent
+removals, and the rule also takes account of who moves next.
+<tr><th>NSK
+<td><b>N</b>atural <b>S</b>ituational Super<b>K</b>o<td>
+A player may not play a stone so as to create a board position which
+existed previously in the game, if s/he played to create it previously.
+<td>
+Creation refers to the position just after the play and consequent removals.
+<tr><th>ChSK
+<td><b>Ch</b>inese <b>S</b>ituational Super<b>K</b>o<td>
+A play may not recreate a previous board position from the game by means of 
+basic ko or sending-2-returning-1. If a cycle arises in another way and neither 
+player varies from it, the referee may declare a draw or require a replay. 
+<td>
+This, according to the sixth meeting of the International Go Rules Forum, is 
+what the Chinese rules were intended to specify. 
+</table>
+
+</p><p>
+All forms of superko rule refer only to playing of stones. <b>It is always legal 
+to pass</b>, whatever form of the rule may apply.
+</p>
+
+<h3>Chinese Rules of Go, as on KGS</h3>
+
+<p>
+Computer Go tournaments on KGS have so far always used "Chinese Rules", as 
+implemented on KGS.
+</p><p>
+
+<div style="background: #FFFFBB"></div>
+At the time the superko code on KGS was implemented, the intention of the 
+Chinese Rules of Go about repeated positions was unclear. Section 6, as 
+translated into English in "<i>The Go Player's Almanac</i>", Richard Bozulich, 
+1992, reads in full:
+<div class=quote>
+Reappearance of the same board position is forbidden throughout the game.</div>
+However, section 20.3 reads:
+<div class=quote>
+3. In rare situations such as triple ko, quadruple ko, eternal life, and 
+round-robin ko, if neither side will yield, the referee may declare a draw 
+or replay.</div>
+These two sections are in contradiction. The implementers of <b class=emp>KGS</b> 
+resolved this by giving priority to the section which appears first, and 
+<b class=emp>implemented Positional Superko</b>.
+</p>
+
+<h3>Superko incidents in KGS Computer Go tournaments</h3>
+
+<p>
+The application of the Positional Superko rule has several times affected a computer Go 
+tournament game on KGS. These incidents have all be mentioned on the reports of the event, 
+and are listed below.
+<table>
+<tr><th>date (link to report)</th><th>What happened</th><th>type of cycle</th></tr>
+<tr><td><a href="http://www.weddslist.com/kgs/past/6/index.html#sk">September 2005</a></td>
+<td>Viking5 was unable to play the move it wanted against gonzoBot, and so resigned, in 
+what would otherwise have been a won position.</td></td>
+  <td rowspan=9><a href="http://senseis.xmp.net/?SendingTwoReturningOne">Sending two, returning one</a></tr>
+<tr><td><a href="http://www.weddslist.com/kgs/past/7/index.html#sk">October 2005</a></td>
+<td>Dariush timed out in a won position against SlugGo, when prevented from playing 
+the move it wanted.</td></tr>
+<tr><td><a href="http://www.weddslist.com/kgs/past/32/index.html#sk">November 2007</a></td>
+<td>Break timed out in a lost position against FirstGoBot, when prevented from playing the 
+move it wanted.</td></tr>
+<tr><td><a href="http://www.weddslist.com/kgs/past/33/index.html#sk">December 2007</a></td>
+<td>MonteGNU timed out in a won position against WeakBot50k, when prevented from playing 
+the move it wanted.</td></tr>
+<tr><td><a href="http://www.weddslist.com/kgs/past/42/index.html#sk">September 2008</a></td>
+<td>SimpleBot timed out in a won position against WeakBot50k, when prevented from playing 
+the move it wanted.</td></tr>
+<tr><td><a href="http://www.weddslist.com/kgs/past/43/index.html#sk">October 2008</a></td>
+<td>HouseBot timed out in a lost position against ManyFaces, when prevented from playing 
+the move it wanted.</td></tr>
+<tr><td><a href="http://www.weddslist.com/kgs/past/52/index.html#sk1">October 2009</a></td>
+<td>Orego timed out in a lost position against WeakBot50k, when prevented from playing 
+the move it wanted.</td></tr>
+<tr><td><a href="http://www.weddslist.com/kgs/past/52/index.html#sk2">October 2009</a></td>
+<td>Wei2go timed out in a lost position against SimpleBot, when prevented from playing 
+the move it wanted.</td></tr>
+<tr><td><a href="http://www.weddslist.com/kgs/past/59/index.html#sk">May 2010</a></td>
+<td>MCark timed out in a lost position against kiseki, when prevented from playing 
+the move it wanted.</td></tr>
+<tr><td><a href="http://www.weddslist.com/kgs/past/61/index.html#sk">July 2010</a></td>
+<td>Orego timed out in a lost position against CzechBot, when prevented from playing 
+the move it wanted.</td><td>triple ko</td></tr>
+<tr><td><a href="http://www.weddslist.com/kgs/past/103/index.html#sk">May 2017</a></td>
+<td>Julie timed out in a lost position against Aya, when prevented from playing 
+the move it wanted.</td>
+<td>Sending two, returning one
+</table><br>
+Most of these positions involved the 
+<a href="http://senseis.xmp.net/?SendingTwoReturningOne">sending two, returning one</a> 
+shape. None of those would have been forbidden by Situational Superko or by 
+Natural Situational Superko.
+
+<script language="JavaScript">
+<!--  
+var tag = "superko";
+wt();  
+//-->
+</script>
+</body>
+</html>

@@ -1,0 +1,237 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD><TITLE>SGF - Octi (GM[19])</TITLE>
+</HEAD>
+<BODY alink="#FF0000" bgcolor="#FFFFFF" link="#0000FF" text="#000000" vlink="#FF0000">
+<A HREF="index.html"><IMG src="images/head.gif" ALT="[SGF FF[4] - Smart Game Format]" BORDER=0></A>
+
+<h1>Octi (GM[19])</h1>
+
+<p>OCTI is a registered trademark, patent pending, all rights
+reserved.  OCTI is distributed by the Great American Trading Company.
+For sales information, call (800)225-7449 or visit
+<A href="http://www.octi.net">www.octi.net</A>
+<P>For more information about this specification contact Tim Prime,
+<A HREF="mailto:tdprime@acm.org">tdprime@acm.org</A>.
+
+
+<h2><A NAME="types">Game Specific Terms and Notation</A></h2>
+
+<h3> Colour </h3>
+
+<p> A quick note about colours.  SGF uses black and white.  When
+transcribing games with other colours (perhaps blue and red), Black
+should be the player who played first.
+
+<h3>Point</h3>
+
+<p> Points are designated with numbers, ranging from 11 (south-west
+corner) to 99 (north-east).  The first digit refers to the horizontal
+coordinate.  The second digit refers to the vertical.
+
+<!--
+For example, the three lower OCTI squares are located at 33, 53, and 73.
+-->
+
+<img src="images/octi-prongs.gif" align=right hspace=12>
+
+<h3>Stone</h3>
+
+<p> A "stone" is a pod and its prongs.  The pod is identified by the
+point where it is located.  Prongs are designated with letters.  "A"
+faces north, "B" faces northeast, and so on through "H".
+For example, <code>46CD</code>.
+
+<p> Prong information may be omitted as long as the all pods in that
+stack have identical designations.  This is always true for stacks of
+exactly one pod.
+
+<br clear=all>
+
+<h3>Move</h3>
+
+<p> To bring a new pod onto the board, simply list its new location.
+For example, <code>73</code>.  It is assumed that a captured pod is
+liberated if legal, otherwise a reserve pod is used.
+
+<p> To add a prong to a pod, list the stone, a plus sign (+), and
+the letter of the new prong.  For example, <code>33+B</code> places a
+northeast prong on the pod at point 33.  (Superprongs are denoted with a
+"!", e.g., <code>33+B!</code>.)
+
+<p> To reposition a prong so that it faces north, write <code>33+A-B</code>.
+
+<img src="images/octi-ex1.gif" align=right hspace=12>
+
+<p> Moves are indicated by listing the stone, a dash, and the destination
+point.  Multiple jumps are done in a similar way; inserting a dash and a
+point for each intermediate step.  For example, in the diagram at right,
+the piece at 84 moves as follows: <code>84-86-68</code>.
+
+<p> To indicate a capture, specify an "x" in the destination point
+immediately after the capture.  In the example at right, the Blue
+pod could capture the piece at 77.  Record this move
+<code>84-86-68x</code>.  If Blue instead wishes to capture its own pod,
+record <code>84-86x-68</code>.
+
+<p> On rare occasions, only a select set of pods is to be captured
+from a jumped stack.  List each captured pod with an "x", and
+its prong designation.  Augmenting the previous example a little,
+<code>84-86-68xDxAB</code>.
+
+<p>To move one or more pieces in a stack, list the moves for each pod
+separated by a comma.  To designate each pod, list its location and
+prong positions.  For example, the move illustrated below would be
+recorded <code>46CD-56,46D-55</code>.
+</p>
+
+<img src="images/octi-ex2.gif">
+
+
+<h2><A NAME="properties">Game Specific Properties</A></h2>
+
+<p> Index of the defined properties by type:
+<br><b>game-info:</b><A HREF="#BO">BO</A>, <A HREF="#NP">NP</A>,
+<A HREF="#NR">NR</A>, <A HREF="#NS">NS</A>, <A HREF="#RU">RU</A>,
+<A HREF="#WO">WO</A>
+<br><b>markup:</b> <A HREF="#AS">AS</A>, <A HREF="#CS">CS</A>,
+<A HREF="#MS">MS</A>, <A HREF="#SS">SS</A>, <A HREF="#TS">TS</A>
+<br><b>setup:</b> <A HREF="#RP">RP</A>
+
+
+<p> First, a clarification of the <tt>RU</tt> property, as it applies to
+Octi.</p>
+
+<PRE>
+<A NAME="RU"><B>Property:</B>	RU</A> (rules)
+<b>Propvalue:</b>	simpletext
+<b>Propertytype:</b>	game-info
+<b>Function:</b>	Valid values are one major variation ("full", "fast",
+		or "kids") followed by a colon and a comma separated
+		elist of variations ("edgeless", "superprong", etc.).
+		
+		The colon may be omitted if either side is empty.
+		The default is 2-player full, no variations.
+		The 4-player game is not currently available.
+</PRE>
+
+<p> Octi has special points, called "octi squares".  The rules (RU[])
+and the size (SZ[]) can infer default locations for these points.
+However, it seems that a certain amount of flexibility is in order.
+</p>
+<PRE>
+<A NAME="BO"><B>Property:</B>	BO</A> (black octisquares)
+<b>Propvalue:</b>	list of point
+<b>Propertytype:</b>	game-info
+<b>Function:</b>	The position of Black's octi squares.  Black will be
+		setup with one empty pod on each of these points.
+		It is illegal to list the same point twice.
+		Traditionally, Black sits at the south end of the board.
+<b>Related:</B>	<A HREF="#WO">WO</A>
+
+<A NAME="WO"><B>Property:</B>	WO</A> (white octisquares)
+<b>Propvalue:</b>	list of point
+<b>Propertytype:</b>	game-info
+<b>Function:</b>	The position of White's octi squares.  White will be
+		setup with one empty pod on each of these points.
+		It is illegal to list the same point twice.
+		Traditionally, White sits at the north end of the board.
+<b>Related:</B>	<A HREF="#BO">BO</A>
+</PRE>
+
+<p> The number of pods and prongs also is adjustable.
+
+<PRE>
+<A NAME="NP"><B>Property:</B>	NP</A> (number of prongs)
+<b>Propvalue:</b>	number
+<b>Propertytype:</b>	game-info
+<b>Function:</b>	This is the number of prongs each players has at the
+		start of the game.
+		The default will be derived from the rules.
+<b>Related:</b> <A HREF="#NR">NR</A>
+
+<A NAME="NR"><B>Property:</B>	NR</A> (number of reserve)
+<b>Propvalue:</b>	number
+<b>Propertytype:</b>	game-info
+<b>Function:</b>	This is the number of pods in each players reserve at
+		the start of the game.
+		The default will be derived from the rules.
+<b>Related:</b> <A HREF="#NP">NP</A>, <A HREF="#NS">NS</A>
+
+<A NAME="NS"><B>Property:</B>	NS</A> (number of superprongs)
+<b>Propvalue:</b>	number
+<b>Propertytype:</b>	game-info
+<b>Function:</b>	This is the number of superprongs each players has at
+		the start of the game.
+		The default will be derived from the rules.
+<b>Related:</b>	<A HREF="#NR">NR</A>
+</PRE>
+
+<p> A lot of the original markup properties don't completely apply
+to stacked pieces.  For Octi new "stone" marking properties are proposed.
+These are similar to their point-centric brethren which <em>should</em>
+mark all "stones" in a stack.
+
+<p> Like the markup they are derived from, it is illegal to have more
+than one of <tt>CS</tt>, <tt>MS</tt>, <tt>SS</tt>, or <tt>TS</tt>
+properties on the same stone.
+
+<p> Multiple identical stones, same location and prong configuration,
+are ambiguous.  While this was fine for movement, it present some
+trickiness for markup.  Ambiguous stones shall refer to exactly one
+instance of the stone.  The viewer may choose how this is laid out.
+
+<p> To mark two ambiguous stones, use the same stone twice.  For example,
+<code>CS[46CD][46CD]SS[46CD]</code> would markup three identical stones;
+two with circles, one with a square.  Be sure you do not specify more
+stones of a given type than the number that occupy that point.
+</p>
+
+<PRE>
+<A NAME="AS"><B>Property:</B>	AS</A> (arrow stone)
+<b>Propvalue:</b>	list of composed stone ':' point
+<b>Propertytype:</b>	-
+<b>Function:</b>	Most of the same restriction from <A HREF="properties.html#AR">AR</A> apply.
+		The same arrow must not occur twice; however, two arrows
+		from different stones at the same point may have arrows
+		to the same destination.  Single point arrows are also
+		illegal.
+<b>Related:</B>	<A HREF="properties.html#AR">AR</A>
+
+<A NAME="CS"><B>Property:</B>	CS</A> (circle stone)
+<b>Propvalue:</b>	list of stone
+<b>Propertytype:</b>	-
+<b>Function:</b>	Marks the given stones, each with a circle.
+<b>Related:</B>	<A HREF="properties.html#CR">CR</A>
+
+<A NAME="MS"><B>Property:</B>	MS</A> (mark stone)
+<b>Propvalue:</b>	list of stone
+<b>Propertytype:</b>	-
+<b>Function:</b>	Marks the given stones, each with an ex.
+<b>Related:</B>	<A HREF="properties.html#MA">MA</A>
+
+<A NAME="SS"><B>Property:</B>	SS</A> (square stone)
+<b>Propvalue:</b>	list of stone
+<b>Propertytype:</b>	-
+<b>Function:</b>	Marks the given stones, each with a square.
+<b>Related:</B>	<A HREF="properties.html#SQ">SQ</A>
+
+<A NAME="TS"><B>Property:</B>	TS</A> (triangle stone)
+<b>Propvalue:</b>	list of stone
+<b>Propertytype:</b>	-
+<b>Function:</b>	Marks the given stones, each with a triangle.
+<b>Related:</B>	<A HREF="properties.html#TR">TR</A>
+</PRE>
+
+<p> In a similar way, AddEmpty is a touch point-centric.</p>
+<PRE>
+<A NAME="RP"><B>Property:</B>	RP</A> (remove pod)
+<b>Propvalue:</b>	list of stone
+<b>Propertytype:</b>	setup
+<b>Function:</b>	Removes a stone from the board.
+		More selective than AddEmpty.
+<b>Related:</B>	<A HREF="properties.html#AE">AE</A>
+</PRE>
+
+</body>
+</html>

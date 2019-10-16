@@ -1,0 +1,808 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD><TITLE>SGF properties (FF[4])</TITLE>
+</HEAD>
+<BODY alink="#FF0000" bgcolor="#FFFFFF" link="#0000FF" text="#000000" vlink="#FF0000">
+<A HREF="index.html"><IMG src="images/head.gif" ALT="[SGF FF[4] - Smart Game Format]" BORDER=0></A> <I>last updated: 2001-08-12</I>
+
+<H1>Contents</H1>
+<TABLE BORDER=1>
+<TR><TD BGCOLOR="#efffff">Move Properties
+<TD><A HREF="#B">B</A>,
+<A HREF="#KO">KO</A>, <A HREF="#MN">MN</A>, <A HREF="#W">W</A>
+<TR><TD BGCOLOR="#efffff">Setup Properties
+<TD><A HREF="#AB">AB</A>,
+<A HREF="#AE">AE</A>, <A HREF="#AW">AW</A>, <A HREF="#PL">PL</A>
+<TR><TD BGCOLOR="#efffff">Node Annotation Properties
+<TD><A HREF="#C">C</A>,
+<A HREF="#DM">DM</A>, <A HREF="#GB">GB</A>,
+<A HREF="#GW">GW</A>, <A HREF="#HO">HO</A>,
+<A HREF="#N">N</A>, <A HREF="#UC">UC</A>, <A HREF="#V">V</A>
+<TR><TD BGCOLOR="#efffff">Move Annotation Properties
+<TD><A HREF="#BM">BM</A>,
+<A HREF="#DO">DO</A>, <A HREF="#IT">IT</A>, <A HREF="#TE">TE</A>
+<TR><TD BGCOLOR="#efffff">Markup Properties
+<TD><A HREF="#AR">AR</A>,
+<A HREF="#CR">CR</A>, <A HREF="#DD">DD</A>,
+<A HREF="#LB">LB</A>, <A HREF="#LN">LN</A>,
+<A HREF="#MA">MA</A>, <A HREF="#SL">SL</A>,
+<A HREF="#SQ">SQ</A>, <A HREF="#TR">TR</A>
+<TR><TD BGCOLOR="#efffff">Root Properties
+<TD><A HREF="#AP">AP</A>,
+<A HREF="#CA">CA</A>, <A HREF="#FF">FF</A>,
+<A HREF="#GM">GM</A>, <A HREF="#ST">ST</A>, <A HREF="#SZ">SZ</A>
+<TR><TD BGCOLOR="#efffff">Game Info Properties
+<TD><A HREF="#AN">AN</A>,
+<A HREF="#BR">BR</A>, <A HREF="#BT">BT</A>, <A HREF="#CP">CP</A>,
+<A HREF="#DT">DT</A>, <A HREF="#EV">EV</A>, <A HREF="#GN">GN</A>,
+<A HREF="#GC">GC</A>, <A HREF="#ON">ON</A>, <A HREF="#OT">OT</A>,
+<A HREF="#PB">PB</A>, <A HREF="#PC">PC</A>, <A HREF="#PW">PW</A>,
+<A HREF="#RE">RE</A>, <A HREF="#RO">RO</A>, <A HREF="#RU">RU</A>,
+<A HREF="#SO">SO</A>, <A HREF="#TM">TM</A>, <A HREF="#US">US</A>,
+<A HREF="#WR">WR</A>, <A HREF="#WT">WT</A>
+<TR><TD BGCOLOR="#efffff">Timing Properties
+<TD><A HREF="#BL">BL</A>,
+<A HREF="#OB">OB</A>, <A HREF="#OW">OW</A>, <A HREF="#WL">WL</A>
+<TR><TD BGCOLOR="#efffff">Miscellaneous Properties
+<TD><A HREF="#FG">FG</A>,
+<A HREF="#PM">PM</A>, <A HREF="#VW">VW</A>
+</TR></TABLE>
+<P>
+<HR SIZE=10 NOSHADE>
+
+<H1>SGF Properties (FF[4])</H1>
+
+<H2>Move properties</H2>
+
+<PRE>
+<A NAME="B"><B>Property:</B>	B</A>
+<B>Propvalue:</B>	<A HREF="sgf4.html#move/pos">move</A>
+<B>Propertytype:</B>	move
+<B>Function:</B>	Execute a black move. This is one of the most used properties
+		in actual <A HREF="sgf4.html#ebnf-def">collections</A>. As long as
+		the given move is syntactically correct it should be executed.
+		It doesn't matter if the move itself is illegal
+		(e.g. recapturing a ko in a Go game).
+		Have a look at <A HREF="go.html#execute move">how to execute a Go-move</A>.
+		B and W properties must not be mixed within a node.
+<B>Related:</B>	<A HREF="#W">W</A>, <A HREF="#KO">KO</A>
+
+<A NAME="KO"><B>Property:</B>	KO</A>
+<B>Propvalue:</B>	<A HREF="sgf4.html#types">none</A>
+<B>Propertytype:</B>	move
+<B>Function:</B>	Execute a given move (B or W) even it's illegal. This is
+		an optional property, SGF viewers themselves should execute
+		ALL moves. It's purpose is to make it easier for other
+		applications (e.g. computer-players) to deal with illegal
+		moves. A KO property without a black or white move within
+		the same node is illegal.
+<B>Related:</B>	<A HREF="#W">W</A>, <A HREF="#B">B</A>
+
+<A NAME="MN"><B>Property:</B>	MN</A>
+<B>Propvalue:</B>	<A HREF="sgf4.html#types">number</A>
+<B>Propertytype:</B>	move
+<B>Function:</B>	Sets the move number to the given value, i.e. a move
+		specified in this node has exactly this move-number. This
+		can be useful for variations or printing.
+<B>Related:</B>	<A HREF="#B">B</A>, <A HREF="#W">W</A>, <A HREF="#FG">FG</A>, <A HREF="#PM">PM</A>
+
+<A NAME="W"><B>Property:</B>	W</A>
+<B>Propvalue:</B>	<A HREF="sgf4.html#move/pos">move</A>
+<B>Propertytype:</B>	move
+<B>Function:</B>	Execute a white move. This is one of the most used properties
+		in actual <A HREF="sgf4.html#ebnf-def">collections</A>. As long as
+		the given move is syntactically correct it should be executed.
+		It doesn't matter if the move itself is illegal
+		(e.g. recapturing a ko in a Go game).
+		Have a look at <A HREF="go.html#execute move">how to execute a Go-move</A>.
+		B and W properties must not be mixed within a node.
+<B>Related:</B>	<A HREF="#B">B</A>, <A HREF="#KO">KO</A>
+</PRE>
+<HR NOSHADE>
+
+<H2>Setup properties</H2>
+
+<H3>Restrictions</H3>
+AB, AW and AE must have unique points, i.e. it is illegal to place
+different colors on the same point within one node.<BR>
+AB, AW and AE values which don't change the board, e.g. placing a black
+stone with AB[] over a black stone that's already there, is bad style.
+Applications may want to delete these values and issue a warning.
+
+<PRE>
+<A NAME="AB"><B>Property:</B>	AB</A>
+<B>Propvalue:</B>	list of <A HREF="sgf4.html#stone">stone</A>
+<B>Propertytype:</B>	setup
+<B>Function:</B>	Add black stones to the board. This can be used to set up
+		positions or problems. Adding is done by 'overwriting' the
+		given point with black stones. It doesn't matter what
+		was there before. Adding a stone doesn't make any prisoners
+		nor any other captures (e.g. suicide). Thus it's possible
+		to create illegal board positions.
+		Points used in stone type must be unique.
+<B>Related:</B>	<A HREF="#AW">AW</A>, <A HREF="#AE">AE</A>, <A HREF="#PL">PL</A>
+
+<A NAME="AE"><B>Property:</B>	AE</A>
+<B>Propvalue:</B>	list of <A HREF="sgf4.html#move/pos">point</A>
+<B>Propertytype:</B>	setup
+<B>Function:</B>	Clear the given points on the board. This can be used
+		to set up positions or problems. Clearing is done by
+		'overwriting' the given points, so that they contain no
+		stones. It doesn't matter what was there before.
+		Clearing doesn't count as taking prisoners.
+		Points must be unique.
+<B>Related:</B>	<A HREF="#AB">AB</A>, <A HREF="#AW">AW</A>, <A HREF="#PL">PL</A>
+
+<A NAME="AW"><B>Property:</B>	AW</A>
+<B>Propvalue:</B>	list of <A HREF="sgf4.html#stone">stone</A>
+<B>Propertytype:</B>	setup
+<B>Function:</B>	Add white stones to the board. This can be used to set up
+		positions or problems. Adding is done by 'overwriting' the
+		given points with white stones. It doesn't matter what
+		was there before. Adding a stone doesn't make any prisoners
+		nor any other captures (e.g. suicide). Thus it's possible
+		to create illegal board positions.
+		Points used in stone type must be unique.
+<B>Related:</B>	<A HREF="#AB">AB</A>, <A HREF="#AE">AE</A>, <A HREF="#PL">PL</A>
+
+<A NAME="PL"><B>Property:</B>	PL</A>
+<B>Propvalue:</B>	<A HREF="sgf4.html#types">color</A>
+<B>Propertytype:</B>	setup
+<B>Function:</B>	PL tells whose turn it is to play. This can be used when
+		setting up positions or problems.
+<B>Related:</B>	<A HREF="#AE">AE</A>, <A HREF="#AB">AB</A>, <A HREF="#AW">AW</A>
+</PRE>
+
+<HR NOSHADE>
+
+<H2>Node annotation properties</H2>
+
+<PRE>
+<A NAME="C"><B>Property:</B>	C</A>
+<B>Propvalue:</B>	<A HREF="sgf4.html#text">text</A>
+<B>Propertytype:</B>	-
+<B>Function:</B>	Provides a comment text for the given node. The purpose of
+		providing both a node name and a comment is to have a short
+		identifier like "doesn't work" or "Dia. 15" that can be
+		displayed directly with the properties of the node, even if
+		the comment is turned off or shown in a separate window.
+		See <A HREF="sgf4.html#text">text-type</A> for more info.
+<B>Related:</B>	<A HREF="#N">N</A>, <A HREF="#ST">ST</A>, <A HREF="#V">V</A>, <A HREF="#UC">UC</A>, <A HREF="#DM">DM</A>, <A HREF="#HO">HO</A>
+
+<A NAME="DM"><B>Property:</B>	DM</A>
+<B>Propvalue:</B>	<A HREF="sgf4.html#double">double</A>
+<B>Propertytype:</B>	-
+<B>Function:</B>	The position is even. SGF viewers should display a
+		message. This property may indicate main variations in
+		opening libraries (joseki) too. Thus DM[2] indicates an
+		even result for both players and that this is a main
+		variation of this joseki/opening.
+		This property must not be mixed with UC, GB or GW
+		within a node.
+<B>Related:</B>	<A HREF="#UC">UC</A>, <A HREF="#GW">GW</A>, <A HREF="#GB">GB</A>
+
+<A NAME="GB"><B>Property:</B>	GB</A>
+<B>Propvalue:</B>	<A HREF="sgf4.html#double">double</A>
+<B>Propertytype:</B>	-
+<B>Function:</B>	Something good for black. SGF viewers should display a
+		message. The property is not related to any specific place
+		on the board, but marks the whole node instead.
+		GB must not be mixed with GW, DM or UC within a node.
+<B>Related:</B>	<A HREF="#GW">GW</A>, <A HREF="#C">C</A>, <A HREF="#UC">UC</A>, <A HREF="#DM">DM</A>
+
+<A NAME="GW"><B>Property:</B>	GW</A>
+<B>Propvalue:</B>	<A HREF="sgf4.html#double">double</A>
+<B>Propertytype:</B>	-
+<B>Function:</B>	Something good for white. SGF viewers should display a
+		message. The property is not related to any specific place
+		on the board, but marks the whole node instead.
+		GW must not be mixed with GB, DM or UC within a node.
+<B>Related:</B>	<A HREF="#GB">GB</A>, <A HREF="#C">C</A>, <A HREF="#UC">UC</A>, <A HREF="#DM">DM</A>
+
+<A NAME="HO"><B>Property:</B>	HO</A>
+<B>Propvalue:</B>	<A HREF="sgf4.html#double">double</A>
+<B>Propertytype:</B>	-
+<B>Function:</B>	Node is a 'hotspot', i.e. something interesting (e.g.
+		node contains a game-deciding move).
+		SGF viewers should display a message.
+		The property is not related to any specific place
+		on the board, but marks the whole node instead.
+		Sophisticated applications could implement the navigation
+		command next/previous hotspot.
+<B>Related:</B>	<A HREF="#GB">GB</A>, <A HREF="#GW">GW</A>, <A HREF="#C">C</A>, <A HREF="#UC">UC</A>, <A HREF="#DM">DM</A>
+
+<A NAME="N"><B>Property:</B>	N</A>
+<B>Propvalue:</B>	<A HREF="sgf4.html#simpletext">simpletext</A>
+<B>Propertytype:</B>	-
+<B>Function:</B>	Provides a name for the node. For more info have a look at
+		the <A HREF="#C">C</A>-property.
+<B>Related:</B>	<A HREF="#C">C</A>, <A HREF="#ST">ST</A>, <A HREF="#V">V</A>
+
+<A NAME="UC"><B>Property:</B>	UC</A>
+<B>Propvalue:</B>	<A HREF="sgf4.html#double">double</A>
+<B>Propertytype:</B>	-
+<B>Function:</B>	The position is unclear. SGF viewers should display a
+		message. This property must not be mixed with DM, GB or GW
+		within a node.
+<B>Related:</B>	<A HREF="#DM">DM</A>, <A HREF="#GW">GW</A>, <A HREF="#GB">GB</A>
+
+<A NAME="V"><B>Property:</B>	V</A>
+<B>Propvalue:</B>	<A HREF="sgf4.html#types">real</A>
+<B>Propertytype:</B>	-
+<B>Function:</B>	Define a value for the node.  Positive values are good for
+		black, negative values are good for white.
+		The interpretation of particular values is game-specific.
+		In Go, this is the estimated score.
+<B>Related:</B>	<A HREF="#C">C</A>, <A HREF="#N">N</A>, <A HREF="#RE">RE</A>
+</PRE>
+<HR NOSHADE>
+
+<H2>Move annotation properties</H2>
+
+<H3>Restrictions</H3>
+Move annotation properties without a move (B[] or W[]) within the same
+node are senseless and therefore illegal.
+Applications should delete such properties and issue a warning.
+<BR>BM, TE, DO and IT are mutual exclusive, i.e. they must not be mixed
+within a single node.
+
+<PRE>
+<A NAME="BM"><B>Property:</B>	BM</A>
+<B>Propvalue:</B>	<A HREF="sgf4.html#double">double</A>
+<B>Propertytype:</B>	move
+<B>Function:</B>	The played move is bad.
+		Viewers should display a message.
+<B>Related:</B>	<A HREF="#TE">TE</A>, <A HREF="#DO">DO</A>, <A HREF="#IT">IT</A>
+
+<A NAME="DO"><B>Property:</B>	DO</A>
+<B>Propvalue:</B>	<A HREF="sgf4.html#types">none</A>
+<B>Propertytype:</B>	move
+<B>Function:</B>	The played move is doubtful.
+		Viewers should display a message.
+<B>Related:</B>	<A HREF="#BM">BM</A>, <A HREF="#TE">TE</A>, <A HREF="#IT">IT</A>
+
+<A NAME="IT"><B>Property:</B>	IT</A>
+<B>Propvalue:</B>	<A HREF="sgf4.html#types">none</A>
+<B>Propertytype:</B>	move
+<B>Function:</B>	The played move is interesting.
+		Viewers should display a message.
+<B>Related:</B>	<A HREF="#BM">BM</A>, <A HREF="#DO">DO</A>, <A HREF="#TE">TE</A>
+
+<A NAME="TE"><B>Property:</B>	TE</A>
+<B>Propvalue:</B>	<A HREF="sgf4.html#double">double</A>
+<B>Propertytype:</B>	move
+<B>Function:</B>	The played move is a tesuji (good move).
+		Viewers should display a message.
+<B>Related:</B>	<A HREF="#BM">BM</A>, <A HREF="#DO">DO</A>, <A HREF="#IT">IT</A>
+</PRE>
+
+<HR NOSHADE>
+
+<H2>Markup properties</H2>
+
+<H3>Restrictions</H3>
+
+CR, MA, SL, SQ and TR points must be unique, i.e. it's illegal to have
+two or more of these markups on the same point within a node.
+
+<PRE>
+<A NAME="AR"><B>Property:</B>	AR</A>
+<B>Propvalue:</B>	list of composed <A HREF="sgf4.html#move/pos">point</A> ':' <A HREF="sgf4.html#move/pos">point</A>
+<B>Propertytype:</B>	-
+<B>Function:</B>	Viewers should draw an arrow pointing FROM the first point
+		TO the second point.
+		It's illegal to specify the same arrow twice,
+		e.g. (Go) AR[aa:bb][aa:bb]. Different arrows may have the same
+		starting or ending point though.
+		It's illegal to specify a one point arrow, e.g. AR[cc:cc]
+		as it's impossible to tell into which direction the
+		arrow points.
+<B>Related:</B>	<A HREF="#TR">TR</A>, <A HREF="#CR">CR</A>, <A HREF="#LB">LB</A>, <A HREF="#SL">SL</A>, <A HREF="#MA">MA</A>, <A HREF="#SQ">SQ</A>, <A HREF="#LN">LN</A>
+
+<A NAME="CR"><B>Property:</B>	CR</A>
+<B>Propvalue:</B>	list of <A HREF="sgf4.html#move/pos">point</A>
+<B>Propertytype:</B>	-
+<B>Function:</B>	Marks the given points with a circle.
+		Points must be unique.
+<B>Related:</B>	<A HREF="#TR">TR</A>, <A HREF="#MA">MA</A>, <A HREF="#LB">LB</A>, <A HREF="#SL">SL</A>, <A HREF="#AR">AR</A>, <A HREF="#SQ">SQ</A>, <A HREF="#LN">LN</A>
+
+<A NAME="DD"><B>Property:</B>	DD</A>
+<B>Propvalue:</B>	elist of <A HREF="sgf4.html#move/pos">point</A>
+<B>Propertytype:</B>	<A HREF="sgf4.html#inherit">inherit</A>
+<B>Function:</B>	Dim (grey out) the given points.
+			Have a look at the <A HREF="DD_VW.html">picture</A> to get an idea.
+			DD[] clears any setting, i.e. it undims everything.
+<B>Related:</B>	<A HREF="#VW">VW</A>
+
+<A NAME="LB"><B>Property:</B>	LB</A>
+<B>Propvalue:</B>	list of composed <A HREF="sgf4.html#move/pos">point</A> ':' <A HREF="sgf4.html#simpletext">simpletext</A>
+<B>Propertytype:</B>	-
+<B>Function:</B>	Writes the given text on the board. The text should be
+		centered around the given point. Note: there's no longer
+		a restriction to the length of the text to be displayed.
+		Have a look at the <A HREF="examples/index.html">FF4 example file</A> on possibilities
+		to display long labels (pictures <A HREF="examples/05.gif">five</A> and <A HREF="examples/06.gif">six</A>).
+		Points must be unique.
+<B>Related:</B>	<A HREF="#TR">TR</A>, <A HREF="#CR">CR</A>, <A HREF="#MA">MA</A>, <A HREF="#SL">SL</A>, <A HREF="#AR">AR</A>, <A HREF="#SQ">SQ</A>, <A HREF="#LN">LN</A>
+
+<A NAME="LN"><B>Property:</B>	LN</A>
+<B>Propvalue:</B>	list of composed <A HREF="sgf4.html#move/pos">point</A> ':' point
+<B>Propertytype:</B>	-
+<B>Function:</B>	Applications should draw a simple line form one point
+		to the other.
+		It's illegal to specify the same line twice,
+		e.g. (Go) LN[aa:bb][aa:bb]. Different lines may have the same
+		starting or ending point though.
+		It's illegal to specify a one point line, e.g. LN[cc:cc].
+<B>Related:</B>	<A HREF="#TR">TR</A>, <A HREF="#CR">CR</A>, <A HREF="#MA">MA</A>, <A HREF="#SL">SL</A>, <A HREF="#AR">AR</A>, <A HREF="#SQ">SQ</A>, <A HREF="#LB">LB</A>
+
+
+<A NAME="MA"><B>Property:</B>	MA</A>
+<B>Propvalue:</B>	list of <A HREF="sgf4.html#move/pos">point</A>
+<B>Propertytype:</B>	-
+<B>Function:</B>	Marks the given points with an 'X'.
+		Points must be unique.
+<B>Related:</B>	<A HREF="#TR">TR</A>, <A HREF="#CR">CR</A>, <A HREF="#LB">LB</A>, <A HREF="#SL">SL</A>, <A HREF="#AR">AR</A>, <A HREF="#SQ">SQ</A>, <A HREF="#LN">LN</A>
+
+<A NAME="SL"><B>Property:</B>	SL</A>
+<B>Propvalue:</B>	list of <A HREF="sgf4.html#move/pos">point</A>
+<B>Propertytype:</B>	-
+<B>Function:</B>	Selected points. Type of markup unknown
+		(though SGB inverts the colors of the given points).
+		Points must be unique.
+<B>Related:</B>	<A HREF="#TR">TR</A>, <A HREF="#CR">CR</A>, <A HREF="#LB">LB</A>, <A HREF="#MA">MA</A>, <A HREF="#AR">AR</A>, <A HREF="#LN">LN</A>
+
+<A NAME="SQ"><B>Property:</B>	SQ</A>
+<B>Propvalue:</B>	list of <A HREF="sgf4.html#move/pos">point</A>
+<B>Propertytype:</B>	-
+<B>Function:</B>	Marks the given points with a square.
+		Points must be unique.
+<B>Related:</B>	<A HREF="#TR">TR</A>, <A HREF="#CR">CR</A>, <A HREF="#LB">LB</A>, <A HREF="#SL">SL</A>, <A HREF="#AR">AR</A>, <A HREF="#MA">MA</A>, <A HREF="#LN">LN</A>
+
+<A NAME="TR"><B>Property:</B>	TR</A>
+<B>Propvalue:</B>	list of <A HREF="sgf4.html#move/pos">point</A>
+<B>Propertytype:</B>	-
+<B>Function:</B>	Marks the given points with a triangle.
+		Points must be unique.
+<B>Related:</B>	<A HREF="#MA">MA</A>, <A HREF="#CR">CR</A>, <A HREF="#LB">LB</A>, <A HREF="#SL">SL</A>, <A HREF="#AR">AR</A>, <A HREF="#LN">LN</A>
+</PRE>
+
+<HR NOSHADE>
+
+<H2>Root properties</H2>
+
+<PRE>
+<A NAME="AP"><B>Property:</B>	AP</A>
+<B>Propvalue:</B>	composed <A HREF="sgf4.html#simpletext">simpletext</A> ":" <A HREF="sgf4.html#simpletext">simpletext</A>
+<B>Propertytype:</B>	root
+<B>Function:</B>	Provides the name and version number of the application used
+		to create this <A HREF="sgf4.html#ebnf-def">gametree</A>.
+		The name should be unique and must not be changed for
+		different versions of the same program.
+		The version number itself may be of any kind, but the format
+		used must ensure that by using an ordinary string-compare,
+		one is able to tell if the version is lower or higher
+		than another version number.
+		Here's the list of known applications and their names:
+
+		Application		     System	  Name
+		---------------------------  -----------  --------------------
+		[CGoban:1.6.2]		     Unix	  CGoban
+		[Hibiscus:2.1]		     Windows 95   Hibiscus Go Editor
+		[IGS:5.0]				  Internet Go Server
+		[Many Faces of Go:10.0]      Windows 95   The Many Faces of Go
+		[MGT:?]			     DOS/Unix	  MGT
+		[NNGS:?]		     Unix	  No Name Go Server
+		[Primiview:3.0]   	     Amiga OS3.0  Primiview
+		[SGB:?]			     Macintosh	  Smart Game Board
+		[SmartGo:1.0]		     Windows	  SmartGo
+
+<B>Related:</B>	<A HREF="#FF">FF</A>, <A HREF="#GM">GM</A>, <A HREF="#SZ">SZ</A>, <A HREF="#ST">ST</A>, <A HREF="#CA">CA</A>
+
+<A NAME="CA"><B>Property:</B>	CA</A>
+<B>Propvalue:</B>	<A HREF="sgf4.html#simpletext">simpletext</A>
+<B>Propertytype:</B>	root
+<B>Function:</B>	Provides the used charset for SimpleText and Text type.
+		Default value is 'ISO-8859-1' aka 'Latin1'.
+		Only charset names (or their aliases) as specified in RFC 1345
+		(or updates thereof) are allowed.
+		Basically this field uses the same names as MIME messages in
+		their 'charset=' field (in Content-Type).
+		RFC's can be obtained via FTP from <A HREF="ftp://ds.internic.net/rfc/">DS.INTERNIC.NET</A>,
+		<A HREF="ftp://nis.nsf.net/internet/documents/rfc">NIS.NSF.NET</A>, <A HREF="ftp://wuarchive.wustl.edu/info/rfc">WUARCHIVE.WUSTL.EDU</A>, <A HREF="ftp://src.doc.ic.ac.uk/rfc">SRC.DOC.IC.AC.UK</A>
+		or <A HREF="ftp://ftp.imag.fr/pub/archive/IETF/rfc">FTP.IMAG.FR</A>.
+<B>Related:</B>	<A HREF="#FF">FF</A>, <A HREF="#C">C</A>, <A HREF="sgf4.html#text">text type</A>
+
+<A NAME="FF"><B>Property:</B>	FF</A>
+<B>Propvalue:</B>	<A HREF="sgf4.html#types">number</A> (range: 1-4)
+<B>Propertytype:</B>	root
+<B>Function:</B>	Defines the used file format. For difference between those
+		formats have a look at the <A HREF="ff1_3/sgfhistory.html">history</A> of SGF.
+		Default value: 1
+		Applications must be able to deal with different file formats
+		within a <A HREF="sgf4.html#ebnf-def">collection</A>.
+<B>Related:</B>	<A HREF="#GM">GM</A>, <A HREF="#SZ">SZ</A>, <A HREF="#ST">ST</A>, <A HREF="#AP">AP</A>, <A HREF="#CA">CA</A>
+
+<A NAME="GM"><B>Property:</B>	GM</A>
+<B>Propvalue:</B>	<A HREF="sgf4.html#types">number</A> (range: 1-16)
+<B>Propertytype:</B>	root
+<B>Function:</B>	Defines the type of game, which is stored in the current
+		<A HREF="sgf4.html#ebnf-def">gametree</A>. The property should help applications
+		to reject games, they cannot handle.
+		Valid numbers are: Go = 1, Othello = 2, chess = 3,
+		Gomoku+Renju = 4, Nine Men's Morris = 5, Backgammon = 6,
+		Chinese chess = 7, Shogi = 8, Lines of Action = 9,
+		Ataxx = 10, Hex = 11, Jungle = 12, Neutron = 13,
+		Philosopher's Football = 14, Quadrature = 15, Trax = 16,
+		Tantrix = 17, Amazons = 18, Octi = 19, Gess = 20.
+		Default value: 1
+		Different kind of games may appear within a <A HREF="sgf4.html#ebnf-def">collection</A>.
+<B>Related:</B>	<A HREF="#FF">FF</A>, <A HREF="#SZ">SZ</A>, <A HREF="#ST">ST</A>, <A HREF="#AP">AP</A>, <A HREF="#CA">CA</A>
+
+<A NAME="ST"><B>Property:</B>	ST</A>
+<B>Propvalue:</B>	<A HREF="sgf4.html#types">number</A> (range: 0-3)
+<B>Propertytype:</B>	root
+<B>Function:</B>	Defines how variations should be shown (this is needed to
+		synchronize the comments with the variations). If ST is omitted
+		viewers should offer the possibility to change the mode online.
+		Basically most programs show variations in two ways:
+		as markup on the board (if the variation contains a move)
+		and/or as a list (in a separate window).
+		The style number consists two options.
+		1) show variations of successor node (children) (value: 0)
+		   show variations of current node   (siblings) (value: 1)
+		   affects markup & list
+		2) do board markup         (value: 0)
+		   no (auto-) board markup (value: 2)
+		   affects markup only.
+		   Using no board markup could be used in problem collections
+		   or if variations are marked by subsequent properties.
+		   Viewers should take care, that the automatic variation
+		   board markup DOESN'T overwrite any markup of other
+		   properties.
+		The  final number is calculated by adding the values of each
+		option.	Example: 3 = no board markup/variations of current node
+				 1 = board markup/variations of current node
+		Default value: 0
+<B>Related:</B>	<A HREF="#C">C</A>, <A HREF="#FF">FF</A>, <A HREF="#GM">GM</A>, <A HREF="#SZ">SZ</A>, <A HREF="#AP">AP</A>, <A HREF="#CA">CA</A>
+
+<A NAME="SZ"><B>Property:</B>	SZ</A>
+<B>Propvalue:</B>	(<A HREF="sgf4.html#types">number</A> | composed number ':' number)
+<B>Propertytype:</B>	root
+<B>Function:</B>	Defines the size of the board. If only a single value
+		is given, the board is a square; with two numbers given,
+		rectangular boards are possible.
+		If a rectangular board is specified, the first number specifies
+		the number of columns, the second provides the number of rows.
+		Square boards must not be defined using the compose type
+		value: e.g. SZ[19:19] is illegal.
+		The valid range for SZ is any size greater or equal to 1x1.
+		For Go games the maximum size is limited to 52x52.
+		Default value: game specific
+			       for Go: 19 (square board)
+			       for Chess: 8 (square board)
+		Different board sizes may appear within a <A HREF="sgf4.html#ebnf-def">collection</A>.
+		See <A HREF="sgf4.html#move/pos">move-/point-type</A> for more info.
+<B>Related:</B>	<A HREF="#FF">FF</A>, <A HREF="#GM">GM</A>, <A HREF="#ST">ST</A>, <A HREF="#AP">AP</A>, <A HREF="#CA">CA</A>
+</PRE>
+
+<HR NOSHADE>
+
+<H2>Game info properties</H2>
+
+<PRE>
+<A NAME="AN"><B>Property:</B>	AN</A>
+<B>Propvalue:</B>	<A HREF="sgf4.html#simpletext">simpletext</A>
+<B>Propertytype:</B>	game-info
+<B>Function:</B>	Provides the name of the person, who made the annotations
+		to the game.
+<B>Related:</B>	<A HREF="#US">US</A>, <A HREF="#SO">SO</A>, <A HREF="#CP">CP</A>
+
+<A NAME="BR"><B>Property:</B>	BR</A>
+<B>Propvalue:</B>	<A HREF="sgf4.html#simpletext">simpletext</A>
+<B>Propertytype:</B>	game-info
+<B>Function:</B>	Provides the rank of the black player.
+		For Go (GM[1]) the following format is recommended:
+		"..k" or "..kyu" for kyu ranks and
+		"..d" or "..dan" for dan ranks.
+		Go servers may want to add '?' for an uncertain rating and
+		'*' for an established rating.
+<B>Related:</B>	<A HREF="properties.html#PB">PB</A>, <A HREF="properties.html#BT">BT</A>, <A HREF="#WR">WR</A>
+
+<A NAME="BT"><B>Property:</B>	BT</A>
+<B>Propvalue:</B>	<A HREF="sgf4.html#simpletext">simpletext</A>
+<B>Propertytype:</B>	game-info
+<B>Function:</B>	Provides the name of the black team, if game was part of a
+		team-match (e.g. China-Japan Supermatch).
+<B>Related:</B>	<A HREF="#PB">PB</A>, <A HREF="#PW">PW</A>, <A HREF="#WT">WT</A>
+
+<A NAME="CP"><B>Property:</B>	CP</A>
+<B>Propvalue:</B>	<A HREF="sgf4.html#simpletext">simpletext</A>
+<B>Propertytype:</B>	game-info
+<B>Function:</B>	Any copyright information (e.g. for the annotations) should
+		be included here.
+<B>Related:</B>	<A HREF="#US">US</A>, <A HREF="#SO">SO</A>, <A HREF="#AN">AN</A>
+
+<A NAME="DT"><B>Property:</B>	DT</A>
+<B>Propvalue:</B>	<A HREF="sgf4.html#simpletext">simpletext</A>
+<B>Propertytype:</B>	game-info
+<B>Function:</B>	Provides the date when the game was played.
+		It is MANDATORY to use the ISO-standard format for DT.
+		Note: ISO format implies usage of the Gregorian calendar.
+		Syntax:
+		"YYYY-MM-DD" year (4 digits), month (2 digits), day (2 digits)
+		Do not use other separators such as "/", " ", "," or ".".
+		Partial dates are allowed:
+		"YYYY" - game was played in YYYY
+		"YYYY-MM" - game was played in YYYY, month MM
+		For games that last more than one day: separate other dates
+		by a comma (no spaces!); following shortcuts may be used:
+		"MM-DD" - if preceded by YYYY-MM-DD, YYYY-MM, MM-DD, MM or DD
+		"MM" - if preceded by YYYY-MM or MM
+		"DD" - if preceded by YYYY-MM-DD, MM-DD or DD
+		Shortcuts acquire the last preceding YYYY and MM (if
+		necessary).
+		Note: interpretation is done from left to right.
+		Examples:
+			1996-05,06 = played in May,June 1996
+			1996-05-06,07,08 = played on 6th,7th,8th May 1996
+			1996,1997 = played in 1996 and 1997
+			1996-12-27,28,1997-01-03,04 = played on 27th,28th
+			of December 1996 and on 3rd,4th January 1997
+		Note: it's recommended to use shortcuts whenever possible,
+		e.g. 1997-05-05,06 instead of 1997-05-05,1997-05-06
+<B>Related:</B>	<A HREF="#EV">EV</A>, <A HREF="#RO">RO</A>, <A HREF="#PC">PC</A>, <A HREF="#RU">RU</A>, <A HREF="#RE">RE</A>, <A HREF="#TM">TM</A>
+
+<A NAME="EV"><B>Property:</B>	EV</A>
+<B>Propvalue:</B>	<A HREF="sgf4.html#simpletext">simpletext</A>
+<B>Propertytype:</B>	game-info
+<B>Function:</B>	Provides the name of the event (e.g. tournament).
+		Additional information (e.g. final, playoff, ..)
+		shouldn't be included (see <A HREF="#RO">RO</A>).
+<B>Related:</B>	<A HREF="#GC">GC</A>, <A HREF="#RO">RO</A>, <A HREF="#DT">DT</A>, <A HREF="#PC">PC</A>, <A HREF="#RU">RU</A>, <A HREF="#RE">RE</A>, <A HREF="#TM">TM</A>
+
+<A NAME="GN"><B>Property:</B>	GN</A>
+<B>Propvalue:</B>	<A HREF="sgf4.html#simpletext">simpletext</A>
+<B>Propertytype:</B>	game-info
+<B>Function:</B>	Provides a name for the game. The name is used to
+		easily find games within a <A HREF="sgf4.html#ebnf-def">collection</A>.
+		The name should therefore contain some helpful information
+		for identifying the game. 'GameName' could also be used
+		as the file-name, if a collection is split into
+		single files.
+<B>Related:</B>	<A HREF="#GC">GC</A>, <A HREF="#EV">EV</A>, <A HREF="#DT">DT</A>, <A HREF="#PC">PC</A>, <A HREF="#RO">RO</A>, <A HREF="#ID">ID</A>
+
+<A NAME="GC"><B>Property:</B>	GC</A>
+<B>Propvalue:</B>	<A HREF="sgf4.html#text">text</A>
+<B>Propertytype:</B>	game-info
+<B>Function:</B>	Provides some extra information about the following game.
+		The intend of GC is to provide some background information
+		and/or to summarize the game itself.
+<B>Related:</B>	<A HREF="#GN">GN</A>, <A HREF="#ON">ON</A>, <A HREF="#AN">AN</A>, <A HREF="#CP">CP</A>
+
+<A NAME="ON"><B>Property:</B>	ON</A>
+<B>Propvalue:</B>	<A HREF="sgf4.html#simpletext">simpletext</A>
+<B>Propertytype:</B>	game-info
+<B>Function:</B>	Provides some information about the opening played
+		(e.g. san-ren-sei, Chinese fuseki, etc.).
+<B>Related:</B>	<A HREF="#GN">GN</A>, <A HREF="#GC">GC</A>
+
+<A NAME="OT"><B>Property:</B>	OT</A>
+<B>Propvalue:</B>	<A HREF="sgf4.html#simpletext">simpletext</A>
+<B>Propertytype:</B>	game-info
+<B>Function:</B>	Describes the method used for overtime (byo-yomi).
+		Examples: "5 mins Japanese style, 1 move / min",
+			  "25 moves / 10 min".
+<B>Related:</B>	<A HREF="#TM">TM</A>, <A HREF="#BL">BL</A>, <A HREF="#WL">WL</A>, <A HREF="#OB">OB</A>, <A HREF="#OW">OW</A>
+
+<A NAME="PB"><B>Property:</B>	PB</A>
+<B>Propvalue:</B>	<A HREF="sgf4.html#simpletext">simpletext</A>
+<B>Propertytype:</B>	game-info
+<B>Function:</B>	Provides the name of the black player.
+<B>Related:</B>	<A HREF="#PW">PW</A>, <A HREF="#BT">BT</A>, <A HREF="#WT">WT</A>
+
+<A NAME="PC"><B>Property:</B>	PC</A>
+<B>Propvalue:</B>	<A HREF="sgf4.html#simpletext">simpletext</A>
+<B>Propertytype:</B>	game-info
+<B>Function:</B>	Provides the place where the games was played.
+<B>Related:</B>	<A HREF="#EV">EV</A>, <A HREF="#DT">DT</A>, <A HREF="#RO">RO</A>, <A HREF="#RU">RU</A>, <A HREF="#RE">RE</A>, <A HREF="#TM">TM</A>
+
+<A NAME="PW"><B>Property:</B>	PW</A>
+<B>Propvalue:</B>	<A HREF="sgf4.html#simpletext">simpletext</A>
+<B>Propertytype:</B>	game-info
+<B>Function:</B>	Provides the name of the white player.
+<B>Related:</B>	<A HREF="#PB">PB</A>, <A HREF="#BT">BT</A>, <A HREF="#WT">WT</A>
+
+<A NAME="RE"><B>Property:</B>	RE</A>
+<B>Propvalue:</B>	<A HREF="sgf4.html#simpletext">simpletext</A>
+<B>Propertytype:</B>	game-info
+<B>Function:</B>	Provides the result of the game. It is MANDATORY to use the
+		following format:
+		<I>"0"</I> (zero) or <I>"Draw"</I> for a draw (jigo),
+		<I>"B+" ["score"]</I> for a black win and
+		<I>"W+" ["score"]</I> for a white win
+		Score is optional (some games don't have a score e.g. chess).
+		If the score is given it has to be given as a real value,
+		e.g. "B+0.5", "W+64", "B+12.5"
+		Use <I>"B+R"</I> or <I>"B+Resign"</I> and <I>"W+R"</I> or <I>"W+Resign"</I> for a win by
+		resignation. Applications must not write "Black resigns".
+		Use <I>"B+T"</I> or <I>"B+Time"</I> and <I>"W+T"</I> or <I>"W+Time"</I> for a win on time,
+		<I>"B+F"</I> or <I>"B+Forfeit"</I> and <I>"W+F"</I> or <I>"W+Forfeit"</I> for a win by
+		forfeit,
+		<I>"Void"</I> for no result or suspended play and
+		<I>"?"</I> for an unknown result.
+
+<B>Related:</B>	<A HREF="#EV">EV</A>, <A HREF="#DT">DT</A>, <A HREF="#PC">PC</A>, <A HREF="#RO">RO</A>, <A HREF="#RU">RU</A>, <A HREF="#TM">TM</A>
+
+<A NAME="RO"><B>Property:</B>	RO</A>
+<B>Propvalue:</B>	<A HREF="sgf4.html#simpletext">simpletext</A>
+<B>Propertytype:</B>	game-info
+<B>Function:</B>	Provides round-number and type of round. It should be
+		written in the following way: RO[xx (tt)], where xx is the
+		number of the round and (tt) the type:
+		final, playoff, league, ...
+<B>Related:</B>	<A HREF="#EV">EV</A>, <A HREF="#DT">DT</A>, <A HREF="#PC">PC</A>, <A HREF="#RU">RU</A>, <A HREF="#RE">RE</A>, <A HREF="#TM">TM</A>
+
+<A NAME="RU"><B>Property:</B>	RU</A>
+<B>Propvalue:</B>	<A HREF="sgf4.html#simpletext">simpletext</A>
+<B>Propertytype:</B>	game-info
+<B>Function:</B>	Provides the used rules for this game.
+		Because there are many different rules, SGF requires
+		mandatory names only for a small set of well known rule sets.
+		Note: it's beyond the scope of this specification to give an
+		exact specification of these rule sets.
+		Mandatory names for Go (GM[1]):
+			"AGA" (rules of the American Go Association)
+			"GOE" (the Ing rules of Goe)
+			"Japanese" (the Nihon-Kiin rule set)
+			"NZ" (New Zealand rules)
+
+<B>Related:</B>	<A HREF="#EV">EV</A>, <A HREF="#DT">DT</A>, <A HREF="#PC">PC</A>, <A HREF="#RO">RO</A>, <A HREF="#RE">RE</A>, <A HREF="#TM">TM</A>
+
+<A NAME="SO"><B>Property:</B>	SO</A>
+<B>Propvalue:</B>	<A HREF="sgf4.html#simpletext">simpletext</A>
+<B>Propertytype:</B>	game-info
+<B>Function:</B>	Provides the name of the source (e.g. book, journal, ...).
+<B>Related:</B>	<A HREF="#US">US</A>, <A HREF="#AN">AN</A>, <A HREF="#CP">CP</A>
+
+<A NAME="TM"><B>Property:</B>	TM</A>
+<B>Propvalue:</B>	<A HREF="sgf4.html#types">real</A>
+<B>Propertytype:</B>	game-info
+<B>Function:</B>	Provides the time limits of the game.
+		The time limit is given in seconds.
+<B>Related:</B>	<A HREF="#EV">EV</A>, <A HREF="#DT">DT</A>, <A HREF="#PC">PC</A>, <A HREF="#RO">RO</A>, <A HREF="#RU">RU</A>, <A HREF="#RE">RE</A>
+
+<A NAME="US"><B>Property:</B>	US</A>
+<B>Propvalue:</B>	<A HREF="sgf4.html#simpletext">simpletext</A>
+<B>Propertytype:</B>	game-info
+<B>Function:</B>	Provides the name of the user (or program), who entered
+		the game.
+<B>Related:</B>	<A HREF="#SO">SO</A>, <A HREF="#AN">AN</A>, <A HREF="#CP">CP</A>
+
+<A NAME="WR"><B>Property:</B>	WR</A>
+<B>Propvalue:</B>	<A HREF="sgf4.html#simpletext">simpletext</A>
+<B>Propertytype:</B>	game-info
+<B>Function:</B>	Provides the rank of the white player. For recommended
+		format see <A HREF="#BR">BR</A>.
+<B>Related:</B>	<A HREF="properties.html#PW">PW</A>, <A HREF="properties.html#WT">WT</A>, <A HREF="#BR">BR</A>
+
+<A NAME="WT"><B>Property:</B>	WT</A>
+<B>Propvalue:</B>	<A HREF="sgf4.html#simpletext">simpletext</A>
+<B>Propertytype:</B>	game-info
+<B>Function:</B>	Provide the name of the white team, if game was part of a
+		team-match (e.g. China-Japan Supermatch).
+<B>Related:</B>	<A HREF="#PB">PB</A>, <A HREF="#PW">PW</A>, <A HREF="#BT">BT</A>
+</PRE>
+
+<HR NOSHADE>
+
+<H2>Timing properties</H2>
+
+<PRE>
+<A NAME="BL"><B>Property:</B>	BL</A>
+<B>Propvalue:</B>	<A HREF="sgf4.html#types">real</A>
+<B>Propertytype:</B>	move
+<B>Function:</B>	Time left for black, after the move was made.
+		Value is given in seconds.
+<B>Related:</B>	<A HREF="#TM">TM</A>, <A HREF="#OT">OT</A>, <A HREF="#WL">WL</A>, <A HREF="#OB">OB</A>, <A HREF="#OW">OW</A>
+
+<A NAME="OB"><B>Property:</B>	OB</A>
+<B>Propvalue:</B>	<A HREF="sgf4.html#types">number</A>
+<B>Propertytype:</B>	move
+<B>Function:</B>	Number of black moves left (after the move of this node was
+		played) to play in this byo-yomi period.
+<B>Related:</B>	<A HREF="#TM">TM</A>, <A HREF="#OT">OT</A>, <A HREF="#BL">BL</A>, <A HREF="#WL">WL</A>, <A HREF="#OW">OW</A>
+
+<A NAME="OW"><B>Property:</B>	OW</A>
+<B>Propvalue:</B>	<A HREF="sgf4.html#types">number</A>
+<B>Propertytype:</B>	move
+<B>Function:</B>	Number of white moves left (after the move of this node was
+		played) to play in this byo-yomi period.
+<B>Related:</B>	<A HREF="#TM">TM</A>, <A HREF="#OT">OT</A>, <A HREF="#BL">BL</A>, <A HREF="#WL">WL</A>, <A HREF="#OB">OB</A>
+
+<A NAME="WL"><B>Property:</B>	WL</A>
+<B>Propvalue:</B>	<A HREF="sgf4.html#types">real</A>
+<B>Propertytype:</B>	move
+<B>Function:</B>	Time left for white after the move was made.
+		Value is given in seconds.
+<B>Related:</B>	<A HREF="#TM">TM</A>, <A HREF="#OT">OT</A>, <A HREF="#BL">BL</A>, <A HREF="#OB">OB</A>, <A HREF="#OW">OW</A>
+</PRE>
+<HR NOSHADE>
+
+<H2>Miscellaneous properties</H2>
+
+<PRE>
+<A NAME="FG"><B>Property:</B>	FG</A>
+<B>Propvalue:</B>	<A HREF="sgf4.html#types">none | composition of number ":" SimpleText</A>
+<B>Propertytype:</B>	-
+<B>Function:</B>	The figure property is used to divide a game into
+		different figures for printing: a new figure starts at the
+		node containing a figure property.
+		If the value is not empty then
+		- Simpletext provides a name for the diagram
+		- Number specifies some flags (for printing).
+		  These flags are:
+			- <I>coordinates</I> on/off (value: 0/1)
+			- <I>diagram name</I> on/off (value: 0/2)
+			- <I>list moves not shown in figure</I> on/off (value: 0/4)
+			  Some moves can't be shown in a diagram (e.g. ko
+			  captures in Go) - these moves may be listed as text.
+			- <I>remove captured stones</I> on/off (value: 0/256)
+			  'remove off' means: keep captured stones in the
+			  diagram and don't overwrite stones played earlier -
+			  this is the way diagrams are printed in books.
+			  'remove on' means: capture and remove the stones from
+			  the display - this is the usual viewer mode.
+			  This flag is specific to Go (GM[1]).
+			- <I>hoshi dots</I> on/off (value: 0/512)
+			  This flag is specific to Go (GM[1]).
+			- <I>Ignore flags</I> on/off (value: 32768)
+			  If on, then all other flags should be ignored and
+			  the application should use its own defaults.
+		  The final number is calculated by summing up all flag values.
+		  E.g. 515 = coordinates and diagram name off, remove captured
+		  stones, list unshown moves, hoshi dots off;
+		  257 = coordinates off, diagram name on, list unshown moves,
+		  don't remove captured stones, hoshi dots on.
+		  (this is how diagrams are printed in e.g. Go World)
+		Note: FG combined with VW, MN and PM are mighty tools to print
+		and compile diagrams.
+<B>Related:</B>	<A HREF="#MN">MN</A>, <A HREF="#PM">PM</A>, <A HREF="#VW">VW</A>
+
+<A NAME="PM"><B>Property:</B>	PM</A>
+<B>Propvalue:</B>	<A HREF="sgf4.html#types">number</A>
+<B>Propertytype:</B>	<A HREF="sgf4.html#inherit">inherit</A>
+<B>Function:</B>	This property is used for printing.
+		It specifies how move numbers should be printed.
+		0 ... don't print move numbers
+		1 ... print move numbers as they are
+		2 ... print 'modulo 100' move numbers
+			This mode is usually used in books or magazines.
+			Note: Only the first move number is calculated
+			'modulo 100' and the obtained number is increased
+			for each move in the diagram.
+			E.g. A figure containing moves
+				 32-78  is printed as moves 32-78
+				102-177 is printed as moves  2-77
+				 67-117 is printed as moves 67-117
+				154-213 is printed as moves 54-113
+		Default value: 1
+<B>Related:</B>	<A HREF="#MN">MN</A>, <A HREF="#FG">FG</A>
+
+<A NAME="VW"><B>Property:</B>	VW</A>
+<B>Propvalue:</B>	elist of <A HREF="sgf4.html#move/pos">point</A>
+<B>Propertytype:</B>	<A HREF="sgf4.html#inherit">inherit</A>
+<B>Function:</B>	View only part of the board. The points listed are
+			visible, all other points are invisible.
+			Note: usually the point list is given in compressed
+			format (see 'point' type)!
+			Points have to be unique.
+			Have a look at the <A HREF="DD_VW.html">picture</A> to get an idea.
+			VW[] clears any setting, i.e. the whole board is
+			visible again.
+<B>Related:</B>	<A HREF="#DD">DD</A>, <A HREF="#PM">PM</A>, <A HREF="#FG">FG</A>
+
+</PRE>
+
+</BODY>
+</HTML>

@@ -1,0 +1,140 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD><TITLE>SGF - Backgammon (GM[6])</TITLE></HEAD>
+<BODY alink="#FF0000" bgcolor="#FFFFFF" link="#0000FF" text="#000000" vlink="#FF0000">
+<A HREF="index.html"><IMG src="images/head.gif" ALT="[SGF FF[4] - Smart Game Format]" BORDER=0></A>
+
+<H1>Backgammon (GM[6])</H1>
+
+For more information contact Gary Wong (author of
+<A HREF="http://www.gnu.org/software/gnubg/gnubg.html">Gnu Backgammon</A>)
+at <A HREF="mailto:gary@cs.arizona.edu">gary@cs.arizona.edu</A>.
+
+<H2><A NAME="types">Point & Stone type</A></H2>
+
+In Backgammon, the Stone becomes Point, and is a single lower case letter.
+<P>
+<IMG src="images/bgpoint.png" ALT="[coordinates (bgpoint.png)]">
+Coordinate system for points and moves
+<P>
+`a' is the 1 point for white (and the 24 point for black), through to
+`x' which is the 24 point for white (and the 1 point for black).  `y'
+is the bar, and `z' is the bearoff tray.
+
+<H2><A NAME="moves">Move type</A></H2>
+
+Normal moves specify the dice roll (as a pair of digits from 1 to 6)
+followed by 0 to 4 source/destination pairs.  Moves which hit are not
+recorded differently.
+<P>
+Other legal moves include `double', `take' and `drop' for cube action
+(where `double' includes initial and subsequent doubles, as well as
+beavers).
+<P>
+Examples of legal moves include:
+<DL>
+<DT>W[31hefe]
+<DD>White playing an opening 31 as 8/5 6/5.
+<DT>B[61yg]
+<DD>Black entering with bar/18.
+<DT>B[66]
+<DD>Black failing to enter with 66.
+<DT>W[66fzezdzcz]
+<DD>White rolling 66 and playing 6/off 5/off 4/off 3/off.
+<DT>W[double];B[double];W[take];W[66fzfzfzfz]
+<DD>White doubles, black beavers, white accepts the beaver and rolls 66 to
+play 6/off(4).
+</DL>
+
+<H3><A NAME="colours">Colours</A></H3>
+The specification describes players as "black" and "white"; if an
+implementation uses alternate names, then the following defaults are
+recommended for consistency:
+<P>
+<PRE>
+ White = O = 0
+ Black = X = 1
+</PRE>
+
+<H2><A NAME="properties">Properties</A></H2>
+
+<PRE>
+<A NAME="CO"><B>Property:</B>	CO</A>
+<B>Propvalue:</B>	<A HREF="sgf4.html#types">simpletext</A>
+<B>Propertytype:</B>	setup
+<B>Function:</B>	Set the position of the doubling cube.  The value
+                should be `b' (black), `w' (white), `c' (centred), or `n'
+		(none -- for cubeless or Crawford games).
+<B>Related:</B>	<A HREF="#CV">CV</A>
+
+<A NAME="CV"><B>Property:</B>	CV</A>
+<B>Propvalue:</B>	<A HREF="sgf4.html#types">number</A>
+<B>Propertytype:</B>	setup
+<B>Function:</B>	Set the value of the doubling cube.  This value
+                defaults to 1 at the beginning of the game, but a CV property
+		should be added when setting up a position where a double has
+		been made, or at the beginning of a money game if automatic
+		doubles occur.
+<B>Related:</B>	<A HREF="#CP">CP</A>
+
+<A NAME="DI"><B>Property:</B>	DI</A>
+<B>Propvalue:</B>	<A HREF="sgf4.html#types">number</A>
+<B>Propertytype:</B>	setup
+<B>Function:</B>	Set the dice without moving (this could be useful for
+		creating problem positions, e.g. DI[31])
+<B>Related:</B>	<A HREF="#CO">CO</A>
+
+<A NAME="MI"><B>Property:</B>	MI</A>
+<B>Propvalue:</B>	list of composed <A HREF="sgf4.html#types">simpletext</A> ':' <A HREF="sgf4.html#types">simpletext</A>
+<B>Propertytype:</B>	game-info
+<B>Function:</B>	Specifies information about the match the game belongs to.
+		This property should specify a list of tag/value pairs, where
+                the allowable tags are case-insensitive, and include:
+
+                  length - the match length (number of points); value should
+                           be a <A HREF="sgf4.html#types">number</A>
+                  game   - the number of this game within the match (the
+                           first game is 1); value should be a <A HREF="sgf4.html#types">number</A>
+                  bs     - the score for Black at the start of the game;
+                           value should be a <A HREF="sgf4.html#types">number</A>
+                  ws     - the score for White at the start of the game;
+                           value should be a <A HREF="sgf4.html#types">number</A>
+
+                Unknown tags should be ignored (a warning may be produced).
+                The order of tags in the list is not significant.  An example
+		MI property is:
+		                  MI[length:7][game:3][ws:2][bs:1]
+<B>Related:</B>	<A HREF="properties.html#EV">EV</A>, <A HREF="properties.html#GN">GN</A>, <A HREF="#RE">RE</A>, <A HREF="properties.html#RO">RO</A>
+
+<A NAME="RE"><B>Property:</B>	RE</A>
+<B>Propvalue:</B>	<A HREF="sgf4.html#types">simpletext</A>
+<B>Propertytype:</B>	game-info
+<B>Function:</B>	The <A HREF="properties.html#RE">general RE property</A> has the following
+                modification in backgammon games: in the case of a
+                resignation, the value should also specify the number of
+                points before the R(esign).  Here are three example RE
+                properties:
+
+                        RE[B+6R]      -- White resigns a backgammon on a 2
+                                         cube (worth 6 points).
+                        RE[W+2Resign] -- Black resigns a gammon on a 1 cube
+                                         (worth 2 points).
+                        RE[W+4]       -- Black drops a redouble to 8 (note
+                                         this is considered a normal loss, not
+                                         a resignation).
+<B>Related:</B>	<A HREF="properties.html#RE">RE</A>
+
+<A NAME="RU"><B>Property:</B>	RU</A>
+<B>Propvalue:</B>	<A HREF="sgf4.html#types">simpletext</A>
+<B>Propertytype:</B>	game-info
+<B>Function:</B>	Backgammon-specific values for the <A HREF="properties.html#RU">general RU property</A>
+                include the following:
+
+		  [Crawford] -- the Crawford rule is being used in this match,
+		    although this is not the Crawford game.
+		  [Crawford:CrawfordGame] -- this IS the Crawford game.
+		  [Jacoby] -- the Jacoby rule is in use for this game.
+<B>Related:</B>	<A HREF="properties.html#RU">RU</A>
+</PRE>
+</BODY>
+</HTML>
