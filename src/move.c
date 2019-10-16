@@ -47,6 +47,7 @@ move coord_to_move(
     u8 y
 ) {
     assert(x < BOARD_SIZ && y < BOARD_SIZ);
+
     return (move)(y * BOARD_SIZ + x);
 }
 

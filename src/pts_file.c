@@ -46,23 +46,27 @@ Open and prepare a file to be interpreted line by line.
 void open_rule_file(
     const char * filename
 ) {
-    if (buffer != NULL)
+    if (buffer != NULL) {
         flog_crit("ptsf", "error: pts_file: file open");
+    }
 
     char * fn = alloc();
-    if (starts_with(filename, data_folder()))
+    if (starts_with(filename, data_folder())) {
         snprintf(fn, MAX_PAGE_SIZ, "%s", filename);
-    else
+    } else {
         snprintf(fn, MAX_PAGE_SIZ, "%s%s", data_folder(), filename);
+    }
 
     buffer = malloc(MAX_FILE_SIZ);
-    if (buffer == NULL)
+    if (buffer == NULL) {
         flog_crit("ptsf", "system out of memory");
+    }
 
 
     d32 chars_read = read_ascii_file(buffer, MAX_FILE_SIZ, fn);
-    if (chars_read < 0)
+    if (chars_read < 0) {
         flog_crit("ptsf", "couldn't open file for reading");
+    }
 
     release(fn);
     search_started = false;
@@ -74,14 +78,14 @@ Read the next rule line.
 void read_next_rule(
     char * dst
 ) {
-    if (buffer == NULL)
+    if (buffer == NULL) {
         flog_crit("ptsf", "no file open");
+    }
 
     char * line;
-    if (search_started)
+    if (search_started) {
         line = strtok_r(NULL, "\r\n", &save_ptr);
-    else
-    {
+    } else {
         line = strtok_r(buffer, "\r\n", &save_ptr);
         search_started = true;
     }
@@ -129,12 +133,13 @@ void interpret_rule_as_pts_list(
 
     char * word;
     char * save_ptr2 = NULL;
-    if ((word = strtok_r(tmp, " ", &save_ptr2)) != NULL)
+    if ((word = strtok_r(tmp, " ", &save_ptr2)) != NULL) {
         strncpy(tokens[tokens_read++], word, 4);
+    }
 
-    while (tokens_read < TOTAL_BOARD_SIZ && (word = strtok_r(NULL, " ",
-        &save_ptr2)) != NULL)
+    while (tokens_read < TOTAL_BOARD_SIZ && (word = strtok_r(NULL, " ", &save_ptr2)) != NULL) {
         strncpy(tokens[tokens_read++], word, 4);
+    }
 
     if (tokens_read < 1 || tokens_read == TOTAL_BOARD_SIZ) {
         char * buf = alloc();
@@ -149,12 +154,14 @@ void interpret_rule_as_pts_list(
 
     for (u16 t = 0; t < tokens_read; ++t) {
         move m = coord_parse_alpha_num(tokens[t]);
+
         if (!is_board_move(m)) {
             char * buf = alloc();
             snprintf(buf, MAX_PAGE_SIZ, "malformed line: %s", src);
             flog_crit("ptsf", buf);
             release(buf);
         }
+
         if (!attempt_play_slow(&b, true, m)) {
             char * buf = alloc();
             snprintf(buf, MAX_PAGE_SIZ, "malformed line: %s", src);
@@ -190,6 +197,7 @@ static void load_points(
 
     char * s = alloc();
     read_next_rule(s);
+
     if (s != NULL) {
         interpret_rule_as_pts_list(dst, s);
 
@@ -207,14 +215,16 @@ static void load_points(
 Load handicap points.
 */
 void load_handicap_points() {
-    if (handicap_points_attempted_load)
+    if (handicap_points_attempted_load) {
         return;
+    }
 
     load_points("handicap", &handicap);
 
     memset(is_handicap, false, TOTAL_BOARD_SIZ);
-    for (move i = 0; i < handicap.count; ++i)
+    for (move i = 0; i < handicap.count; ++i) {
         is_handicap[handicap.coord[i]] = true;
+    }
 
     handicap_points_attempted_load = true;
 }
@@ -223,14 +233,16 @@ void load_handicap_points() {
 Load hoshi points.
 */
 void load_hoshi_points() {
-    if (hoshi_points_attempted_load)
+    if (hoshi_points_attempted_load) {
         return;
+    }
 
     load_points("hoshi", &hoshi);
 
     memset(is_hoshi, false, TOTAL_BOARD_SIZ);
-    for (move i = 0; i < hoshi.count; ++i)
+    for (move i = 0; i < hoshi.count; ++i) {
         is_hoshi[hoshi.coord[i]] = true;
+    }
 
     hoshi_points_attempted_load = true;
 }
@@ -239,14 +251,16 @@ void load_hoshi_points() {
 Load starting MCTS points.
 */
 void load_starting_points() {
-    if (starting_points_attempted_load)
+    if (starting_points_attempted_load) {
         return;
+    }
 
     load_points("starting", &starting);
 
     memset(is_starting, false, TOTAL_BOARD_SIZ);
-    for (move i = 0; i < starting.count; ++i)
+    for (move i = 0; i < starting.count; ++i) {
         is_starting[starting.coord[i]] = true;
+    }
 
     starting_points_attempted_load = true;
 }
