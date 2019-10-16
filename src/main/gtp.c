@@ -74,7 +74,6 @@ const char * supported_commands[] = {
     "loadsgf",
     "mtld-game_info",
     "mtld-last_evaluation",
-    "mtld-review_game",
     "mtld-time_left",
     "name",
     "place_free_handicap",
@@ -247,68 +246,6 @@ static void gtp_list_commands(
 
     if (idx > 0) {
         buf[idx - 1] = 0;
-    }
-
-    gtp_answer(fp, id, buf);
-    release(buf);
-}
-
-/*
-Review all previous plays in the selected time in seconds per turn. Receives
-time to think in seconds.
-RETURNS text description
-*/
-static void gtp_review_game(
-    FILE * fp,
-    int id,
-    const char * timestr /* in seconds */
-) {
-    u32 seconds;
-    if (!parse_uint(&seconds, timestr) || seconds < 1) {
-        gtp_error(fp, id, "syntax error");
-        return;
-    }
-
-    new_match_maintenance();
-
-    char * buf = alloc();
-    u32 idx = 0;
-
-    out_board out_b;
-    board b;
-    first_game_state(&b, &current_game);
-    bool is_black = first_player_color(&current_game);
-
-    for (u16 t = 0; t < current_game.turns; ++t) {
-        u64 curr_time = current_time_in_millis();
-        u64 stop_time = curr_time + seconds * 1000;
-        u64 early_stop_time = curr_time + seconds * 500;
-        evaluate_position_timed(&b, is_black, &out_b, stop_time, early_stop_time);
-
-        move best = select_play_fast(&out_b);
-        move actual = current_game.moves[t];
-        char * s = alloc();
-        if (is_board_move(actual)) {
-            coord_to_alpha_num(s, actual);
-
-            idx += snprintf(buf + idx, 4 * 1024 - idx,  "%u: (%c) Actual: %s (%.3f)", t, is_black ? 'B' : 'W',
-                            s, out_b.value[actual]);
-        } else {
-            idx += snprintf(buf + idx, 4 * 1024 - idx, "%u: (%c) Actual: pass", t, is_black ? 'B' : 'W');
-        }
-
-        if (is_board_move(best)) {
-            coord_to_alpha_num(s, best);
-
-            idx += snprintf(buf + idx, 4 * 1024 - idx, " Best: %s (%.3f)\n", s, out_b.value[best]);
-        } else {
-            idx += snprintf(buf + idx, 4 * 1024 - idx, " Best: pass\n");
-        }
-
-        release(s);
-        opt_turn_maintenance(&b, is_black);
-        just_play_slow(&b, is_black, actual);
-        is_black = !is_black;
     }
 
     gtp_answer(fp, id, buf);
@@ -1498,11 +1435,6 @@ lbl_parse_command:
 
         if (argc == 0 && strcmp(cmd, "final_score") == 0) {
             gtp_final_score(out_fp, idn);
-            continue;
-        }
-
-        if (argc == 1 && strcmp(cmd, "mtld-review_game") == 0) {
-            gtp_review_game(out_fp, idn, args[0]);
             continue;
         }
 

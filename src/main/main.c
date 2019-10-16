@@ -214,10 +214,10 @@ static void usage() {
         fprintf(stderr, "        Choose whether to resign or pass when losing the match. The keyword\n        argument can be resign or pass. By default Matilda resigns on text mode\n        and passes on GTP mode.\n\n");
 
         fprintf(stderr, "        \033[1m--resign_on_timeout\033[0m\n\n");
-        fprintf(stderr, "        Resign if the program believes to have lost on time.\n\n");
+        fprintf(stderr, "        Resign if the program believes to have lost on time. Default: false.\n\n");
 
         fprintf(stderr, "        \033[1m-t, --time <value>\033[0m\n\n");
-        fprintf(stderr, "        Override the time system in use. A composite overtime format is used\n        with four components: main time, number of periods, time per period and\n        number of stones per period. Examples: 90m (suddent death), 10m+3x10s\n        (Canadian overtime), 1h+30s/5 (Japanese byo-yomi), 15m+3x30s/10\n        (mixed).\n\n        For no time limits use 0 main time and 0 period stones, or the keyword\n        infinite. Example: 0+1m/0, infinite.\n\n        Time units available: ms (milliseconds), s (seconds), m (minutes), h\n        (hours). Main time value 0 does not accept a unit.\n\n");
+        fprintf(stderr, "        Override the time system in use. A composite overtime format is used\n        with four components: main time, number of periods, time per period and\n        number of stones per period. Examples: 90m (suddent death), 10m+3x10s\n        (Canadian overtime), 1h+30s/5 (Japanese byo-yomi), 15m+3x30s/10\n        (mixed).\n\n        For no time limits use 0 main time and 0 period stones, or the keyword\n        infinite. Examples: 0+1m/0, infinite.\n\n        Time units available: ms (milliseconds), s (seconds), m (minutes), h\n        (hours). Main time value 0 does not accept a unit.\n\n");
 
         fprintf(stderr, "        \033[1m--think_in_opt_time\033[0m\n\n");
         fprintf(stderr, "        Continue thinking in the background while in the opponents turn.\n\n");

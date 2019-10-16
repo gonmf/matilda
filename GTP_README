@@ -95,12 +95,6 @@ Arguments: none
 Fails: never
 
 
-mtld-review_game -- returns description of the quality of the moves played and
-the best moves quality.
-Arguments: time available to think (per turn), in seconds
-Fails: never
-
-
 mtld-time_left -- exactly the same as the standard time_left command, except for
 the time being specified in milliseconds instead of seconds.
 Arguments: player color, number of milliseconds remaining in the current period,
