@@ -43,5 +43,4 @@ author of this software.
 This project started as the practical component of a dissertation for the
 obtention of a Masters Degree on Computer Science and Computer Engineering, from
 the High Institute of Engineering of Lisbon, titled "Guiding Monte Carlo tree
-searches with neural networks in the game of Go" (2016) by Gonçalo Mendes
-Ferreira.
+searches with neural networks in the game of Go" (2016) by Gonçalo Mendes.
