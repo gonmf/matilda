@@ -1,5 +1,3 @@
-[![Build Status](https://travis-ci.org/gonmf/matilda.svg?branch=master)](https://travis-ci.org/gonmf/matilda)
-
 Matilda - Go/Igo/Wéiqí/Baduk playing software
 ===
 
