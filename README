@@ -27,6 +27,7 @@ How to
 You can play with Matilda out of the box using a text interface. For a graphical
 interface you can connect it with any GTP-speaking program that supports Chinese
 rules, like GoGui, available at http://gogui.sourceforge.net/.
+Matilda also includes matilda-twogtp for self-play and benchmarking.
 
 
 Copyright

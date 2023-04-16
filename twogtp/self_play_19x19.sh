@@ -1,13 +1,10 @@
 #!/bin/bash
-rm -f output.html output.summary.dat
-BLACK="../src/matilda     -m gtp -d ../src/data/ -l e --disable_opening_books --losing resign --playouts 10000"
-WHITE="../src/matilda-old -m gtp -d ../src/data/ -l e --disable_opening_books --losing resign --playouts 10000"
-REFEREE="gnugo --level 0 --mode gtp --chinese-rules --positional-superko"
-gogui-twogtp -white "$WHITE" -black "$BLACK" -referee "$REFEREE" \
--sgffile output \
--games 4000 \
--auto \
--size 19 \
--komi 7.5 \
--alternate
+../src/matilda-twogtp \
+  --black "../src/matilda -l ew --save_all -m gtp -d ../src/data/ --disable_opening_books --playouts 1000 --losing resign" \
+  --white "../src/matilda2 -l ew -m gtp -d ../src/data/ --disable_opening_books --playouts 1000 --losing resign" \
+  --referee "gnugo --mode gtp --chinese-rules --positional-superko" \
+  --size 19 \
+  --komi 7.5 \
+  --games 10 \
+  --alternate
 exit 0

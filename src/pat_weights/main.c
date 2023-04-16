@@ -11,7 +11,6 @@ The weights are 16-bit values that are later scaled by a factor of 1/9 so their
 maximum total on a 3x3 neighborship fits 16 bits.
 */
 
-
 #include "config.h"
 
 #include <unistd.h>

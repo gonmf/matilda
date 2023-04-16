@@ -34,7 +34,7 @@ OBJFILES := $(patsubst %.c,%.o,$(SRCFILES))
 DEPFILES := $(patsubst %.o,%.d,$(OBJFILES))
 
 PROGRAMS := matilda test gen_opening_book learn_best_plays learn_pat_weights \
-	gen_zobrist_table
+	gen_zobrist_table matilda-twogtp
 
 .PHONY: $(PROGRAMS) clean
 
@@ -56,6 +56,9 @@ learn_pat_weights: $(OBJFILES) pat_weights/*.c
 	@$(CC) $^ $(CFLAGS) $(LDFLAGS) -o $@
 
 gen_zobrist_table: $(OBJFILES) zobrist/*.c
+	@$(CC) $^ $(CFLAGS) $(LDFLAGS) -o $@
+
+matilda-twogtp: $(OBJFILES) twogtp/*.c
 	@$(CC) $^ $(CFLAGS) $(LDFLAGS) -o $@
 
 %.o: %.c

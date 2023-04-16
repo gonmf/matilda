@@ -1,15 +1,13 @@
 /*
 Support for logging to file. Logging is made to a file called
-matilda_YYMMDD_XXXXXX.log where YYMMDD is the date and XXXXXX is a random
-string. When logging a mask of log categories specifies the types of messages to
-be written to file. Having a very high degree of detail in very fast matches
+matilda_YYYYMMDDhhmm.log where YYYMMDD is the date and hhmm the hours and
+minutes. When logging a mask of log categories specifies the types of messages
+to be written to file. Having a very high degree of detail in very fast matches
 actively hurts the performance.
 
 Writing to files is synchronous (with fsync) to avoid loss of data in case of
 crashes, but it is impossible to guarantee this in all cases.
 */
-
-
 
 #ifndef MATILDA_FLOG_H
 #define MATILDA_FLOG_H
