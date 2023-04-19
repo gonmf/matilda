@@ -234,7 +234,7 @@ static void open_log_file() {
             s[idx - 1] = 0;
         }
 
-        flog(NULL, NULL, s);
+        flog_info(NULL, s);
         release(s);
     }
 }

@@ -14,6 +14,7 @@ Please see the example scritps in the root folder twogtp/ on how to use this.
 #include <sys/types.h>
 #include <unistd.h>
 #include <signal.h>
+#include <math.h>
 
 static void open_program(const char * command, int cpipe[]) {
   int parent_to_child[2], child_to_parent[2];
@@ -40,23 +41,18 @@ static void open_program(const char * command, int cpipe[]) {
   cpipe[2] = pid;
 }
 
-static void send_command(const int cpipe[2], const char * message, char * response_buffer) {
-  char buf[1024];
-  snprintf(buf, 1024, "%s\n", message);
-  write(cpipe[1], buf, strlen(buf));
-
-  if (response_buffer == NULL) {
-    response_buffer = buf;
-  }
+static char * send_command(const int cpipe[2], const char * message, char * resp_buffer) {
+  snprintf(resp_buffer, 1024, "%s\n", message);
+  write(cpipe[1], resp_buffer, strlen(resp_buffer));
 
   int rtotal = 0;
   while (1) {
-    int r = read(cpipe[0], response_buffer + rtotal, 1024 - rtotal);
+    int r = read(cpipe[0], resp_buffer + rtotal, 1024 - rtotal);
     if (r > 0) {
       rtotal += r;
       if (rtotal >= 2) {
-        if (response_buffer[rtotal - 2] == '\n' && response_buffer[rtotal - 1] == '\n') {
-          response_buffer[rtotal - 2] = 0;
+        if (resp_buffer[rtotal - 2] == '\n' && resp_buffer[rtotal - 1] == '\n') {
+          resp_buffer[rtotal - 2] = 0;
           break;
         }
       }
@@ -64,6 +60,11 @@ static void send_command(const int cpipe[2], const char * message, char * respon
 
     usleep(50000);
   }
+
+  while (resp_buffer[0] == '\n' || resp_buffer[0] == '=' || resp_buffer[0] == ' ') {
+    resp_buffer++;
+  }
+  return resp_buffer;
 }
 
 static int play_game(
@@ -71,10 +72,12 @@ static int play_game(
   int white_player_pipe[2],
   int referee_pipe[2],
   int board_size,
-  int komi
+  int komi,
+  int * turns
 ) {
   char buffer[1024];
   char buffer2[1060];
+  char * resp;
 
   snprintf(buffer2, 1060, "boardsize %d", board_size);
   send_command(black_player_pipe, buffer2, buffer);
@@ -93,14 +96,23 @@ static int play_game(
   send_command(referee_pipe, "clear_board", buffer);
 
   int last_move_pass = 0;
+  int max_turns = board_size * board_size * 2;
+  *turns = 0;
 
   while (1) {
-    send_command(black_player_pipe, "genmove black", buffer);
+    // To deal with misbehaved programs that don't test against
+    // positional superkos.
+    if (*turns > max_turns) {
+      break;
+    }
 
-    if (strcmp(buffer + 2, "resign") == 0) {
+    (*turns)++;
+    resp = send_command(black_player_pipe, "genmove black", buffer);
+
+    if (strcmp(resp, "resign") == 0) {
       return -1;
     }
-    if (strcmp(buffer + 2, "pass") == 0) {
+    if (strcmp(resp, "pass") == 0) {
       if (last_move_pass) {
         send_command(referee_pipe, "play black pass", buffer);
         break;
@@ -110,16 +122,17 @@ static int play_game(
     } else {
       last_move_pass = 0;
     }
-    snprintf(buffer2, 1060, "play black %s", buffer + 2);
+    snprintf(buffer2, 1060, "play black %s", resp);
     send_command(white_player_pipe, buffer2, buffer);
     send_command(referee_pipe, buffer2, buffer);
 
-    send_command(white_player_pipe, "genmove white", buffer);
+    (*turns)++;
+    resp = send_command(white_player_pipe, "genmove white", buffer);
 
-    if (strcmp(buffer + 2, "resign") == 0) {
+    if (strcmp(resp, "resign") == 0) {
       return 1;
     }
-    if (strcmp(buffer + 2, "pass") == 0) {
+    if (strcmp(resp, "pass") == 0) {
       if (last_move_pass) {
         send_command(referee_pipe, "play white pass", buffer);
         break;
@@ -134,11 +147,11 @@ static int play_game(
     send_command(referee_pipe, buffer2, buffer);
   }
 
-  send_command(referee_pipe, "final_score", buffer);
-  if (buffer[2] == 'B' || buffer[2] == 'b') {
+  resp = send_command(referee_pipe, "final_score", buffer);
+  if (resp[0] == 'B' || resp[0] == 'b') {
     return 1;
   }
-  if (buffer[2] == 'W' || buffer[2] == 'w') {
+  if (resp[0] == 'W' || resp[0] == 'w') {
     return -1;
   }
   return 0;
@@ -226,9 +239,10 @@ int main(int argc, char * argv[]) {
   open_program(black_player, black_player_pipe);
   open_program(white_player, white_player_pipe);
   open_program(referee, referee_pipe);
-  send_command(black_player_pipe, "version", NULL);
-  send_command(white_player_pipe, "version", NULL);
-  send_command(referee_pipe, "version", NULL);
+  char buf[1024];
+  send_command(black_player_pipe, "version", buf);
+  send_command(white_player_pipe, "version", buf);
+  send_command(referee_pipe, "version", buf);
 
   int wins = 0;
   int draws = 0;
@@ -237,58 +251,64 @@ int main(int argc, char * argv[]) {
   for (int game = 0; game < games; ++game) {
     printf("Starting game %d/%d\n", game + 1, games);
 
-    int victor;
+    int outcome;
+    int turns;
     if (alternate && (game % 2) == 1) {
-      victor = play_game(
+      outcome = play_game(
         white_player_pipe,
         black_player_pipe,
         referee_pipe,
         board_size,
-        komi
+        komi,
+        &turns
       );
 
-      if (victor == 1) {
+      if (outcome == 1) {
         losses += 1;
-        printf("Player B wins (playing as black)\n");
-      } else if (victor == -1) {
+        printf("Player B wins after %u turns (playing as black)\n", turns);
+      } else if (outcome == -1) {
         wins += 1;
-        printf("Player A wins (playing as white)\n");
+        printf("Player A wins after %u turns (playing as white)\n", turns);
       } else {
         draws += 1;
-        printf("Draw with player A as white.\n");
+        printf("Draw after %u turns with player A as white.\n", turns);
       }
     } else {
-      victor = play_game(
+      outcome = play_game(
         black_player_pipe,
         white_player_pipe,
         referee_pipe,
         board_size,
-        komi
+        komi,
+        &turns
       );
 
-      if (victor == 1) {
+      if (outcome == 1) {
         wins += 1;
-        printf("Player A wins (playing as black)\n");
-      } else if (victor == -1) {
+        printf("Player A wins after %u turns (playing as black)\n", turns);
+      } else if (outcome == -1) {
         losses += 1;
-        printf("Player B wins (playing as white)\n");
+        printf("Player B wins after %u turns (playing as white)\n", turns);
       } else {
         draws += 1;
-        printf("Draw with player A as black.\n");
+        printf("Draw after %u turns with player A as black.\n", turns);
       }
     }
   }
 
-  send_command(black_player_pipe, "quit", NULL);
-  send_command(white_player_pipe, "quit", NULL);
-  send_command(referee_pipe, "quit", NULL);
+  send_command(black_player_pipe, "quit", buf);
+  send_command(white_player_pipe, "quit", buf);
+  send_command(referee_pipe, "quit", buf);
 
   kill(black_player_pipe[2], SIGKILL);
   kill(white_player_pipe[2], SIGKILL);
   kill(referee_pipe[2], SIGKILL);
 
-  printf("Finished.\n");
-  printf("Player A wins/draws/losses: %d / %d / %d\n", wins, draws, losses);
+  if ((komi % 2) == 0) {
+    printf("Finished - player A winrate: %d%% with %d draws\n", (int)round(wins * 100 / (wins + losses)), draws);
+  } else {
+    printf("Finished - player A winrate: %d%%\n", (int)round(wins * 100 / (wins + losses)));
+  }
 
   return EXIT_SUCCESS;
 }

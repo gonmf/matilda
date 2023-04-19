@@ -5,6 +5,6 @@
   --referee "gnugo --mode gtp --chinese-rules --positional-superko" \
   --size 19 \
   --komi 7.5 \
-  --games 10 \
+  --games 50 \
   --alternate
 exit 0
