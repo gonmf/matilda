@@ -1,8 +1,8 @@
 /*
 Support for logging to file. Logging is made to a file called
-matilda_YYMMDD_XXXXXX.log where YYMMDD is the date and XXXXXX is a random
-string. When logging a mask of log categories specifies the types of messages to
-be written to file. Having a very high degree of detail in very fast matches
+matilda_YYYYMMDDhhmm.log where YYYMMDD is the date and hhmm the hours and
+minutes. When logging a mask of log categories specifies the types of messages
+to be written to file. Having a very high degree of detail in very fast matches
 actively hurts the performance.
 
 Writing to files is synchronous (with fsync) to avoid loss of data in case of
@@ -234,7 +234,7 @@ static void open_log_file() {
             s[idx - 1] = 0;
         }
 
-        flog(NULL, NULL, s);
+        flog_info(NULL, s);
         release(s);
     }
 }

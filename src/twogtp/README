@@ -1,0 +1,4 @@
+Simple "twogtp" implementation - a program that pits two GTP-speaking programs
+against each other, using a third one as referee in case of game end by
+consecutive draws.
+Please see the example scritps in the root folder twogtp/ on how to use this.

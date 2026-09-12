@@ -1,5 +1,3 @@
-[![Build Status](https://travis-ci.org/gonmf/matilda.svg?branch=master)](https://travis-ci.org/gonmf/matilda)
-
 Matilda - Go/Igo/Wéiqí/Baduk playing software
 ===
 
@@ -29,6 +27,7 @@ src/inc/config.h to your taste.
 You can play with Matilda out of the box using a text interface. For a graphical
 interface you can connect it with any GTP-speaking program that supports Chinese
 rules, like [GoGui](http://gogui.sourceforge.net/).
+Matilda also includes `matilda-twogtp` for self-play and benchmarking.
 
 **Copyright**
 

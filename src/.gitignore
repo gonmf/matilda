@@ -8,7 +8,6 @@ learn_best_plays
 learn_pat_weights
 gen_zobrist_table
 callgrind.out.*
-*.log
 *.sgf
 *.ugi
 *.ugf

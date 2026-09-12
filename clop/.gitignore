@@ -2,7 +2,6 @@ clop-gui
 clop-console
 *.dat
 *.sgf
-*.log
 *.lock
 tmp/
 .tmp/

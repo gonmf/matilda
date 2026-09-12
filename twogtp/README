@@ -1,3 +1,8 @@
-Benchmark scripts that use twoGTP to play against GNU Go or in self-play.
+Benchmark scripts that use matilda-twogtp to play against GNU Go or in self-play.
 
-twoGTP is part of GoGui and can be downloaded from http://gogui.sourceforge.net
+matilda-twogtp is a program that pts one computer program against the other,
+using a third one as referee when the game ends via passing.
+
+To build matilda-twogtp run make matilda-twogtp in the src/ directory.
+
+You can find similar programs as part of GnuGo, GoGui, etc.

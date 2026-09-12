@@ -305,13 +305,13 @@ bool import_game_from_sgf2(
 
     str_between(tmp, buf, "PB[", "]");
     if (tmp[0]) {
-        strncpy(gr->black_name, tmp, MAX_PLAYER_NAME_SIZ);
+        strncpy(gr->black_name, tmp, MAX_PLAYER_NAME_SIZ - 1);
         gr->player_names_set = true;
     }
 
     str_between(tmp, buf, "PW[", "]");
     if (tmp[0]) {
-        strncpy(gr->white_name, tmp, MAX_PLAYER_NAME_SIZ);
+        strncpy(gr->white_name, tmp, MAX_PLAYER_NAME_SIZ - 1);
         gr->player_names_set = true;
     }
 

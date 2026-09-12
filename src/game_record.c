@@ -112,7 +112,7 @@ void game_record_to_string(
                             gr->final_score > 0 ? gr->black_name : gr->white_name);
         } else {
             idx += snprintf(buf + idx, buf_siz - idx, "Winner: %s by %.1f points\n",
-                            gr->final_score > 0 ? gr->black_name : gr->white_name, fabs(gr->final_score) / 2.0);
+                            gr->final_score > 0 ? gr->black_name : gr->white_name, abs(gr->final_score) / 2.0);
         }
     }
 

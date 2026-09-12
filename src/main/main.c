@@ -320,7 +320,6 @@ int main(
         }
     }
 
-    fprintf(stderr, "matilda - Go/Igo/Weiqi/Baduk computer player\n\n");
     u16 args_understood = 0;
 
     for (int i = 1; i < argc; ++i) {
@@ -645,6 +644,10 @@ int main(
         }
     }
 
+    if (!use_gtp) {
+        printf("matilda - Go/Igo/Weiqi/Baduk computer player\n\n");
+    }
+
     if (args_understood != argc - 1) {
         fprintf(stderr, "Unknown argument supplied; start with --help flag for usage instructions.\n");
         return EXIT_FAILURE;
@@ -678,7 +681,7 @@ int main(
 #endif
 
     if (limit_by_playouts) {
-        flog_warn("init", "MCTS using a constant number of simulations per turn");
+        flog_info("init", "MCTS using a constant number of simulations per turn");
     }
 
     startup(opening_books_enabled, desired_num_threads);

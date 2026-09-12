@@ -27,6 +27,8 @@ patterns.
 gen_zobrist_table - used to generate a vector of values suitable to be used as a
 codification table for Zobrist hashing.
 
+twogtp - used to pit one GTP-speaking program against another, for testing, benchmarking, etc.
+
 
 
 Configuration

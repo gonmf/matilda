@@ -261,7 +261,9 @@ void estimate_eyes(
                 unite_dragons(gs[0], gs[i]);
             }
 
-            dragon_head(gs[0])->eyes++;
+            if (gsc > 0) {
+                dragon_head(gs[0])->eyes++;
+            }
 
             disqualify_square(play_okay, m);
             in_nakade[m] = nk;
