@@ -349,7 +349,7 @@ static void multiply_and_store(
         if (pat3_find(value, true) == 0) {
             memcpy(p_inv, p, 3 * 3);
             pat3_invert(p_inv);
-            u16 value_inv = pat3_to_string((const u8 (*)[3])p);
+            u16 value_inv = pat3_to_string((const u8 (*)[3])p_inv);
             assert(pat3_find(value_inv, false) == 0);
             pat3_insert(value, value_inv, weight);
         }

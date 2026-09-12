@@ -81,7 +81,7 @@ static bool text_play(
     }
 
     add_play(&current_game, m);
-    opt_turn_maintenance(&current_state, !is_black);
+    opt_turn_maintenance(&current_state, is_black);
     *passed = false;
     return false;
 }

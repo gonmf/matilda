@@ -150,7 +150,12 @@ bool evaluate_position_sims(
     if (use_opening_book) {
         board tmp;
         memcpy(&tmp, b, sizeof(board));
-        d8 reduction = reduce_auto(&tmp, is_black);
+        /*
+        Opening books are stored without color inversion -- see
+        ob_rule_from_string -- so the position must be reduced the same way
+        regardless of the color to play.
+        */
+        d8 reduction = reduce_auto(&tmp, true);
 
         if (opening_book(out_b, &tmp)) {
             out_board_revert_reduce(out_b, reduction);

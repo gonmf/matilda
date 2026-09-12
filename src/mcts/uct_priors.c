@@ -264,7 +264,7 @@ void init_new_state(
         /*
         Prohibit self-ataris that don't contribute to killing an opponent group
         */
-        if (capturable[0] == 0 && (libs < 2 && lib2_self_atari(cb, is_black, m))) {
+        if (capturable[m] == 0 && (libs < 2 && lib2_self_atari(cb, is_black, m))) {
             mc_v += prior_self_atari;
         }
 

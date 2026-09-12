@@ -212,6 +212,16 @@ static d16 mcts_selection(
 
         if (play->m == PASS) {
             if (cb->last_played == PASS) {
+                /*
+                The game ends here. Record the transition before leaving so
+                that its virtual loss is corrected in the backup phase like
+                any other play.
+                */
+                plays[depth] = play;
+                stats[depth] = curr_stats;
+                ++depth;
+                is_black = !is_black;
+
                 outcome = score_stones_and_area(cb->p);
                 break;
             }
