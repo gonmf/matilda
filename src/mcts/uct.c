@@ -90,7 +90,7 @@ static void select_play(
         return;
     }
 
-    tt_play * best_plays[TOTAL_BOARD_SIZ];
+    tt_play * best_plays[MAX_PLAYS_COUNT];
     double best_q = -1.0;
     u16 equal_quality_plays = 0;
 
@@ -134,8 +134,13 @@ static d16 mcts_expansion(
 ) {
     stats->expansion_delay--;
 
-    if (stats->expansion_delay == -1) {
-        init_new_state(stats, cb, is_black);
+    if (stats->expansion_delay == -1 && !init_new_state(stats, cb, is_black, false)) {
+        /*
+        No memory left for the transitions; leave the state unexpanded and try
+        again on its next visit, in case memory is freed in the meantime.
+        */
+        ran_out_of_memory = true;
+        stats->expansion_delay = 0;
     }
 
     omp_unset_lock(&stats->lock);
@@ -172,10 +177,13 @@ static d16 mcts_selection(
             curr_stats = tt_lookup_null(cb, is_black, zobrist_hash);
 
             if (curr_stats == NULL) {
-                if (!ran_out_of_memory) {
-                    ran_out_of_memory = true;
-                    search_stop = true;
-                }
+                /*
+                No memory left to grow the tree. Keep sampling from the tree we
+                already have instead of ending the search -- the time is much
+                better spent refining the existing statistics than not thinking
+                at all.
+                */
+                ran_out_of_memory = true;
 
                 outcome = playout_heavy_amaf(cb, is_black, traversed);
                 break;
@@ -326,8 +334,16 @@ bool mcts_start_timed(
     cfg_from_board(&initial_cfg_board, b);
 
     if (stats->expansion_delay != -1) {
+        /*
+        The root must be expanded for the search to have anything to select
+        from, so this allocation is forced through the memory budget. It can
+        still fail if the system itself is out of memory.
+        */
+        if (!init_new_state(stats, &initial_cfg_board, is_black, true)) {
+            flog_crit("uct", "root state expansion: system out of memory");
+        }
+
         stats->expansion_delay = -1;
-        init_new_state(stats, &initial_cfg_board, is_black);
     }
 
     memset(max_depths, 0, sizeof(u16) * MAXIMUM_NUM_THREADS);
@@ -470,8 +486,16 @@ bool mcts_start_sims(
     cfg_from_board(&initial_cfg_board, b);
 
     if (stats->expansion_delay != -1) {
+        /*
+        The root must be expanded for the search to have anything to select
+        from, so this allocation is forced through the memory budget. It can
+        still fail if the system itself is out of memory.
+        */
+        if (!init_new_state(stats, &initial_cfg_board, is_black, true)) {
+            flog_crit("uct", "root state expansion: system out of memory");
+        }
+
         stats->expansion_delay = -1;
-        init_new_state(stats, &initial_cfg_board, is_black);
     }
 
     memset(max_depths, 0, sizeof(u16) * MAXIMUM_NUM_THREADS);
@@ -633,8 +657,11 @@ u32 mcts_benchmark(
     cfg_from_board(&initial_cfg_board, &b);
 
     if (stats->expansion_delay != -1) {
+        if (!init_new_state(stats, &initial_cfg_board, true, true)) {
+            flog_crit("uct", "root state expansion: system out of memory");
+        }
+
         stats->expansion_delay = -1;
-        init_new_state(stats, &initial_cfg_board, true);
     }
 
     memset(max_depths, 0, sizeof(u16) * MAXIMUM_NUM_THREADS);

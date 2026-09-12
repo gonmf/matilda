@@ -49,11 +49,17 @@ Tuned with CLOP in 9x9 with 10k playouts/turn in self-play for 34k games.
 /*
 Initializes a game state structure with prior values and AMAF/LGRF/Criticality
 information.
+The transitions are allocated here, so the expansion fails and nothing is
+changed if the transpositions table is already over its memory budget -- unless
+force is set, which is needed for the root state since the search cannot run
+without it.
+RETURNS true if the state was expanded
 */
-void init_new_state(
+bool init_new_state(
     tt_stats * stats,
     cfg_board * cb,
-    bool is_black
+    bool is_black,
+    bool force
 );
 
 #if PRIOR_EVEN == 0

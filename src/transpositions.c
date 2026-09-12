@@ -33,11 +33,21 @@ table color.
 u16 expansion_delay = UCT_EXPANSION_DELAY;
 u64 max_size_in_mbs = DEFAULT_UCT_MEMORY;
 
+static u64 max_size_in_bytes;
 static u32 max_allocated_states;
 static u32 number_of_buckets;
 
 static u32 allocated_states = 0;
 static u32 states_in_use = 0;
+
+/*
+Bytes held by states in use plus their transition arrays. States are of a fixed
+size but their transition arrays are only allocated on expansion and sized to
+the number of playable transitions, so the number of states that fit in the
+budget is not known in advance.
+*/
+static u64 bytes_in_use = 0;
+static omp_lock_t bytes_in_use_lock;
 
 static omp_lock_t b_table_lock;
 static omp_lock_t w_table_lock;
@@ -57,10 +67,17 @@ Initialize the transpositions table structures.
 */
 void tt_init() {
     if (b_stats_table == NULL) {
-        u64 mbs = max_size_in_mbs;
-        mbs *= 1048576;
+        max_size_in_bytes = max_size_in_mbs;
+        max_size_in_bytes *= 1048576;
 
-        max_allocated_states = mbs / sizeof(tt_stats);
+        /*
+        A state whose transitions were never allocated is the cheapest one
+        possible, so this is an upper bound on how many can be held at once.
+        Sizing the buckets by it keeps the hash chains short whatever mixture
+        of expanded and unexpanded states the search ends up with; the bucket
+        arrays themselves are charged to the budget below.
+        */
+        max_allocated_states = max_size_in_bytes / sizeof(tt_stats);
         number_of_buckets = get_prime_near(max_allocated_states / 2);
 
         b_stats_table = calloc(number_of_buckets, sizeof(tt_stats *));
@@ -76,6 +93,9 @@ void tt_init() {
         omp_init_lock(&b_table_lock);
         omp_init_lock(&w_table_lock);
         omp_init_lock(&freed_nodes_lock);
+        omp_init_lock(&bytes_in_use_lock);
+
+        bytes_in_use = ((u64)number_of_buckets) * sizeof(tt_stats *) * 2;
     }
 }
 
@@ -147,6 +167,108 @@ static tt_stats * find_state2(
     return NULL;
 }
 
+static void account_bytes(
+    d64 delta
+) {
+    omp_set_lock(&bytes_in_use_lock);
+    bytes_in_use += delta;
+    omp_unset_lock(&bytes_in_use_lock);
+}
+
+/*
+Whether there is no room left for another extra bytes. Reading bytes_in_use
+unlocked is enough: concurrent allocations can take the table a little over the
+budget, by at most one allocation per thread, which makes no difference.
+*/
+static bool tt_memory_exhausted(
+    u64 extra
+) {
+    return bytes_in_use + extra > max_size_in_bytes;
+}
+
+/*
+Allocates room for up to max_count transitions in a state that is being
+expanded, leaving plays_count at zero for the caller to fill in. If force is
+false the allocation is refused when it would take the transpositions table
+over its memory budget; with force set it is only refused when the system
+itself is out of memory. Thread-safe.
+RETURNS true if the state can now hold max_count transitions
+*/
+bool tt_alloc_plays(
+    tt_stats * stats,
+    move max_count,
+    bool force
+) {
+    assert(stats->plays == NULL);
+
+    stats->plays_count = 0;
+    stats->plays_capacity = 0;
+
+    if (max_count == 0) {
+        return false;
+    }
+
+    u64 siz = ((u64)max_count) * sizeof(tt_play);
+
+    if (!force && tt_memory_exhausted(siz)) {
+        return false;
+    }
+
+    stats->plays = malloc(siz);
+
+    if (stats->plays == NULL) {
+        return false;
+    }
+
+    stats->plays_capacity = max_count;
+    account_bytes((d64)siz);
+    return true;
+}
+
+/*
+Releases the room allocated by tt_alloc_plays beyond the transitions the caller
+actually filled in. Must be called before the state is made visible to other
+threads, since it may move the transitions array. Thread-safe.
+*/
+void tt_trim_plays(
+    tt_stats * stats
+) {
+    assert(stats->plays_count <= stats->plays_capacity);
+
+    if (stats->plays == NULL || stats->plays_count == stats->plays_capacity) {
+        return;
+    }
+
+    u64 new_siz = ((u64)stats->plays_count) * sizeof(tt_play);
+    tt_play * trimmed = realloc(stats->plays, new_siz);
+
+    /*
+    A shrinking realloc is not required to succeed. Keeping the oversized array
+    is harmless, so leave the capacity -- and with it the accounting -- alone
+    unless it actually shrank.
+    */
+    if (trimmed == NULL) {
+        return;
+    }
+
+    account_bytes(-(d64)((((u64)stats->plays_capacity) - stats->plays_count) * sizeof(tt_play)));
+    stats->plays = trimmed;
+    stats->plays_capacity = stats->plays_count;
+}
+
+static void free_plays(
+    tt_stats * s
+) {
+    if (s->plays == NULL) {
+        return;
+    }
+
+    account_bytes(-(d64)(((u64)s->plays_capacity) * sizeof(tt_play)));
+    free(s->plays);
+    s->plays = NULL;
+    s->plays_capacity = 0;
+}
+
 static tt_stats * create_state(
     u64 hash
 ) {
@@ -174,10 +296,14 @@ static tt_stats * create_state(
         omp_init_lock(&ret->lock);
     }
 
+    account_bytes((d64)sizeof(tt_stats));
+
     /* careful that some fields are not initialized here */
     ret->zobrist_hash = hash;
     ret->maintenance_mark = maintenance_mark;
     ret->plays_count = 0;
+    ret->plays_capacity = 0;
+    ret->plays = NULL;
     ret->expansion_delay = expansion_delay;
     return ret;
 }
@@ -185,7 +311,11 @@ static tt_stats * create_state(
 static void release_state(
     tt_stats * s
 ) {
+    free_plays(s);
+    account_bytes(-(d64)sizeof(tt_stats));
+
     --states_in_use;
+    s->plays_count = 0;
     s->next = freed_nodes;
     freed_nodes = s;
 }
@@ -302,7 +432,7 @@ tt_stats * tt_lookup_create(
 
     tt_stats * ret = find_state(hash, b, is_black);
     if (ret == NULL) { /* doesnt exist */
-        if (states_in_use >= max_allocated_states) {
+        if (tt_memory_exhausted(sizeof(tt_stats))) {
             /*
             It is possible in theory for a complex ko to produce a situation
             where freeing the game tree that is not reachable doesn't free any
@@ -358,7 +488,7 @@ tt_stats * tt_lookup_null(
 
     tt_stats * ret = find_state2(hash, cb, is_black);
     if (ret == NULL) { /* doesnt exist */
-        if (states_in_use >= max_allocated_states) {
+        if (tt_memory_exhausted(sizeof(tt_stats))) {
             omp_unset_lock(bucket_lock);
             return NULL;
         }
@@ -422,9 +552,10 @@ void tt_log_status() {
     char * buf = alloc();
     u32 idx = snprintf(buf, MAX_PAGE_SIZ, "\n*** Transpositions table trace start ***\n\n");
     idx += snprintf(buf + idx, MAX_PAGE_SIZ - idx, "Max size in MiB: %" PRIu64 "\n", max_size_in_mbs);
-    idx += snprintf(buf + idx, MAX_PAGE_SIZ - idx, "Max allocated states: %u\n", max_allocated_states);
+    idx += snprintf(buf + idx, MAX_PAGE_SIZ - idx, "Max states if none expanded: %u\n", max_allocated_states);
     idx += snprintf(buf + idx, MAX_PAGE_SIZ - idx, "Allocated states: %u\n", allocated_states);
     idx += snprintf(buf + idx, MAX_PAGE_SIZ - idx, "States in use: %u\n", states_in_use);
+    idx += snprintf(buf + idx, MAX_PAGE_SIZ - idx, "Bytes in use: %" PRIu64 " of %" PRIu64 "\n", bytes_in_use, max_size_in_bytes);
     idx += snprintf(buf + idx, MAX_PAGE_SIZ - idx, "Number of buckets: %u\n", number_of_buckets);
     snprintf(buf + idx, MAX_PAGE_SIZ - idx, "Maintenance mark: %u\n", maintenance_mark);
 

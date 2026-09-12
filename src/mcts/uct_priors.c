@@ -143,11 +143,21 @@ heuristic.
 Also marks playable positions, excluding playing in own eyes and ko violations,
 with at least one visit.
 */
-void init_new_state(
+bool init_new_state(
     tt_stats * stats,
     cfg_board * cb,
-    bool is_black
+    bool is_black,
+    bool force
 ) {
+    /*
+    Every empty intersection is a candidate transition, plus a possible pass.
+    The unplayable ones are filtered out below and the slack given back by
+    tt_trim_plays once the real count is known.
+    */
+    if (!tt_alloc_plays(stats, cb->empty.count + 1, force)) {
+        return false;
+    }
+
     bool near_last_play[TOTAL_BOARD_SIZ];
     if (is_board_move(cb->last_played)) {
         mark_near_pos(near_last_play, cb, cb->last_played);
@@ -371,4 +381,7 @@ void init_new_state(
     if (cb->empty.count < TOTAL_BOARD_SIZ / 2 || stats->plays_count < TOTAL_BOARD_SIZ / 8) {
         stats_add_play_final(stats, PASS, UCT_RESIGN_WINRATE, prior_pass);
     }
+
+    tt_trim_plays(stats);
+    return true;
 }

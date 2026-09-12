@@ -67,10 +67,10 @@ bool folder_exists(
 
     if (dir != NULL) {
         closedir(dir);
-        return false;
+        return true;
     }
 
-    return true;
+    return false;
 }
 
 /*
@@ -87,7 +87,7 @@ bool set_data_folder(
         return false;
     }
 
-    if (folder_exists(s)) {
+    if (!folder_exists(s)) {
         return false;
     }
 
