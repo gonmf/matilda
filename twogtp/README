@@ -6,3 +6,5 @@ using a third one as referee when the game ends via passing.
 To build matilda-twogtp run make matilda-twogtp in the src/ directory.
 
 You can find similar programs as part of GnuGo, GoGui, etc.
+
+GNU Go is always required in these scripts, used at least as the referee.
