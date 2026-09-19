@@ -217,8 +217,6 @@ lbl_usage:
 
 
 
-    u32 games_used = 0;
-    u32 plays_used = 0;
     u32 ob_rules = 0;
 
     timestamp(ts);
@@ -275,7 +273,6 @@ lbl_usage:
         board b;
         clear_board(&b);
 
-        ++games_used;
         if (!no_print) {
             printf(" (%u)\n", gr->turns);
         }
@@ -304,8 +301,6 @@ lbl_usage:
                 }
                 continue;
             }
-
-            ++plays_used;
 
             board b2;
             memcpy(&b2, &b, sizeof(board));

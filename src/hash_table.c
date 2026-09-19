@@ -251,14 +251,12 @@ bool hash_table_import_from_file(
 
     void * data = malloc(ht->elem_size);
     assert(data != NULL);
-    u32 elems_read = 0;
 
     while (1) {
         size_t r = fread(data, ht->elem_size, 1, fp);
         if (r < 1)
             break;
 
-        ++elems_read;
         hash_table_insert(ht, data);
         data = malloc(ht->elem_size);
         assert(data != NULL);

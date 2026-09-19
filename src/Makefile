@@ -3,18 +3,46 @@
 #
 
 
-# Uncomment this line to compile in macOS, having previously installed
-# clang-omp through brew.
-# CC := clang-omp
+# Override this if your default compiler does not support OpenMP 3.0. On macOS
+# a suitable compiler is looked for automatically, see below.
+# CC := gcc
 
-# If your system includes a clang with OpenMP 3.0 support
-# CC := clang
+UNAME_S := $(shell uname -s)
+
+# Apple ships clang without any OpenMP support, and Matilda needs more than the
+# pragmas -- omp locks and omp_get_thread_num are used throughout. Homebrew LLVM
+# is used instead when present, in either the Intel or Apple Silicon prefix.
+ifeq ($(UNAME_S),Darwin)
+
+BREW_CLANG := $(firstword $(wildcard /usr/local/opt/llvm/bin/clang \
+	/opt/homebrew/opt/llvm/bin/clang))
+
+ifeq ($(BREW_CLANG),)
+$(error No OpenMP capable compiler found; install one with: brew install llvm)
+endif
+
+BREW_PREFIX := $(patsubst %/bin/clang,%,$(BREW_CLANG))
+MACOS_SDK := $(shell xcrun --show-sdk-path 2> /dev/null)
+
+ifeq ($(origin CC),default)
+CC := $(BREW_CLANG)
+endif
+
+# Homebrew clang finds neither the system headers nor, because it omits the
+# sysroot when calling the linker, the system libraries. Recent clang versions
+# also reject as pedantic errors the declarations without prototypes that are
+# used all over Matilda, so that one diagnostic is turned off here.
+MACOS_CFLAGS := -isysroot $(MACOS_SDK) -Wno-strict-prototypes
+MACOS_LDFLAGS := -L$(MACOS_SDK)/usr/lib -L$(BREW_PREFIX)/lib \
+	-Wl,-rpath,$(BREW_PREFIX)/lib
+
+endif
 
 CFLAGS := -Iinc/ -std=c99 -O2 -Wall -Wextra -Wformat=2 -pedantic-errors \
 	-Wfatal-errors -Wundef -Wno-unused-result -fno-stack-protector \
-	-march=native -MMD -MP -fopenmp
+	-march=native -MMD -MP -fopenmp $(MACOS_CFLAGS)
 
-LDFLAGS += -lm
+LDFLAGS += -lm $(MACOS_LDFLAGS)
 
 # For debugging add -g to CFLAGS
 # CFLAGS += -g

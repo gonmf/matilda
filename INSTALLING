@@ -10,8 +10,16 @@ It is tested using GCC and Clang. Please try to use modern versions of these
 compilers. They need to be recent enough to support OpenMP 3.0.
 
 On macOS do not use the default Xcode clang -- it does not support OpenMP.
-Instead install through brew clang-omp, and override the compiler to be used
-in src/Makefile.
+Instead install LLVM through brew
+
+brew install llvm
+
+and the Xcode command line tools, if you do not have them already
+
+xcode-select --install
+
+The makefile finds the brew installed compiler by itself; you do not need to
+edit it. Should you want a different compiler, override CC when calling make.
 
 Before compiling, review the contents of the file src/inc/config.h for your
 system. Remember to edit the line
